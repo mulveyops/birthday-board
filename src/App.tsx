@@ -628,6 +628,7 @@ export default function App() {
   const [starClaimRows, setStarClaimRows] = useState<StarClaimRow[]>([]);
   const [events, setEvents] = useState<EventRow[]>([]);
   const [onlineBarModal, setOnlineBarModal] = useState<{ spotId: string; name: string } | null>(null);
+  const [onlineQuizModal, setOnlineQuizModal] = useState<{ spotId: string; name: string } | null>(null);
   const [battleModal, setBattleModal] = useState<{
     claimId: string;
     barName: string;
@@ -794,11 +795,33 @@ export default function App() {
         return;
       }
       if (onlineCleared.includes(spotId)) return;
+      // A challenge with authored trivia → answer to earn scaled coins.
+      if (type === 'challenge' && (sq.questions?.length ?? 0) > 0) {
+        setQuizPick({});
+        setQuizDone(false);
+        setOnlineQuizModal({ spotId, name: sq.title || 'Challenge' });
+        return;
+      }
       setOnlineCleared((c) => [...c, spotId]); // optimistic; subscription confirms coins/pos
       checkInSpot(membership.gameId, membership.teamId, spotId, sq.lat, sq.lng, onlineConfig.coinReward).catch((e) =>
         alert('Check-in failed: ' + (e as Error).message),
       );
     });
+  }
+  // Score the online trivia, then clear the spot + award scaled coins via checkInSpot.
+  function resolveOnlineQuiz() {
+    if (!membership || !onlineBoard || !onlineQuizModal) return;
+    const sq = onlineBoard.squares.find((s) => s.id === onlineQuizModal.spotId);
+    if (!sq) return;
+    const qs = sq.questions ?? [];
+    const correct = qs.reduce((n, q, i) => n + (quizPick[i] === q.correct ? 1 : 0), 0);
+    const base = sq.reward > 0 ? sq.reward : onlineConfig.coinReward;
+    const award = qs.length ? Math.round((base * correct) / qs.length) : base;
+    setOnlineCleared((c) => (c.includes(sq.id) ? c : [...c, sq.id]));
+    checkInSpot(membership.gameId, membership.teamId, sq.id, sq.lat, sq.lng, award).catch((e) =>
+      alert('Check-in failed: ' + (e as Error).message),
+    );
+    setQuizDone(true);
   }
   async function doBuyRound() {
     if (!membership || !onlineBarModal) return;
@@ -2121,6 +2144,110 @@ export default function App() {
                     <button className="btn btn--ghost" style={{ width: '100%', marginTop: 8 }} onClick={() => setOnlineBarModal(null)}>
                       Close
                     </button>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+
+        {onlineQuizModal &&
+          (() => {
+            const sq = onlineBoard?.squares.find((s) => s.id === onlineQuizModal.spotId);
+            const qs = sq?.questions ?? [];
+            const answeredAll = qs.every((_, i) => quizPick[i] != null);
+            const correct = qs.reduce((n, q, i) => n + (quizPick[i] === q.correct ? 1 : 0), 0);
+            const base = sq && sq.reward > 0 ? sq.reward : onlineConfig.coinReward;
+            const award = qs.length ? Math.round((base * correct) / qs.length) : base;
+            return (
+              <div
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  background: 'rgba(20,16,12,0.42)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  zIndex: 1000,
+                }}
+                onClick={() => setOnlineQuizModal(null)}
+              >
+                <div
+                  style={{
+                    width: 340,
+                    maxWidth: '90%',
+                    maxHeight: '86%',
+                    overflowY: 'auto',
+                    background: '#fdfaf2',
+                    border: '2px solid #3f3b36',
+                    borderRadius: 14,
+                    boxShadow: '0 14px 44px rgba(0,0,0,0.38)',
+                    animation: 'pop-in 0.24s cubic-bezier(0.2,0.85,0.35,1.2)',
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div style={{ background: '#3b82f6', color: '#fff', padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <span style={{ fontSize: '1.9rem', lineHeight: 1 }}>🧩</span>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontWeight: 800, fontSize: '1.05rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {onlineQuizModal.name}
+                      </div>
+                      <div style={{ fontSize: '0.7rem', opacity: 0.92, textTransform: 'uppercase', letterSpacing: 1.5 }}>Trivia</div>
+                    </div>
+                  </div>
+                  <div style={{ padding: '16px 18px' }}>
+                    {sq?.notes && (
+                      <p className="hint" style={{ marginTop: 0 }}>
+                        {sq.notes}
+                      </p>
+                    )}
+                    {qs.map((q, qi) => (
+                      <div className="quiz-q" key={qi}>
+                        <div className="quiz-qtext">
+                          {qi + 1}. {q.q || '(question)'}
+                        </div>
+                        {q.choices.map((c, ci) => {
+                          const picked = quizPick[qi] === ci;
+                          const isRight = q.correct === ci;
+                          let cls = 'quiz-choice';
+                          if (quizDone) {
+                            if (isRight) cls += ' quiz-choice--correct';
+                            else if (picked) cls += ' quiz-choice--wrong';
+                          } else if (picked) cls += ' quiz-choice--picked';
+                          return (
+                            <button
+                              key={ci}
+                              className={cls}
+                              disabled={quizDone}
+                              onClick={() => setQuizPick((p) => ({ ...p, [qi]: ci }))}
+                            >
+                              <span>{c || `Choice ${ci + 1}`}</span>
+                              {quizDone && isRight && <span className="quiz-mark">✓</span>}
+                              {quizDone && picked && !isRight && <span className="quiz-mark">✗</span>}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    ))}
+                    {!quizDone ? (
+                      <button
+                        className="btn btn--go"
+                        style={{ width: '100%' }}
+                        disabled={!answeredAll}
+                        onClick={resolveOnlineQuiz}
+                      >
+                        Submit answers
+                      </button>
+                    ) : (
+                      <>
+                        <p className="quiz-score">
+                          {award ? `+${award} 🪙 · ` : ''}
+                          {correct} / {qs.length} correct
+                        </p>
+                        <button className="btn btn--go" style={{ width: '100%' }} onClick={() => setOnlineQuizModal(null)}>
+                          Continue
+                        </button>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>

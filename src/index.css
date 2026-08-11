@@ -35,6 +35,54 @@ body {
   min-width: 0;
 }
 
+/* Floating button to collapse the panel on mobile (hidden on desktop). */
+.panel-toggle {
+  display: none;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 600;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 13px;
+  border-radius: 999px;
+  border: 1px solid #334155;
+  background: #0f172a;
+  color: #e2e8f0;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.35);
+}
+
+/* ---- Mobile: stack the panel above the map instead of side-by-side ---- */
+@media (max-width: 768px) {
+  .app {
+    flex-direction: column;
+    height: 100vh;
+    height: 100dvh;
+  }
+  .sidebar {
+    width: 100%;
+    min-width: 0;
+    max-height: 46vh;
+    max-height: 46dvh;
+    flex: 0 0 auto;
+    padding: 12px;
+  }
+  .map-wrap {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+  /* Collapsed: hand the whole screen to the map for drawing / placing spaces. */
+  .app--panel-collapsed .sidebar {
+    display: none;
+  }
+  .panel-toggle {
+    display: inline-flex;
+  }
+}
+
 .brand h1 {
   margin: 0;
   font-size: 20px;

@@ -137,6 +137,9 @@ export default function App() {
 
   // --- Play mode (desktop sim) ----------------------------------------------
   const [appMode, setAppMode] = useState<'design' | 'play' | 'online'>('design');
+  // On mobile the side panel and map stack; this collapses the panel so the map
+  // can go full-screen for drawing the area / placing spaces. Ignored on desktop.
+  const [panelOpen, setPanelOpen] = useState(true);
   const [play, setPlay] = useState<{
     coins: number;
     stars: number;
@@ -894,7 +897,7 @@ export default function App() {
   const nameOf = (id: string) => board.squares.find((s) => s.id === id)?.title ?? '?';
 
   return (
-    <div className="app">
+    <div className={`app${panelOpen ? '' : ' app--panel-collapsed'}`}>
       <aside className="sidebar">
         <header className="brand">
           <h1>🎲 Birthday Board</h1>
@@ -1407,6 +1410,13 @@ export default function App() {
       </aside>
 
       <main className="map-wrap">
+        <button
+          className="panel-toggle"
+          onClick={() => setPanelOpen((o) => !o)}
+          aria-label={panelOpen ? 'Hide the menu to expand the map' : 'Show the menu'}
+        >
+          {panelOpen ? '🗺️ Expand map' : '☰ Menu'}
+        </button>
         <BoardCanvas
           board={appMode === 'online' && onlineBoard ? onlineBoard : board}
           mode={mode}

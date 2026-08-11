@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import BoardCanvas, { type Mode } from './BoardCanvas';
-import type { Board, Edge, LatLng, Phase, Square, SquareType } from './types';
+import type { Board, Edge, LatLng, Phase, Square, SquareType, TriviaQuestion } from './types';
 import { SQUARE_TYPES, TYPE_ORDER } from './squareTypes';
 import { loadBoard, saveBoard, makeSquare, defaultBoard } from './boardStore';
 import { metersBetween, simplify, snapToStreetsFollowing } from './snap';
@@ -360,6 +360,9 @@ export default function App() {
   const [rollResult, setRollResult] = useState<string | null>(null);
   const [rolling, setRolling] = useState(false);
   const [dieFace, setDieFace] = useState(1);
+  // Play-mode quiz: which choice the player picked per question, + submitted flag.
+  const [quizPick, setQuizPick] = useState<Record<number, number>>({});
+  const [quizDone, setQuizDone] = useState(false);
   const [burst, setBurst] = useState<{ text: string; key: number } | null>(null);
   const burstKey = useRef(0);
   function flash(text: string) {
@@ -370,6 +373,8 @@ export default function App() {
     setModal(null);
     setRollResult(null);
     setRolling(false);
+    setQuizPick({});
+    setQuizDone(false);
   }
   function rollChance(id: string) {
     if (rolling) return;
@@ -445,6 +450,21 @@ export default function App() {
     setPlay((p) => ({ ...p, coins: p.coins + reward, cleared: [...p.cleared, id], last: `+${reward} 🪙 · challenge` }));
     flash(`+${reward} 🪙`);
     closeModal();
+  }
+  // Auto-scored multiple-choice: award the square's reward scaled by % correct.
+  function resolveQuiz(sq: Square) {
+    const qs = sq.questions ?? [];
+    const correct = qs.reduce((n, q, i) => n + (quizPick[i] === q.correct ? 1 : 0), 0);
+    const base = sq.reward > 0 ? sq.reward : 20;
+    const award = qs.length ? Math.round((base * correct) / qs.length) : base;
+    setPlay((p) => ({
+      ...p,
+      coins: p.coins + award,
+      cleared: [...p.cleared, sq.id],
+      last: `+${award} 🪙 · ${correct}/${qs.length} correct`,
+    }));
+    if (award) flash(`+${award} 🪙`);
+    setQuizDone(true);
   }
   function resolveChance(id: string) {
     const r = Math.random();
@@ -880,6 +900,37 @@ export default function App() {
   }
   function updateSquare(id: string, patch: Partial<Square>) {
     setBoard((b) => ({ ...b, squares: b.squares.map((s) => (s.id === id ? { ...s, ...patch } : s)) }));
+  }
+  // --- Trivia question authoring (on a challenge square) ---------------------
+  function patchQuestions(sq: Square, fn: (qs: TriviaQuestion[]) => TriviaQuestion[]) {
+    updateSquare(sq.id, { questions: fn(sq.questions ? sq.questions.map((q) => ({ ...q, choices: [...q.choices] })) : []) });
+  }
+  function addQuestion(sq: Square) {
+    patchQuestions(sq, (qs) => [...qs, { q: '', choices: ['', ''], correct: 0 }]);
+  }
+  function removeQuestion(sq: Square, qi: number) {
+    patchQuestions(sq, (qs) => qs.filter((_, i) => i !== qi));
+  }
+  function updateQuestion(sq: Square, qi: number, patch: Partial<TriviaQuestion>) {
+    patchQuestions(sq, (qs) => qs.map((q, i) => (i === qi ? { ...q, ...patch } : q)));
+  }
+  function addChoice(sq: Square, qi: number) {
+    patchQuestions(sq, (qs) => qs.map((q, i) => (i === qi && q.choices.length < 4 ? { ...q, choices: [...q.choices, ''] } : q)));
+  }
+  function updateChoice(sq: Square, qi: number, ci: number, val: string) {
+    patchQuestions(sq, (qs) =>
+      qs.map((q, i) => (i === qi ? { ...q, choices: q.choices.map((c, j) => (j === ci ? val : c)) } : q)),
+    );
+  }
+  function removeChoice(sq: Square, qi: number, ci: number) {
+    patchQuestions(sq, (qs) =>
+      qs.map((q, i) => {
+        if (i !== qi || q.choices.length <= 2) return q;
+        const choices = q.choices.filter((_, j) => j !== ci);
+        const correct = ci === q.correct ? 0 : ci < q.correct ? q.correct - 1 : q.correct;
+        return { ...q, choices, correct };
+      }),
+    );
   }
   function removeSquare(id: string) {
     setBoard((b) => ({
@@ -1445,7 +1496,7 @@ export default function App() {
                   />
                 </label>
                 <label className="field">
-                  <span>Notes / challenge details</span>
+                  <span>{selected.type === 'challenge' ? 'Notes / intro (shown above the questions)' : 'Notes / challenge details'}</span>
                   <textarea
                     rows={3}
                     value={selected.notes}
@@ -1453,6 +1504,61 @@ export default function App() {
                     placeholder="e.g. Count the ducks on the mural. More found = more 🪙."
                   />
                 </label>
+                {selected.type === 'challenge' && (
+                  <div className="quiz-editor">
+                    <span className="quiz-editor-label">Trivia questions (multiple choice)</span>
+                    {(selected.questions ?? []).map((q, qi) => (
+                      <div className="qedit" key={qi}>
+                        <div className="qedit-head">
+                          <strong>Q{qi + 1}</strong>
+                          <button className="linkbtn" onClick={() => removeQuestion(selected, qi)}>
+                            Remove
+                          </button>
+                        </div>
+                        <input
+                          className="qedit-q"
+                          value={q.q}
+                          placeholder="Question"
+                          onChange={(e) => updateQuestion(selected, qi, { q: e.target.value })}
+                        />
+                        {q.choices.map((c, ci) => (
+                          <div className="qedit-choice" key={ci}>
+                            <input
+                              type="radio"
+                              name={`correct-${selected.id}-${qi}`}
+                              checked={q.correct === ci}
+                              onChange={() => updateQuestion(selected, qi, { correct: ci })}
+                              title="Mark as the correct answer"
+                            />
+                            <input
+                              value={c}
+                              placeholder={`Choice ${ci + 1}`}
+                              onChange={(e) => updateChoice(selected, qi, ci, e.target.value)}
+                            />
+                            {q.choices.length > 2 && (
+                              <button
+                                className="linkbtn"
+                                title="Remove choice"
+                                onClick={() => removeChoice(selected, qi, ci)}
+                              >
+                                ✕
+                              </button>
+                            )}
+                          </div>
+                        ))}
+                        {q.choices.length < 4 && (
+                          <button className="linkbtn" onClick={() => addChoice(selected, qi)}>
+                            ＋ Add choice
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                    <button className="btn" onClick={() => addQuestion(selected)}>
+                      ＋ Add question
+                    </button>
+                    <p className="hint">Select the radio next to the correct answer. Players auto-score in Play.</p>
+                  </div>
+                )}
                 <button className="btn btn--danger" onClick={() => removeSquare(selected.id)}>Delete space</button>
               </section>
             )}
@@ -1822,19 +1928,85 @@ export default function App() {
                         </button>
                       </>
                     ) : modal.type === 'challenge' ? (
-                      <>
-                        <p className="hint" style={{ marginTop: 0 }}>
-                          {spotNotes(modal.id) || 'Answer the trivia / do the dare, then rate how it went.'}
-                        </p>
-                        <div className="row">
-                          <button className="btn btn--go" style={{ flex: 1 }} onClick={() => resolveChallenge(modal.id, true)}>
-                            Nailed it
-                          </button>
-                          <button className="btn" style={{ flex: 1 }} onClick={() => resolveChallenge(modal.id, false)}>
-                            Meh
-                          </button>
-                        </div>
-                      </>
+                      (() => {
+                        const sq = board.squares.find((s) => s.id === modal.id);
+                        const qs = sq?.questions ?? [];
+                        if (!sq || qs.length === 0) {
+                          return (
+                            <>
+                              <p className="hint" style={{ marginTop: 0 }}>
+                                {spotNotes(modal.id) || 'Answer the trivia / do the dare, then rate how it went.'}
+                              </p>
+                              <div className="row">
+                                <button className="btn btn--go" style={{ flex: 1 }} onClick={() => resolveChallenge(modal.id, true)}>
+                                  Nailed it
+                                </button>
+                                <button className="btn" style={{ flex: 1 }} onClick={() => resolveChallenge(modal.id, false)}>
+                                  Meh
+                                </button>
+                              </div>
+                            </>
+                          );
+                        }
+                        const answeredAll = qs.every((_, i) => quizPick[i] != null);
+                        const correct = qs.reduce((n, q, i) => n + (quizPick[i] === q.correct ? 1 : 0), 0);
+                        return (
+                          <>
+                            {sq.notes && (
+                              <p className="hint" style={{ marginTop: 0 }}>
+                                {sq.notes}
+                              </p>
+                            )}
+                            {qs.map((q, qi) => (
+                              <div className="quiz-q" key={qi}>
+                                <div className="quiz-qtext">
+                                  {qi + 1}. {q.q || '(question)'}
+                                </div>
+                                {q.choices.map((c, ci) => {
+                                  const picked = quizPick[qi] === ci;
+                                  const isRight = q.correct === ci;
+                                  let cls = 'quiz-choice';
+                                  if (quizDone) {
+                                    if (isRight) cls += ' quiz-choice--correct';
+                                    else if (picked) cls += ' quiz-choice--wrong';
+                                  } else if (picked) cls += ' quiz-choice--picked';
+                                  return (
+                                    <button
+                                      key={ci}
+                                      className={cls}
+                                      disabled={quizDone}
+                                      onClick={() => setQuizPick((p) => ({ ...p, [qi]: ci }))}
+                                    >
+                                      <span>{c || `Choice ${ci + 1}`}</span>
+                                      {quizDone && isRight && <span className="quiz-mark">✓</span>}
+                                      {quizDone && picked && !isRight && <span className="quiz-mark">✗</span>}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            ))}
+                            {!quizDone ? (
+                              <button
+                                className="btn btn--go"
+                                style={{ width: '100%' }}
+                                disabled={!answeredAll}
+                                onClick={() => resolveQuiz(sq)}
+                              >
+                                Submit answers
+                              </button>
+                            ) : (
+                              <>
+                                <p className="quiz-score">
+                                  {correct} / {qs.length} correct
+                                </p>
+                                <button className="btn btn--go" style={{ width: '100%' }} onClick={closeModal}>
+                                  Continue
+                                </button>
+                              </>
+                            )}
+                          </>
+                        );
+                      })()
                     ) : modal.type === 'chance' ? (
                       <>
                         <p className="hint" style={{ marginTop: 0 }}>Roll your luck — 🪙, an item, nothing, or a mugging.</p>

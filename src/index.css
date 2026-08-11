@@ -427,6 +427,134 @@ body {
   filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.6));
 }
 
+/* ---- Trivia question authoring (sidebar) ---- */
+.quiz-editor {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed #334155;
+}
+.quiz-editor-label {
+  display: block;
+  font-size: 12px;
+  color: #94a3b8;
+  margin-bottom: 6px;
+}
+.qedit {
+  border: 1px solid #334155;
+  border-radius: 9px;
+  padding: 8px;
+  margin-bottom: 8px;
+  background: #0f172a;
+}
+.qedit-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #cbd5e1;
+  margin-bottom: 6px;
+}
+.qedit-q {
+  width: 100%;
+  padding: 7px 8px;
+  border-radius: 7px;
+  border: 1px solid #334155;
+  background: #111c33;
+  color: #e2e8f0;
+  font-size: 13px;
+  font-family: inherit;
+  margin-bottom: 6px;
+}
+.qedit-choice {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+.qedit-choice input[type='radio'] {
+  width: 16px;
+  height: 16px;
+  flex: none;
+  accent-color: #22c55e;
+  cursor: pointer;
+}
+.qedit-choice input[type='text'],
+.qedit-choice input:not([type]) {
+  flex: 1;
+  min-width: 0;
+  padding: 6px 8px;
+  border-radius: 7px;
+  border: 1px solid #334155;
+  background: #111c33;
+  color: #e2e8f0;
+  font-size: 13px;
+  font-family: inherit;
+}
+.linkbtn {
+  background: none;
+  border: none;
+  color: #93c5fd;
+  cursor: pointer;
+  font-size: 12px;
+  padding: 2px 4px;
+}
+.linkbtn:hover {
+  text-decoration: underline;
+}
+
+/* ---- Play-mode quiz (inside the challenge modal, light card) ---- */
+.quiz-q {
+  margin-bottom: 14px;
+}
+.quiz-qtext {
+  font-weight: 700;
+  font-size: 0.95rem;
+  margin-bottom: 8px;
+  color: #1f2937;
+}
+.quiz-choice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  text-align: left;
+  padding: 9px 12px;
+  margin-bottom: 6px;
+  border-radius: 9px;
+  border: 2px solid #d6cfbf;
+  background: #fffdf7;
+  color: #1f2937;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+.quiz-choice:disabled {
+  cursor: default;
+}
+.quiz-choice--picked {
+  border-color: #2563eb;
+  background: #eff4ff;
+}
+.quiz-choice--correct {
+  border-color: #16a34a;
+  background: #e9f9ee;
+  font-weight: 700;
+}
+.quiz-choice--wrong {
+  border-color: #dc2626;
+  background: #fdecec;
+}
+.quiz-mark {
+  font-weight: 800;
+}
+.quiz-score {
+  text-align: center;
+  font-weight: 800;
+  font-size: 1.05rem;
+  margin: 4px 0 12px;
+  color: #1f2937;
+}
+
 /* Checkbox toggle row */
 .toggle {
   display: flex;

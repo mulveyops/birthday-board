@@ -17,6 +17,15 @@ export interface LatLng {
   lng: number;
 }
 
+/** One multiple-choice trivia question authored on a challenge square. */
+export interface TriviaQuestion {
+  q: string;
+  /** 2–4 answer options. */
+  choices: string[];
+  /** Index into `choices` of the correct answer. */
+  correct: number;
+}
+
 export interface Square extends LatLng {
   id: string;
   type: SquareType;
@@ -24,6 +33,8 @@ export interface Square extends LatLng {
   notes: string;
   /** Coins awarded, or the magnitude/difficulty of the square. */
   reward: number;
+  /** Multiple-choice trivia for a challenge square; auto-scored in play. */
+  questions?: TriviaQuestion[];
 }
 
 /** A path connecting two squares. Directed = one-way (from → to). */

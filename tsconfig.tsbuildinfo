@@ -1,0 +1,1 @@
+{"root":["./src/app.tsx","./src/boardcanvas.tsx","./src/mapboard.tsx","./src/boardstore.ts","./src/generate.ts","./src/main.tsx","./src/net.ts","./src/snap.ts","./src/squaretypes.ts","./src/supabase.ts","./src/types.ts","./src/vite-env.d.ts"],"version":"5.9.3"}

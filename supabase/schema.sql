@@ -118,3 +118,21 @@ begin
     );
   end loop;
 end $$;
+
+-- ---------------------------------------------------------------------------
+-- Designer cloud sync: shared, named board layouts (see board_layouts.sql).
+-- ---------------------------------------------------------------------------
+create table if not exists public.board_layouts (
+  id          uuid primary key default gen_random_uuid(),
+  name        text not null,
+  board       jsonb not null,
+  updated_by  text,
+  updated_at  timestamptz not null default now(),
+  created_at  timestamptz not null default now()
+);
+create index if not exists board_layouts_updated_idx on public.board_layouts(updated_at desc);
+alter publication supabase_realtime add table public.board_layouts;
+alter table public.board_layouts enable row level security;
+drop policy if exists open_all on public.board_layouts;
+create policy open_all on public.board_layouts
+  for all to anon, authenticated using (true) with check (true);

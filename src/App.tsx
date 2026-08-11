@@ -37,6 +37,16 @@ import {
   updateGameConfig,
   PARTY_CONFIG,
   TEST_CONFIG,
+  deviceId,
+  listLayouts,
+  getLayout,
+  createLayout,
+  saveLayout,
+  renameLayout,
+  deleteLayout,
+  subscribeLayouts,
+  isNoTableError,
+  type LayoutMeta,
   type Membership,
   type GameRow,
   type TeamRow,
@@ -113,12 +123,207 @@ export default function App() {
   const [recage, setRecage] = useState(0);
   const jsonInputRef = useRef<HTMLInputElement>(null);
 
+  // --- Cloud layouts (shared, named boards saved to Supabase) ----------------
+  type CloudStatus = 'offline' | 'idle' | 'loading' | 'saving' | 'saved' | 'error' | 'needs-setup';
+  const [layouts, setLayouts] = useState<LayoutMeta[]>([]);
+  const [currentLayoutId, setCurrentLayoutId] = useState<string | null>(null);
+  const [cloudStatus, setCloudStatus] = useState<CloudStatus>(isConfigured ? 'idle' : 'offline');
+  const [remoteNewer, setRemoteNewer] = useState(false);
+  const currentLayoutIdRef = useRef<string | null>(null);
+  const lastSavedAtRef = useRef<string | null>(null); // timestamp of our last write/load (echo suppression)
+  const skipSaveRef = useRef(false); // set true right before a programmatic setBoard so it doesn't re-save
+  const saveTimerRef = useRef<number | undefined>(undefined);
+  const pendingSaveRef = useRef<{ id: string; board: Board } | null>(null);
+  const CURRENT_KEY = 'mke-current-layout-v1';
+
   const phase = board.phase;
   const bumpCage = () => setRecage((n) => n + 1);
 
   useEffect(() => {
     saveBoard(board);
   }, [board]);
+
+  useEffect(() => {
+    currentLayoutIdRef.current = currentLayoutId;
+  }, [currentLayoutId]);
+
+  // Backfill fields on a board loaded from the cloud (same as importJson).
+  function hydrateBoard(b: Board): Board {
+    if (!b.phase) b.phase = 'area';
+    if (typeof b.padding !== 'number') b.padding = 0.04;
+    if (!Array.isArray(b.edges)) b.edges = [];
+    if (typeof b.enforceDirection !== 'boolean') b.enforceDirection = false;
+    if (typeof b.locked !== 'boolean') b.locked = false;
+    return b;
+  }
+
+  // Write any pending edit to its layout NOW (used before switching layouts).
+  async function flushSave(): Promise<void> {
+    const p = pendingSaveRef.current;
+    window.clearTimeout(saveTimerRef.current);
+    if (!p) return;
+    pendingSaveRef.current = null;
+    try {
+      const at = await saveLayout(p.id, p.board);
+      lastSavedAtRef.current = at;
+      if (currentLayoutIdRef.current === p.id) setCloudStatus('saved');
+    } catch {
+      setCloudStatus('error');
+    }
+  }
+
+  // Debounced autosave of the working board to the open cloud layout.
+  useEffect(() => {
+    if (!isConfigured || !currentLayoutId) return;
+    if (skipSaveRef.current) {
+      skipSaveRef.current = false;
+      return;
+    }
+    pendingSaveRef.current = { id: currentLayoutId, board };
+    setCloudStatus('saving');
+    window.clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = window.setTimeout(() => {
+      void flushSave();
+    }, 800);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [board, currentLayoutId]);
+
+  // Load a layout into the working board. discardLocal=true skips flushing local
+  // edits first (used by "Load latest" to take the remote version).
+  async function openLayout(id: string, discardLocal = false) {
+    if (discardLocal) {
+      pendingSaveRef.current = null;
+      window.clearTimeout(saveTimerRef.current);
+    } else {
+      await flushSave();
+    }
+    setCloudStatus('loading');
+    try {
+      const res = await getLayout(id);
+      skipSaveRef.current = true;
+      lastSavedAtRef.current = res.updated_at;
+      setCurrentLayoutId(id);
+      currentLayoutIdRef.current = id;
+      localStorage.setItem(CURRENT_KEY, id);
+      setBoard(hydrateBoard(res.board));
+      setSelectedId(null);
+      setSelectedVertex(null);
+      setSelectedEdgeId(null);
+      setMode('select');
+      setRemoteNewer(false);
+      bumpCage();
+      setCloudStatus('saved');
+    } catch (e) {
+      setCloudStatus('error');
+      throw e;
+    }
+  }
+
+  // Initial load + realtime subscription (once).
+  useEffect(() => {
+    if (!isConfigured) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const list = await listLayouts();
+        if (cancelled) return;
+        setLayouts(list);
+        const saved = localStorage.getItem(CURRENT_KEY);
+        const toOpen = saved && list.some((l) => l.id === saved) ? saved : list[0]?.id ?? null;
+        if (toOpen) await openLayout(toOpen);
+        else setCloudStatus('idle');
+      } catch (e) {
+        if (cancelled) return;
+        setCloudStatus(isNoTableError(e) ? 'needs-setup' : 'error');
+      }
+    })();
+    const unsub = subscribeLayouts((c) => {
+      listLayouts().then(setLayouts).catch(() => {});
+      const row = c.new;
+      if (
+        c.eventType !== 'DELETE' &&
+        row &&
+        row.id === currentLayoutIdRef.current &&
+        row.updated_by &&
+        row.updated_by !== deviceId() &&
+        row.updated_at !== lastSavedAtRef.current
+      ) {
+        setRemoteNewer(true);
+      }
+    });
+    return () => {
+      cancelled = true;
+      unsub();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Create a fresh blank layout, or duplicate the current working board.
+  async function newLayout(fromCurrent: boolean) {
+    const suggested = fromCurrent
+      ? `${layouts.find((l) => l.id === currentLayoutId)?.name ?? 'Layout'} copy`
+      : `Version ${String.fromCharCode(65 + layouts.length)}`;
+    const name = prompt(fromCurrent ? 'Name for the duplicate' : 'Name this new layout', suggested);
+    if (!name?.trim()) return;
+    await flushSave();
+    setCloudStatus('saving');
+    try {
+      const meta = await createLayout(name.trim(), fromCurrent ? board : hydrateBoard(defaultBoard()));
+      skipSaveRef.current = true;
+      lastSavedAtRef.current = meta.updated_at;
+      setCurrentLayoutId(meta.id);
+      currentLayoutIdRef.current = meta.id;
+      localStorage.setItem(CURRENT_KEY, meta.id);
+      if (!fromCurrent) {
+        setBoard(hydrateBoard(defaultBoard()));
+        setSelectedId(null);
+        setSelectedVertex(null);
+        setSelectedEdgeId(null);
+        setMode('select');
+        bumpCage();
+      }
+      setLayouts(await listLayouts());
+      setCloudStatus('saved');
+    } catch {
+      setCloudStatus('error');
+    }
+  }
+
+  async function renameCurrentLayout() {
+    if (!currentLayoutId) return;
+    const cur = layouts.find((l) => l.id === currentLayoutId);
+    const name = prompt('Rename layout', cur?.name ?? '');
+    if (!name?.trim()) return;
+    try {
+      await renameLayout(currentLayoutId, name.trim());
+      setLayouts(await listLayouts());
+    } catch {
+      setCloudStatus('error');
+    }
+  }
+
+  async function deleteCurrentLayout() {
+    if (!currentLayoutId) return;
+    const cur = layouts.find((l) => l.id === currentLayoutId);
+    if (!confirm(`Delete "${cur?.name ?? 'this layout'}" for everyone? This can't be undone.`)) return;
+    const id = currentLayoutId;
+    pendingSaveRef.current = null;
+    window.clearTimeout(saveTimerRef.current);
+    try {
+      await deleteLayout(id);
+      const remaining = (await listLayouts()).filter((l) => l.id !== id);
+      setLayouts(remaining);
+      if (remaining.length) await openLayout(remaining[0].id, true);
+      else {
+        setCurrentLayoutId(null);
+        currentLayoutIdRef.current = null;
+        localStorage.removeItem(CURRENT_KEY);
+        setCloudStatus('idle');
+      }
+    } catch {
+      setCloudStatus('error');
+    }
+  }
 
   const selected = useMemo(
     () => board.squares.find((s) => s.id === selectedId) ?? null,
@@ -1255,6 +1460,76 @@ export default function App() {
         )}
 
         <section className="panel">
+          <h2>☁ Board layouts</h2>
+          {cloudStatus === 'needs-setup' ? (
+            <p className="hint">
+              Cloud sync needs a one-time setup — run <code>supabase/board_layouts.sql</code> in your
+              Supabase SQL editor, then reload.
+            </p>
+          ) : cloudStatus === 'offline' ? (
+            <p className="hint">Cloud sync is off (Supabase not configured). Boards save to this browser only.</p>
+          ) : (
+            <>
+              {layouts.length > 0 ? (
+                <label className="field">
+                  <span>Editing (shared — changes sync live)</span>
+                  <select
+                    value={currentLayoutId ?? ''}
+                    onChange={(e) => {
+                      if (e.target.value) void openLayout(e.target.value);
+                    }}
+                  >
+                    {!currentLayoutId && <option value="">— pick a layout —</option>}
+                    {layouts.map((l) => (
+                      <option key={l.id} value={l.id}>
+                        {l.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              ) : (
+                <p className="hint">No shared layouts yet — create one to start editing together.</p>
+              )}
+              <div className="row">
+                <button className="btn" onClick={() => void newLayout(false)}>
+                  ＋ New
+                </button>
+                <button className="btn" onClick={() => void newLayout(true)} disabled={!currentLayoutId}>
+                  ⧉ Duplicate
+                </button>
+              </div>
+              <div className="row">
+                <button className="btn btn--ghost" onClick={() => void renameCurrentLayout()} disabled={!currentLayoutId}>
+                  Rename
+                </button>
+                <button className="btn btn--ghost" onClick={() => void deleteCurrentLayout()} disabled={!currentLayoutId}>
+                  Delete
+                </button>
+              </div>
+              <p className="hint">
+                {cloudStatus === 'saving'
+                  ? 'Saving…'
+                  : cloudStatus === 'loading'
+                    ? 'Loading…'
+                    : cloudStatus === 'error'
+                      ? '⚠ Sync error — your next edit will retry.'
+                      : currentLayoutId
+                        ? 'All changes saved ✓'
+                        : 'Pick or create a layout to sync.'}
+              </p>
+              {remoteNewer && (
+                <div className="cloud-alert">
+                  <span>✏️ A newer version was saved on another device.</span>
+                  <button className="btn" onClick={() => currentLayoutId && void openLayout(currentLayoutId, true)}>
+                    ↻ Load latest
+                  </button>
+                </div>
+              )}
+            </>
+          )}
+        </section>
+
+        <section className="panel">
           <h2>Board file</h2>
           <div className="row">
             <button className="btn" onClick={exportJson}>Export JSON</button>
@@ -1274,7 +1549,13 @@ export default function App() {
           <button
             className="btn btn--ghost"
             onClick={() => {
-              if (confirm('Reset the whole board? Area, spaces, and paths will be lost.')) {
+              if (
+                confirm(
+                  currentLayoutId
+                    ? 'Clear this layout? Area, spaces, and paths will be wiped for everyone (Duplicate first to keep a copy).'
+                    : 'Reset the whole board? Area, spaces, and paths will be lost.',
+                )
+              ) {
                 setBoard(defaultBoard());
                 setSelectedId(null);
                 setSelectedVertex(null);
@@ -1286,7 +1567,7 @@ export default function App() {
           >
             Reset board
           </button>
-          <p className="hint">{board.squares.length} spaces · autosaved to this browser</p>
+          <p className="hint">{board.squares.length} spaces · Export a JSON backup anytime</p>
         </section>
         </>
         )}

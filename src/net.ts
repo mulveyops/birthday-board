@@ -53,6 +53,105 @@ export function saveMembership(m: Membership | null) {
   else localStorage.removeItem(MEMBER_KEY);
 }
 
+// ---------------------------------------------------------------------------
+// Designer: shared, named board layouts. Steven & Abby edit the same boards
+// from any device, and keep several named versions to switch between.
+// ---------------------------------------------------------------------------
+
+export interface LayoutMeta {
+  id: string;
+  name: string;
+  updated_at: string;
+  updated_by: string | null;
+}
+
+/** True when an error means the board_layouts table hasn't been created yet.
+ * PostgREST surfaces a schema-cache miss as PGRST205; raw Postgres uses 42P01. */
+export function isNoTableError(e: unknown): boolean {
+  const code = (e as { code?: string })?.code;
+  return code === 'PGRST205' || code === '42P01';
+}
+
+export async function listLayouts(): Promise<LayoutMeta[]> {
+  assertConfigured();
+  const { data, error } = await supabase
+    .from('board_layouts')
+    .select('id, name, updated_at, updated_by')
+    .order('updated_at', { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as LayoutMeta[];
+}
+
+export async function getLayout(id: string): Promise<{ board: Board; name: string; updated_at: string }> {
+  assertConfigured();
+  const { data, error } = await supabase
+    .from('board_layouts')
+    .select('board, name, updated_at')
+    .eq('id', id)
+    .single();
+  if (error) throw error;
+  return data as { board: Board; name: string; updated_at: string };
+}
+
+/** Save the given board as a brand-new named layout. */
+export async function createLayout(name: string, board: Board): Promise<LayoutMeta> {
+  assertConfigured();
+  const now = new Date().toISOString();
+  const { data, error } = await supabase
+    .from('board_layouts')
+    .insert({ name, board, updated_by: deviceId(), updated_at: now })
+    .select('id, name, updated_at, updated_by')
+    .single();
+  if (error) throw error;
+  return data as LayoutMeta;
+}
+
+/** Overwrite a layout's board. Returns the timestamp we stamped (for echo suppression). */
+export async function saveLayout(id: string, board: Board): Promise<string> {
+  assertConfigured();
+  const now = new Date().toISOString();
+  const { error } = await supabase
+    .from('board_layouts')
+    .update({ board, updated_by: deviceId(), updated_at: now })
+    .eq('id', id);
+  if (error) throw error;
+  return now;
+}
+
+export async function renameLayout(id: string, name: string): Promise<void> {
+  assertConfigured();
+  const { error } = await supabase.from('board_layouts').update({ name }).eq('id', id);
+  if (error) throw error;
+}
+
+export async function deleteLayout(id: string): Promise<void> {
+  assertConfigured();
+  const { error } = await supabase.from('board_layouts').delete().eq('id', id);
+  if (error) throw error;
+}
+
+export interface LayoutChange {
+  eventType: 'INSERT' | 'UPDATE' | 'DELETE';
+  new: (Partial<LayoutMeta> & { id?: string }) | null;
+  old: { id?: string } | null;
+}
+/** Realtime: any layout added/edited/removed on another device. */
+export function subscribeLayouts(onChange: (c: LayoutChange) => void) {
+  const ch = supabase
+    .channel('board_layouts')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'board_layouts' }, (payload) => {
+      onChange({
+        eventType: payload.eventType as LayoutChange['eventType'],
+        new: (payload.new as Partial<LayoutMeta>) ?? null,
+        old: (payload.old as { id?: string }) ?? null,
+      });
+    })
+    .subscribe();
+  return () => {
+    supabase.removeChannel(ch);
+  };
+}
+
 const CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'; // no ambiguous chars
 function randomCode(len = 5): string {
   let s = '';

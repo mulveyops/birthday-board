@@ -164,6 +164,33 @@ body {
   color: #94a3b8;
   margin: 6px 0 0;
 }
+.hint code {
+  background: #0b1220;
+  border: 1px solid #334155;
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-size: 11px;
+  color: #cbd5e1;
+}
+
+/* Prompt shown when someone else saved a newer version of the open layout. */
+.cloud-alert {
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 9px;
+  border: 1px solid #b45309;
+  background: #2a1c0b;
+  color: #fde9c8;
+  font-size: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.cloud-alert .btn {
+  margin-top: 0;
+  background: #b45309;
+  border-color: #b45309;
+}
 
 .palette {
   display: grid;

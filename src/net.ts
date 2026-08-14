@@ -156,12 +156,16 @@ export function subscribeLayouts(onChange: (c: LayoutChange) => void) {
 // RSVP: public guest form → collected submissions (admin reads them).
 // ---------------------------------------------------------------------------
 
+export interface RsvpGuest {
+  first: string;
+  last: string;
+}
 export interface RsvpInput {
   name: string;
   coming: 'yes' | 'no' | 'maybe';
-  plus_ones: number;
+  guests: RsvpGuest[];
   drinking: boolean;
-  duration: 'whole' | 'parts' | '';
+  duration: 'whole' | 'mid' | 'post' | '';
   group_pref: 'know' | 'meet' | 'dontcare' | '';
   note: string;
 }
@@ -172,7 +176,8 @@ export interface RsvpRow extends RsvpInput {
 
 export async function submitRsvp(r: RsvpInput): Promise<void> {
   assertConfigured();
-  const { error } = await supabase.from('rsvps').insert(r);
+  // plus_ones is kept in sync with the guest list for at-a-glance tallies.
+  const { error } = await supabase.from('rsvps').insert({ ...r, plus_ones: r.guests.length });
   if (error) throw error;
 }
 
@@ -180,10 +185,13 @@ export async function listRsvps(): Promise<RsvpRow[]> {
   assertConfigured();
   const { data, error } = await supabase
     .from('rsvps')
-    .select('id, name, coming, plus_ones, drinking, duration, group_pref, note, created_at')
+    .select('id, name, coming, guests, drinking, duration, group_pref, note, created_at')
     .order('created_at', { ascending: false });
   if (error) throw error;
-  return (data ?? []) as RsvpRow[];
+  return (data ?? []).map((r) => ({
+    ...(r as RsvpRow),
+    guests: Array.isArray((r as RsvpRow).guests) ? (r as RsvpRow).guests : [],
+  }));
 }
 
 const CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'; // no ambiguous chars

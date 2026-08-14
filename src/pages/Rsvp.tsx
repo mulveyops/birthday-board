@@ -6,7 +6,7 @@ import { isConfigured } from '../supabase';
 const BLANK: RsvpInput = {
   name: '',
   coming: 'yes',
-  plus_ones: 0,
+  guests: [],
   drinking: false,
   duration: 'whole',
   group_pref: 'dontcare',
@@ -18,14 +18,22 @@ export default function Rsvp() {
   const [status, setStatus] = useState<'idle' | 'sending' | 'done' | 'error'>('idle');
   const set = <K extends keyof RsvpInput>(k: K, v: RsvpInput[K]) => setForm((f) => ({ ...f, [k]: v }));
 
+  const addGuest = () => setForm((f) => ({ ...f, guests: [...f.guests, { first: '', last: '' }] }));
+  const removeGuest = (i: number) => setForm((f) => ({ ...f, guests: f.guests.filter((_, j) => j !== i) }));
+  const setGuest = (i: number, k: 'first' | 'last', v: string) =>
+    setForm((f) => ({ ...f, guests: f.guests.map((g, j) => (j === i ? { ...g, [k]: v } : g)) }));
+
   async function submit() {
     if (!form.name.trim()) {
       alert('Please add your name.');
       return;
     }
+    const guests = form.guests
+      .map((g) => ({ first: g.first.trim(), last: g.last.trim() }))
+      .filter((g) => g.first || g.last);
     setStatus('sending');
     try {
-      await submitRsvp({ ...form, name: form.name.trim() });
+      await submitRsvp({ ...form, name: form.name.trim(), guests });
       setStatus('done');
     } catch (e) {
       setStatus('error');
@@ -37,12 +45,11 @@ export default function Rsvp() {
     return (
       <div className="site">
         <div className="site-card site-card--narrow">
-          <div className="site-emoji">🥳</div>
-          <h1>Thank you{form.name ? `, ${form.name.split(' ')[0]}` : ''}!</h1>
-          <p className="site-lead">Your RSVP is in. We can't wait to see you on Aug 22.</p>
+          <h1>Thank you{form.name ? `, ${form.name.split(' ')[0]}` : ''}</h1>
+          <p className="site-lead">Your RSVP is in. We can't wait to see you on August 22.</p>
           <div className="site-actions">
             <button className="site-btn" onClick={() => navigate('/')}>
-              ← Back home
+              Back home
             </button>
           </div>
         </div>
@@ -57,26 +64,30 @@ export default function Rsvp() {
           ← Home
         </button>
         <h1>RSVP</h1>
-        <p className="site-lead">Abby &amp; Steven's Birthday · Aug 22, 2:00 PM</p>
+        <p className="site-lead">Abby &amp; Steven's Birthday · August 22, 2:00 PM</p>
 
         {!isConfigured && <p className="site-error">Form isn't connected yet — check back shortly.</p>}
 
         <label className="rsvp-field">
           <span>Your name</span>
-          <input value={form.name} onChange={(e) => set('name', e.target.value)} placeholder="First &amp; last" />
+          <input value={form.name} onChange={(e) => set('name', e.target.value)} placeholder="First and last" />
         </label>
 
         <div className="rsvp-field">
           <span>Are you coming?</span>
           <div className="rsvp-choices">
-            {(['yes', 'no', 'maybe'] as const).map((v) => (
+            {([
+              ['yes', 'Yes'],
+              ['no', "Can't make it"],
+              ['maybe', 'Maybe'],
+            ] as const).map(([v, label]) => (
               <button
                 key={v}
                 type="button"
                 className={`rsvp-chip ${form.coming === v ? 'rsvp-chip--on' : ''}`}
                 onClick={() => set('coming', v)}
               >
-                {v === 'yes' ? "Yes! 🎉" : v === 'no' ? "Can't make it" : 'Maybe'}
+                {label}
               </button>
             ))}
           </div>
@@ -84,16 +95,21 @@ export default function Rsvp() {
 
         {form.coming !== 'no' && (
           <>
-            <label className="rsvp-field">
-              <span>Bringing anyone? (how many extra people)</span>
-              <input
-                type="number"
-                min={0}
-                max={10}
-                value={form.plus_ones}
-                onChange={(e) => set('plus_ones', Math.max(0, Math.min(10, Number(e.target.value) || 0)))}
-              />
-            </label>
+            <div className="rsvp-field">
+              <span>Bringing anyone? Add each guest's name.</span>
+              {form.guests.map((g, i) => (
+                <div className="guest-row" key={i}>
+                  <input placeholder="First name" value={g.first} onChange={(e) => setGuest(i, 'first', e.target.value)} />
+                  <input placeholder="Last name" value={g.last} onChange={(e) => setGuest(i, 'last', e.target.value)} />
+                  <button type="button" className="guest-remove" onClick={() => removeGuest(i)}>
+                    Remove
+                  </button>
+                </div>
+              ))}
+              <button type="button" className="guest-add" onClick={addGuest}>
+                + Add a guest
+              </button>
+            </div>
 
             <div className="rsvp-field">
               <span>Will you be drinking?</span>
@@ -103,29 +119,33 @@ export default function Rsvp() {
                   className={`rsvp-chip ${form.drinking ? 'rsvp-chip--on' : ''}`}
                   onClick={() => set('drinking', true)}
                 >
-                  🍺 Drinking
+                  Drinking
                 </button>
                 <button
                   type="button"
                   className={`rsvp-chip ${!form.drinking ? 'rsvp-chip--on' : ''}`}
                   onClick={() => set('drinking', false)}
                 >
-                  🚫 Nah
+                  Not drinking
                 </button>
               </div>
             </div>
 
             <div className="rsvp-field">
-              <span>The whole time, or just part?</span>
+              <span>How much can you make?</span>
               <div className="rsvp-choices">
-                {(['whole', 'parts'] as const).map((v) => (
+                {([
+                  ['whole', 'Whole game'],
+                  ['mid', 'Arrive midgame'],
+                  ['post', 'Arrive post-game'],
+                ] as const).map(([v, label]) => (
                   <button
                     key={v}
                     type="button"
                     className={`rsvp-chip ${form.duration === v ? 'rsvp-chip--on' : ''}`}
                     onClick={() => set('duration', v)}
                   >
-                    {v === 'whole' ? 'The whole time' : 'Just part of it'}
+                    {label}
                   </button>
                 ))}
               </div>

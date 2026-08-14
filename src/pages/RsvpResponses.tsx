@@ -2,8 +2,11 @@ import { useEffect, useState } from 'react';
 import { listRsvps, type RsvpRow } from '../net';
 
 const comingLabel: Record<string, string> = { yes: 'Yes', no: 'No', maybe: 'Maybe' };
-const durationLabel: Record<string, string> = { whole: 'Whole time', parts: 'Part', '': '—' };
+const durationLabel: Record<string, string> = { whole: 'Whole game', mid: 'Midgame', post: 'Post-game', '': '—' };
 const groupLabel: Record<string, string> = { know: 'Knows people', meet: 'Meet new', dontcare: "Don't care", '': '—' };
+
+const guestNames = (r: RsvpRow) =>
+  (r.guests ?? []).map((g) => `${g.first} ${g.last}`.trim()).filter(Boolean);
 
 export default function RsvpResponses() {
   const [rows, setRows] = useState<RsvpRow[] | null>(null);
@@ -24,8 +27,8 @@ export default function RsvpResponses() {
   const yes = rows?.filter((r) => r.coming === 'yes') ?? [];
   const maybe = rows?.filter((r) => r.coming === 'maybe') ?? [];
   const no = rows?.filter((r) => r.coming === 'no') ?? [];
-  // Headcount = each "yes" guest + their plus-ones.
-  const headcount = yes.reduce((n, r) => n + 1 + (r.plus_ones || 0), 0);
+  // Headcount = each "yes" respondent + the guests they're bringing.
+  const headcount = yes.reduce((n, r) => n + 1 + guestNames(r).length, 0);
   const drinkers = yes.filter((r) => r.drinking).length;
 
   return (
@@ -33,7 +36,7 @@ export default function RsvpResponses() {
       <div className="responses-head">
         <h2>RSVP responses</h2>
         <button className="site-btn" onClick={load}>
-          ↻ Refresh
+          Refresh
         </button>
       </div>
 
@@ -74,25 +77,28 @@ export default function RsvpResponses() {
                   <tr>
                     <th>Name</th>
                     <th>Coming</th>
-                    <th>+</th>
+                    <th>Guests</th>
                     <th>Drinking</th>
-                    <th>Duration</th>
+                    <th>Timing</th>
                     <th>Group</th>
                     <th>Note</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {rows.map((r) => (
-                    <tr key={r.id} className={r.coming === 'no' ? 'row--dim' : ''}>
-                      <td>{r.name}</td>
-                      <td>{comingLabel[r.coming] ?? r.coming}</td>
-                      <td>{r.plus_ones || ''}</td>
-                      <td>{r.coming !== 'no' ? (r.drinking ? '🍺' : '—') : ''}</td>
-                      <td>{r.coming !== 'no' ? durationLabel[r.duration] : ''}</td>
-                      <td>{r.coming !== 'no' ? groupLabel[r.group_pref] : ''}</td>
-                      <td className="note-cell">{r.note}</td>
-                    </tr>
-                  ))}
+                  {rows.map((r) => {
+                    const names = guestNames(r);
+                    return (
+                      <tr key={r.id} className={r.coming === 'no' ? 'row--dim' : ''}>
+                        <td>{r.name}</td>
+                        <td>{comingLabel[r.coming] ?? r.coming}</td>
+                        <td className="guests-cell">{names.length ? `${names.length}: ${names.join(', ')}` : '—'}</td>
+                        <td>{r.coming !== 'no' ? (r.drinking ? 'Yes' : '—') : ''}</td>
+                        <td>{r.coming !== 'no' ? durationLabel[r.duration] : ''}</td>
+                        <td>{r.coming !== 'no' ? groupLabel[r.group_pref] : ''}</td>
+                        <td className="note-cell">{r.note}</td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

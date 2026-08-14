@@ -20,7 +20,6 @@ export default function Admin() {
           <button className="site-back" onClick={() => navigate('/')}>
             ← Home
           </button>
-          <div className="site-emoji">🔒</div>
           <h1>Admin</h1>
           <label className="rsvp-field">
             <span>Password</span>
@@ -61,10 +60,10 @@ export default function Admin() {
       <div className="admin-bar">
         <span className="admin-title">Admin</span>
         <button className={`admin-tab ${tab === 'builder' ? 'admin-tab--on' : ''}`} onClick={() => setTab('builder')}>
-          🎲 Board builder
+          Board builder
         </button>
         <button className={`admin-tab ${tab === 'rsvps' ? 'admin-tab--on' : ''}`} onClick={() => setTab('rsvps')}>
-          ✉️ RSVPs
+          RSVPs
         </button>
         <button className="admin-tab" onClick={() => navigate('/')}>
           ← Site

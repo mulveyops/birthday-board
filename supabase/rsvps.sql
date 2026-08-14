@@ -6,13 +6,16 @@ create table if not exists public.rsvps (
   id          uuid primary key default gen_random_uuid(),
   name        text not null,
   coming      text not null,                         -- yes | no | maybe
-  plus_ones   integer not null default 0,
+  guests      jsonb not null default '[]'::jsonb,    -- [{ first, last }, …] extra people
+  plus_ones   integer not null default 0,            -- kept in sync = guests length
   drinking    boolean not null default false,
-  duration    text,                                  -- whole | parts
+  duration    text,                                  -- whole | mid | post
   group_pref  text,                                  -- know | meet | dontcare
   note        text,
   created_at  timestamptz not null default now()
 );
+-- If the table already exists from before, add the guests column:
+alter table public.rsvps add column if not exists guests jsonb not null default '[]'::jsonb;
 create index if not exists rsvps_created_idx on public.rsvps(created_at desc);
 
 alter table public.rsvps enable row level security;

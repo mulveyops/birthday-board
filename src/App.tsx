@@ -38,6 +38,9 @@ import {
   PARTY_CONFIG,
   TEST_CONFIG,
   deviceId,
+  adjustCoins,
+  transferCoins,
+  cfg,
   listLayouts,
   getLayout,
   createLayout,
@@ -633,6 +636,11 @@ export default function App({ variant = 'admin' }: { variant?: 'admin' | 'player
   const [events, setEvents] = useState<EventRow[]>([]);
   const [onlineBarModal, setOnlineBarModal] = useState<{ spotId: string; name: string } | null>(null);
   const [onlineQuizModal, setOnlineQuizModal] = useState<{ spotId: string; name: string } | null>(null);
+  // Online chance square: roll → gain/lose/rob. 'rob' opens a team picker.
+  const [onlineChanceModal, setOnlineChanceModal] = useState<{ spotId: string; name: string } | null>(null);
+  const [chanceOutcome, setChanceOutcome] = useState<'rob' | 'gain' | 'lose' | 'nothing' | null>(null);
+  const [chanceText, setChanceText] = useState('');
+  const [chanceBusy, setChanceBusy] = useState(false);
   const [battleModal, setBattleModal] = useState<{
     claimId: string;
     barName: string;
@@ -806,11 +814,85 @@ export default function App({ variant = 'admin' }: { variant?: 'admin' | 'player
         setOnlineQuizModal({ spotId, name: sq.title || 'Challenge' });
         return;
       }
+      // A chance square → roll for fortune (or misfortune, or a robbery).
+      if (type === 'chance') {
+        setChanceOutcome(null);
+        setChanceText('');
+        setChanceBusy(false);
+        setOnlineChanceModal({ spotId, name: sq.title || 'Chance' });
+        return;
+      }
       setOnlineCleared((c) => [...c, spotId]); // optimistic; subscription confirms coins/pos
       checkInSpot(membership.gameId, membership.teamId, spotId, sq.lat, sq.lng, onlineConfig.coinReward).catch((e) =>
         alert('Check-in failed: ' + (e as Error).message),
       );
     });
+  }
+  // Record the chance spot as cleared (once per team) without a coin reward.
+  function markChanceCleared(sq: Square) {
+    if (!membership) return;
+    setOnlineCleared((c) => (c.includes(sq.id) ? c : [...c, sq.id]));
+    checkInSpot(membership.gameId, membership.teamId, sq.id, sq.lat, sq.lng, 0).catch(() => {});
+  }
+  // Roll the chance outcome. 'rob' defers to a team picker; others resolve now.
+  async function rollOnlineChance() {
+    if (!membership || !onlineBoard || !onlineChanceModal || chanceBusy) return;
+    const sq = onlineBoard.squares.find((s) => s.id === onlineChanceModal.spotId);
+    if (!sq) return;
+    const others = teams.filter((t) => t.id !== membership.teamId);
+    const r = Math.random();
+    // Only offer a robbery if there's someone to rob.
+    if (r < 0.4 && others.length > 0) {
+      setChanceOutcome('rob');
+      return;
+    }
+    setChanceBusy(true);
+    try {
+      if (r < 0.7) {
+        const gain = 20 + Math.floor(Math.random() * 21);
+        await adjustCoins(membership.teamId, gain);
+        setChanceText(`🍀 Lucky! +${gain} 🪙`);
+        setChanceOutcome('gain');
+        await logEvent(membership.gameId, 'star', `🍀 ${myTeam?.name ?? 'A team'} hit a lucky chance (+${gain} 🪙)`);
+      } else if (r < 0.9) {
+        const loss = 10 + Math.floor(Math.random() * 16);
+        await adjustCoins(membership.teamId, -loss);
+        setChanceText(`💸 Unlucky! -${loss} 🪙`);
+        setChanceOutcome('lose');
+        await logEvent(membership.gameId, 'star', `💸 ${myTeam?.name ?? 'A team'} took an unlucky chance (-${loss} 🪙)`);
+      } else {
+        setChanceText('😐 Nothing happens.');
+        setChanceOutcome('nothing');
+      }
+      markChanceCleared(sq);
+    } catch (e) {
+      alert('Chance failed: ' + (e as Error).message);
+    } finally {
+      setChanceBusy(false);
+    }
+  }
+  // Rob the chosen rival team of a flat robAmount.
+  async function robPick(victim: TeamRow) {
+    if (!membership || !onlineBoard || !onlineChanceModal || chanceBusy) return;
+    const sq = onlineBoard.squares.find((s) => s.id === onlineChanceModal.spotId);
+    if (!sq) return;
+    setChanceBusy(true);
+    try {
+      const amount = cfg.robAmount(onlineConfig);
+      const moved = await transferCoins(victim.id, membership.teamId, amount);
+      setChanceText(`🦹 Robbed ${victim.name} for ${moved} 🪙!`);
+      setChanceOutcome('gain');
+      await logEvent(
+        membership.gameId,
+        'battle',
+        `🦹 ${myTeam?.name ?? 'A team'} robbed ${victim.name} of ${moved} 🪙`,
+      );
+      markChanceCleared(sq);
+    } catch (e) {
+      alert('Robbery failed: ' + (e as Error).message);
+    } finally {
+      setChanceBusy(false);
+    }
   }
   // Score the online trivia, then clear the spot + award scaled coins via checkInSpot.
   function resolveOnlineQuiz() {
@@ -2285,6 +2367,104 @@ export default function App({ variant = 'admin' }: { variant?: 'admin' | 'player
                           Continue
                         </button>
                       </>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+
+        {onlineChanceModal &&
+          (() => {
+            const others = teams.filter((t) => t.id !== membership?.teamId);
+            const robAmt = cfg.robAmount(onlineConfig);
+            const close = () => {
+              setOnlineChanceModal(null);
+              setChanceOutcome(null);
+              setChanceText('');
+              setChanceBusy(false);
+            };
+            return (
+              <div
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  background: 'rgba(20,16,12,0.42)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  zIndex: 1000,
+                }}
+                onClick={() => chanceText && close()}
+              >
+                <div
+                  style={{
+                    width: 340,
+                    maxWidth: '90%',
+                    maxHeight: '86%',
+                    overflowY: 'auto',
+                    background: '#fdfaf2',
+                    border: '2px solid #3f3b36',
+                    borderRadius: 14,
+                    boxShadow: '0 14px 44px rgba(0,0,0,0.38)',
+                    animation: 'pop-in 0.24s cubic-bezier(0.2,0.85,0.35,1.2)',
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div style={{ background: '#a855f7', color: '#fff', padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <span style={{ fontSize: '1.9rem', lineHeight: 1 }}>🎲</span>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontWeight: 800, fontSize: '1.05rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {onlineChanceModal.name}
+                      </div>
+                      <div style={{ fontSize: '0.7rem', opacity: 0.92, textTransform: 'uppercase', letterSpacing: 1.5 }}>Chance</div>
+                    </div>
+                  </div>
+                  <div style={{ padding: '16px 18px' }}>
+                    {chanceText ? (
+                      <>
+                        <p style={{ fontSize: '1.25rem', fontWeight: 800, textAlign: 'center', margin: '10px 0 18px' }}>{chanceText}</p>
+                        <button className="btn btn--go" style={{ width: '100%' }} onClick={close}>
+                          Continue
+                        </button>
+                      </>
+                    ) : chanceOutcome === 'rob' ? (
+                      <>
+                        <p className="hint" style={{ marginTop: 0 }}>
+                          🦹 A robbery! Pick a team to steal {robAmt} 🪙 from:
+                        </p>
+                        {others.map((t) => (
+                          <button
+                            key={t.id}
+                            className="btn"
+                            style={{ width: '100%', marginTop: 6, display: 'flex', justifyContent: 'space-between' }}
+                            disabled={chanceBusy}
+                            onClick={() => void robPick(t)}
+                          >
+                            <span>
+                              {t.emoji} {t.name}
+                            </span>
+                            <span>🪙 {t.coins}</span>
+                          </button>
+                        ))}
+                      </>
+                    ) : (
+                      <>
+                        <p className="hint" style={{ marginTop: 0 }}>Roll your luck — coins, a robbery, or a bust.</p>
+                        <button
+                          className="btn btn--go"
+                          style={{ width: '100%', fontSize: '1.05rem' }}
+                          disabled={chanceBusy}
+                          onClick={() => void rollOnlineChance()}
+                        >
+                          🎲 Roll the dice
+                        </button>
+                      </>
+                    )}
+                    {!chanceText && (
+                      <button className="btn btn--ghost" style={{ width: '100%', marginTop: 8 }} onClick={close}>
+                        Close
+                      </button>
                     )}
                   </div>
                 </div>

@@ -23,3 +23,7 @@ drop policy if exists rsvp_insert on public.rsvps;
 create policy rsvp_insert on public.rsvps for insert to anon, authenticated with check (true);
 drop policy if exists rsvp_select on public.rsvps;
 create policy rsvp_select on public.rsvps for select to anon, authenticated using (true);
+-- Admin can delete entries (test rows, dupes). Curtain-only: the anon key can
+-- delete via the API too, so this is convenience, not security.
+drop policy if exists rsvp_delete on public.rsvps;
+create policy rsvp_delete on public.rsvps for delete to anon, authenticated using (true);

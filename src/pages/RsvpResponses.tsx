@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { listRsvps, type RsvpRow } from '../net';
+import { listRsvps, deleteRsvp, type RsvpRow } from '../net';
 
 const comingLabel: Record<string, string> = { yes: 'Yes', no: 'No', maybe: 'Maybe' };
 const durationLabel: Record<string, string> = { whole: 'Whole game', mid: 'Midgame', post: 'Post-game', '': '—' };
@@ -23,6 +23,16 @@ export default function RsvpResponses() {
   useEffect(() => {
     load();
   }, []);
+
+  async function del(r: RsvpRow) {
+    if (!confirm(`Delete ${r.name}'s RSVP? This can't be undone.`)) return;
+    try {
+      await deleteRsvp(r.id);
+      setRows((rs) => (rs ? rs.filter((x) => x.id !== r.id) : rs));
+    } catch (e) {
+      alert('Delete failed: ' + (e as Error).message);
+    }
+  }
 
   const yes = rows?.filter((r) => r.coming === 'yes') ?? [];
   const maybe = rows?.filter((r) => r.coming === 'maybe') ?? [];
@@ -82,6 +92,7 @@ export default function RsvpResponses() {
                     <th>Timing</th>
                     <th>Group</th>
                     <th>Note</th>
+                    <th></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -96,6 +107,11 @@ export default function RsvpResponses() {
                         <td>{r.coming !== 'no' ? durationLabel[r.duration] : ''}</td>
                         <td>{r.coming !== 'no' ? groupLabel[r.group_pref] : ''}</td>
                         <td className="note-cell">{r.note}</td>
+                        <td>
+                          <button className="del-btn" onClick={() => del(r)} title="Delete this RSVP">
+                            Delete
+                          </button>
+                        </td>
                       </tr>
                     );
                   })}

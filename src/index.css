@@ -358,6 +358,19 @@ body {
   max-width: 220px;
   color: #475569;
 }
+.del-btn {
+  background: none;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+  border-radius: 7px;
+  padding: 4px 9px;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+.del-btn:hover {
+  background: #fef2f2;
+  border-color: #f87171;
+}
 @media (max-width: 600px) {
   .responses-table th:nth-child(5),
   .responses-table td:nth-child(5),

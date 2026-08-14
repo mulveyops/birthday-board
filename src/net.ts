@@ -181,6 +181,33 @@ export async function submitRsvp(r: RsvpInput): Promise<void> {
   if (error) throw error;
 }
 
+// ---------------------------------------------------------------------------
+// Atomic coin changes (robbing / tolls) — via SQL functions in coins.sql.
+// ---------------------------------------------------------------------------
+
+/** Add/remove coins from a team (floored at 0). Returns the new balance. */
+export async function adjustCoins(teamId: string, delta: number): Promise<number> {
+  assertConfigured();
+  const { data, error } = await supabase.rpc('adjust_coins', { p_team: teamId, p_delta: delta });
+  if (error) throw error;
+  return (data as number) ?? 0;
+}
+
+/** Move up to `amount` coins from one team to another (conserving, floored).
+ *  Returns the amount actually moved. */
+export async function transferCoins(fromId: string, toId: string, amount: number): Promise<number> {
+  assertConfigured();
+  const { data, error } = await supabase.rpc('transfer_coins', { p_from: fromId, p_to: toId, p_amount: amount });
+  if (error) throw error;
+  return (data as number) ?? 0;
+}
+
+export async function deleteRsvp(id: string): Promise<void> {
+  assertConfigured();
+  const { error } = await supabase.from('rsvps').delete().eq('id', id);
+  if (error) throw error;
+}
+
 export async function listRsvps(): Promise<RsvpRow[]> {
   assertConfigured();
   const { data, error } = await supabase
@@ -211,7 +238,13 @@ export interface GameConfig {
   spawnTtlSec: number; // how long an unclaimed drop lasts
   coinReward: number; // coins per spot check-in
   radiusM: number; // GPS check-in radius
+  robAmount: number; // coins stolen on a "rob a team" chance
 }
+
+/** Config value with a fallback (older published games lack newer fields). */
+export const cfg = {
+  robAmount: (c: Partial<GameConfig> | undefined) => c?.robAmount ?? 20,
+};
 
 export const PARTY_CONFIG: GameConfig = {
   starCost: 150,
@@ -222,6 +255,7 @@ export const PARTY_CONFIG: GameConfig = {
   spawnTtlSec: 300,
   coinReward: 15,
   radiusM: 35,
+  robAmount: 20,
 };
 export const TEST_CONFIG: GameConfig = {
   starCost: 40,
@@ -232,6 +266,7 @@ export const TEST_CONFIG: GameConfig = {
   spawnTtlSec: 40,
   coinReward: 15,
   radiusM: 35,
+  robAmount: 20,
 };
 
 export interface GameFull {

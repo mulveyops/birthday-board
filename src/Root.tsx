@@ -4,30 +4,34 @@ import Home from './pages/Home';
 import Rsvp from './pages/Rsvp';
 import Admin from './pages/Admin';
 
-/** Navigate client-side and let <Root> re-render. */
+/**
+ * Navigate client-side. We use HASH routing (#/rsvp) on purpose: the fragment
+ * never reaches the server, so deep links / refreshes always serve index.html
+ * and the app routes itself — no Render rewrite rule needed. Pass a path like
+ * "/rsvp"; it's stored as "#/rsvp".
+ */
 export function navigate(to: string) {
-  if (window.location.pathname === to) return;
-  window.history.pushState({}, '', to);
-  window.dispatchEvent(new PopStateEvent('popstate'));
+  const target = to.startsWith('#') ? to : '#' + to;
+  if (window.location.hash === target) return;
+  window.location.hash = target;
 }
 
 /**
- * Tiny path router (no dependency). Render targets:
- *   /        → Home (choose Play or RSVP)
- *   /rsvp    → public RSVP form
- *   /play    → the game, player variant (join by code)
- *   /admin   → password curtain → board builder + RSVP responses
- * Render's SPA rewrite (render.yaml) serves index.html for every path.
+ * Tiny hash router (no dependency):
+ *   (none) / #/  → Home (choose Play or RSVP)
+ *   #/rsvp       → public RSVP form
+ *   #/play       → the game, player variant (join by code)
+ *   #/admin      → password curtain → board builder + RSVP responses
  */
 export default function Root() {
-  const [path, setPath] = useState(window.location.pathname);
+  const [hash, setHash] = useState(window.location.hash);
   useEffect(() => {
-    const onPop = () => setPath(window.location.pathname);
-    window.addEventListener('popstate', onPop);
-    return () => window.removeEventListener('popstate', onPop);
+    const onHash = () => setHash(window.location.hash);
+    window.addEventListener('hashchange', onHash);
+    return () => window.removeEventListener('hashchange', onHash);
   }, []);
 
-  const p = path.replace(/\/+$/, '') || '/';
+  const p = hash.replace(/^#/, '').replace(/\/+$/, '') || '/';
   if (p === '/rsvp') return <Rsvp />;
   if (p === '/play') return <App variant="player" />;
   if (p === '/admin') return <Admin />;

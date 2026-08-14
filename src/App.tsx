@@ -109,7 +109,7 @@ function deriveNodeType(spots: Square[]): Record<string, SpotType> {
   return m;
 }
 
-export default function App() {
+export default function App({ variant = 'admin' }: { variant?: 'admin' | 'player' }) {
   const [board, setBoard] = useState<Board>(() => loadBoard());
   const [mode, setMode] = useState<Mode>('select');
   const [addType, setAddType] = useState<SquareType>('bar');
@@ -617,6 +617,10 @@ export default function App() {
     setMembership(null);
     setAppMode('design');
   }
+  // On the public /play page, drop straight into the live game once joined.
+  useEffect(() => {
+    if (variant === 'player' && membership && appMode !== 'online') setAppMode('online');
+  }, [variant, membership, appMode]);
 
   // --- Online play (slice 2: shared check-ins, coins, live board) ------------
   const [onlineBoard, setOnlineBoard] = useState<Board | null>(null);
@@ -1183,27 +1187,56 @@ export default function App() {
           <p className="sub">Lower East Side · Milwaukee</p>
         </header>
 
-        <div className="stepper">
-          <button
-            className={`step ${appMode === 'design' ? 'step--on' : ''}`}
-            onClick={() => setAppMode('design')}
-          >
-            ✎ Design
-          </button>
-          <button
-            className={`step ${appMode === 'play' ? 'step--on' : ''}`}
-            disabled={!spots.length}
-            title={spots.length ? 'Play the board' : 'Draw a board first'}
-            onClick={() => {
-              setMode('select');
-              setAppMode('play');
-            }}
-          >
-            ▶ Play
-          </button>
-        </div>
+        {variant === 'admin' && (
+          <div className="stepper">
+            <button
+              className={`step ${appMode === 'design' ? 'step--on' : ''}`}
+              onClick={() => setAppMode('design')}
+            >
+              ✎ Design
+            </button>
+            <button
+              className={`step ${appMode === 'play' ? 'step--on' : ''}`}
+              disabled={!spots.length}
+              title={spots.length ? 'Play the board' : 'Draw a board first'}
+              onClick={() => {
+                setMode('select');
+                setAppMode('play');
+              }}
+            >
+              ▶ Play
+            </button>
+          </div>
+        )}
 
-        {appMode === 'play' ? (
+        {variant === 'player' && appMode !== 'online' ? (
+          <section className="panel">
+            <h2>🎮 Join the game</h2>
+            <p className="hint">Enter the code your host gives you at the party.</p>
+            <label className="field">
+              <span>Game code</span>
+              <input
+                value={joinCode}
+                onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
+                placeholder="GAME CODE"
+              />
+            </label>
+            <label className="field">
+              <span>Team name</span>
+              <input value={joinName} onChange={(e) => setJoinName(e.target.value)} placeholder="Team name" />
+            </label>
+            <label className="field">
+              <span>Team emoji</span>
+              <input value={joinEmoji} onChange={(e) => setJoinEmoji(e.target.value)} maxLength={2} style={{ width: 72 }} />
+            </label>
+            <button className="btn btn--go" onClick={doJoin} disabled={netBusy}>
+              {netBusy ? '…' : 'Join game'}
+            </button>
+            <p className="hint" style={{ marginTop: 10 }}>
+              No code yet? The game goes live at the party — check back then.
+            </p>
+          </section>
+        ) : appMode === 'play' ? (
           <section className="panel">
             <h2>▶ Play — desktop sim</h2>
             <p className="hint">Click a node to check in · grab 🎁 drops · claim ⭐ at bars.</p>
@@ -1269,8 +1302,11 @@ export default function App() {
                 ))
               )}
             </div>
-            <button className="btn btn--ghost" onClick={() => setAppMode('design')}>
-              Exit to design
+            <button
+              className="btn btn--ghost"
+              onClick={() => (variant === 'player' ? leaveGame() : setAppMode('design'))}
+            >
+              {variant === 'player' ? 'Leave game' : 'Exit to design'}
             </button>
           </section>
         ) : (
@@ -1701,6 +1737,7 @@ export default function App() {
         </>
         )}
 
+        {variant === 'admin' && (
         <section className="panel">
           <h2>
             🌐 Multiplayer <span style={{ fontSize: '0.68rem', opacity: 0.65, fontWeight: 400 }}>beta</span>
@@ -1817,6 +1854,7 @@ export default function App() {
             </>
           )}
         </section>
+        )}
       </aside>
 
       <main className="map-wrap">

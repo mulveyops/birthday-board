@@ -152,6 +152,40 @@ export function subscribeLayouts(onChange: (c: LayoutChange) => void) {
   };
 }
 
+// ---------------------------------------------------------------------------
+// RSVP: public guest form → collected submissions (admin reads them).
+// ---------------------------------------------------------------------------
+
+export interface RsvpInput {
+  name: string;
+  coming: 'yes' | 'no' | 'maybe';
+  plus_ones: number;
+  drinking: boolean;
+  duration: 'whole' | 'parts' | '';
+  group_pref: 'know' | 'meet' | 'dontcare' | '';
+  note: string;
+}
+export interface RsvpRow extends RsvpInput {
+  id: string;
+  created_at: string;
+}
+
+export async function submitRsvp(r: RsvpInput): Promise<void> {
+  assertConfigured();
+  const { error } = await supabase.from('rsvps').insert(r);
+  if (error) throw error;
+}
+
+export async function listRsvps(): Promise<RsvpRow[]> {
+  assertConfigured();
+  const { data, error } = await supabase
+    .from('rsvps')
+    .select('id, name, coming, plus_ones, drinking, duration, group_pref, note, created_at')
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as RsvpRow[];
+}
+
 const CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'; // no ambiguous chars
 function randomCode(len = 5): string {
   let s = '';

@@ -19,6 +19,301 @@ body {
   overflow: hidden;
 }
 
+/* ===================================================================== */
+/* Public site pages (Home, RSVP, Admin gate) — festive light theme.     */
+/* ===================================================================== */
+.site {
+  position: relative;
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+  background: linear-gradient(160deg, #6d28d9 0%, #2563eb 55%, #0ea5e9 100%);
+}
+.site-card {
+  width: 100%;
+  max-width: 560px;
+  background: #fffdf7;
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.28);
+  padding: 30px 26px;
+  text-align: center;
+}
+.site-card--narrow {
+  max-width: 460px;
+  text-align: left;
+}
+.site-hero {
+  margin-bottom: 8px;
+}
+.site-emoji {
+  font-size: 3rem;
+  line-height: 1;
+}
+.site-card h1 {
+  margin: 10px 0 4px;
+  font-size: 1.8rem;
+  color: #1f2937;
+}
+.site-date {
+  margin: 0;
+  color: #6d28d9;
+  font-weight: 700;
+  font-size: 0.98rem;
+}
+.site-lead {
+  color: #475569;
+  font-size: 1rem;
+  line-height: 1.5;
+  margin: 14px 0;
+}
+.site-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin: 20px 0 6px;
+}
+.site-btn {
+  flex: 1 1 auto;
+  min-width: 150px;
+  padding: 14px 18px;
+  border-radius: 12px;
+  border: 2px solid #cbd5e1;
+  background: #fff;
+  color: #1f2937;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.site-btn:hover {
+  border-color: #2563eb;
+}
+.site-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.site-btn--primary {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #fff;
+}
+.site-btn--primary:hover {
+  filter: brightness(1.07);
+}
+.site-note {
+  color: #94a3b8;
+  font-size: 0.82rem;
+  margin: 10px 0 0;
+}
+.site-error {
+  color: #b91c1c;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 0.85rem;
+}
+.site-back,
+.site-admin-link {
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+.site-back {
+  color: #2563eb;
+  font-size: 0.9rem;
+  padding: 0 0 10px;
+}
+.site-admin-link {
+  position: absolute;
+  bottom: 12px;
+  right: 14px;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.78rem;
+}
+
+/* RSVP form fields */
+.rsvp-field {
+  display: block;
+  margin: 16px 0;
+}
+.rsvp-field > span {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #334155;
+  margin-bottom: 7px;
+}
+.rsvp-field input,
+.rsvp-field textarea {
+  width: 100%;
+  padding: 11px 12px;
+  border-radius: 10px;
+  border: 1.5px solid #cbd5e1;
+  font-size: 1rem;
+  font-family: inherit;
+  color: #1f2937;
+  background: #fff;
+}
+.rsvp-field input:focus,
+.rsvp-field textarea:focus {
+  outline: none;
+  border-color: #2563eb;
+}
+.rsvp-choices {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.rsvp-chip {
+  padding: 9px 14px;
+  border-radius: 999px;
+  border: 1.5px solid #cbd5e1;
+  background: #fff;
+  color: #334155;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.rsvp-chip--on {
+  border-color: #2563eb;
+  background: #eff4ff;
+  color: #1d4ed8;
+}
+
+/* Admin shell (tab bar over the builder / responses) */
+.admin-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+}
+.admin-bar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: #0b1220;
+  border-bottom: 1px solid #334155;
+}
+.admin-title {
+  color: #94a3b8;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-right: 6px;
+}
+.admin-tab {
+  padding: 7px 12px;
+  border-radius: 8px;
+  border: 1px solid #334155;
+  background: #0f172a;
+  color: #cbd5e1;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+.admin-tab--on {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #fff;
+}
+.admin-body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+.admin-body .app {
+  height: 100%;
+}
+
+/* RSVP responses view */
+.responses {
+  padding: 20px 22px;
+  color: #1f2937;
+  background: #f8fafc;
+  min-height: 100%;
+}
+.responses-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.responses-head h2 {
+  margin: 0;
+}
+.responses-tiles {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 16px 0;
+}
+.tile {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 12px 16px;
+  min-width: 96px;
+}
+.tile--accent {
+  background: #eff4ff;
+  border-color: #bfdbfe;
+}
+.tile-n {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #1d4ed8;
+}
+.tile-l {
+  font-size: 0.78rem;
+  color: #64748b;
+}
+.responses-tablewrap {
+  overflow-x: auto;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+}
+.responses-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+.responses-table th,
+.responses-table td {
+  text-align: left;
+  padding: 9px 12px;
+  border-bottom: 1px solid #eef2f6;
+  white-space: nowrap;
+}
+.responses-table th {
+  background: #f1f5f9;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #64748b;
+}
+.responses-table .row--dim {
+  opacity: 0.5;
+}
+.note-cell {
+  white-space: normal;
+  max-width: 220px;
+  color: #475569;
+}
+@media (max-width: 600px) {
+  .responses-table th:nth-child(5),
+  .responses-table td:nth-child(5),
+  .responses-table th:nth-child(6),
+  .responses-table td:nth-child(6) {
+    display: none;
+  }
+}
+
 .sidebar {
   width: 340px;
   min-width: 340px;

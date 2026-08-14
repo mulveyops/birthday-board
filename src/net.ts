@@ -202,6 +202,52 @@ export async function transferCoins(fromId: string, toId: string, amount: number
   return (data as number) ?? 0;
 }
 
+// ---------------------------------------------------------------------------
+// Space ownership (own-a-space toll) — space_owners.sql.
+// ---------------------------------------------------------------------------
+
+export interface SpaceOwner {
+  spot_id: string;
+  team_id: string;
+}
+
+export async function listSpaceOwners(gameId: string): Promise<SpaceOwner[]> {
+  assertConfigured();
+  const { data, error } = await supabase.from('space_owners').select('spot_id, team_id').eq('game_id', gameId);
+  if (error) throw error;
+  return (data ?? []) as SpaceOwner[];
+}
+
+export function subscribeSpaceOwners(gameId: string, onChange: () => void) {
+  const ch = supabase
+    .channel(`owners:${gameId}`)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'space_owners', filter: `game_id=eq.${gameId}` }, onChange)
+    .subscribe();
+  return () => {
+    supabase.removeChannel(ch);
+  };
+}
+
+/** Claim (buy) a space. First claimer wins via the unique index; deducts the
+ *  cost only on a successful, affordable claim. */
+export async function claimSpace(
+  gameId: string,
+  spotId: string,
+  teamId: string,
+  cost: number,
+): Promise<'ok' | 'taken' | 'nocoins'> {
+  assertConfigured();
+  const { data: team } = await supabase.from('teams').select('coins').eq('id', teamId).single();
+  if (((team as { coins: number } | null)?.coins ?? 0) < cost) return 'nocoins';
+  const { error } = await supabase.from('space_owners').insert({ game_id: gameId, spot_id: spotId, team_id: teamId });
+  if (error) {
+    if (error.code === '23505') return 'taken'; // someone already owns it
+    throw error;
+  }
+  await adjustCoins(teamId, -cost);
+  return 'ok';
+}
+
 export async function deleteRsvp(id: string): Promise<void> {
   assertConfigured();
   const { error } = await supabase.from('rsvps').delete().eq('id', id);
@@ -239,11 +285,15 @@ export interface GameConfig {
   coinReward: number; // coins per spot check-in
   radiusM: number; // GPS check-in radius
   robAmount: number; // coins stolen on a "rob a team" chance
+  claimCost: number; // coins to buy (own) a space on a claim chance
+  tollAmount: number; // coins a visitor pays the owner of a space
 }
 
 /** Config value with a fallback (older published games lack newer fields). */
 export const cfg = {
   robAmount: (c: Partial<GameConfig> | undefined) => c?.robAmount ?? 20,
+  claimCost: (c: Partial<GameConfig> | undefined) => c?.claimCost ?? 20,
+  tollAmount: (c: Partial<GameConfig> | undefined) => c?.tollAmount ?? 10,
 };
 
 export const PARTY_CONFIG: GameConfig = {
@@ -256,6 +306,8 @@ export const PARTY_CONFIG: GameConfig = {
   coinReward: 15,
   radiusM: 35,
   robAmount: 20,
+  claimCost: 20,
+  tollAmount: 10,
 };
 export const TEST_CONFIG: GameConfig = {
   starCost: 40,
@@ -267,6 +319,8 @@ export const TEST_CONFIG: GameConfig = {
   coinReward: 15,
   radiusM: 35,
   robAmount: 20,
+  claimCost: 20,
+  tollAmount: 10,
 };
 
 export interface GameFull {

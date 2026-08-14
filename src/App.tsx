@@ -41,6 +41,9 @@ import {
   adjustCoins,
   transferCoins,
   cfg,
+  listSpaceOwners,
+  subscribeSpaceOwners,
+  claimSpace,
   listLayouts,
   getLayout,
   createLayout,
@@ -638,9 +641,11 @@ export default function App({ variant = 'admin' }: { variant?: 'admin' | 'player
   const [onlineQuizModal, setOnlineQuizModal] = useState<{ spotId: string; name: string } | null>(null);
   // Online chance square: roll → gain/lose/rob. 'rob' opens a team picker.
   const [onlineChanceModal, setOnlineChanceModal] = useState<{ spotId: string; name: string } | null>(null);
-  const [chanceOutcome, setChanceOutcome] = useState<'rob' | 'gain' | 'lose' | 'nothing' | null>(null);
+  const [chanceOutcome, setChanceOutcome] = useState<'rob' | 'claim' | 'gain' | 'lose' | 'nothing' | null>(null);
   const [chanceText, setChanceText] = useState('');
   const [chanceBusy, setChanceBusy] = useState(false);
+  // spot_id → owning team_id (own-a-space toll). Rivals landing here pay a toll.
+  const [onlineOwners, setOnlineOwners] = useState<Record<string, string>>({});
   const [battleModal, setBattleModal] = useState<{
     claimId: string;
     barName: string;
@@ -708,6 +713,10 @@ export default function App({ variant = 'admin' }: { variant?: 'admin' | 'player
     const loadSpawns = () => listSpawns(gid).then((s) => alive && setAllSpawns(s)).catch(() => {});
     const loadStars = () => listStarClaims(gid).then((s) => alive && setStarClaimRows(s)).catch(() => {});
     const loadEvents = () => listEvents(gid).then((e) => alive && setEvents(e)).catch(() => {});
+    const loadOwners = () =>
+      listSpaceOwners(gid)
+        .then((o) => alive && setOnlineOwners(Object.fromEntries(o.map((r) => [r.spot_id, r.team_id]))))
+        .catch(() => {});
     const loadGame = () =>
       getGameFull(gid)
         .then((g) => {
@@ -721,6 +730,7 @@ export default function App({ variant = 'admin' }: { variant?: 'admin' | 'player
     loadSpawns();
     loadStars();
     loadEvents();
+    loadOwners();
     loadGame();
     const u1 = subscribeClaims(gid, loadClaims);
     const u2 = subscribePositions(gid, loadPos);
@@ -728,6 +738,7 @@ export default function App({ variant = 'admin' }: { variant?: 'admin' | 'player
     const u4 = subscribeStars(gid, loadStars);
     const u5 = subscribeEvents(gid, loadEvents);
     const u6 = subscribeGame(gid, loadGame);
+    const u7 = subscribeSpaceOwners(gid, loadOwners);
     return () => {
       alive = false;
       u1();
@@ -736,6 +747,7 @@ export default function App({ variant = 'admin' }: { variant?: 'admin' | 'player
       u4();
       u5();
       u6();
+      u7();
     };
   }, [appMode, membership]);
 
@@ -806,20 +818,28 @@ export default function App({ variant = 'admin' }: { variant?: 'admin' | 'player
         setOnlineBarModal({ spotId, name: sq.title || 'Bar' });
         return;
       }
+      // A chance square. If it's OWNED, that overrides the roll: rivals pay a
+      // toll (recurring, so this bypasses the once-per-team cleared gate); the
+      // owner just gets a note. Otherwise roll it once.
+      if (type === 'chance') {
+        const owner = onlineOwners[spotId];
+        if (owner) {
+          void handleOwnedSpace(sq, owner);
+          return;
+        }
+        if (onlineCleared.includes(spotId)) return;
+        setChanceOutcome(null);
+        setChanceText('');
+        setChanceBusy(false);
+        setOnlineChanceModal({ spotId, name: sq.title || 'Chance' });
+        return;
+      }
       if (onlineCleared.includes(spotId)) return;
       // A challenge with authored trivia → answer to earn scaled coins.
       if (type === 'challenge' && (sq.questions?.length ?? 0) > 0) {
         setQuizPick({});
         setQuizDone(false);
         setOnlineQuizModal({ spotId, name: sq.title || 'Challenge' });
-        return;
-      }
-      // A chance square → roll for fortune (or misfortune, or a robbery).
-      if (type === 'chance') {
-        setChanceOutcome(null);
-        setChanceText('');
-        setChanceBusy(false);
-        setOnlineChanceModal({ spotId, name: sq.title || 'Chance' });
         return;
       }
       setOnlineCleared((c) => [...c, spotId]); // optimistic; subscription confirms coins/pos
@@ -841,20 +861,24 @@ export default function App({ variant = 'admin' }: { variant?: 'admin' | 'player
     if (!sq) return;
     const others = teams.filter((t) => t.id !== membership.teamId);
     const r = Math.random();
-    // Only offer a robbery if there's someone to rob.
-    if (r < 0.4 && others.length > 0) {
+    // Robbery (needs a victim) and claim-this-space defer to a follow-up choice.
+    if (r < 0.35 && others.length > 0) {
       setChanceOutcome('rob');
+      return;
+    }
+    if (r < 0.55) {
+      setChanceOutcome('claim');
       return;
     }
     setChanceBusy(true);
     try {
-      if (r < 0.7) {
+      if (r < 0.78) {
         const gain = 20 + Math.floor(Math.random() * 21);
         await adjustCoins(membership.teamId, gain);
         setChanceText(`🍀 Lucky! +${gain} 🪙`);
         setChanceOutcome('gain');
         await logEvent(membership.gameId, 'star', `🍀 ${myTeam?.name ?? 'A team'} hit a lucky chance (+${gain} 🪙)`);
-      } else if (r < 0.9) {
+      } else if (r < 0.93) {
         const loss = 10 + Math.floor(Math.random() * 16);
         await adjustCoins(membership.teamId, -loss);
         setChanceText(`💸 Unlucky! -${loss} 🪙`);
@@ -892,6 +916,54 @@ export default function App({ variant = 'admin' }: { variant?: 'admin' | 'player
       alert('Robbery failed: ' + (e as Error).message);
     } finally {
       setChanceBusy(false);
+    }
+  }
+  // Buy (own) the current chance space. First claimer wins; toll rolls in later.
+  async function claimThisSpace() {
+    if (!membership || !onlineBoard || !onlineChanceModal || chanceBusy) return;
+    const sq = onlineBoard.squares.find((s) => s.id === onlineChanceModal.spotId);
+    if (!sq) return;
+    const cost = cfg.claimCost(onlineConfig);
+    setChanceBusy(true);
+    try {
+      const res = await claimSpace(membership.gameId, sq.id, membership.teamId, cost);
+      if (res === 'nocoins') {
+        setChanceText(`Not enough 🪙 to claim (need ${cost}).`);
+        setChanceOutcome('nothing');
+      } else if (res === 'taken') {
+        setChanceText('Too late — another team already owns this space.');
+        setChanceOutcome('nothing');
+      } else {
+        setChanceText(`🏴 You secretly own ${sq.title || 'this space'}! Rivals who land here pay you a toll.`);
+        setChanceOutcome('gain');
+        await logEvent(membership.gameId, 'star', `🏴 A space was quietly claimed…`);
+      }
+      markChanceCleared(sq);
+    } catch (e) {
+      alert('Claim failed: ' + (e as Error).message);
+    } finally {
+      setChanceBusy(false);
+    }
+  }
+  // Landing on an OWNED chance space: your own turf → a note; a rival's → pay a toll.
+  async function handleOwnedSpace(sq: Square, ownerTeamId: string) {
+    if (!membership) return;
+    if (ownerTeamId === membership.teamId) {
+      setChanceOutcome('nothing');
+      setChanceText('🏴 Your turf — it quietly earns you tolls when rivals land here.');
+      setOnlineChanceModal({ spotId: sq.id, name: sq.title || 'Chance' });
+      return;
+    }
+    setChanceOutcome('lose');
+    setChanceText('Crossing someone’s turf…');
+    setOnlineChanceModal({ spotId: sq.id, name: sq.title || 'Chance' });
+    try {
+      const toll = cfg.tollAmount(onlineConfig);
+      const moved = await transferCoins(membership.teamId, ownerTeamId, toll);
+      setChanceText(`💰 You crossed someone’s turf and paid a ${moved} 🪙 toll.`);
+      await logEvent(membership.gameId, 'battle', `💰 A toll was collected at ${sq.title || 'a space'}`);
+    } catch (e) {
+      setChanceText('Toll failed: ' + (e as Error).message);
     }
   }
   // Score the online trivia, then clear the spot + award scaled coins via checkInSpot.
@@ -2378,6 +2450,8 @@ export default function App({ variant = 'admin' }: { variant?: 'admin' | 'player
           (() => {
             const others = teams.filter((t) => t.id !== membership?.teamId);
             const robAmt = cfg.robAmount(onlineConfig);
+            const claimCost = cfg.claimCost(onlineConfig);
+            const tollAmt = cfg.tollAmount(onlineConfig);
             const close = () => {
               setOnlineChanceModal(null);
               setChanceOutcome(null);
@@ -2448,9 +2522,23 @@ export default function App({ variant = 'admin' }: { variant?: 'admin' | 'player
                           </button>
                         ))}
                       </>
+                    ) : chanceOutcome === 'claim' ? (
+                      <>
+                        <p className="hint" style={{ marginTop: 0 }}>
+                          🏴 Buy this space for {claimCost} 🪙? Rivals who land here secretly pay you a {tollAmt} 🪙 toll.
+                        </p>
+                        <button
+                          className="btn btn--go"
+                          style={{ width: '100%' }}
+                          disabled={chanceBusy || (myTeam?.coins ?? 0) < claimCost}
+                          onClick={() => void claimThisSpace()}
+                        >
+                          {(myTeam?.coins ?? 0) < claimCost ? `Need ${claimCost} 🪙` : `Claim for ${claimCost} 🪙`}
+                        </button>
+                      </>
                     ) : (
                       <>
-                        <p className="hint" style={{ marginTop: 0 }}>Roll your luck — coins, a robbery, or a bust.</p>
+                        <p className="hint" style={{ marginTop: 0 }}>Roll your luck — coins, a robbery, a heist, or a bust.</p>
                         <button
                           className="btn btn--go"
                           style={{ width: '100%', fontSize: '1.05rem' }}

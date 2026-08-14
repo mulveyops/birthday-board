@@ -14,7 +14,7 @@ import type { Board, LatLng } from './types';
 import { SQUARE_TYPES } from './squareTypes';
 import { metersBetween } from './snap';
 
-export type Mode = 'select' | 'boundary' | 'add';
+export type Mode = 'select' | 'boundary' | 'add' | 'connect';
 
 // CARTO Voyager — a free, soft-color basemap (no API key needed).
 const VOYAGER_URL = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png';
@@ -1777,7 +1777,7 @@ export default function BoardCanvas({
             icon={hitIcon(30)}
             opacity={0}
             draggable={mode === 'select'}
-            interactive={mode === 'select'}
+            interactive={mode === 'select' || mode === 'connect'}
             eventHandlers={{
               click: () => onSelectSquare(sq.id),
               dragend: (e) => {

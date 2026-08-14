@@ -570,3 +570,23 @@ export async function snapToStreetsFollowing(points: LatLng[]): Promise<LatLng[]
   ring = simplify(ring, 18);
   return ring;
 }
+
+/**
+ * Route a single path between two points along the street network — for manually
+ * filling in a connection the auto-generator missed. Falls back to a straight
+ * line if no streets are found or the two points aren't connected.
+ */
+export async function routeAlongStreets(a: LatLng, b: LatLng): Promise<LatLng[]> {
+  const g = await fetchStreetGraph([a, b]);
+  if (!g.nodeIds.length) return [a, b];
+  let na = nearestGraphNode(g, a, true);
+  if (na === -1) na = nearestGraphNode(g, a, false);
+  let nb = nearestGraphNode(g, b, true);
+  if (nb === -1) nb = nearestGraphNode(g, b, false);
+  if (na === -1 || nb === -1) return [a, b];
+  const path = dijkstra(g, na, nb);
+  if (path.length === 0) return [a, b];
+  const mid = path.map((id) => g.coords.get(id)!).filter(Boolean);
+  // Anchor the ends at the actual spaces so the drawn street meets them cleanly.
+  return simplify([a, ...mid, b], 12);
+}

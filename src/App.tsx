@@ -4,7 +4,7 @@ import BoardCanvas, { type Mode } from './BoardCanvas';
 import type { Board, Edge, LatLng, Phase, Square, SquareType, TriviaQuestion } from './types';
 import { SQUARE_TYPES, TYPE_ORDER } from './squareTypes';
 import { loadBoard, saveBoard, makeSquare, defaultBoard } from './boardStore';
-import { metersBetween, simplify, snapToStreetsFollowing } from './snap';
+import { metersBetween, simplify, snapToStreetsFollowing, routeAlongStreets } from './snap';
 import { generateStreetBoard, buildScenery, shiftPathEnd } from './generate';
 import { isConfigured } from './supabase';
 import {
@@ -130,6 +130,8 @@ export default function App({
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedVertex, setSelectedVertex] = useState<number | null>(null);
   const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null);
+  const [connectFrom, setConnectFrom] = useState<string | null>(null); // first space picked in Connect mode
+  const [connecting, setConnecting] = useState(false);
   const [snapping, setSnapping] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [sceneryLoading, setSceneryLoading] = useState(false);
@@ -1121,9 +1123,50 @@ export default function App({
   }
 
   function selectSquare(id: string) {
+    if (mode === 'connect') {
+      void connectPick(id);
+      return;
+    }
     setSelectedId(id || null);
     setSelectedVertex(null);
     setSelectedEdgeId(null);
+  }
+  // Connect mode: click one space, then another, to draw a street between them.
+  async function connectPick(id: string) {
+    if (connecting) return;
+    if (!connectFrom) {
+      setConnectFrom(id);
+      return;
+    }
+    if (connectFrom === id) {
+      setConnectFrom(null); // clicked the same space → cancel
+      return;
+    }
+    const a = board.squares.find((s) => s.id === connectFrom);
+    const b = board.squares.find((s) => s.id === id);
+    setConnectFrom(null);
+    if (!a || !b) return;
+    if (board.edges.some((e) => (e.from === a.id && e.to === b.id) || (e.from === b.id && e.to === a.id))) {
+      return; // already connected
+    }
+    setConnecting(true);
+    try {
+      let path: LatLng[];
+      try {
+        path = await routeAlongStreets({ lat: a.lat, lng: a.lng }, { lat: b.lat, lng: b.lng });
+      } catch {
+        path = [
+          { lat: a.lat, lng: a.lng },
+          { lat: b.lat, lng: b.lng },
+        ];
+      }
+      setBoard((bd) => ({
+        ...bd,
+        edges: [...bd.edges, { id: crypto.randomUUID(), from: a.id, to: b.id, directed: false, path }],
+      }));
+    } finally {
+      setConnecting(false);
+    }
   }
 
   function moveSquare(id: string, lat: number, lng: number) {
@@ -1693,6 +1736,25 @@ export default function App({
                 </button>
               )}
               <p className="hint">Tip: click a spot to select it, then “Delete space” to remove just that one.</p>
+              <button
+                className={`btn ${mode === 'connect' ? 'btn--go' : ''}`}
+                onClick={() => {
+                  setConnectFrom(null);
+                  setMode(mode === 'connect' ? 'select' : 'connect');
+                }}
+                disabled={board.squares.length < 2}
+              >
+                {mode === 'connect' ? '✓ Done connecting' : '🔗 Connect spaces (fill in a street)'}
+              </button>
+              {mode === 'connect' && (
+                <p className="hint">
+                  {connecting
+                    ? 'Drawing the street…'
+                    : connectFrom
+                      ? 'Now click the second space — a street is drawn between them.'
+                      : 'Click one space, then another, to link them along the street.'}
+                </p>
+              )}
               <label className="toggle">
                 <input
                   type="checkbox"

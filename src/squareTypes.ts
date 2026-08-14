@@ -56,6 +56,12 @@ export const SQUARE_TYPES: Record<SquareType, SquareTypeMeta> = {
     color: '#111827',
     hint: 'The known endgame bar everyone converges on.',
   },
+  bowser: {
+    label: 'Bowser',
+    emoji: '👹',
+    color: '#166534',
+    hint: 'A forced gauntlet — do the challenge or lose coins (worse you do, more you lose).',
+  },
 };
 
 /** Display order for palettes and dropdowns. */
@@ -66,6 +72,7 @@ export const TYPE_ORDER: SquareType[] = [
   'coin',
   'chance',
   'poi',
+  'bowser',
   'start',
   'finish',
 ];

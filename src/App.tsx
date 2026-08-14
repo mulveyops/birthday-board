@@ -71,7 +71,7 @@ const PHASES: { key: Phase; label: string }[] = [
 const phaseIndex = (p: Phase) => PHASES.findIndex((s) => s.key === p);
 
 // --- Play-mode model -------------------------------------------------------
-type SpotType = 'coin' | 'challenge' | 'chance' | 'bar';
+type SpotType = 'coin' | 'challenge' | 'chance' | 'bar' | 'bowser';
 // Sim-speed timers: seconds here stand in for the real-world minutes (§ tunable).
 const SPAWN_MIN_MS = 15000;
 const SPAWN_MAX_MS = 25000;
@@ -106,7 +106,7 @@ function deriveSpots(board: Board): Square[] {
 }
 /** Explicit type wins; blank intersections get a deterministic coin/chance mix. */
 function deriveNodeType(spots: Square[]): Record<string, SpotType> {
-  const SPOT: string[] = ['coin', 'challenge', 'chance', 'bar'];
+  const SPOT: string[] = ['coin', 'challenge', 'chance', 'bar', 'bowser'];
   const m: Record<string, SpotType> = {};
   for (const sq of spots) {
     if (SPOT.includes(sq.type)) m[sq.id] = sq.type as SpotType;
@@ -381,6 +381,7 @@ export default function App({ variant = 'admin' }: { variant?: 'admin' | 'player
     setRolling(false);
     setQuizPick({});
     setQuizDone(false);
+    setBowserLoss(null);
   }
   function rollChance(id: string) {
     if (rolling) return;
@@ -470,6 +471,21 @@ export default function App({ variant = 'admin' }: { variant?: 'admin' | 'player
       last: `+${award} 🪙 · ${correct}/${qs.length} correct`,
     }));
     if (award) flash(`+${award} 🪙`);
+    setQuizDone(true);
+  }
+  // Play-sim Bowser: lose coins by performance (trivia %wrong, or a physical tier).
+  function resolveBowserPlay(sq: Square, tier?: 'nailed' | 'struggled' | 'failed') {
+    const qs = sq.questions ?? [];
+    const penalty = sq.reward > 0 ? sq.reward : 30;
+    let loss: number;
+    if (qs.length > 0 && !tier) {
+      const correct = qs.reduce((n, q, i) => n + (quizPick[i] === q.correct ? 1 : 0), 0);
+      loss = Math.round((penalty * (qs.length - correct)) / qs.length);
+    } else {
+      loss = tier === 'nailed' ? 0 : tier === 'struggled' ? Math.round(penalty / 2) : penalty;
+    }
+    setPlay((p) => ({ ...p, coins: Math.max(0, p.coins - loss), cleared: [...p.cleared, sq.id], last: `👹 Bowser: -${loss} 🪙` }));
+    setBowserLoss(loss);
     setQuizDone(true);
   }
   function resolveChance(id: string) {
@@ -646,6 +662,9 @@ export default function App({ variant = 'admin' }: { variant?: 'admin' | 'player
   const [chanceBusy, setChanceBusy] = useState(false);
   // spot_id → owning team_id (own-a-space toll). Rivals landing here pay a toll.
   const [onlineOwners, setOnlineOwners] = useState<Record<string, string>>({});
+  // Bowser: forced gauntlet (trivia or physical) → lose coins by performance.
+  const [onlineBowserModal, setOnlineBowserModal] = useState<{ spotId: string; name: string } | null>(null);
+  const [bowserLoss, setBowserLoss] = useState<number | null>(null);
   const [battleModal, setBattleModal] = useState<{
     claimId: string;
     barName: string;
@@ -842,6 +861,14 @@ export default function App({ variant = 'admin' }: { variant?: 'admin' | 'player
         setOnlineQuizModal({ spotId, name: sq.title || 'Challenge' });
         return;
       }
+      // Bowser: a forced gauntlet — do the challenge or lose coins.
+      if (type === 'bowser') {
+        setQuizPick({});
+        setQuizDone(false);
+        setBowserLoss(null);
+        setOnlineBowserModal({ spotId, name: sq.title || 'Bowser' });
+        return;
+      }
       setOnlineCleared((c) => [...c, spotId]); // optimistic; subscription confirms coins/pos
       checkInSpot(membership.gameId, membership.teamId, spotId, sq.lat, sq.lng, onlineConfig.coinReward).catch((e) =>
         alert('Check-in failed: ' + (e as Error).message),
@@ -980,6 +1007,32 @@ export default function App({ variant = 'admin' }: { variant?: 'admin' | 'player
       alert('Check-in failed: ' + (e as Error).message),
     );
     setQuizDone(true);
+  }
+  // Bowser resolution: lose coins by performance. Trivia → penalty × %wrong;
+  // physical → a self-reported tier (nailed/struggled/failed). Floored at 0.
+  async function resolveOnlineBowser(tier?: 'nailed' | 'struggled' | 'failed') {
+    if (!membership || !onlineBoard || !onlineBowserModal) return;
+    const sq = onlineBoard.squares.find((s) => s.id === onlineBowserModal.spotId);
+    if (!sq) return;
+    const qs = sq.questions ?? [];
+    const penalty = sq.reward > 0 ? sq.reward : 30;
+    let loss: number;
+    if (qs.length > 0 && !tier) {
+      const correct = qs.reduce((n, q, i) => n + (quizPick[i] === q.correct ? 1 : 0), 0);
+      loss = Math.round((penalty * (qs.length - correct)) / qs.length);
+    } else {
+      loss = tier === 'nailed' ? 0 : tier === 'struggled' ? Math.round(penalty / 2) : penalty;
+    }
+    try {
+      if (loss > 0) await adjustCoins(membership.teamId, -loss);
+      setOnlineCleared((c) => (c.includes(sq.id) ? c : [...c, sq.id]));
+      checkInSpot(membership.gameId, membership.teamId, sq.id, sq.lat, sq.lng, 0).catch(() => {});
+      await logEvent(membership.gameId, 'battle', `👹 ${myTeam?.name ?? 'A team'} faced Bowser and lost ${loss} 🪙`);
+      setBowserLoss(loss);
+      setQuizDone(true);
+    } catch (e) {
+      alert('Bowser failed: ' + (e as Error).message);
+    }
   }
   async function doBuyRound() {
     if (!membership || !onlineBarModal) return;
@@ -1701,7 +1754,7 @@ export default function App({ variant = 'admin' }: { variant?: 'admin' | 'player
                   <input value={selected.title} onChange={(e) => updateSquare(selected.id, { title: e.target.value })} />
                 </label>
                 <label className="field">
-                  <span>Reward (🪙 / magnitude)</span>
+                  <span>{selected.type === 'bowser' ? 'Penalty at stake (🪙)' : 'Reward (🪙 / magnitude)'}</span>
                   <input
                     type="number"
                     value={selected.reward}
@@ -1709,7 +1762,13 @@ export default function App({ variant = 'admin' }: { variant?: 'admin' | 'player
                   />
                 </label>
                 <label className="field">
-                  <span>{selected.type === 'challenge' ? 'Notes / intro (shown above the questions)' : 'Notes / challenge details'}</span>
+                  <span>
+                    {selected.type === 'challenge'
+                      ? 'Notes / intro (shown above the questions)'
+                      : selected.type === 'bowser'
+                        ? 'Physical challenge (used if there are no questions below)'
+                        : 'Notes / challenge details'}
+                  </span>
                   <textarea
                     rows={3}
                     value={selected.notes}
@@ -1717,9 +1776,11 @@ export default function App({ variant = 'admin' }: { variant?: 'admin' | 'player
                     placeholder="e.g. Count the ducks on the mural. More found = more 🪙."
                   />
                 </label>
-                {selected.type === 'challenge' && (
+                {(selected.type === 'challenge' || selected.type === 'bowser') && (
                   <div className="quiz-editor">
-                    <span className="quiz-editor-label">Trivia questions (multiple choice)</span>
+                    <span className="quiz-editor-label">
+                      {selected.type === 'bowser' ? 'Trivia questions (optional — else physical)' : 'Trivia questions (multiple choice)'}
+                    </span>
                     {(selected.questions ?? []).map((q, qi) => (
                       <div className="qedit" key={qi}>
                         <div className="qedit-head">
@@ -2222,6 +2283,65 @@ export default function App({ variant = 'admin' }: { variant?: 'admin' | 'player
                           </>
                         );
                       })()
+                    ) : modal.type === 'bowser' ? (
+                      (() => {
+                        const sq = board.squares.find((s) => s.id === modal.id);
+                        const qs = sq?.questions ?? [];
+                        const answeredAll = qs.every((_, i) => quizPick[i] != null);
+                        if (!sq) return null;
+                        if (quizDone) {
+                          return (
+                            <>
+                              <p style={{ fontSize: '1.2rem', fontWeight: 800, textAlign: 'center', margin: '8px 0 16px' }}>
+                                {bowserLoss ? `You lost ${bowserLoss} 🪙!` : 'Escaped! 0 🪙 lost.'}
+                              </p>
+                              <button className="btn btn--go" style={{ width: '100%' }} onClick={closeModal}>
+                                Continue
+                              </button>
+                            </>
+                          );
+                        }
+                        if (qs.length > 0) {
+                          return (
+                            <>
+                              <p className="hint" style={{ marginTop: 0 }}>Answer to escape — every wrong answer costs coins.</p>
+                              {qs.map((q, qi) => (
+                                <div className="quiz-q" key={qi}>
+                                  <div className="quiz-qtext">
+                                    {qi + 1}. {q.q}
+                                  </div>
+                                  {q.choices.map((c, ci) => (
+                                    <button
+                                      key={ci}
+                                      className={`quiz-choice ${quizPick[qi] === ci ? 'quiz-choice--picked' : ''}`}
+                                      onClick={() => setQuizPick((p) => ({ ...p, [qi]: ci }))}
+                                    >
+                                      <span>{c}</span>
+                                    </button>
+                                  ))}
+                                </div>
+                              ))}
+                              <button className="btn btn--go" style={{ width: '100%' }} disabled={!answeredAll} onClick={() => resolveBowserPlay(sq)}>
+                                Submit answers
+                              </button>
+                            </>
+                          );
+                        }
+                        return (
+                          <>
+                            <p className="hint" style={{ marginTop: 0 }}>{sq.notes || 'Do the challenge, then report how it went.'}</p>
+                            <button className="btn btn--go" style={{ width: '100%' }} onClick={() => resolveBowserPlay(sq, 'nailed')}>
+                              Nailed it (lose 0)
+                            </button>
+                            <button className="btn" style={{ width: '100%', marginTop: 6 }} onClick={() => resolveBowserPlay(sq, 'struggled')}>
+                              Struggled (lose half)
+                            </button>
+                            <button className="btn btn--danger" style={{ width: '100%', marginTop: 6 }} onClick={() => resolveBowserPlay(sq, 'failed')}>
+                              Failed (lose it all)
+                            </button>
+                          </>
+                        );
+                      })()
                     ) : modal.type === 'chance' ? (
                       <>
                         <p className="hint" style={{ marginTop: 0 }}>Roll your luck — 🪙, an item, nothing, or a mugging.</p>
@@ -2553,6 +2673,113 @@ export default function App({ variant = 'admin' }: { variant?: 'admin' | 'player
                       <button className="btn btn--ghost" style={{ width: '100%', marginTop: 8 }} onClick={close}>
                         Close
                       </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+
+        {onlineBowserModal &&
+          (() => {
+            const sq = onlineBoard?.squares.find((s) => s.id === onlineBowserModal.spotId);
+            const qs = sq?.questions ?? [];
+            const answeredAll = qs.every((_, i) => quizPick[i] != null);
+            return (
+              <div
+                style={{ position: 'absolute', inset: 0, background: 'rgba(20,16,12,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}
+              >
+                <div
+                  style={{
+                    width: 340,
+                    maxWidth: '90%',
+                    maxHeight: '86%',
+                    overflowY: 'auto',
+                    background: '#fdfaf2',
+                    border: '2px solid #3f3b36',
+                    borderRadius: 14,
+                    boxShadow: '0 14px 44px rgba(0,0,0,0.45)',
+                    animation: 'pop-in 0.24s cubic-bezier(0.2,0.85,0.35,1.2)',
+                  }}
+                >
+                  <div style={{ background: '#166534', color: '#fff', padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <span style={{ fontSize: '1.9rem', lineHeight: 1 }}>👹</span>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontWeight: 800, fontSize: '1.05rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {onlineBowserModal.name}
+                      </div>
+                      <div style={{ fontSize: '0.7rem', opacity: 0.92, textTransform: 'uppercase', letterSpacing: 1.5 }}>Bowser · no escape</div>
+                    </div>
+                  </div>
+                  <div style={{ padding: '16px 18px' }}>
+                    {quizDone ? (
+                      <>
+                        <p style={{ fontSize: '1.2rem', fontWeight: 800, textAlign: 'center', margin: '8px 0 16px' }}>
+                          {bowserLoss ? `You lost ${bowserLoss} 🪙!` : 'You escaped unscathed! 0 🪙 lost.'}
+                        </p>
+                        {qs.map((q, qi) => (
+                          <div className="quiz-q" key={qi}>
+                            <div className="quiz-qtext">
+                              {qi + 1}. {q.q}
+                            </div>
+                            {q.choices.map((c, ci) => {
+                              const picked = quizPick[qi] === ci;
+                              const isRight = q.correct === ci;
+                              let cls = 'quiz-choice';
+                              if (isRight) cls += ' quiz-choice--correct';
+                              else if (picked) cls += ' quiz-choice--wrong';
+                              return (
+                                <div key={ci} className={cls}>
+                                  <span>{c}</span>
+                                  {isRight ? <span className="quiz-mark">✓</span> : picked ? <span className="quiz-mark">✗</span> : null}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        ))}
+                        <button className="btn btn--go" style={{ width: '100%' }} onClick={() => setOnlineBowserModal(null)}>
+                          Continue
+                        </button>
+                      </>
+                    ) : qs.length > 0 ? (
+                      <>
+                        <p className="hint" style={{ marginTop: 0 }}>Answer to escape — every wrong answer costs you coins.</p>
+                        {qs.map((q, qi) => (
+                          <div className="quiz-q" key={qi}>
+                            <div className="quiz-qtext">
+                              {qi + 1}. {q.q}
+                            </div>
+                            {q.choices.map((c, ci) => {
+                              const picked = quizPick[qi] === ci;
+                              return (
+                                <button
+                                  key={ci}
+                                  className={`quiz-choice ${picked ? 'quiz-choice--picked' : ''}`}
+                                  onClick={() => setQuizPick((p) => ({ ...p, [qi]: ci }))}
+                                >
+                                  <span>{c}</span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        ))}
+                        <button className="btn btn--go" style={{ width: '100%' }} disabled={!answeredAll} onClick={() => void resolveOnlineBowser()}>
+                          Submit answers
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <p className="hint" style={{ marginTop: 0 }}>{sq?.notes || 'Complete the challenge, then report how it went.'}</p>
+                        <button className="btn btn--go" style={{ width: '100%' }} onClick={() => void resolveOnlineBowser('nailed')}>
+                          Nailed it (lose 0)
+                        </button>
+                        <button className="btn" style={{ width: '100%', marginTop: 6 }} onClick={() => void resolveOnlineBowser('struggled')}>
+                          Struggled (lose half)
+                        </button>
+                        <button className="btn btn--danger" style={{ width: '100%', marginTop: 6 }} onClick={() => void resolveOnlineBowser('failed')}>
+                          Failed (lose it all)
+                        </button>
+                      </>
                     )}
                   </div>
                 </div>

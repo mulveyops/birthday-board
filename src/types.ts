@@ -10,7 +10,8 @@ export type SquareType =
   | 'challenge'
   | 'chance'
   | 'poi'
-  | 'bar';
+  | 'bar'
+  | 'bowser';
 
 export interface LatLng {
   lat: number;

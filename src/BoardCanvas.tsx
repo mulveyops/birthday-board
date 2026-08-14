@@ -617,6 +617,7 @@ const SPOT_SPRITE: Partial<Record<string, typeof CoinSpotSprite>> = {
   poi: PoiSpotSprite,
   start: StartSprite,
   finish: FinishSprite,
+  bowser: ChallengeSpotSprite, // reuse the challenge sprite for now
 };
 
 // Registry seam: a named bar matches a bespoke sprite, else falls back to the

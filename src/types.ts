@@ -25,6 +25,8 @@ export interface TriviaQuestion {
   choices: string[];
   /** Index into `choices` of the correct answer. */
   correct: number;
+  /** Optional public URL of a photo shown above the question (photo trivia). */
+  image?: string;
 }
 
 export interface Square extends LatLng {

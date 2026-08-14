@@ -248,6 +248,46 @@ export async function claimSpace(
   return 'ok';
 }
 
+// ---------------------------------------------------------------------------
+// Photo trivia: resize client-side + upload to the trivia-photos bucket.
+// ---------------------------------------------------------------------------
+
+/** Downscale to a max dimension and re-encode as JPEG to keep uploads small. */
+async function resizeImage(file: File, max = 900, quality = 0.72): Promise<Blob> {
+  const dataUrl = await new Promise<string>((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(String(r.result));
+    r.onerror = () => rej(new Error('read failed'));
+    r.readAsDataURL(file);
+  });
+  const img = await new Promise<HTMLImageElement>((res, rej) => {
+    const i = new Image();
+    i.onload = () => res(i);
+    i.onerror = () => rej(new Error('image decode failed'));
+    i.src = dataUrl;
+  });
+  const scale = Math.min(1, max / Math.max(img.width, img.height));
+  const w = Math.round(img.width * scale);
+  const h = Math.round(img.height * scale);
+  const canvas = document.createElement('canvas');
+  canvas.width = w;
+  canvas.height = h;
+  canvas.getContext('2d')!.drawImage(img, 0, 0, w, h);
+  return new Promise<Blob>((res, rej) =>
+    canvas.toBlob((b) => (b ? res(b) : rej(new Error('encode failed'))), 'image/jpeg', quality),
+  );
+}
+
+/** Resize + upload a trivia photo, returning its public URL. */
+export async function uploadTriviaPhoto(file: File): Promise<string> {
+  assertConfigured();
+  const blob = await resizeImage(file);
+  const path = `${crypto.randomUUID()}.jpg`;
+  const { error } = await supabase.storage.from('trivia-photos').upload(path, blob, { contentType: 'image/jpeg' });
+  if (error) throw error;
+  return supabase.storage.from('trivia-photos').getPublicUrl(path).data.publicUrl;
+}
+
 export async function deleteRsvp(id: string): Promise<void> {
   assertConfigured();
   const { error } = await supabase.from('rsvps').delete().eq('id', id);

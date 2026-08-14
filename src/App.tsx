@@ -45,6 +45,7 @@ import {
   listSpaceOwners,
   subscribeSpaceOwners,
   claimSpace,
+  uploadTriviaPhoto,
   listLayouts,
   getLayout,
   createLayout,
@@ -134,6 +135,7 @@ export default function App({
   const [sceneryLoading, setSceneryLoading] = useState(false);
   const [undoBoundary, setUndoBoundary] = useState<LatLng[] | null>(null);
   const [recage, setRecage] = useState(0);
+  const [photoUploading, setPhotoUploading] = useState<number | null>(null);
   const jsonInputRef = useRef<HTMLInputElement>(null);
 
   // --- Cloud layouts (shared, named boards saved to Supabase) ----------------
@@ -1167,6 +1169,17 @@ export default function App({
   function updateQuestion(sq: Square, qi: number, patch: Partial<TriviaQuestion>) {
     patchQuestions(sq, (qs) => qs.map((q, i) => (i === qi ? { ...q, ...patch } : q)));
   }
+  async function uploadQuestionPhoto(sq: Square, qi: number, file: File) {
+    setPhotoUploading(qi);
+    try {
+      const url = await uploadTriviaPhoto(file);
+      updateQuestion(sq, qi, { image: url });
+    } catch (e) {
+      alert('Photo upload failed: ' + (e as Error).message);
+    } finally {
+      setPhotoUploading(null);
+    }
+  }
   function addChoice(sq: Square, qi: number) {
     patchQuestions(sq, (qs) => qs.map((q, i) => (i === qi && q.choices.length < 4 ? { ...q, choices: [...q.choices, ''] } : q)));
   }
@@ -1826,6 +1839,30 @@ export default function App({
                           placeholder="Question"
                           onChange={(e) => updateQuestion(selected, qi, { q: e.target.value })}
                         />
+                        <div className="qedit-photo">
+                          {q.image ? (
+                            <>
+                              <img src={q.image} alt="" className="qedit-photo-thumb" />
+                              <button className="linkbtn" onClick={() => updateQuestion(selected, qi, { image: undefined })}>
+                                Remove photo
+                              </button>
+                            </>
+                          ) : (
+                            <label className="linkbtn qedit-photo-add">
+                              {photoUploading === qi ? 'Uploading…' : '📷 Add photo'}
+                              <input
+                                type="file"
+                                accept="image/*"
+                                hidden
+                                onChange={(e) => {
+                                  const f = e.target.files?.[0];
+                                  if (f) void uploadQuestionPhoto(selected, qi, f);
+                                  e.target.value = '';
+                                }}
+                              />
+                            </label>
+                          )}
+                        </div>
                         {q.choices.map((c, ci) => (
                           <div className="qedit-choice" key={ci}>
                             <input
@@ -2288,6 +2325,7 @@ export default function App({
                                 <div className="quiz-qtext">
                                   {qi + 1}. {q.q || '(question)'}
                                 </div>
+                                {q.image && <img src={q.image} alt="" className="quiz-photo" />}
                                 {q.choices.map((c, ci) => {
                                   const picked = quizPick[qi] === ci;
                                   const isRight = q.correct === ci;
@@ -2360,6 +2398,7 @@ export default function App({
                                   <div className="quiz-qtext">
                                     {qi + 1}. {q.q}
                                   </div>
+                                  {q.image && <img src={q.image} alt="" className="quiz-photo" />}
                                   {q.choices.map((c, ci) => (
                                     <button
                                       key={ci}
@@ -2567,6 +2606,7 @@ export default function App({
                         <div className="quiz-qtext">
                           {qi + 1}. {q.q || '(question)'}
                         </div>
+                        {q.image && <img src={q.image} alt="" className="quiz-photo" />}
                         {q.choices.map((c, ci) => {
                           const picked = quizPick[qi] === ci;
                           const isRight = q.correct === ci;
@@ -2772,6 +2812,7 @@ export default function App({
                             <div className="quiz-qtext">
                               {qi + 1}. {q.q}
                             </div>
+                            {q.image && <img src={q.image} alt="" className="quiz-photo" />}
                             {q.choices.map((c, ci) => {
                               const picked = quizPick[qi] === ci;
                               const isRight = q.correct === ci;
@@ -2799,6 +2840,7 @@ export default function App({
                             <div className="quiz-qtext">
                               {qi + 1}. {q.q}
                             </div>
+                            {q.image && <img src={q.image} alt="" className="quiz-photo" />}
                             {q.choices.map((c, ci) => {
                               const picked = quizPick[qi] === ci;
                               return (

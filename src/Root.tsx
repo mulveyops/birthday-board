@@ -31,9 +31,11 @@ export default function Root() {
     return () => window.removeEventListener('hashchange', onHash);
   }, []);
 
-  const p = hash.replace(/^#/, '').replace(/\/+$/, '') || '/';
+  const [pathRaw, queryRaw] = hash.replace(/^#/, '').split('?');
+  const p = pathRaw.replace(/\/+$/, '') || '/';
+  const params = new URLSearchParams(queryRaw || '');
   if (p === '/rsvp') return <Rsvp />;
-  if (p === '/play') return <App variant="player" />;
+  if (p === '/play') return <App variant="player" initialCode={params.get('code') ?? undefined} />;
   if (p === '/admin') return <Admin />;
   return <Home />;
 }

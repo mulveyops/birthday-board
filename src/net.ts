@@ -415,7 +415,22 @@ export async function joinGame(code: string, teamName: string, emoji: string): P
     .select('id, name')
     .single();
   if (error) {
-    if (error.code === '23505') throw new Error('That team name is taken in this game.');
+    // Name already exists → ATTACH this phone to that team (multi-phone teams:
+    // several phones share one team + coin pot; joining by the same team name
+    // is the "team code"). Safe because coin writes are atomic (adjust_coins).
+    if (error.code === '23505') {
+      const { data: existing, error: e2 } = await supabase
+        .from('teams')
+        .select('id, name')
+        .eq('game_id', game.id)
+        .eq('name', teamName.trim())
+        .single();
+      if (e2 || !existing) throw new Error('That team name is taken in this game.');
+      const team = existing as { id: string; name: string };
+      const m: Membership = { gameId: game.id, code: game.code, teamId: team.id, teamName: team.name };
+      saveMembership(m);
+      return m;
+    }
     throw error;
   }
   const team = data as { id: string; name: string };
@@ -487,11 +502,7 @@ export async function checkInSpot(
   const newly = !error;
   if (error && error.code !== '23505') throw error; // 23505 = already claimed by this team
   if (newly && reward) {
-    const { data } = await supabase.from('teams').select('coins').eq('id', teamId).single();
-    await supabase
-      .from('teams')
-      .update({ coins: ((data as { coins: number } | null)?.coins ?? 0) + reward })
-      .eq('id', teamId);
+    await adjustCoins(teamId, reward); // atomic — safe when several phones share a team
   }
   await supabase
     .from('positions')
@@ -660,7 +671,7 @@ export async function buyRoundDb(
     if (error.code === '23505') return 'taken';
     throw error;
   }
-  await supabase.from('teams').update({ coins: coins - cost }).eq('id', teamId);
+  await adjustCoins(teamId, -cost); // atomic
   return 'ok';
 }
 
@@ -757,11 +768,7 @@ export async function claimSpawnDb(
   if (error) throw error;
   const won = (data?.length ?? 0) > 0;
   if (won) {
-    const { data: t } = await supabase.from('teams').select('coins').eq('id', teamId).single();
-    await supabase
-      .from('teams')
-      .update({ coins: ((t as { coins: number } | null)?.coins ?? 0) + reward })
-      .eq('id', teamId);
+    await adjustCoins(teamId, reward); // atomic
     await supabase
       .from('positions')
       .upsert({ team_id: teamId, game_id: gameId, lat, lng, spot_id: null, updated_at: new Date().toISOString() });

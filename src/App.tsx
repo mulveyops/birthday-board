@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import QRCode from 'qrcode';
 import BoardCanvas, { type Mode } from './BoardCanvas';
 import type { Board, Edge, LatLng, Phase, Square, SquareType, TriviaQuestion } from './types';
 import { SQUARE_TYPES, TYPE_ORDER } from './squareTypes';
@@ -115,7 +116,13 @@ function deriveNodeType(spots: Square[]): Record<string, SpotType> {
   return m;
 }
 
-export default function App({ variant = 'admin' }: { variant?: 'admin' | 'player' }) {
+export default function App({
+  variant = 'admin',
+  initialCode,
+}: {
+  variant?: 'admin' | 'player';
+  initialCode?: string;
+}) {
   const [board, setBoard] = useState<Board>(() => loadBoard());
   const [mode, setMode] = useState<Mode>('select');
   const [addType, setAddType] = useState<SquareType>('bar');
@@ -539,10 +546,22 @@ export default function App({ variant = 'admin' }: { variant?: 'admin' | 'player
   // --- Multiplayer (Supabase — slice 1: publish + join + live lobby) ----------
   const [membership, setMembership] = useState<Membership | null>(() => savedMembership());
   const [hostGame, setHostGame] = useState<GameRow | null>(null);
+  const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
+  // The link players open (pre-fills the join code); the host shows it as a QR.
+  const joinUrl = hostGame ? `${window.location.origin}/#/play?code=${hostGame.code}` : '';
+  useEffect(() => {
+    if (!joinUrl) {
+      setQrDataUrl(null);
+      return;
+    }
+    QRCode.toDataURL(joinUrl, { width: 220, margin: 1 })
+      .then(setQrDataUrl)
+      .catch(() => setQrDataUrl(null));
+  }, [joinUrl]);
   const [hostConfig, setHostConfig] = useState<GameConfig>(PARTY_CONFIG);
   const [hostStatus, setHostStatus] = useState<'lobby' | 'live' | 'ended'>('lobby');
   const [teams, setTeams] = useState<TeamRow[]>([]);
-  const [joinCode, setJoinCode] = useState('');
+  const [joinCode, setJoinCode] = useState((initialCode ?? '').toUpperCase());
   const [joinName, setJoinName] = useState('');
   const [joinEmoji, setJoinEmoji] = useState('🎲');
   const [netBusy, setNetBusy] = useState(false);
@@ -1442,6 +1461,10 @@ export default function App({ variant = 'admin' }: { variant?: 'admin' | 'player
             <p className="hint" style={{ marginTop: 10 }}>
               No code yet? The game goes live at the party — check back then.
             </p>
+            <p className="hint">
+              Playing as a group? Everyone can join on their own phone — just enter the <b>same team name</b> to share
+              one team.
+            </p>
           </section>
         ) : appMode === 'play' ? (
           <section className="panel">
@@ -1478,6 +1501,14 @@ export default function App({ variant = 'admin' }: { variant?: 'admin' | 'player
             <p style={{ fontSize: '1.5rem', fontWeight: 700, margin: '8px 0 2px' }}>
               🪙 {myTeam?.coins ?? 0} &nbsp;·&nbsp; ⭐ {myTeam?.stars ?? 0}
             </p>
+            {onlineStatus === 'lobby' && (
+              <p
+                className="hint"
+                style={{ background: '#16233d', borderRadius: 8, padding: '8px 10px', color: '#fde68a', margin: '6px 0' }}
+              >
+                ⏳ Waiting for the host to start the game…
+              </p>
+            )}
             <p className="hint">{onlineCleared.length} spots cleared</p>
             <label className="toggle">
               <input type="checkbox" checked={gpsOn} onChange={(e) => setGpsOn(e.target.checked)} />
@@ -1988,6 +2019,22 @@ export default function App({ variant = 'admin' }: { variant?: 'admin' | 'player
               <p style={{ fontSize: '1.9rem', fontWeight: 800, letterSpacing: 5, textAlign: 'center', margin: '6px 0' }}>
                 {hostGame.code}
               </p>
+              {qrDataUrl && (
+                <div style={{ textAlign: 'center', margin: '6px 0 10px' }}>
+                  <img
+                    src={qrDataUrl}
+                    alt="Scan to join"
+                    style={{ width: 180, height: 180, background: '#fff', borderRadius: 10, padding: 6 }}
+                  />
+                  <p className="hint" style={{ margin: '4px 0 0' }}>Scan to join — or share the link:</p>
+                  <div className="row" style={{ marginTop: 4 }}>
+                    <input readOnly value={joinUrl} style={{ flex: 1, fontSize: 11 }} onFocus={(e) => e.target.select()} />
+                    <button className="btn" style={{ flex: 'none' }} onClick={() => navigator.clipboard?.writeText(joinUrl)}>
+                      Copy
+                    </button>
+                  </div>
+                </div>
+              )}
               <p className="hint">
                 Status: <b>{hostStatus}</b> · {teams.length} team{teams.length === 1 ? '' : 's'}
               </p>
@@ -2010,6 +2057,9 @@ export default function App({ variant = 'admin' }: { variant?: 'admin' | 'player
                   {cfgField('Drop lasts (sec)', 'spawnTtlSec')}
                   {cfgField('Coins / check-in', 'coinReward')}
                   {cfgField('GPS radius (m)', 'radiusM')}
+                  {cfgField('Rob amount (🪙)', 'robAmount')}
+                  {cfgField('Claim a space (🪙)', 'claimCost')}
+                  {cfgField('Space toll (🪙)', 'tollAmount')}
                   <button className="btn btn--go" onClick={doStart} disabled={netBusy}>
                     {netBusy ? '…' : '▶ Start game'}
                   </button>

@@ -132,7 +132,7 @@ export default function Rsvp() {
             </div>
 
             <div className="rsvp-field">
-              <span>How much can you make?</span>
+              <span>How much can you make it for?</span>
               <div className="rsvp-choices">
                 {([
                   ['whole', 'Whole game'],
@@ -174,8 +174,8 @@ export default function Rsvp() {
         )}
 
         <label className="rsvp-field">
-          <span>Anything else? (optional)</span>
-          <textarea rows={2} value={form.note} onChange={(e) => set('note', e.target.value)} placeholder="Song request, note, dietary needs…" />
+          <span>Any suggestions? (optional)</span>
+          <textarea rows={2} value={form.note} onChange={(e) => set('note', e.target.value)} placeholder="Leave us a suggestion…" />
         </label>
 
         <button className="site-btn site-btn--primary" style={{ width: '100%' }} disabled={status === 'sending'} onClick={submit}>

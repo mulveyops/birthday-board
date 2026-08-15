@@ -20,7 +20,7 @@ body {
 }
 
 /* ===================================================================== */
-/* Public site pages (Home, RSVP, Admin gate) — festive light theme.     */
+/* Public site pages (Home, RSVP, Admin) — Mario Party / N64 party theme. */
 /* ===================================================================== */
 .site {
   position: relative;
@@ -29,159 +29,198 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 24px 16px;
-  background: linear-gradient(160deg, #6d28d9 0%, #2563eb 55%, #0ea5e9 100%);
+  padding: 28px 16px;
+  font-family: 'Fredoka', system-ui, -apple-system, sans-serif;
+  color: #2b2b3a;
+  /* Confetti polka-dots over a sky → grape → bubblegum party gradient. */
+  background:
+    radial-gradient(circle at 10px 10px, rgba(255, 255, 255, 0.16) 3px, transparent 3.5px) 0 0 / 40px 40px,
+    linear-gradient(160deg, #2ec4ff 0%, #7a5cff 52%, #ff6bb3 100%);
+  background-attachment: fixed;
 }
 .site-card {
   width: 100%;
   max-width: 560px;
-  background: #fffdf7;
-  border-radius: 20px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.28);
+  background: #fffdf5;
+  border: 4px solid #2b2b3a;
+  border-radius: 24px;
+  box-shadow: 0 9px 0 #2b2b3a, 0 26px 50px rgba(0, 0, 0, 0.32);
   padding: 30px 26px;
   text-align: center;
 }
 .site-card--narrow {
-  max-width: 460px;
+  max-width: 470px;
   text-align: left;
 }
 .site-hero {
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 .site-emoji {
   font-size: 3rem;
   line-height: 1;
 }
 .site-card h1 {
-  margin: 10px 0 4px;
-  font-size: 1.8rem;
-  color: #1f2937;
+  font-family: 'Luckiest Guy', 'Fredoka', cursive;
+  font-weight: 400;
+  letter-spacing: 1px;
+  margin: 8px 0 8px;
+  font-size: 2.3rem;
+  line-height: 1.05;
+  color: #ff4d6d;
+  text-shadow: 3px 3px 0 #2b2b3a;
 }
 .site-date {
+  display: inline-block;
   margin: 0;
-  color: #6d28d9;
-  font-weight: 700;
-  font-size: 0.98rem;
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.92rem;
+  background: #7a5cff;
+  border: 3px solid #2b2b3a;
+  border-radius: 999px;
+  padding: 5px 15px;
+  box-shadow: 0 3px 0 #2b2b3a;
 }
 .site-lead {
-  color: #475569;
-  font-size: 1rem;
+  color: #444457;
+  font-size: 1.05rem;
+  font-weight: 500;
   line-height: 1.5;
-  margin: 14px 0;
+  margin: 16px 0;
 }
 .site-actions {
   display: flex;
-  gap: 12px;
+  gap: 14px;
   flex-wrap: wrap;
   justify-content: center;
-  margin: 20px 0 6px;
+  margin: 22px 0 6px;
 }
 .site-btn {
   flex: 1 1 auto;
   min-width: 150px;
-  padding: 14px 18px;
-  border-radius: 12px;
-  border: 2px solid #cbd5e1;
+  padding: 13px 18px;
+  border-radius: 15px;
+  border: 3px solid #2b2b3a;
   background: #fff;
-  color: #1f2937;
-  font-size: 1rem;
-  font-weight: 700;
+  color: #2b2b3a;
+  font-family: inherit;
+  font-size: 1.05rem;
+  font-weight: 600;
   cursor: pointer;
+  box-shadow: 0 5px 0 #2b2b3a;
+  transition:
+    transform 0.06s ease,
+    box-shadow 0.06s ease,
+    filter 0.1s ease;
 }
 .site-btn:hover {
-  border-color: #2563eb;
+  filter: brightness(1.04);
+}
+.site-btn:active {
+  transform: translateY(4px);
+  box-shadow: 0 1px 0 #2b2b3a;
 }
 .site-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 .site-btn--primary {
-  background: #2563eb;
-  border-color: #2563eb;
-  color: #fff;
-}
-.site-btn--primary:hover {
-  filter: brightness(1.07);
+  background: #ffcb2e;
+  color: #2b2b3a;
 }
 .site-note {
-  color: #94a3b8;
-  font-size: 0.82rem;
-  margin: 10px 0 0;
+  color: #7b7b8c;
+  font-size: 0.84rem;
+  font-weight: 500;
+  margin: 12px 0 0;
 }
 .site-error {
   color: #b91c1c;
-  background: #fef2f2;
-  border: 1px solid #fecaca;
-  border-radius: 8px;
-  padding: 8px 10px;
-  font-size: 0.85rem;
+  background: #fff0f0;
+  border: 2.5px solid #ff4d6d;
+  border-radius: 12px;
+  padding: 9px 11px;
+  font-size: 0.88rem;
+  font-weight: 500;
 }
-.site-back,
-.site-admin-link {
+.site-back {
   background: none;
   border: none;
   cursor: pointer;
-}
-.site-back {
-  color: #2563eb;
-  font-size: 0.9rem;
-  padding: 0 0 10px;
+  color: #7a5cff;
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 0.95rem;
+  padding: 0 0 12px;
 }
 .site-admin-link {
   position: absolute;
   bottom: 12px;
   right: 14px;
-  color: rgba(255, 255, 255, 0.55);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.6);
+  font-family: inherit;
   font-size: 0.78rem;
 }
 
 /* RSVP form fields */
 .rsvp-field {
   display: block;
-  margin: 16px 0;
+  margin: 18px 0;
 }
 .rsvp-field > span {
   display: block;
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: #334155;
-  margin-bottom: 7px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #2b2b3a;
+  margin-bottom: 8px;
 }
 .rsvp-field input,
 .rsvp-field textarea {
   width: 100%;
-  padding: 11px 12px;
-  border-radius: 10px;
-  border: 1.5px solid #cbd5e1;
+  padding: 11px 13px;
+  border-radius: 13px;
+  border: 2.5px solid #2b2b3a;
   font-size: 1rem;
   font-family: inherit;
-  color: #1f2937;
+  color: #2b2b3a;
   background: #fff;
 }
 .rsvp-field input:focus,
 .rsvp-field textarea:focus {
   outline: none;
-  border-color: #2563eb;
+  border-color: #7a5cff;
+  box-shadow: 0 0 0 3px rgba(122, 92, 255, 0.28);
 }
 .rsvp-choices {
   display: flex;
-  gap: 8px;
+  gap: 9px;
   flex-wrap: wrap;
 }
 .rsvp-chip {
-  padding: 9px 14px;
+  padding: 9px 15px;
   border-radius: 999px;
-  border: 1.5px solid #cbd5e1;
+  border: 2.5px solid #2b2b3a;
   background: #fff;
-  color: #334155;
-  font-size: 0.9rem;
+  color: #2b2b3a;
+  font-family: inherit;
+  font-size: 0.94rem;
   font-weight: 600;
   cursor: pointer;
+  box-shadow: 0 3px 0 #2b2b3a;
+  transition:
+    transform 0.06s ease,
+    box-shadow 0.06s ease;
+}
+.rsvp-chip:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #2b2b3a;
 }
 .rsvp-chip--on {
-  border-color: #2563eb;
-  background: #eff4ff;
-  color: #1d4ed8;
+  background: #2ec4ff;
+  color: #fff;
 }
 
 /* Guest list (add each guest's name) */

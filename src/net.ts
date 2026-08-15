@@ -157,8 +157,7 @@ export function subscribeLayouts(onChange: (c: LayoutChange) => void) {
 // ---------------------------------------------------------------------------
 
 export interface RsvpGuest {
-  first: string;
-  last: string;
+  name: string;
 }
 export interface RsvpInput {
   name: string;

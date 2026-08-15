@@ -5,7 +5,7 @@ const comingLabel: Record<string, string> = { yes: 'Yes', no: 'No', maybe: 'Mayb
 const durationLabel: Record<string, string> = { whole: 'Whole game', mid: 'Midgame', post: 'Post-game', '': '—' };
 const groupLabel: Record<string, string> = { know: 'Knows people', meet: 'Meet new', dontcare: "Don't care", '': '—' };
 
-const guestNames = (r: RsvpRow) => (r.guests ?? []).map((g) => `${g.first} ${g.last}`.trim()).filter(Boolean);
+const guestNames = (r: RsvpRow) => (r.guests ?? []).map((g) => (g.name ?? '').trim()).filter(Boolean);
 
 /** One person in the table — a host, or a +1 that carries over the host's answers. */
 interface Person {

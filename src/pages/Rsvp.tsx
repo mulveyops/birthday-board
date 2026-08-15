@@ -17,19 +17,17 @@ export default function Rsvp() {
   const [status, setStatus] = useState<'idle' | 'sending' | 'done' | 'error'>('idle');
   const set = <K extends keyof RsvpInput>(k: K, v: RsvpInput[K]) => setForm((f) => ({ ...f, [k]: v }));
 
-  const addGuest = () => setForm((f) => ({ ...f, guests: [...f.guests, { first: '', last: '' }] }));
+  const addGuest = () => setForm((f) => ({ ...f, guests: [...f.guests, { name: '' }] }));
   const removeGuest = (i: number) => setForm((f) => ({ ...f, guests: f.guests.filter((_, j) => j !== i) }));
-  const setGuest = (i: number, k: 'first' | 'last', v: string) =>
-    setForm((f) => ({ ...f, guests: f.guests.map((g, j) => (j === i ? { ...g, [k]: v } : g)) }));
+  const setGuest = (i: number, v: string) =>
+    setForm((f) => ({ ...f, guests: f.guests.map((g, j) => (j === i ? { name: v } : g)) }));
 
   async function submit() {
     if (!form.name.trim()) {
       alert('Please add your name.');
       return;
     }
-    const guests = form.guests
-      .map((g) => ({ first: g.first.trim(), last: g.last.trim() }))
-      .filter((g) => g.first || g.last);
+    const guests = form.guests.map((g) => ({ name: g.name.trim() })).filter((g) => g.name);
     setStatus('sending');
     try {
       await submitRsvp({ ...form, name: form.name.trim(), guests });
@@ -84,7 +82,7 @@ export default function Rsvp() {
           <div className="rsvp-choices">
             {([
               ['yes', 'Yes'],
-              ['no', "Can't make it"],
+              ['no', 'No'],
               ['maybe', 'Maybe'],
             ] as const).map(([v, label]) => (
               <button
@@ -105,8 +103,7 @@ export default function Rsvp() {
               <span>Bringing anyone? Add each guest's name.</span>
               {form.guests.map((g, i) => (
                 <div className="guest-row" key={i}>
-                  <input placeholder="First name" value={g.first} onChange={(e) => setGuest(i, 'first', e.target.value)} />
-                  <input placeholder="Last name" value={g.last} onChange={(e) => setGuest(i, 'last', e.target.value)} />
+                  <input placeholder="Guest's first and last name" value={g.name} onChange={(e) => setGuest(i, e.target.value)} />
                   <button type="button" className="guest-remove" onClick={() => removeGuest(i)}>
                     Remove
                   </button>

@@ -1462,7 +1462,11 @@ export default function App({
   const nameOf = (id: string) => board.squares.find((s) => s.id === id)?.title ?? '?';
 
   return (
-    <div className={`app${panelOpen ? '' : ' app--panel-collapsed'}`}>
+    <div
+      className={`app${panelOpen ? '' : ' app--panel-collapsed'}${
+        variant === 'player' || appMode === 'play' || appMode === 'online' ? ' app--game' : ''
+      }`}
+    >
       <aside className="sidebar">
         <header className="brand">
           <h1>🎲 Birthday Board</h1>

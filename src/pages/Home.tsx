@@ -1,24 +1,41 @@
+import { useEffect, useState } from 'react';
 import { navigate } from '../Root';
 
 export default function Home() {
+  const [wag, setWag] = useState(false);
+
+  useEffect(() => {
+    if (!wag) return;
+    const t = setTimeout(() => setWag(false), 3000);
+    return () => clearTimeout(t);
+  }, [wag]);
+
   return (
     <div className="site">
       <div className="site-card">
         <div className="site-hero">
           <h1>Abby &amp; Steven's Birthday</h1>
-          <p className="site-date">Saturday, August 22 · 2:00 PM · Milwaukee</p>
+          <p className="site-date">Saturday, August 22 · 2:00 PM · 811 East Pleasant Street</p>
         </div>
-        <p className="site-lead">A city-wide birthday celebration &amp; scavenger game. Let us know you're coming — the game unlocks the day of.</p>
         <div className="site-actions">
           <button className="site-btn site-btn--primary" onClick={() => navigate('/rsvp')}>
             RSVP
           </button>
-          <button className="site-btn" onClick={() => navigate('/play')}>
+          <button className="site-btn" onClick={() => setWag(true)}>
             Play the game
           </button>
         </div>
-        <p className="site-note">Playing won't work until the host takes the game live at the party.</p>
       </div>
+
+      {wag && (
+        <div className="wag-scrim" onClick={() => setWag(false)}>
+          <div className="wag-pop" onClick={(e) => e.stopPropagation()}>
+            <div className="wag-finger">☝️</div>
+            <p className="wag-text">Nice try, this isn't available until the party!</p>
+          </div>
+        </div>
+      )}
+
       <button className="site-admin-link" onClick={() => navigate('/admin')}>
         admin
       </button>

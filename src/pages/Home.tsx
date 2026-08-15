@@ -15,7 +15,7 @@ export default function Home() {
       <div className="site-card">
         <div className="site-hero">
           <h1>Abby &amp; Steven's Birthday</h1>
-          <p className="site-date">Saturday, August 22 · 2:00 PM · 811 East Pleasant Street</p>
+          <p className="site-date">Saturday, August 22 · 1:30 PM · 811 East Pleasant Street</p>
         </div>
         <div className="site-actions">
           <button className="site-btn site-btn--primary" onClick={() => navigate('/rsvp')}>

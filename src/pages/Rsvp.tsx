@@ -63,7 +63,7 @@ export default function Rsvp() {
           ← Home
         </button>
         <h1>RSVP</h1>
-        <p className="site-date">Saturday, August 22 · 811 East Pleasant Street</p>
+        <p className="site-date">Saturday, August 22 · 1:30 PM · 811 East Pleasant Street</p>
         <p className="rsvp-blurb">
           Welcome to the second annual joint celebration of the birthdays of one Abby Hamilton and one Steven Mulvey!
           This year will be similarly formatted to last year, although the activity will be a bit different. Plan to

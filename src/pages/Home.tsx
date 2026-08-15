@@ -30,8 +30,11 @@ export default function Home() {
       {wag && (
         <div className="wag-scrim" onClick={() => setWag(false)}>
           <div className="wag-pop" onClick={(e) => e.stopPropagation()}>
-            <div className="wag-finger">☝️</div>
-            <p className="wag-text">Nice try, this isn't available until the party!</p>
+            <div className="wag-head">Nice try!</div>
+            <div className="wag-body">
+              <div className="wag-finger">☝️</div>
+              <p className="wag-text">This isn't available until the party!</p>
+            </div>
           </div>
         </div>
       )}

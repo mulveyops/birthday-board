@@ -8,7 +8,7 @@ create table if not exists public.rsvps (
   coming      text not null,                         -- yes | no | maybe
   guests      jsonb not null default '[]'::jsonb,    -- [{ first, last }, …] extra people
   plus_ones   integer not null default 0,            -- kept in sync = guests length
-  drinking    boolean not null default false,
+  drinking    boolean not null default false,        -- deprecated (question removed)
   duration    text,                                  -- whole | mid | post
   group_pref  text,                                  -- know | meet | dontcare
   note        text,

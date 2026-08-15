@@ -164,7 +164,6 @@ export interface RsvpInput {
   name: string;
   coming: 'yes' | 'no' | 'maybe';
   guests: RsvpGuest[];
-  drinking: boolean;
   duration: 'whole' | 'mid' | 'post' | '';
   group_pref: 'know' | 'meet' | 'dontcare' | '';
   note: string;
@@ -298,7 +297,7 @@ export async function listRsvps(): Promise<RsvpRow[]> {
   assertConfigured();
   const { data, error } = await supabase
     .from('rsvps')
-    .select('id, name, coming, guests, drinking, duration, group_pref, note, created_at')
+    .select('id, name, coming, guests, duration, group_pref, note, created_at')
     .order('created_at', { ascending: false });
   if (error) throw error;
   return (data ?? []).map((r) => ({

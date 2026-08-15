@@ -22,7 +22,7 @@ export default function Home() {
             RSVP
           </button>
           <button className="site-btn" onClick={() => setWag(true)}>
-            Play the game
+            Play
           </button>
         </div>
       </div>

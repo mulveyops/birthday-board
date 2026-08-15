@@ -7,7 +7,6 @@ const BLANK: RsvpInput = {
   name: '',
   coming: 'yes',
   guests: [],
-  drinking: false,
   duration: 'whole',
   group_pref: 'dontcare',
   note: '',
@@ -64,7 +63,14 @@ export default function Rsvp() {
           ← Home
         </button>
         <h1>RSVP</h1>
-        <p className="site-lead">Abby &amp; Steven's Birthday · August 22, 2:00 PM</p>
+        <p className="site-date">Saturday, August 22 · 811 East Pleasant Street</p>
+        <p className="rsvp-blurb">
+          Welcome to the second annual joint celebration of the birthdays of one Abby Hamilton and one Steven Mulvey!
+          This year will be similarly formatted to last year, although the activity will be a bit different. Plan to
+          arrive to our apartment in the 1:30 - 2 range, we will be going over rules and whatnot and commencing the game
+          at 2:30. The game will last roughly 3 hours and will have you walking around the city in groups. We will be
+          meeting at Nomad afterwards around 5:30 to crown the winner and hang out.
+        </p>
 
         {!isConfigured && <p className="site-error">Form isn't connected yet — check back shortly.</p>}
 
@@ -112,26 +118,6 @@ export default function Rsvp() {
             </div>
 
             <div className="rsvp-field">
-              <span>Will you be drinking?</span>
-              <div className="rsvp-choices">
-                <button
-                  type="button"
-                  className={`rsvp-chip ${form.drinking ? 'rsvp-chip--on' : ''}`}
-                  onClick={() => set('drinking', true)}
-                >
-                  Drinking
-                </button>
-                <button
-                  type="button"
-                  className={`rsvp-chip ${!form.drinking ? 'rsvp-chip--on' : ''}`}
-                  onClick={() => set('drinking', false)}
-                >
-                  Not drinking
-                </button>
-              </div>
-            </div>
-
-            <div className="rsvp-field">
               <span>How much can you make it for?</span>
               <div className="rsvp-choices">
                 {([
@@ -174,7 +160,7 @@ export default function Rsvp() {
         )}
 
         <label className="rsvp-field">
-          <span>Any suggestions? (optional)</span>
+          <span>Any other thoughts, suggestions, or considerations</span>
           <textarea rows={2} value={form.note} onChange={(e) => set('note', e.target.value)} placeholder="Leave us a suggestion…" />
         </label>
 

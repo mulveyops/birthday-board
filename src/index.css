@@ -638,6 +638,45 @@ body {
   padding: 12px;
   margin-top: 14px;
 }
+
+/* Sidebar accordion: one header button per tool category, bodies collapse. */
+.acc-head {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 11px 12px;
+  border-radius: 10px;
+  border: 1px solid #334155;
+  background: #1e293b;
+  color: #cbd5e1;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+}
+.acc-head:hover {
+  border-color: #475569;
+  color: #fff;
+}
+.acc-head--on {
+  background: #16233d;
+  border-color: #2563eb;
+  color: #fff;
+}
+.acc-caret {
+  color: #64748b;
+}
+.acc-body[hidden] {
+  display: none;
+}
+.acc-body > .panel,
+.acc-body > .stepper {
+  margin-top: 8px;
+}
 .panel h2 {
   margin: 0 0 8px;
   font-size: 12px;

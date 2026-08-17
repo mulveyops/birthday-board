@@ -1461,6 +1461,21 @@ export default function App({
   const curStep = phaseIndex(phase);
   const nameOf = (id: string) => board.squares.find((s) => s.id === id)?.title ?? '?';
 
+  // --- Sidebar accordion (admin design surface) ------------------------------
+  // Each tool category is a header button; one section open at a time. Bodies
+  // stay mounted (hidden attr) so inputs keep state when collapsed.
+  const [openSection, setOpenSection] = useState('setup');
+  const accHead = (id: string, title: string) => (
+    <button
+      type="button"
+      className={`acc-head${openSection === id ? ' acc-head--on' : ''}`}
+      onClick={() => setOpenSection((s) => (s === id ? '' : id))}
+    >
+      <span>{title}</span>
+      <span className="acc-caret">{openSection === id ? '▾' : '▸'}</span>
+    </button>
+  );
+
   return (
     <div
       className={`app${panelOpen ? '' : ' app--panel-collapsed'}${
@@ -1472,28 +1487,6 @@ export default function App({
           <h1>🎲 Birthday Board</h1>
           <p className="sub">Lower East Side · Milwaukee</p>
         </header>
-
-        {variant === 'admin' && (
-          <div className="stepper">
-            <button
-              className={`step ${appMode === 'design' ? 'step--on' : ''}`}
-              onClick={() => setAppMode('design')}
-            >
-              ✎ Design
-            </button>
-            <button
-              className={`step ${appMode === 'play' ? 'step--on' : ''}`}
-              disabled={!spots.length}
-              title={spots.length ? 'Play the board' : 'Draw a board first'}
-              onClick={() => {
-                setMode('select');
-                setAppMode('play');
-              }}
-            >
-              ▶ Play
-            </button>
-          </div>
-        )}
 
         {variant === 'player' && appMode !== 'online' ? (
           <section className="panel">
@@ -1549,6 +1542,9 @@ export default function App({
             {play.last && <p className="hint" style={{ color: '#7c2d12', fontWeight: 600 }}>{play.last}</p>}
             <button className="btn btn--ghost" onClick={resetPlay}>
               Reset run
+            </button>
+            <button className="btn btn--ghost" onClick={() => setAppMode('design')}>
+              ← Exit test play
             </button>
           </section>
         ) : appMode === 'online' ? (
@@ -1609,6 +1605,8 @@ export default function App({
           </section>
         ) : (
         <>
+        {accHead('setup', '🗺️ Board setup')}
+        <div className="acc-body" hidden={openSection !== 'setup'}>
         <div className="stepper">
           {PHASES.map((s, i) => (
             <button
@@ -1676,11 +1674,10 @@ export default function App({
           </section>
         )}
 
-        {/* STEP 3 · BOARD */}
+        {/* STEP 3 · generation (placement tools live in the Spaces section) */}
         {phase === 'squares' && (
-          <>
             <section className="panel">
-              <h2>Step 3 · The board</h2>
+              <h2>Step 3 · Generate</h2>
               <button
                 className="btn btn--go"
                 onClick={generateFromStreets}
@@ -1715,6 +1712,17 @@ export default function App({
                 Draws the track along the streets; “surroundings” paints the river,
                 parks, tree-lined streets, and real bars as stylized art.
               </p>
+              <button className="btn btn--ghost" onClick={() => goToPhase('area')}>← Edit the area</button>
+            </section>
+        )}
+        </div>
+
+        {accHead('spaces', '🧩 Spaces')}
+        <div className="acc-body" hidden={openSection !== 'spaces'}>
+        {phase !== 'squares' ? (
+          <p className="hint">Finish Board setup first — then place and type spaces here.</p>
+        ) : (
+            <section className="panel">
               <p className="hint">
                 {mode === 'add'
                   ? `Click the map to place a ${SQUARE_TYPES[addType].label}.`
@@ -1767,11 +1775,16 @@ export default function App({
                 />
                 Enforce one-way paths (order matters)
               </label>
-              <button className="btn btn--ghost" onClick={() => goToPhase('area')}>← Edit the area</button>
               <p className="hint">{board.squares.length} spaces · {board.edges.length} paths</p>
             </section>
+        )}
+        </div>
 
-            {realBars.length > 0 ? (
+        {accHead('bars', '🍺 Real bars')}
+        <div className="acc-body" hidden={openSection !== 'bars'}>
+        {phase !== 'squares' ? (
+          <p className="hint">Finish Board setup first.</p>
+        ) : realBars.length > 0 ? (
               <section className="panel">
                 <h2>
                   Real bars ({realBars.filter((b) => placedBarNames.has(b.name)).length}/{realBars.length})
@@ -1812,12 +1825,12 @@ export default function App({
               </section>
             ) : (
               <section className="panel">
-                <h2>Real bars</h2>
                 <p className="hint">Run “Add surroundings” to pull real bars from OSM — they’ll show up here to add with one click.</p>
               </section>
             )}
+        </div>
 
-            {selectedEdge && (
+        {phase === 'squares' && selectedEdge && (
               <section className="panel">
                 <h2>Edit path</h2>
                 <p className="hint">
@@ -1842,7 +1855,7 @@ export default function App({
               </section>
             )}
 
-            {selected && (
+        {phase === 'squares' && selected && (
               <section className="panel">
                 <h2>Edit space</h2>
                 <label className="field">
@@ -1970,11 +1983,10 @@ export default function App({
                 <button className="btn btn--danger" onClick={() => removeSquare(selected.id)}>Delete space</button>
               </section>
             )}
-          </>
-        )}
 
+        {accHead('layouts', '☁ Board layouts')}
+        <div className="acc-body" hidden={openSection !== 'layouts'}>
         <section className="panel">
-          <h2>☁ Board layouts</h2>
           {cloudStatus === 'needs-setup' ? (
             <p className="hint">
               Cloud sync needs a one-time setup — run <code>supabase/board_layouts.sql</code> in your
@@ -2042,9 +2054,11 @@ export default function App({
             </>
           )}
         </section>
+        </div>
 
+        {accHead('file', '📁 Board file')}
+        <div className="acc-body" hidden={openSection !== 'file'}>
         <section className="panel">
-          <h2>Board file</h2>
           <div className="row">
             <button className="btn" onClick={exportJson}>Export JSON</button>
             <button className="btn" onClick={() => jsonInputRef.current?.click()}>Import JSON</button>
@@ -2083,14 +2097,29 @@ export default function App({
           </button>
           <p className="hint">{board.squares.length} spaces · Export a JSON backup anytime</p>
         </section>
-        </>
-        )}
+        </div>
 
-        {variant === 'admin' && (
+        {accHead('test', '▶ Test play')}
+        <div className="acc-body" hidden={openSection !== 'test'}>
+          <section className="panel">
+            <p className="hint">Try the board solo as a desktop sim — check-ins, drops, chance, stars.</p>
+            <button
+              className="btn btn--go"
+              disabled={!spots.length}
+              title={spots.length ? 'Play the board' : 'Draw a board first'}
+              onClick={() => {
+                setMode('select');
+                setAppMode('play');
+              }}
+            >
+              ▶ Start test play
+            </button>
+          </section>
+        </div>
+
+        {accHead('host', '🎮 Host game')}
+        <div className="acc-body" hidden={openSection !== 'host'}>
         <section className="panel">
-          <h2>
-            🌐 Multiplayer <span style={{ fontSize: '0.68rem', opacity: 0.65, fontWeight: 400 }}>beta</span>
-          </h2>
           {!isConfigured ? (
             <p className="hint">
               Add your Supabase URL + anon key to <code>.env.local</code> (see <code>.env.example</code>), and run{' '}
@@ -2222,6 +2251,8 @@ export default function App({
             </>
           )}
         </section>
+        </div>
+        </>
         )}
       </aside>
 

@@ -310,7 +310,7 @@ for (const c of candidates) {
 }
 candidates.sort((a, b) => a.priority - b.priority || b.area - a.area);
 
-const NODE_CLEAR = { 0: 26, 1: 26, 2: 20, 3: 22, 4: 20, 5: 24, 6: 22 };
+const NODE_CLEAR = { 0: 26, 1: 22, 2: 20, 3: 22, 4: 20, 5: 24, 6: 22 };
 let garages = 0;
 for (const c of candidates) {
   const meta = ASSET_META[c.assetId];

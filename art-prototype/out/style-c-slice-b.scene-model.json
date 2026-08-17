@@ -12,6 +12,7 @@
   "ground.playground": 1,
   "ground.tennis": 2,
   "ground.baseball": 1,
+  "bldg.civ.school": 1,
   "bldg.civ.church": 2,
   "bldg.com.mixed_use": 11,
   "bldg.com.corner_tavern": 1,
@@ -116,6 +117,18 @@
    "layer": "ground",
    "priority": 2,
    "src": "osm:pitch:basketball"
+  },
+  {
+   "assetId": "bldg.civ.school",
+   "variant": 42,
+   "structure": 1,
+   "x": 109.8,
+   "y": 285.5,
+   "scale": 1.2,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 1,
+   "src": "osm:building"
   },
   {
    "assetId": "bldg.civ.church",

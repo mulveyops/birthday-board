@@ -838,15 +838,118 @@ function treeFlowering() {
 
 // ============ ambient + ground (unchanged geometry, minor line bump) ============
 
-function car() {
-  return `
-  <symbol id="veh.car" overflow="visible">
-    <path d="M-2.4 -1.1 C-2.4 -2.2 -1.6 -2.9 -0.7 -2.9 L0.9 -2.9 C1.7 -2.9 2.1 -2.3 2.4 -1.6 L2.4 -0.4 L-2.4 -0.4 Z" fill="var(--body,#e05252)" stroke="${INK}" stroke-width="0.6" stroke-linejoin="round"/>
-    <path d="M-1.5 -1.7 L-1.2 -2.5 L0.7 -2.5 L1.1 -1.7 Z" fill="#bfe4ea" stroke="${INK}" stroke-width="0.4"/>
+// Parked cars — s0 sedan, s1 hatchback/small SUV, s2 pickup. Side view,
+// punctuation not traffic simulation.
+const carWheels = `
     <circle cx="-1.4" cy="-0.35" r="0.55" fill="#3a332b" stroke="${INK}" stroke-width="0.3"/>
     <circle cx="1.4" cy="-0.35" r="0.55" fill="#3a332b" stroke="${INK}" stroke-width="0.3"/>
     <circle cx="-1.4" cy="-0.35" r="0.22" fill="#cfc4ad"/>
-    <circle cx="1.4" cy="-0.35" r="0.22" fill="#cfc4ad"/>
+    <circle cx="1.4" cy="-0.35" r="0.22" fill="#cfc4ad"/>`;
+function carS0() {
+  return `
+  <symbol id="vehicle.parked_car.s0" overflow="visible">
+    <path d="M-2.4 -1.1 C-2.4 -2.2 -1.6 -2.9 -0.7 -2.9 L0.9 -2.9 C1.7 -2.9 2.1 -2.3 2.4 -1.6 L2.4 -0.4 L-2.4 -0.4 Z" fill="var(--body,#e05252)" stroke="${INK}" stroke-width="0.6" stroke-linejoin="round"/>
+    <path d="M-1.5 -1.7 L-1.2 -2.5 L0.7 -2.5 L1.1 -1.7 Z" fill="#bfe4ea" stroke="${INK}" stroke-width="0.4"/>
+    ${carWheels}
+  </symbol>`;
+}
+function carS1() {
+  return `
+  <symbol id="vehicle.parked_car.s1" overflow="visible">
+    <path d="M-2.3 -1 C-2.3 -2.7 -1.9 -3.1 -1 -3.1 L1.5 -3.1 C2.1 -3.1 2.4 -2.5 2.4 -1.6 L2.4 -0.4 L-2.3 -0.4 Z" fill="var(--body,#4f8fd9)" stroke="${INK}" stroke-width="0.6" stroke-linejoin="round"/>
+    <path d="M-1.7 -1.9 L-1.6 -2.7 L0.4 -2.7 L0.7 -1.9 Z" fill="#bfe4ea" stroke="${INK}" stroke-width="0.4"/>
+    <path d="M1 -2.7 L1.5 -2.7 L1.7 -1.9 L1.1 -1.9 Z" fill="#bfe4ea" stroke="${INK}" stroke-width="0.35"/>
+    ${carWheels}
+  </symbol>`;
+}
+function carS2() {
+  return `
+  <symbol id="vehicle.parked_car.s2" overflow="visible">
+    <path d="M-2.6 -1 L-2.6 -1.9 L-0.3 -1.9 L-0.3 -2.9 L1.3 -2.9 C1.9 -2.9 2.3 -2.4 2.5 -1.7 L2.5 -0.4 L-2.6 -0.4 Z" fill="var(--body,#6fbf73)" stroke="${INK}" stroke-width="0.6" stroke-linejoin="round"/>
+    <path d="M0.1 -1.95 L0.2 -2.55 L1.2 -2.55 L1.5 -1.95 Z" fill="#bfe4ea" stroke="${INK}" stroke-width="0.35"/>
+    <path d="M-2.6 -1.9 L-0.3 -1.9" stroke="${INK}" stroke-width="0.35"/>
+    ${carWheels}
+  </symbol>`;
+}
+
+// ============ FURNITURE — lowest-intensity standing objects ============
+// Rewards inspection, never demands attention. Simple silhouettes, no noise.
+
+function hydrant() {
+  return `
+  <symbol id="furniture.hydrant" overflow="visible">
+    <rect x="-0.55" y="-1.5" width="1.1" height="1.5" rx="0.28" fill="#c62d2d" stroke="${INK}" stroke-width="0.35"/>
+    <path d="M-0.55 -1.55 A0.55 0.55 0 0 1 0.55 -1.55 Z" fill="#c62d2d" stroke="${INK}" stroke-width="0.35"/>
+    <rect x="-0.95" y="-1.15" width="0.42" height="0.45" rx="0.12" fill="#c62d2d" stroke="${INK}" stroke-width="0.25"/>
+    <rect x="0.53" y="-1.15" width="0.42" height="0.45" rx="0.12" fill="#c62d2d" stroke="${INK}" stroke-width="0.25"/>
+    <circle cx="0" cy="-1.95" r="0.24" fill="#e2a0a0" stroke="${INK}" stroke-width="0.2"/>
+  </symbol>`;
+}
+
+function bench() {
+  return `
+  <symbol id="furniture.bench" overflow="visible">
+    <rect x="-1.4" y="-1.4" width="2.8" height="0.45" rx="0.15" fill="#a97c50" stroke="${INK}" stroke-width="0.3"/>
+    <rect x="-1.4" y="-0.75" width="2.8" height="0.4" rx="0.15" fill="#b98c5c" stroke="${INK}" stroke-width="0.3"/>
+    <path d="M-1.15 -0.35 V0.25 M1.15 -0.35 V0.25" stroke="${INK}" stroke-width="0.3"/>
+  </symbol>`;
+}
+
+// bus stop: s0 sign pole; s1 simple shelter (used when OSM says shelter=yes)
+function busStopS0() {
+  return `
+  <symbol id="furniture.bus_stop.s0" overflow="visible">
+    <path d="M0 0 V-3.6" stroke="${INK}" stroke-width="0.4"/>
+    <rect x="-0.95" y="-4.9" width="1.9" height="1.4" rx="0.25" fill="#3b5fc9" stroke="${INK}" stroke-width="0.35"/>
+    <rect x="-0.62" y="-4.6" width="1.24" height="0.62" rx="0.18" fill="#fdf6e3"/>
+    <circle cx="-0.35" cy="-4.05" r="0.14" fill="#fdf6e3"/>
+    <circle cx="0.35" cy="-4.05" r="0.14" fill="#fdf6e3"/>
+  </symbol>`;
+}
+function busStopS1() {
+  return `
+  <symbol id="furniture.bus_stop.s1" overflow="visible">
+    <rect x="-2.5" y="-3.3" width="5" height="0.55" rx="0.2" fill="#5f7285" stroke="${INK}" stroke-width="0.35"/>
+    <path d="M-2.1 -2.75 V0 M2.1 -2.75 V0" stroke="${INK}" stroke-width="0.35"/>
+    <rect x="-2.2" y="-2.75" width="4.4" height="2.1" fill="#bfe4ea" opacity="0.55" stroke="${INK}" stroke-width="0.25"/>
+    <rect x="-1.5" y="-1.15" width="3" height="0.4" rx="0.12" fill="#a97c50" stroke="${INK}" stroke-width="0.25"/>
+    <path d="M3 0 V-3.4" stroke="${INK}" stroke-width="0.35"/>
+    <rect x="2.25" y="-4.5" width="1.5" height="1.1" rx="0.2" fill="#3b5fc9" stroke="${INK}" stroke-width="0.3"/>
+  </symbol>`;
+}
+
+function bikeRack() {
+  return `
+  <symbol id="furniture.bike_rack" overflow="visible">
+    <path d="M-1.5 0 V-1 A0.55 0.55 0 0 1 -0.4 -1 V0 M-0.1 0 V-1 A0.55 0.55 0 0 1 1 -1 V0 M1.3 0 V-1 A0.55 0.55 0 0 1 2.4 -1 V0" fill="none" stroke="#5f6a74" stroke-width="0.38"/>
+  </symbol>`;
+}
+
+function trashCan() {
+  return `
+  <symbol id="furniture.trash_can" overflow="visible">
+    <path d="M-0.6 -1.5 L-0.5 0 H0.5 L0.6 -1.5 Z" fill="#5e7a52" stroke="${INK}" stroke-width="0.3"/>
+    <rect x="-0.72" y="-1.75" width="1.44" height="0.35" rx="0.15" fill="#4a6142" stroke="${INK}" stroke-width="0.25"/>
+  </symbol>`;
+}
+
+function flagpole() {
+  return `
+  <symbol id="furniture.flagpole" overflow="visible">
+    <path d="M0 0 V-8.5" stroke="${INK}" stroke-width="0.4"/>
+    <circle cx="0" cy="-8.7" r="0.22" fill="#f2c94c" stroke="${INK}" stroke-width="0.2"/>
+    <path d="M0 -8.4 h2.6 v1.6 h-2.6 Z" fill="#e8e4da" stroke="${INK}" stroke-width="0.3"/>
+    <rect x="0" y="-8.4" width="1.1" height="0.85" fill="#3b5fc9"/>
+    <path d="M0 -7.25 h2.6 M1.1 -7.8 h1.5" stroke="#c62d2d" stroke-width="0.32"/>
+  </symbol>`;
+}
+
+function dumpster() {
+  return `
+  <symbol id="infra.dumpster" overflow="visible">
+    <path d="M-1.5 -1.6 L1.5 -1.6 L1.35 0 H-1.35 Z" fill="#3f6d5d" stroke="${INK}" stroke-width="0.4"/>
+    <path d="M-1.6 -1.6 L-1.2 -2.05 H1.2 L1.6 -1.6 Z" fill="#35594d" stroke="${INK}" stroke-width="0.35"/>
+    <path d="M-0.55 -0.8 h1.1" stroke="${INK}" stroke-width="0.3" opacity="0.6"/>
   </symbol>`;
 }
 
@@ -952,7 +1055,7 @@ function baseballDiamond() {
 // Picnic table — mapped park furniture, top-down, tiny.
 function picnicTable() {
   return `
-  <symbol id="ground.picnic_table" overflow="visible">
+  <symbol id="furniture.picnic_table" overflow="visible">
     <rect x="-1.5" y="-1" width="3" height="2" rx="0.25" fill="#a97c50" stroke="${INK}" stroke-width="0.4"/>
     <rect x="-1.5" y="-1.8" width="3" height="0.55" rx="0.2" fill="#8a6248" stroke="${INK}" stroke-width="0.3"/>
     <rect x="-1.5" y="1.25" width="3" height="0.55" rx="0.2" fill="#8a6248" stroke="${INK}" stroke-width="0.3"/>
@@ -972,8 +1075,9 @@ export function allSymbols() {
     cornerTavern(), churchS0(), churchS1(), churchS2(), schoolS0(), schoolS1(),
     treeLinden(), treeHoneylocust(), treeFlowering(), floweringS1(), treeMaple(), treeAsh(), treeElm(), treeOak(),
     coniferS0(), coniferS1(), coniferS2(),
-    car(), tennisCourt(), basketballCourt(), baseballDiamond(),
+    carS0(), carS1(), carS2(), tennisCourt(), basketballCourt(), baseballDiamond(),
     playgroundS0(), playgroundS1(), playgroundS2(), picnicTable(),
+    hydrant(), bench(), busStopS0(), busStopS1(), bikeRack(), trashCan(), flagpole(), dumpster(),
   ].join('\n');
 }
 
@@ -991,6 +1095,8 @@ export const STRUCT_COUNT = {
   'ground.playground': 3,
   'tree.flowering': 2,
   'tree.conifer': 3,
+  'vehicle.parked_car': 3,
+  'furniture.bus_stop': 2,
 };
 // commercial treatment counts (encoded in variant: variant = t*16 + palette)
 export const TREATMENT_COUNT = {
@@ -1019,10 +1125,17 @@ export const ASSET_META = {
   'tree.ash': { halfW: 3.6, cls: 'tree' },
   'tree.elm': { halfW: 8.5, cls: 'tree' },
   'tree.oak': { halfW: 9, cls: 'tree' },
-  'veh.car': { halfW: 2.6, cls: 'ambient' },
+  'vehicle.parked_car': { halfW: 2.6, cls: 'ambient' },
   'ground.tennis': { halfW: 15, cls: 'ground' },
   'ground.basketball': { halfW: 13, cls: 'ground' },
   'ground.baseball': { halfW: 16, cls: 'ground' },
   'ground.playground': { halfW: 10, cls: 'ground' },
-  'ground.picnic_table': { halfW: 2, cls: 'ground' },
+  'furniture.picnic_table': { halfW: 2, cls: 'ground' },
+  'furniture.hydrant': { halfW: 1, cls: 'furniture' },
+  'furniture.bench': { halfW: 1.5, cls: 'furniture' },
+  'furniture.bus_stop': { halfW: 2.5, cls: 'furniture' },
+  'furniture.bike_rack': { halfW: 2, cls: 'furniture' },
+  'furniture.trash_can': { halfW: 0.8, cls: 'furniture' },
+  'furniture.flagpole': { halfW: 1.4, cls: 'furniture' },
+  'infra.dumpster': { halfW: 1.7, cls: 'furniture' },
 };

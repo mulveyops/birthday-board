@@ -128,8 +128,8 @@ for (const el of raw.leisure.elements ?? []) {
     // mapped picnic tables inside parks: low-priority park detail
     if (el.type === 'node' && el.tags?.leisure === 'picnic_table') {
       const x = X(el.lon), y = Y(el.lat);
-      if (inSlice(el.lat, el.lon) && inPark(x, y) && scene.filter((e) => e.assetId === 'ground.picnic_table').length < 10) {
-        scene.push({ assetId: 'ground.picnic_table', variant: 0, x: +x.toFixed(1), y: +y.toFixed(1), scale: 1, rotation: Math.round(hash01(x, y) * 60 - 30), layer: 'ground', priority: 8, src: 'osm:picnic_table' });
+      if (inSlice(el.lat, el.lon) && inPark(x, y) && scene.filter((e) => e.assetId === 'furniture.picnic_table').length < 10) {
+        scene.push({ assetId: 'furniture.picnic_table', variant: 0, x: +x.toFixed(1), y: +y.toFixed(1), scale: 1, rotation: Math.round(hash01(x, y) * 60 - 30), layer: 'ground', priority: 8, src: 'osm:picnic_table' });
       }
     }
     continue;
@@ -422,7 +422,7 @@ for (const el of raw.trees.elements ?? []) {
   // parks breathe: wider tree spacing than street terraces, and canopies must
   // not bury the recreation assets
   if (!placedT.every((p) => Math.hypot(p.x - x, p.y - y) >= 10)) continue;
-  if (scene.some((e) => e.layer === 'ground' && e.assetId !== 'ground.picnic_table' && Math.hypot(e.x - x, e.y - y) < 15)) continue;
+  if (scene.some((e) => e.layer === 'ground' && e.assetId !== 'furniture.picnic_table' && Math.hypot(e.x - x, e.y - y) < 15)) continue;
   const h = hash01(x * 1.3, y * 0.9);
   const assetId = ['tree.maple', 'tree.linden', 'tree.ash', 'tree.oak'][Math.floor(h * 4)];
   commitT({ assetId, structure: 0, variant: Math.floor(h * 96), x: +x.toFixed(1), y: +y.toFixed(1), scale: +(0.9 + h * 0.4).toFixed(2), rotation: 0, layer: 'standing', priority: 7, src: 'osm:tree' });
@@ -462,7 +462,7 @@ for (const [ax, ay, bx, by] of roadSegs) {
     if (distToNode(x, y) < 22) continue;
     if (!placedT.every((p) => Math.hypot(p.x - x, p.y - y) >= 5)) continue;
     if (!placedB.every((p) => Math.hypot(p.x - x, p.y - y) >= 7)) continue;
-    scene.push({ assetId: 'veh.car', variant: Math.floor(hash01(x, y) * 96), x: +x.toFixed(1), y: +y.toFixed(1), scale: 2.1, rotation: 0, layer: 'standing', priority: 8, src: 'procedural:parked_car' });
+    scene.push({ assetId: 'vehicle.parked_car', structure: hash01(x + 3, y) < 0.6 ? 0 : hash01(x + 3, y) < 0.9 ? 1 : 2, variant: Math.floor(hash01(x, y) * 96), x: +x.toFixed(1), y: +y.toFixed(1), scale: 2.1, rotation: 0, layer: 'standing', priority: 8, src: 'procedural:parked_car' });
     placedB.push({ x, y, r: 4 });
     cars++;
   }
@@ -523,6 +523,83 @@ for (const e of scene) {
   propStats.walk++;
 }
 
+// ---- 5b. PARKING LOTS: real polygons (fetched geometry), quietest layer ----
+const parkingLots = [];
+for (const el of raw.parking?.elements ?? []) {
+  if (el.type !== 'way' || !el.geometry) continue;
+  const c = cent(el.geometry);
+  if (!inSlice(c.lat, c.lng)) continue;
+  const area = areaOf(el.geometry);
+  if (area < 220 || area > 4500) continue;
+  const cx = X(c.lng), cy = Y(c.lat);
+  if (distToNode(cx, cy) < 30) continue;
+  if (parkingLots.length >= 8) break;
+  const ang = longestEdgeAngle(el.geometry) * Math.PI / 180;
+  parkingLots.push({ pts: el.geometry.map((g) => [+X(g.lon).toFixed(1), +Y(g.lat).toFixed(1)]), cx, cy, area, ang });
+  scene.push({ assetId: 'prop.parking', layer: 'property', pts: parkingLots[parkingLots.length - 1].pts, src: 'osm:parking' });
+  // sparse deterministic occupancy: a lot shows a few cars, never a full grid
+  const k = Math.max(1, Math.min(5, Math.floor(area / 260)));
+  const ux = Math.cos(ang), uy = Math.sin(ang);
+  for (let i = 0; i < k; i++) {
+    if (hash01(cx + i * 7.1, cy) < 0.35) continue;
+    const off = (i - (k - 1) / 2) * 6;
+    const px = cx + ux * off, py = cy + uy * off;
+    if (distToNode(px, py) < 22 || distToRoad(px, py).d < 13.5) continue;
+    scene.push({ assetId: 'vehicle.parked_car', structure: hash01(px, py) < 0.6 ? 0 : hash01(px, py) < 0.9 ? 1 : 2, variant: Math.floor(hash01(py, px) * 96), x: +px.toFixed(1), y: +py.toFixed(1), scale: 1.9, rotation: 0, layer: 'standing', priority: 8, src: 'procedural:parking_cluster' });
+  }
+}
+
+// ---- 6. FURNITURE (D1): exact mapped objects; loses every collision fight ----
+// Context emerges from the data itself: benches/racks cluster where mapped
+// (commercial + parks), hydrants pepper residential streets, dumpsters hide
+// behind commercial along alleys.
+const furn = [];
+const furnStats = {};
+const furnOK = (x, y, clear) =>
+  distToNode(x, y) > 18 &&
+  placedB.every((p) => Math.hypot(p.x - x, p.y - y) >= p.r * 0.5 + 2.5) &&
+  placedT.every((p) => Math.hypot(p.x - x, p.y - y) >= 2.5) &&
+  furn.every((p) => Math.hypot(p.x - x, p.y - y) >= clear);
+const placeFurn = (assetId, x0, y0, opts = {}) => {
+  let x = x0, y = y0;
+  const road = distToRoad(x, y);
+  if (road.d < 13.8) { x = road.qx + road.nx * 13.8; y = road.qy + road.ny * 13.8; } // curb band
+  if (!inView(x, y)) return false;
+  if (!furnOK(x, y, opts.clear ?? 4)) return false;
+  scene.push({ assetId, structure: opts.structure ?? 0, variant: 0, x: +x.toFixed(1), y: +y.toFixed(1), scale: opts.scale ?? 1, rotation: 0, layer: 'standing', priority: 8, src: opts.src });
+  furn.push({ x, y });
+  furnStats[assetId] = (furnStats[assetId] ?? 0) + 1;
+  return true;
+};
+for (const el of raw.transport.elements ?? []) {
+  if (el.type !== 'node' || !inSlice(el.lat, el.lon)) continue;
+  const t = el.tags ?? {};
+  const x = X(el.lon), y = Y(el.lat);
+  if (t.emergency === 'fire_hydrant') placeFurn('furniture.hydrant', x, y, { scale: 1.15, src: 'osm:fire_hydrant' });
+  else if (t.highway === 'bus_stop') placeFurn('furniture.bus_stop', x, y, { structure: t.shelter === 'yes' ? 1 : 0, clear: 6, src: 'osm:bus_stop' });
+  else if (t.man_made === 'flagpole') placeFurn('furniture.flagpole', x, y, { src: 'osm:flagpole' });
+}
+let racks = 0, cans = 0;
+for (const el of raw.pois.elements ?? []) {
+  if (el.type !== 'node' || !inSlice(el.lat ?? 0, el.lon ?? 0)) continue;
+  const t = el.tags ?? {};
+  const x = X(el.lon), y = Y(el.lat);
+  // thinning by class: benches 12m apart, racks 25m apart + cap, cans 40m + cap
+  if (t.amenity === 'bench') placeFurn('furniture.bench', x, y, { clear: 12, src: 'osm:bench' });
+  else if (t.amenity === 'bicycle_parking' && racks < 12) { if (placeFurn('furniture.bike_rack', x, y, { clear: 25, src: 'osm:bicycle_parking' })) racks++; }
+  else if (t.amenity === 'waste_basket' && cans < 6) { if (placeFurn('furniture.trash_can', x, y, { clear: 40, src: 'osm:waste_basket' })) cans++; }
+}
+// dumpsters: procedural, extremely sparse — alley midpoints behind commercial
+let dumpsters = 0;
+for (const e of scene.filter((s2) => s2.assetId === 'prop.alley')) {
+  if (dumpsters >= 3) break;
+  const mid = e.pts[Math.floor(e.pts.length / 2)];
+  const commercialNear = scene.some((b2) => b2.assetId?.startsWith?.('bldg.com') && Math.hypot(b2.x - mid[0], b2.y - mid[1]) < 34);
+  if (!commercialNear) continue;
+  const jx = mid[0] + (hash01(mid[0], mid[1]) - 0.5) * 5, jy = mid[1] + 3;
+  if (placeFurn('infra.dumpster', jx, jy, { clear: 30, src: 'procedural:dumpster' })) dumpsters++;
+}
+
 // ================= RENDER =================
 const GRASS = '#a9d476';
 const ROAD_FILL = '#f3ead6';
@@ -558,7 +635,7 @@ const variantStyle = (e) => {
     const u = (i) => HOUSE_BODIES[(v + i * 3) % HOUSE_BODIES.length];
     return `--u0:${u(0)};--u1:${u(1)};--u2:${u(2)}`;
   }
-  if (e.assetId === 'veh.car') return `--body:${CAR_BODIES[v % CAR_BODIES.length]}`;
+  if (e.assetId === 'vehicle.parked_car') return `--body:${CAR_BODIES[v % CAR_BODIES.length]}`;
   if (e.assetId === 'bldg.res.apartment' && (e.structure ?? 0) === 0) {
     const body = ['#e0b48f', '#d9a8a0', '#c9c09a'][v % 3];
     return `--body:${body};--side:${shade(body, -20)}`;
@@ -617,7 +694,27 @@ ${(() => {
     hedge: 'stroke="#4f8f45" stroke-width="1.9" stroke-linecap="round" opacity="0.85"',
   };
   return scene.filter((e) => e.layer === 'property')
-    .map((e) => `<polyline points="${e.pts.map((p) => p.join(',')).join(' ')}" fill="none" ${style[e.assetId.slice(5)] ?? style.fence}/>`)
+    .map((e) => {
+      if (e.assetId === 'prop.parking') {
+        // planar service space: subdued fill, faint edge, minimal stall rhythm
+        const cx = e.pts.reduce((s2, p) => s2 + p[0], 0) / e.pts.length;
+        const cy = e.pts.reduce((s2, p) => s2 + p[1], 0) / e.pts.length;
+        let ang = 0, bl = -1;
+        for (let i = 1; i < e.pts.length; i++) {
+          const dx = e.pts[i][0] - e.pts[i - 1][0], dy = e.pts[i][1] - e.pts[i - 1][1];
+          if (dx * dx + dy * dy > bl) { bl = dx * dx + dy * dy; ang = Math.atan2(dy, dx); }
+        }
+        const ux = Math.cos(ang), uy = Math.sin(ang), vx = -uy, vy = ux;
+        const n = Math.min(7, Math.floor(Math.sqrt(bl) / 3.2));
+        const ticks = Array.from({ length: n }, (_, i) => {
+          const o = (i - (n - 1) / 2) * 2.9;
+          const sx = cx + ux * o, sy = cy + uy * o;
+          return `<path d="M${(sx - vx * 1.3).toFixed(1)} ${(sy - vy * 1.3).toFixed(1)} L${(sx + vx * 1.3).toFixed(1)} ${(sy + vy * 1.3).toFixed(1)}" stroke="#b9b2a0" stroke-width="0.4" opacity="0.8"/>`;
+        }).join('');
+        return `<polygon points="${e.pts.map((p) => p.join(',')).join(' ')}" fill="#cfc9b8" stroke="#b9b2a0" stroke-width="0.6" opacity="0.9"/>${ticks}`;
+      }
+      return `<polyline points="${e.pts.map((p) => p.join(',')).join(' ')}" fill="none" ${style[e.assetId.slice(5)] ?? style.fence}/>`;
+    })
     .join('\n');
 })()}
 <!-- ground assets (top-down, rotated to real geometry) -->

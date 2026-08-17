@@ -5,7 +5,7 @@
 import { readFileSync, writeFileSync, mkdirSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
-import { allSymbols, ASSET_META, INK, HOUSE_BODIES, HOUSE_ROOFS, SHOP_BODIES, AWNINGS, CAR_BODIES } from './assets.mjs';
+import { allSymbols, ASSET_META, STRUCT_COUNT, INK, HOUSE_BODIES, HOUSE_ROOFS, SHOP_BODIES, AWNINGS, CAR_BODIES } from './assets.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, '..');
@@ -85,7 +85,7 @@ const longestEdgeAngle = (g) => {
 const scene = []; // {assetId, variant, x, y, scale, rotation, layer, priority, name?}
 const placedB = []; // buildings
 const placedT = []; // trees
-const canPlaceB = (x, y, r) => placedB.every((p) => Math.hypot(p.x - x, p.y - y) >= (p.r + r) * 0.95);
+const canPlaceB = (x, y, r) => placedB.every((p) => Math.hypot(p.x - x, p.y - y) >= (p.r + r) * 1.05);
 const canPlaceT = (x, y) =>
   placedT.every((p) => Math.hypot(p.x - x, p.y - y) >= 7) &&
   placedB.every((p) => Math.hypot(p.x - x, p.y - y) >= 4.5); // terrace trees may front the houses
@@ -119,10 +119,10 @@ const classify = (el) => {
   const lv = parseFloat(t['building:levels'] ?? '0');
   const area = areaOf(el.geometry);
   const name = t.name;
-  if (b === 'church') return { assetId: 'bldg.civ.church', priority: 0, s: 1.5, name };
-  if (b === 'school' || t.amenity === 'school') return { assetId: 'bldg.civ.school', priority: 1, s: 1.15, name };
+  if (b === 'church') return { assetId: 'bldg.civ.church', priority: 0, s: 1.7, name };
+  if (b === 'school' || t.amenity === 'school') return { assetId: 'bldg.civ.school', priority: 1, s: 1.2, name };
   const isBar = name && [...bars].some((k) => name.toLowerCase().includes(k));
-  if (isBar) return { assetId: 'bldg.com.corner_tavern', priority: 2, s: 1.25, name };
+  if (isBar) return { assetId: 'bldg.com.corner_tavern', priority: 2, s: 1.3, name };
   if (b === 'retail' || b === 'commercial') {
     return { assetId: 'bldg.com.storefront', priority: 3, s: Math.min(1.15, 0.85 + area / 900), name };
   }
@@ -134,16 +134,20 @@ const classify = (el) => {
     return { assetId: 'bldg.res.garage', priority: 6, s: Math.max(0.85, Math.min(1.15, Math.sqrt(area) / 7)), name };
   }
   if (b === 'house' || b === 'residential' || b === 'detached' || b === 'yes') {
-    if (area < 45) return null;
-    const s = Math.max(1, Math.min(1.35, Math.sqrt(area) / 10.5));
-    return lv >= 2
-      ? { assetId: 'bldg.res.polish_flat', priority: 5, s, name }
-      : { assetId: 'bldg.res.bungalow', priority: 5, s, name };
+    if (area < 55) return null; // fewer tiny objects
+    const s = Math.max(1.05, Math.min(1.45, Math.sqrt(area) / 9.5));
+    if (lv >= 2) {
+      // structure from data: genuinely wide 2-stories become the duplex,
+      // the rest split across the three narrow-lot silhouettes
+      const structure = area >= 165 ? 2 : [0, 1, 3][Math.floor(hash01(area * 2.3, lv + area) * 3)];
+      return { assetId: 'bldg.res.polish_flat', priority: 5, s, name, structure };
+    }
+    return { assetId: 'bldg.res.bungalow', priority: 5, s, name, structure: Math.floor(hash01(area * 1.7, area) * 3) };
   }
   return null;
 };
 
-const candidates = [];
+let candidates = [];
 for (const el of raw.buildings.elements ?? []) {
   if (el.type !== 'way' || !el.geometry) continue;
   const c = cent(el.geometry);
@@ -151,6 +155,37 @@ for (const el of raw.buildings.elements ?? []) {
   const cls = classify(el);
   if (!cls) continue;
   candidates.push({ ...cls, x: X(c.lng), y: Y(c.lat), area: areaOf(el.geometry) });
+}
+
+// ---- storefront ROW pre-pass: 2-3 adjacent shops merge into one composite
+// building (the Brady St fix: a row asset instead of repeated singles) ----
+{
+  const shops = candidates.filter((c) => c.assetId === 'bldg.com.storefront');
+  const rest = candidates.filter((c) => c.assetId !== 'bldg.com.storefront');
+  const used = new Set();
+  const out = [];
+  for (let i = 0; i < shops.length; i++) {
+    if (used.has(i)) continue;
+    const group = [i];
+    for (let j = 0; j < shops.length && group.length < 3; j++) {
+      if (j === i || used.has(j)) continue;
+      if (group.some((g) => Math.hypot(shops[g].x - shops[j].x, shops[g].y - shops[j].y) < 26)) group.push(j);
+    }
+    used.add(i);
+    if (group.length >= 2) {
+      group.forEach((g) => used.add(g));
+      const xs = group.map((g) => shops[g]);
+      out.push({
+        assetId: 'bldg.com.storefront_row', priority: 3,
+        s: 1, name: undefined,
+        x: xs.reduce((s2, v) => s2 + v.x, 0) / xs.length,
+        y: xs.reduce((s2, v) => s2 + v.y, 0) / xs.length,
+        area: xs.reduce((s2, v) => s2 + v.area, 0),
+        merged: xs.length,
+      });
+    } else out.push(shops[i]);
+  }
+  candidates = [...rest, ...out];
 }
 candidates.sort((a, b) => a.priority - b.priority || b.area - a.area);
 
@@ -171,10 +206,10 @@ for (const c of candidates) {
   if (c.assetId === 'bldg.res.garage') {
     // a garage alone in a field reads as debris — only place near a building
     if (!placedB.some((p) => Math.hypot(p.x - x, p.y - y) < 24)) continue;
-    if (++garages > 14) continue;
+    if (++garages > 9) continue;
   }
   const h = hash01(x, y);
-  commitB({ assetId: c.assetId, variant: Math.floor(h * 96), x: +x.toFixed(1), y: +y.toFixed(1), scale: +c.s.toFixed(2), rotation: 0, layer: 'standing', priority: c.priority, name: c.name, src: 'osm:building' }, r);
+  commitB({ assetId: c.assetId, variant: Math.floor(h * 96), structure: c.structure ?? 0, x: +x.toFixed(1), y: +y.toFixed(1), scale: +c.s.toFixed(2), rotation: 0, layer: 'standing', priority: c.priority, name: c.name, src: 'osm:building' }, r);
 }
 
 // ---- 3. trees: real city inventory, species -> asset, DBH -> scale ----
@@ -247,11 +282,16 @@ const variantStyle = (e) => {
   if (e.assetId === 'bldg.res.polish_flat' || e.assetId === 'bldg.res.bungalow') {
     const body = HOUSE_BODIES[v % HOUSE_BODIES.length];
     const roof = HOUSE_ROOFS[(v + 2) % HOUSE_ROOFS.length];
-    return `--body:${body};--roof:${roof};--side:${shade(body, -18)}`;
+    return `--body:${body};--roof:${roof};--roofdark:${shade(roof, -26)};--side:${shade(body, -18)}`;
   }
   if (e.assetId === 'bldg.com.storefront') {
     const body = SHOP_BODIES[v % SHOP_BODIES.length];
     return `--body:${body};--side:${shade(body, -22)};--awn:${AWNINGS[v % AWNINGS.length]}`;
+  }
+  if (e.assetId === 'bldg.com.storefront_row') {
+    const b = (i) => SHOP_BODIES[(v + i * 2) % SHOP_BODIES.length];
+    const a = (i) => AWNINGS[(v + i * 3 + 1) % AWNINGS.length];
+    return `--b0:${b(0)};--b1:${b(1)};--b2:${b(2)};--a0:${a(0)};--a1:${a(1)};--a2:${a(2)};--side:${shade(b(2), -22)}`;
   }
   if (e.assetId === 'veh.car') return `--body:${CAR_BODIES[v % CAR_BODIES.length]}`;
   if (e.assetId === 'bldg.res.apartment') {
@@ -260,6 +300,7 @@ const variantStyle = (e) => {
   }
   return '';
 };
+const symbolRef = (e) => (STRUCT_COUNT[e.assetId] ? `${e.assetId}.s${(e.structure ?? 0) % STRUCT_COUNT[e.assetId]}` : e.assetId);
 function shade(hex, amt) {
   const n = parseInt(hex.slice(1), 16);
   const c = (x) => Math.max(0, Math.min(255, x + amt));
@@ -318,7 +359,7 @@ ${standingEls.map(shadowFor).join('')}
 <!-- standing assets, painter-sorted -->
 ${standingEls.map((e) => {
   const st = variantStyle(e);
-  const base = `<use href="#${e.assetId}" transform="translate(${e.x} ${e.y}) scale(${e.scale})"${st ? ` style="${st}"` : ''}/>`;
+  const base = `<use href="#${symbolRef(e)}" transform="translate(${e.x} ${e.y}) scale(${e.scale})"${st ? ` style="${st}"` : ''}/>`;
   if (e.assetId === 'bldg.com.corner_tavern') {
     const label = (e.name ?? 'TAVERN').toUpperCase().split(/\s+/)[0].replace(/[^A-Z'’\-]/g, '').slice(0, 9) || 'TAVERN';
     return base + `<text x="${e.x}" y="${(e.y - 7.55 * e.scale).toFixed(1)}" font-size="${(1.7 * e.scale).toFixed(2)}" font-weight="700" text-anchor="middle" fill="#f2c94c" letter-spacing="0.12">${label}</text>`;

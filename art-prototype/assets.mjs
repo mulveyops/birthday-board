@@ -1,124 +1,220 @@
-// Style C asset library — stronger-oblique cartoon sprites, world meters.
-// Every standing asset: anchor at ground center (0,0), grows in -y.
-// Oblique convention: depth recedes up-and-right, offset = (+0.36d, -0.55d).
-// Variants via CSS custom properties set on each <use> (--body, --roof, --trim).
-// Ground assets are top-down and rotatable.
+// Style C asset library v2 — art-language refinement pass.
+// Fewer tiny objects, more distinctive readable silhouettes:
+//  - residential buildings have STRUCTURAL variants (porches, dormers, bays,
+//    duplex width, roof shapes), not just recolors
+//  - trees separate by silhouette + canopy texture + color
+//  - St. Hedwig hero is more bespoke and assertive
+//  - first storefront-row composite (2-3 shops in one building)
+// Conventions: world meters, anchor at ground center, grows in -y.
+// Oblique depth recedes up-and-right: offset = (+0.36d, -0.55d).
 
 export const INK = '#33291f';
-const LINE = 1.1; // base outline weight (world m) — thick, confident
-const dxy = (d) => [0.36 * d, -0.55 * d]; // oblique depth offset
+const LINE = 1.25; // thicker, confident outline
+const dxy = (d) => [0.36 * d, -0.55 * d];
 
-// ---------- palettes ----------
 export const HOUSE_BODIES = ['#f6e7b8', '#bfe0c9', '#a9d3e8', '#f0b39a', '#f7d980', '#cdbde6', '#f6e7b8', '#e8c9a0'];
 export const HOUSE_ROOFS = ['#d95d43', '#3f8f7a', '#8a6248', '#5f7285', '#c46a94', '#b3552f'];
 export const SHOP_BODIES = ['#e0685a', '#5f9ea8', '#c99046', '#8f7fc0', '#5b8fc9', '#c9a53f'];
-export const AWNINGS = ['#c93b3b', '#2f7d5d', '#3b5fc9', '#c9702f', '#7d4fc9'];
+export const AWNINGS = ['#c93b3b', '#2f7d5d', '#3b5fc9', '#c9702f', '#7d4fc9', '#2f8f8f'];
 export const CAR_BODIES = ['#e05252', '#4f8fd9', '#f2c04c', '#6fbf73', '#e8e4da', '#8f7fc0'];
 
-// helper: rect path string
 const P = (pts) => pts.map(([x, y], i) => `${i ? 'L' : 'M'}${x} ${y}`).join(' ') + ' Z';
+const win = (x, y, w, h, sw = 0.55) =>
+  `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="0.35" fill="#fdf3c9" stroke="${INK}" stroke-width="${sw}"/>`;
 
-// ---------- residential ----------
+// ============ RESIDENTIAL — Polish flat / 2-story family (4 structures) ============
 
-// Milwaukee Polish flat: narrow, tall 2-story, flat-ish roof, bay window, stoop.
-function polishFlat() {
-  const w = 8.4, h = 11, d = 9;
+// s0 — classic flat-roof Polish flat with a STACKED double porch (very Milwaukee).
+function polishFlatS0() {
+  const w = 9, h = 11.5, d = 9, L = w / 2;
   const [ox, oy] = dxy(d);
-  const L = w / 2;
   return `
-  <symbol id="bldg.res.polish_flat" overflow="visible">
-    <!-- side wall (right, receding) -->
+  <symbol id="bldg.res.polish_flat.s0" overflow="visible">
     <path d="${P([[L, 0], [L, -h], [L + ox, -h + oy], [L + ox, oy]])}" fill="var(--side,#d9c48e)" stroke="${INK}" stroke-width="${LINE}" stroke-linejoin="round"/>
-    <!-- roof plane -->
     <path d="${P([[-L, -h], [L, -h], [L + ox, -h + oy], [-L + ox, -h + oy]])}" fill="var(--roof,#d95d43)" stroke="${INK}" stroke-width="${LINE}" stroke-linejoin="round"/>
-    <path d="M${-L + ox * 0.5} ${-h + oy * 0.5} L${L + ox * 0.5} ${-h + oy * 0.5}" stroke="var(--roofline,#00000022)" stroke-width="0.5" fill="none"/>
-    <!-- facade -->
     <rect x="${-L}" y="${-h}" width="${w}" height="${h}" fill="var(--body,#f6e7b8)" stroke="${INK}" stroke-width="${LINE}" stroke-linejoin="round"/>
-    <!-- cornice -->
-    <rect x="${-L - 0.5}" y="${-h - 0.7}" width="${w + 1}" height="1.3" rx="0.3" fill="var(--roof,#d95d43)" stroke="${INK}" stroke-width="0.7"/>
-    <!-- upper windows -->
-    <rect x="${-L + 1.1}" y="-9.3" width="2.3" height="2.9" rx="0.3" fill="#fdf3c9" stroke="${INK}" stroke-width="0.55"/>
-    <rect x="${L - 3.4}" y="-9.3" width="2.3" height="2.9" rx="0.3" fill="#fdf3c9" stroke="${INK}" stroke-width="0.55"/>
-    <path d="M${-L + 1.1} -7.9 h2.3 M${L - 3.4} -7.9 h2.3" stroke="${INK}" stroke-width="0.35"/>
-    <!-- bay window (ground floor left) -->
-    <path d="${P([[-L + 0.4, 0], [-L + 0.4, -5.2], [-L + 1.3, -5.9], [-L + 3.7, -5.9], [-L + 4.6, -5.2], [-L + 4.6, 0]])}" fill="var(--body,#f6e7b8)" stroke="${INK}" stroke-width="0.7"/>
-    <rect x="${-L + 1.5}" y="-5.1" width="2" height="3.4" rx="0.3" fill="#fdf3c9" stroke="${INK}" stroke-width="0.5"/>
-    <!-- door + stoop (right) -->
-    <rect x="${L - 3.3}" y="-4.6" width="2.3" height="4.6" rx="0.35" fill="var(--door,#7a4b32)" stroke="${INK}" stroke-width="0.6"/>
-    <circle cx="${L - 1.5}" cy="-2.4" r="0.28" fill="#f2c94c"/>
-    <rect x="${L - 3.8}" y="-0.6" width="3.3" height="0.9" fill="#cfc4ad" stroke="${INK}" stroke-width="0.45"/>
+    <rect x="${-L - 0.6}" y="${-h - 0.9}" width="${w + 1.2}" height="1.5" rx="0.35" fill="var(--roof,#d95d43)" stroke="${INK}" stroke-width="0.8"/>
+    <!-- stacked double porch: full-height column bay on the left -->
+    <rect x="${-L - 1.2}" y="-10.4" width="5" height="10.4" fill="var(--porch,#fbf4e2)" stroke="${INK}" stroke-width="0.85"/>
+    <path d="M${-L - 1.2} -5.4 h5" stroke="${INK}" stroke-width="0.7"/>
+    <path d="M${-L - 0.5} -10.4 V0 M${L - 5.4 + 2.1} -10.4 V0" stroke="${INK}" stroke-width="0.7"/>
+    <path d="M${-L - 1.2} -7.6 h5 M${-L - 1.2} -2.6 h5" stroke="${INK}" stroke-width="0.5" opacity="0.6"/>
+    <rect x="${-L - 1.8}" y="-10.8" width="6.2" height="1" rx="0.3" fill="var(--roof,#d95d43)" stroke="${INK}" stroke-width="0.6"/>
+    <!-- right-half windows + door -->
+    ${win(0.9, -9.7, 2.6, 3)}
+    <rect x="0.9" y="-4.4" width="2.5" height="4.4" rx="0.35" fill="var(--door,#7a4b32)" stroke="${INK}" stroke-width="0.65"/>
+    <circle cx="3" cy="-2.3" r="0.3" fill="#f2c94c"/>
+    <rect x="0.3" y="-0.7" width="3.9" height="1" fill="#cfc4ad" stroke="${INK}" stroke-width="0.5"/>
   </symbol>`;
 }
 
-// 1-story bungalow: wide, front gable + receding roof plane, full porch.
-function bungalow() {
-  const w = 10, h = 5.6, d = 10, gable = 4.2;
+// s1 — front-gable two-story: steep roof, subtle side roof plane, bay window.
+function polishFlatS1() {
+  const w = 9, h = 10, d = 4.5, L = w / 2, ridge = -16;
   const [ox, oy] = dxy(d);
-  const L = w / 2;
   return `
-  <symbol id="bldg.res.bungalow" overflow="visible">
-    <!-- roof plane behind gable -->
-    <path d="${P([[0, -h - gable], [L + 0.9, -h], [L + 0.9 + ox, -h + oy], [ox, -h - gable + oy]])}" fill="var(--roof,#3f8f7a)" stroke="${INK}" stroke-width="${LINE}" stroke-linejoin="round"/>
-    <!-- body -->
-    <rect x="${-L}" y="${-h}" width="${w}" height="${h}" fill="var(--body,#bfe0c9)" stroke="${INK}" stroke-width="${LINE}" stroke-linejoin="round"/>
-    <!-- gable -->
-    <path d="${P([[-L - 0.9, -h], [0, -h - gable], [L + 0.9, -h]])}" fill="var(--roof,#3f8f7a)" stroke="${INK}" stroke-width="${LINE}" stroke-linejoin="round"/>
-    <rect x="-1.1" y="${-h - 2.4}" width="2.2" height="1.6" rx="0.3" fill="#fdf3c9" stroke="${INK}" stroke-width="0.45"/>
-    <!-- porch roof + posts -->
-    <rect x="${-L - 0.6}" y="-3.9" width="${w + 1.2}" height="0.95" rx="0.25" fill="var(--roof,#3f8f7a)" stroke="${INK}" stroke-width="0.6"/>
-    <path d="M${-L + 0.7} -3 V0 M${L - 0.7} -3 V0" stroke="${INK}" stroke-width="0.65"/>
-    <!-- windows + door -->
-    <rect x="${-L + 1.4}" y="-3.1" width="2.5" height="2.4" rx="0.3" fill="#fdf3c9" stroke="${INK}" stroke-width="0.5"/>
-    <rect x="${L - 3.9}" y="-3.1" width="2.5" height="2.4" rx="0.3" fill="#fdf3c9" stroke="${INK}" stroke-width="0.5"/>
-    <rect x="-1.2" y="-3.4" width="2.4" height="3.4" rx="0.3" fill="var(--door,#7a4b32)" stroke="${INK}" stroke-width="0.55"/>
+  <symbol id="bldg.res.polish_flat.s1" overflow="visible">
+    <!-- subtle receding roof plane -->
+    <path d="${P([[0, ridge], [L + 1, -h], [L + 1 + ox, -h + oy], [ox, ridge + oy]])}" fill="var(--roofdark,#b34a34)" stroke="${INK}" stroke-width="${LINE}" stroke-linejoin="round"/>
+    <rect x="${-L}" y="${-h}" width="${w}" height="${h}" fill="var(--body,#f6e7b8)" stroke="${INK}" stroke-width="${LINE}" stroke-linejoin="round"/>
+    <!-- steep front gable -->
+    <path d="${P([[-L - 1.1, -h], [0, ridge], [L + 1.1, -h]])}" fill="var(--roof,#d95d43)" stroke="${INK}" stroke-width="${LINE}" stroke-linejoin="round"/>
+    <circle cx="0" cy="${-h - 3.4}" r="1.15" fill="#fdf3c9" stroke="${INK}" stroke-width="0.55"/>
+    ${win(-3.4, -9.2, 2.5, 2.9)}${win(1, -9.2, 2.5, 2.9)}
+    <!-- ground-floor bay window -->
+    <path d="${P([[-4, 0], [-4, -5.3], [-3, -6.1], [-0.6, -6.1], [0.4, -5.3], [0.4, 0]])}" fill="var(--body,#f6e7b8)" stroke="${INK}" stroke-width="0.8"/>
+    ${win(-2.9, -5.2, 2.2, 3.4, 0.5)}
+    <rect x="1.6" y="-4.5" width="2.5" height="4.5" rx="0.35" fill="var(--door,#7a4b32)" stroke="${INK}" stroke-width="0.65"/>
+    <rect x="1" y="-0.7" width="3.7" height="1" fill="#cfc4ad" stroke="${INK}" stroke-width="0.5"/>
   </symbol>`;
 }
 
-// 3-story apartment block: flat roof plane, window grid, entry awning.
-function apartment() {
-  const w = 13, h = 12.5, d = 11;
+// s2 — the WIDE duplex: twin doors, twin stoops, hipped roof.
+function polishFlatS2() {
+  const w = 12.5, h = 10.5, d = 4.5, L = w / 2;
   const [ox, oy] = dxy(d);
-  const L = w / 2;
+  return `
+  <symbol id="bldg.res.polish_flat.s2" overflow="visible">
+    <!-- hipped roof: trapezoid front + receding plane -->
+    <path d="${P([[-L + 2.4, -h - 3.6], [L - 2.4 + ox, -h - 3.6 + oy], [L + ox, -h + oy], [L, -h]])}" fill="var(--roofdark,#b34a34)" stroke="${INK}" stroke-width="${LINE}" stroke-linejoin="round"/>
+    <path d="${P([[-L - 0.8, -h], [-L + 2.4, -h - 3.6], [L - 2.4, -h - 3.6], [L + 0.8, -h]])}" fill="var(--roof,#d95d43)" stroke="${INK}" stroke-width="${LINE}" stroke-linejoin="round"/>
+    <rect x="${-L}" y="${-h}" width="${w}" height="${h}" fill="var(--body,#f6e7b8)" stroke="${INK}" stroke-width="${LINE}" stroke-linejoin="round"/>
+    <!-- mirrored halves: window over door, twice -->
+    <path d="M0 ${-h} V0" stroke="${INK}" stroke-width="0.5" opacity="0.45"/>
+    ${win(-4.9, -9.4, 2.6, 3)}${win(2.3, -9.4, 2.6, 3)}
+    ${win(-4.9, -5, 2.6, 2.6)}${win(2.3, -5, 2.6, 2.6)}
+    <rect x="-1.95" y="-4.5" width="1.75" height="4.5" rx="0.3" fill="var(--door,#7a4b32)" stroke="${INK}" stroke-width="0.6"/>
+    <rect x="0.2" y="-4.5" width="1.75" height="4.5" rx="0.3" fill="var(--door2,#5e5140)" stroke="${INK}" stroke-width="0.6"/>
+    <rect x="-2.5" y="-0.7" width="5" height="1" fill="#cfc4ad" stroke="${INK}" stroke-width="0.5"/>
+    <!-- twin brackets under the eave -->
+    <path d="M-4.4 ${-h} v-0.8 M4.4 ${-h} v-0.8" stroke="${INK}" stroke-width="0.6"/>
+  </symbol>`;
+}
+
+// s3 — tall gable w/ full front porch and attic window (worker's cottage grown up).
+function polishFlatS3() {
+  const w = 8.6, h = 9.5, d = 4.5, L = w / 2, ridge = -15.5;
+  const [ox, oy] = dxy(d);
+  return `
+  <symbol id="bldg.res.polish_flat.s3" overflow="visible">
+    <path d="${P([[0, ridge], [L + 1, -h], [L + 1 + ox, -h + oy], [ox, ridge + oy]])}" fill="var(--roofdark,#2f6e5e)" stroke="${INK}" stroke-width="${LINE}" stroke-linejoin="round"/>
+    <rect x="${-L}" y="${-h}" width="${w}" height="${h}" fill="var(--body,#bfe0c9)" stroke="${INK}" stroke-width="${LINE}" stroke-linejoin="round"/>
+    <path d="${P([[-L - 1.1, -h], [0, ridge], [L + 1.1, -h]])}" fill="var(--roof,#3f8f7a)" stroke="${INK}" stroke-width="${LINE}" stroke-linejoin="round"/>
+    <!-- attic pair -->
+    ${win(-1.8, -12.9, 1.5, 2, 0.45)}${win(0.3, -12.9, 1.5, 2, 0.45)}
+    ${win(-3.2, -8.7, 2.4, 2.7)}${win(0.8, -8.7, 2.4, 2.7)}
+    <!-- full-width front porch -->
+    <rect x="${-L - 1}" y="-4.6" width="${w + 2}" height="1" rx="0.3" fill="var(--roof,#3f8f7a)" stroke="${INK}" stroke-width="0.65"/>
+    <path d="M${-L - 0.3} -3.6 V0 M0 -3.6 V0 M${L + 0.3} -3.6 V0" stroke="${INK}" stroke-width="0.7"/>
+    <path d="M${-L - 1} -1.6 h${w + 2}" stroke="${INK}" stroke-width="0.5" opacity="0.55"/>
+    <rect x="-1.25" y="-3.5" width="2.5" height="3.5" rx="0.3" fill="var(--door,#7a4b32)" stroke="${INK}" stroke-width="0.6"/>
+    <rect x="-2.4" y="-0.6" width="4.8" height="0.9" fill="#cfc4ad" stroke="${INK}" stroke-width="0.5"/>
+  </symbol>`;
+}
+
+// ============ RESIDENTIAL — bungalow (3 structures) ============
+
+// s0 — Craftsman: low wide gable, deep porch, tapered columns, wide steps.
+function bungalowS0() {
+  const w = 11, h = 5.2, d = 5.5, L = w / 2, gable = 3.6;
+  const [ox, oy] = dxy(d);
+  return `
+  <symbol id="bldg.res.bungalow.s0" overflow="visible">
+    <path d="${P([[0, -h - gable], [L + 1.3, -h], [L + 1.3 + ox, -h + oy], [ox, -h - gable + oy]])}" fill="var(--roof,#3f8f7a)" stroke="${INK}" stroke-width="${LINE}" stroke-linejoin="round"/>
+    <rect x="${-L}" y="${-h}" width="${w}" height="${h}" fill="var(--body,#bfe0c9)" stroke="${INK}" stroke-width="${LINE}" stroke-linejoin="round"/>
+    <path d="${P([[-L - 1.3, -h], [0, -h - gable], [L + 1.3, -h]])}" fill="var(--roof,#3f8f7a)" stroke="${INK}" stroke-width="${LINE}" stroke-linejoin="round"/>
+    ${win(-1.2, -7.3, 2.4, 1.6, 0.45)}
+    <!-- deep porch: roof slab + tapered columns -->
+    <rect x="${-L - 1}" y="-4.4" width="${w + 2}" height="1.05" rx="0.3" fill="var(--roofdark,#2f6e5e)" stroke="${INK}" stroke-width="0.7"/>
+    <path d="${P([[-L + 0.2, 0], [-L + 0.55, -3.35], [-L + 1.45, -3.35], [-L + 1.8, 0]])}" fill="var(--porch,#fbf4e2)" stroke="${INK}" stroke-width="0.6"/>
+    <path d="${P([[L - 1.8, 0], [L - 1.45, -3.35], [-L + w - 0.55, -3.35], [L - 0.2, 0]])}" fill="var(--porch,#fbf4e2)" stroke="${INK}" stroke-width="0.6"/>
+    ${win(-4.3, -3.3, 2.7, 2.5)}${win(1.6, -3.3, 2.7, 2.5)}
+    <rect x="-1.35" y="-3.5" width="2.7" height="3.5" rx="0.3" fill="var(--door,#7a4b32)" stroke="${INK}" stroke-width="0.6"/>
+    <rect x="-3" y="-0.75" width="6" height="1.05" fill="#cfc4ad" stroke="${INK}" stroke-width="0.5"/>
+    <rect x="-3.6" y="-0.35" width="7.2" height="0.6" fill="#bcb098" stroke="${INK}" stroke-width="0.4"/>
+  </symbol>`;
+}
+
+// s1 — hipped roof + central dormer.
+function bungalowS1() {
+  const w = 10.5, h = 5.4, d = 4.5, L = w / 2;
+  const [ox, oy] = dxy(d);
+  return `
+  <symbol id="bldg.res.bungalow.s1" overflow="visible">
+    <path d="${P([[-L + 2.2, -h - 3.2], [L - 2.2 + ox, -h - 3.2 + oy], [L + ox, -h + oy], [L, -h]])}" fill="var(--roofdark,#4f6274)" stroke="${INK}" stroke-width="${LINE}" stroke-linejoin="round"/>
+    <path d="${P([[-L - 0.9, -h], [-L + 2.2, -h - 3.2], [L - 2.2, -h - 3.2], [L + 0.9, -h]])}" fill="var(--roof,#5f7285)" stroke="${INK}" stroke-width="${LINE}" stroke-linejoin="round"/>
+    <!-- central dormer -->
+    <rect x="-1.5" y="${-h - 2.6}" width="3" height="2" fill="var(--body,#a9d3e8)" stroke="${INK}" stroke-width="0.6"/>
+    <path d="${P([[-1.9, -h - 2.6], [0, -h - 3.7], [1.9, -h - 2.6]])}" fill="var(--roof,#5f7285)" stroke="${INK}" stroke-width="0.6"/>
+    ${win(-0.85, -h - 2.35, 1.7, 1.5, 0.4)}
+    <rect x="${-L}" y="${-h}" width="${w}" height="${h}" fill="var(--body,#a9d3e8)" stroke="${INK}" stroke-width="${LINE}" stroke-linejoin="round"/>
+    ${win(-4.2, -4.3, 2.7, 2.8)}${win(1.5, -4.3, 2.7, 2.8)}
+    <rect x="-1.35" y="-3.7" width="2.7" height="3.7" rx="0.3" fill="var(--door,#7a4b32)" stroke="${INK}" stroke-width="0.6"/>
+    <rect x="-2.2" y="-0.65" width="4.4" height="0.95" fill="#cfc4ad" stroke="${INK}" stroke-width="0.5"/>
+  </symbol>`;
+}
+
+// s2 — side-gable cottage w/ chimney and shutters.
+function bungalowS2() {
+  const w = 9.5, h = 5, d = 4.5, L = w / 2;
+  const [ox, oy] = dxy(d);
+  return `
+  <symbol id="bldg.res.bungalow.s2" overflow="visible">
+    <!-- side-gable: roof face toward viewer -->
+    <path d="${P([[-L - 0.9, -h], [-L + 1.4, -h - 3], [L - 1.4 + 0, -h - 3], [L + 0.9, -h]])}" fill="var(--roof,#8a6248)" stroke="${INK}" stroke-width="${LINE}" stroke-linejoin="round"/>
+    <path d="${P([[-L + 1.4, -h - 3], [L - 1.4, -h - 3], [L - 1.4 + ox, -h - 3 + oy], [-L + 1.4 + ox, -h - 3 + oy]])}" fill="var(--roofdark,#6e4e39)" stroke="${INK}" stroke-width="0.9" stroke-linejoin="round"/>
+    <rect x="1.6" y="${-h - 5}" width="1.6" height="2.6" fill="#b3552f" stroke="${INK}" stroke-width="0.55"/>
+    <rect x="${-L}" y="${-h}" width="${w}" height="${h}" fill="var(--body,#f0b39a)" stroke="${INK}" stroke-width="${LINE}" stroke-linejoin="round"/>
+    <!-- shuttered windows -->
+    ${win(-3.7, -4, 2.3, 2.5)}
+    <rect x="-4.35" y="-4" width="0.65" height="2.5" fill="var(--roof,#8a6248)" stroke="${INK}" stroke-width="0.35"/>
+    <rect x="-1.4" y="-4" width="0.65" height="2.5" fill="var(--roof,#8a6248)" stroke="${INK}" stroke-width="0.35"/>
+    ${win(1.6, -4, 2.3, 2.5)}
+    <rect x="0.95" y="-4" width="0.65" height="2.5" fill="var(--roof,#8a6248)" stroke="${INK}" stroke-width="0.35"/>
+    <rect x="3.9" y="-4" width="0.65" height="2.5" fill="var(--roof,#8a6248)" stroke="${INK}" stroke-width="0.35"/>
+    <rect x="-0.5" y="-3.4" width="2.2" height="3.4" rx="0.3" fill="var(--door,#5e5140)" stroke="${INK}" stroke-width="0.6"/>
+    <rect x="-1.1" y="-0.6" width="3.4" height="0.9" fill="#cfc4ad" stroke="${INK}" stroke-width="0.5"/>
+  </symbol>`;
+}
+
+// ============ apartment, garage (lightly simplified from v1) ============
+
+function apartment() {
+  const w = 13.5, h = 13, d = 11, L = w / 2;
+  const [ox, oy] = dxy(d);
   const wins = [];
-  for (let r = 0; r < 3; r++) {
-    for (let c = 0; c < 4; c++) {
-      wins.push(`<rect x="${-L + 1.2 + c * 3}" y="${-11.2 + r * 3.5}" width="2" height="2.4" rx="0.3" fill="#fdf3c9" stroke="${INK}" stroke-width="0.5"/>`);
-    }
-  }
+  for (let r = 0; r < 3; r++) for (let c = 0; c < 4; c++)
+    wins.push(win(-L + 1.3 + c * 3.1, -11.6 + r * 3.6, 2.1, 2.5, 0.5));
   return `
   <symbol id="bldg.res.apartment" overflow="visible">
     <path d="${P([[L, 0], [L, -h], [L + ox, -h + oy], [L + ox, oy]])}" fill="var(--side,#c9a884)" stroke="${INK}" stroke-width="${LINE}" stroke-linejoin="round"/>
     <path d="${P([[-L, -h], [L, -h], [L + ox, -h + oy], [-L + ox, -h + oy]])}" fill="var(--rooftop,#8d8577)" stroke="${INK}" stroke-width="${LINE}" stroke-linejoin="round"/>
     <rect x="${-L}" y="${-h}" width="${w}" height="${h}" fill="var(--body,#e0b48f)" stroke="${INK}" stroke-width="${LINE}" stroke-linejoin="round"/>
-    <rect x="${-L - 0.5}" y="${-h - 0.8}" width="${w + 1}" height="1.4" rx="0.3" fill="var(--trim,#b3552f)" stroke="${INK}" stroke-width="0.7"/>
+    <rect x="${-L - 0.6}" y="${-h - 0.95}" width="${w + 1.2}" height="1.6" rx="0.35" fill="var(--trim,#b3552f)" stroke="${INK}" stroke-width="0.8"/>
     ${wins.join('')}
-    <rect x="-1.6" y="-4.2" width="3.2" height="4.2" rx="0.35" fill="var(--door,#6b4530)" stroke="${INK}" stroke-width="0.6"/>
-    <path d="M-2.4 -4.4 L0 -5.6 L2.4 -4.4 Z" fill="var(--trim,#b3552f)" stroke="${INK}" stroke-width="0.55"/>
+    <rect x="-1.7" y="-4.4" width="3.4" height="4.4" rx="0.35" fill="var(--door,#6b4530)" stroke="${INK}" stroke-width="0.65"/>
+    <path d="M-2.6 -4.6 L0 -6 L2.6 -4.6 Z" fill="var(--trim,#b3552f)" stroke="${INK}" stroke-width="0.6"/>
   </symbol>`;
 }
 
-// Detached alley garage.
 function garage() {
-  const w = 6.4, h = 3.4, d = 7;
+  const w = 6.6, h = 3.5, d = 4, L = w / 2;
   const [ox, oy] = dxy(d);
-  const L = w / 2;
   return `
   <symbol id="bldg.res.garage" overflow="visible">
-    <path d="${P([[0, -h - 1.7], [L + 0.5, -h], [L + 0.5 + ox, -h + oy], [ox, -h - 1.7 + oy]])}" fill="var(--roof,#8a6248)" stroke="${INK}" stroke-width="0.9" stroke-linejoin="round"/>
-    <rect x="${-L}" y="${-h}" width="${w}" height="${h}" fill="var(--body,#e8ddc4)" stroke="${INK}" stroke-width="0.9" stroke-linejoin="round"/>
-    <path d="${P([[-L - 0.5, -h], [0, -h - 1.7], [L + 0.5, -h]])}" fill="var(--roof,#8a6248)" stroke="${INK}" stroke-width="0.9" stroke-linejoin="round"/>
-    <rect x="${-L + 0.9}" y="-2.7" width="${w - 1.8}" height="2.7" rx="0.3" fill="var(--door,#9a8265)" stroke="${INK}" stroke-width="0.55"/>
-    <path d="M${-L + 0.9} -1.85 h${w - 1.8} M${-L + 0.9} -1 h${w - 1.8}" stroke="${INK}" stroke-width="0.3" opacity="0.5"/>
+    <path d="${P([[0, -h - 1.8], [L + 0.6, -h], [L + 0.6 + ox, -h + oy], [ox, -h - 1.8 + oy]])}" fill="var(--roof,#8a6248)" stroke="${INK}" stroke-width="1" stroke-linejoin="round"/>
+    <rect x="${-L}" y="${-h}" width="${w}" height="${h}" fill="var(--body,#e8ddc4)" stroke="${INK}" stroke-width="1" stroke-linejoin="round"/>
+    <path d="${P([[-L - 0.6, -h], [0, -h - 1.8], [L + 0.6, -h]])}" fill="var(--roof,#8a6248)" stroke="${INK}" stroke-width="1" stroke-linejoin="round"/>
+    <rect x="${-L + 1}" y="-2.8" width="${w - 2}" height="2.8" rx="0.3" fill="var(--door,#9a8265)" stroke="${INK}" stroke-width="0.6"/>
+    <path d="M${-L + 1} -1.9 h${w - 2}" stroke="${INK}" stroke-width="0.35" opacity="0.5"/>
   </symbol>`;
 }
 
-// ---------- commercial ----------
+// ============ COMMERCIAL ============
 
-// Mixed-use storefront: shop below (awning, glass), flat roof plane, sign band.
 function storefront() {
-  const w = 10.5, h = 9.5, d = 10;
+  const w = 10.5, h = 9.5, d = 10, L = w / 2;
   const [ox, oy] = dxy(d);
-  const L = w / 2;
   const stripes = [0, 1, 2, 3, 4].map((i) =>
     `<rect x="${-L + 0.2 + (i * (w - 0.4)) / 5}" y="-5.4" width="${(w - 0.4) / 10}" height="2.1" fill="#fdf6e3"/>`).join('');
   return `
@@ -126,48 +222,60 @@ function storefront() {
     <path d="${P([[L, 0], [L, -h], [L + ox, -h + oy], [L + ox, oy]])}" fill="var(--side,#b0574b)" stroke="${INK}" stroke-width="${LINE}" stroke-linejoin="round"/>
     <path d="${P([[-L, -h], [L, -h], [L + ox, -h + oy], [-L + ox, -h + oy]])}" fill="var(--rooftop,#8d8577)" stroke="${INK}" stroke-width="${LINE}" stroke-linejoin="round"/>
     <rect x="${-L}" y="${-h}" width="${w}" height="${h}" fill="var(--body,#e0685a)" stroke="${INK}" stroke-width="${LINE}" stroke-linejoin="round"/>
-    <rect x="${-L - 0.5}" y="${-h - 0.8}" width="${w + 1}" height="1.4" rx="0.3" fill="var(--trim,#8a5a44)" stroke="${INK}" stroke-width="0.7"/>
-    <!-- upstairs windows -->
-    <rect x="${-L + 1.2}" y="-8.4" width="2.2" height="2.6" rx="0.3" fill="#fdf3c9" stroke="${INK}" stroke-width="0.5"/>
-    <rect x="-1.1" y="-8.4" width="2.2" height="2.6" rx="0.3" fill="#fdf3c9" stroke="${INK}" stroke-width="0.5"/>
-    <rect x="${L - 3.4}" y="-8.4" width="2.2" height="2.6" rx="0.3" fill="#fdf3c9" stroke="${INK}" stroke-width="0.5"/>
-    <!-- sign band -->
+    <rect x="${-L - 0.6}" y="${-h - 0.9}" width="${w + 1.2}" height="1.5" rx="0.35" fill="var(--trim,#8a5a44)" stroke="${INK}" stroke-width="0.8"/>
+    ${win(-L + 1.2, -8.4, 2.2, 2.6, 0.5)}${win(-1.1, -8.4, 2.2, 2.6, 0.5)}${win(L - 3.4, -8.4, 2.2, 2.6, 0.5)}
     <rect x="${-L + 0.6}" y="-5.55" width="${w - 1.2}" height="1.5" rx="0.3" fill="var(--sign,#fdf6e3)" stroke="${INK}" stroke-width="0.5"/>
-    <!-- awning -->
-    <path d="${P([[-L - 0.7, -3.3], [L + 0.7, -3.3], [L + 0.2, -4.6], [-L + -0.2, -4.6]])}" fill="var(--awn,#c93b3b)" stroke="${INK}" stroke-width="0.7"/>
+    <path d="${P([[-L - 0.7, -3.3], [L + 0.7, -3.3], [L + 0.2, -4.6], [-L - 0.2, -4.6]])}" fill="var(--awn,#c93b3b)" stroke="${INK}" stroke-width="0.7"/>
     ${stripes}
-    <!-- glass + door -->
     <rect x="${-L + 0.8}" y="-3" width="${w - 4.6}" height="3" fill="#bfe4ea" stroke="${INK}" stroke-width="0.55"/>
     <path d="M${-L + 1.5} -0.4 L${-L + 3.2} -2.6" stroke="#ffffff" stroke-width="0.5" opacity="0.8"/>
     <rect x="${L - 3.2}" y="-3.2" width="2.4" height="3.2" rx="0.3" fill="var(--door,#5b4632)" stroke="${INK}" stroke-width="0.55"/>
   </symbol>`;
 }
 
-// Corner tavern: chamfered corner door, big warm windows, blade sign, roof plane.
-function cornerTavern() {
-  const w = 12, h = 10, d = 11;
+// NEW: 3-bay storefront ROW — stepped parapets, three awnings, one building.
+function storefrontRow() {
+  const w = 21, h = 10, d = 10, L = w / 2;
   const [ox, oy] = dxy(d);
-  const L = w / 2;
+  const bayW = w / 3;
+  const parapet = [1.4, 0, 0.8]; // stepped skyline
+  const bays = [0, 1, 2].map((i) => {
+    const x0 = -L + i * bayW;
+    const ph = parapet[i];
+    return `
+    <rect x="${x0}" y="${-h - ph}" width="${bayW}" height="${h + ph}" fill="var(--b${i},#e0685a)" stroke="${INK}" stroke-width="1"/>
+    <rect x="${x0 - 0.25}" y="${-h - ph - 0.85}" width="${bayW + 0.5}" height="1.35" rx="0.3" fill="var(--trim,#8a5a44)" stroke="${INK}" stroke-width="0.7"/>
+    ${win(x0 + 1, -8.6 + (ph > 1 ? 0.4 : 0), 2.1, 2.5, 0.5)}${win(x0 + bayW - 3.1, -8.6 + (ph > 1 ? 0.4 : 0), 2.1, 2.5, 0.5)}
+    <path d="${P([[x0 + 0.3, -3.2], [x0 + bayW - 0.3, -3.2], [x0 + bayW - 0.7, -4.5], [x0 + 0.7, -4.5]])}" fill="var(--a${i},#c93b3b)" stroke="${INK}" stroke-width="0.65"/>
+    <rect x="${x0 + 0.25 + bayW * 0.14}" y="-4.5" width="${bayW * 0.16}" height="1.3" fill="#fdf6e3"/>
+    <rect x="${x0 + 0.25 + bayW * 0.5}" y="-4.5" width="${bayW * 0.16}" height="1.3" fill="#fdf6e3"/>
+    <rect x="${x0 + 0.8}" y="-2.9" width="${bayW - 3.6}" height="2.9" fill="#bfe4ea" stroke="${INK}" stroke-width="0.5"/>
+    <rect x="${x0 + bayW - 2.6}" y="-3.1" width="1.9" height="3.1" rx="0.3" fill="#5b4632" stroke="${INK}" stroke-width="0.5"/>`;
+  }).join('');
+  return `
+  <symbol id="bldg.com.storefront_row" overflow="visible">
+    <path d="${P([[L, 0], [L, -h - parapet[2]], [L + ox, -h - parapet[2] + oy], [L + ox, oy]])}" fill="var(--side,#b0574b)" stroke="${INK}" stroke-width="${LINE}" stroke-linejoin="round"/>
+    <path d="${P([[-L, -h - parapet[0]], [L, -h - parapet[2]], [L + ox, -h - parapet[2] + oy], [-L + ox, -h - parapet[0] + oy]])}" fill="var(--rooftop,#8d8577)" stroke="${INK}" stroke-width="1" stroke-linejoin="round"/>
+    ${bays}
+  </symbol>`;
+}
+
+function cornerTavern() {
+  const w = 12, h = 10, d = 11, L = w / 2;
+  const [ox, oy] = dxy(d);
   return `
   <symbol id="bldg.com.corner_tavern" overflow="visible">
     <path d="${P([[L, 0], [L, -h], [L + ox, -h + oy], [L + ox, oy]])}" fill="var(--side,#6b4530)" stroke="${INK}" stroke-width="${LINE}" stroke-linejoin="round"/>
     <path d="${P([[-L, -h], [L, -h], [L + ox, -h + oy], [-L + ox, -h + oy]])}" fill="var(--rooftop,#7d7466)" stroke="${INK}" stroke-width="${LINE}" stroke-linejoin="round"/>
     <path d="${P([[-L, 0], [-L, -h], [L, -h], [L, -3.4], [L - 2.4, 0]])}" fill="var(--body,#8a5138)" stroke="${INK}" stroke-width="${LINE}" stroke-linejoin="round"/>
-    <rect x="${-L - 0.5}" y="${-h - 0.8}" width="${w + 1}" height="1.4" rx="0.3" fill="var(--trim,#59392e)" stroke="${INK}" stroke-width="0.7"/>
-    <!-- name board -->
+    <rect x="${-L - 0.6}" y="${-h - 0.9}" width="${w + 1.2}" height="1.5" rx="0.35" fill="var(--trim,#59392e)" stroke="${INK}" stroke-width="0.8"/>
     <rect x="${-L + 0.9}" y="-9.2" width="${w - 1.8}" height="2.1" rx="0.4" fill="#2c2622" stroke="${INK}" stroke-width="0.55"/>
-    <text x="0" y="-7.6" font-size="1.55" font-weight="700" text-anchor="middle" fill="#f2c94c" font-family="Georgia, serif" letter-spacing="0.14">
-      <tspan>TAVERN</tspan>
-    </text>
-    <!-- warm windows -->
     <rect x="${-L + 1}" y="-6.2" width="3.4" height="3.4" rx="0.35" fill="#ffd977" stroke="${INK}" stroke-width="0.6"/>
     <rect x="${-L + 5.4}" y="-6.2" width="3.4" height="3.4" rx="0.35" fill="#ffd977" stroke="${INK}" stroke-width="0.6"/>
     <path d="M${-L + 1} -4.5 h3.4 M${-L + 5.4} -4.5 h3.4" stroke="${INK}" stroke-width="0.35"/>
-    <!-- chamfer corner door -->
     <path d="${P([[L - 2.2, 0], [L - 0.4, -2.7], [L - 0.4, -5.6], [L - 3.4, -5.6], [L - 3.4, 0]])}" fill="var(--doorwall,#6b4530)" stroke="${INK}" stroke-width="0.7"/>
     <rect x="${L - 3}" y="-3.9" width="2.1" height="3.9" rx="0.3" fill="#4a3423" stroke="${INK}" stroke-width="0.55"/>
     <circle cx="${L - 2.45}" cy="-2" r="0.25" fill="#f2c94c"/>
-    <!-- hanging mug blade sign -->
     <path d="M${-L} -8.6 h-2.6" stroke="${INK}" stroke-width="0.6"/>
     <circle cx="${-L - 2.6}" cy="-7" r="1.8" fill="#fdf6e3" stroke="${INK}" stroke-width="0.6"/>
     <rect x="${-L - 3.3}" y="-7.75" width="1.35" height="1.5" rx="0.2" fill="#e8a33d" stroke="${INK}" stroke-width="0.45"/>
@@ -175,152 +283,189 @@ function cornerTavern() {
   </symbol>`;
 }
 
-// ---------- civic ----------
+// ============ CIVIC ============
 
-// Church (St. Hedwig-inspired hero): red brick, tall copper-spire tower.
+// St. Hedwig hero v2 — more bespoke, more assertive: cream-trimmed red brick,
+// twin pinnacles, rose window, triple arched entry, taller copper spire w/ cross.
 function church() {
-  const w = 15, h = 12, d = 14;
+  const w = 16, h = 13, d = 15, L = w / 2;
   const [ox, oy] = dxy(d);
-  const L = w / 2;
-  const arch = (x) => `<path d="M${x} -4.2 L${x} -8.4 A1.5 1.7 0 0 1 ${x + 3} -8.4 L${x + 3} -4.2 Z" fill="#a9c8e8" stroke="${INK}" stroke-width="0.55"/>`;
+  const arch = (x, wd, ht) => `<path d="M${x} -4.6 L${x} ${-4.6 - ht} A${wd / 2} ${wd * 0.6} 0 0 1 ${x + wd} ${-4.6 - ht} L${x + wd} -4.6 Z" fill="#a9c8e8" stroke="${INK}" stroke-width="0.55"/>`;
   return `
   <symbol id="bldg.civ.church" overflow="visible">
     <!-- nave roof plane -->
-    <path d="${P([[0, -h - 4.5], [L + 1, -h], [L + 1 + ox, -h + oy], [ox, -h - 4.5 + oy]])}" fill="var(--roof,#6e5a4a)" stroke="${INK}" stroke-width="${LINE}" stroke-linejoin="round"/>
-    <!-- nave body -->
+    <path d="${P([[0, -h - 5], [L + 1.2, -h], [L + 1.2 + ox, -h + oy], [ox, -h - 5 + oy]])}" fill="var(--roof,#6e5a4a)" stroke="${INK}" stroke-width="${LINE}" stroke-linejoin="round"/>
+    <!-- nave -->
     <rect x="${-L}" y="${-h}" width="${w}" height="${h}" fill="var(--body,#c9654a)" stroke="${INK}" stroke-width="${LINE}" stroke-linejoin="round"/>
-    <path d="${P([[-L - 1, -h], [0, -h - 4.5], [L + 1, -h]])}" fill="var(--roof,#6e5a4a)" stroke="${INK}" stroke-width="${LINE}" stroke-linejoin="round"/>
-    ${arch(-5.9)}${arch(3)}
-    <path d="M${-L} -3.1 h${w}" stroke="#a04f38" stroke-width="0.4" opacity="0.7"/>
+    <path d="${P([[-L - 1.2, -h], [0, -h - 5], [L + 1.2, -h]])}" fill="var(--roof,#6e5a4a)" stroke="${INK}" stroke-width="${LINE}" stroke-linejoin="round"/>
+    <!-- cream quoin strips -->
+    <rect x="${-L}" y="${-h}" width="1.1" height="${h}" fill="#eddfc0" stroke="${INK}" stroke-width="0.45"/>
+    <rect x="${L - 1.1}" y="${-h}" width="1.1" height="${h}" fill="#eddfc0" stroke="${INK}" stroke-width="0.45"/>
+    ${arch(-6.3, 3, 4.6)}${arch(3.3, 3, 4.6)}
+    <path d="M${-L} -3.4 h${w}" stroke="#a04f38" stroke-width="0.45" opacity="0.7"/>
+    <!-- twin pinnacles at the nave shoulders -->
+    <rect x="${-L - 0.4}" y="${-h - 2.6}" width="1.6" height="2.6" fill="#eddfc0" stroke="${INK}" stroke-width="0.55"/>
+    <path d="${P([[-L - 0.7, -h - 2.6], [-L + 0.4, -h - 5.2], [-L + 1.5, -h - 2.6]])}" fill="#5a8f7c" stroke="${INK}" stroke-width="0.55"/>
+    <rect x="${L - 1.2}" y="${-h - 2.6}" width="1.6" height="2.6" fill="#eddfc0" stroke="${INK}" stroke-width="0.55"/>
+    <path d="${P([[L - 1.5, -h - 2.6], [L - 0.4, -h - 5.2], [L + 0.7, -h - 2.6]])}" fill="#5a8f7c" stroke="${INK}" stroke-width="0.55"/>
     <!-- central tower -->
-    <rect x="-2.9" y="-24" width="5.8" height="24" fill="var(--body,#c9654a)" stroke="${INK}" stroke-width="${LINE}"/>
-    <path d="M-2.9 -14.5 h5.8" stroke="#a04f38" stroke-width="0.4" opacity="0.7"/>
-    <circle cx="0" cy="-19.5" r="1.6" fill="#a9c8e8" stroke="${INK}" stroke-width="0.55"/>
+    <rect x="-3.3" y="-27" width="6.6" height="27" fill="var(--body,#c9654a)" stroke="${INK}" stroke-width="${LINE}"/>
+    <rect x="-3.3" y="-27" width="0.9" height="27" fill="#eddfc0" stroke="${INK}" stroke-width="0.4"/>
+    <rect x="2.4" y="-27" width="0.9" height="27" fill="#eddfc0" stroke="${INK}" stroke-width="0.4"/>
+    <!-- rose window -->
+    <circle cx="0" cy="-21.5" r="2.1" fill="#a9c8e8" stroke="${INK}" stroke-width="0.6"/>
+    <circle cx="0" cy="-21.5" r="0.75" fill="#eddfc0" stroke="${INK}" stroke-width="0.35"/>
+    <path d="M0 -23.6 V-19.4 M-2.1 -21.5 H2.1 M-1.5 -23 L1.5 -20 M-1.5 -20 L1.5 -23" stroke="${INK}" stroke-width="0.3" opacity="0.75"/>
     <!-- belfry -->
-    <rect x="-2.3" y="-28.2" width="4.6" height="4.2" fill="#eddfc0" stroke="${INK}" stroke-width="0.8"/>
-    <rect x="-1" y="-27.5" width="2" height="2.7" rx="0.9" fill="#5b4632" stroke="${INK}" stroke-width="0.45"/>
-    <!-- copper spire: two oblique faces -->
-    <path d="${P([[-3.1, -28.2], [0, -41], [0, -28.2]])}" fill="#5a8f7c" stroke="${INK}" stroke-width="0.8"/>
-    <path d="${P([[0, -28.2], [0, -41], [3.1, -28.2]])}" fill="#6fa78f" stroke="${INK}" stroke-width="0.8"/>
-    <path d="M0 -41 V-43.4 M-1 -42.5 H1" stroke="${INK}" stroke-width="0.55"/>
-    <!-- doors -->
-    <path d="M-1.9 0 L-1.9 -3.6 A1.9 1.9 0 0 1 1.9 -3.6 L1.9 0 Z" fill="#5b4632" stroke="${INK}" stroke-width="0.6"/>
+    <rect x="-2.7" y="-31.8" width="5.4" height="4.8" fill="#eddfc0" stroke="${INK}" stroke-width="0.85"/>
+    <rect x="-1.7" y="-31" width="1.4" height="3.1" rx="0.7" fill="#5b4632" stroke="${INK}" stroke-width="0.45"/>
+    <rect x="0.3" y="-31" width="1.4" height="3.1" rx="0.7" fill="#5b4632" stroke="${INK}" stroke-width="0.45"/>
+    <!-- copper spire, two faces + cross -->
+    <path d="${P([[-3.5, -31.8], [0, -47], [0, -31.8]])}" fill="#5a8f7c" stroke="${INK}" stroke-width="0.85"/>
+    <path d="${P([[0, -31.8], [0, -47], [3.5, -31.8]])}" fill="#6fa78f" stroke="${INK}" stroke-width="0.85"/>
+    <path d="M0 -47 V-50 M-1.2 -48.9 H1.2" stroke="${INK}" stroke-width="0.65"/>
+    <!-- triple arched entry -->
+    <path d="M-3.4 0 L-3.4 -3.4 A1.15 1.3 0 0 1 -1.1 -3.4 L-1.1 0 Z" fill="#5b4632" stroke="${INK}" stroke-width="0.55"/>
+    <path d="M-1.15 0 L-1.15 -4 A1.2 1.4 0 0 1 1.25 -4 L1.25 0 Z" fill="#4a3a2c" stroke="${INK}" stroke-width="0.6"/>
+    <path d="M1.2 0 L1.2 -3.4 A1.15 1.3 0 0 1 3.5 -3.4 L3.5 0 Z" fill="#5b4632" stroke="${INK}" stroke-width="0.55"/>
+    <rect x="-4" y="-0.7" width="8" height="1" fill="#cfc4ad" stroke="${INK}" stroke-width="0.5"/>
   </symbol>`;
 }
 
-// School: wide friendly civic block, flag, big doorway.
 function school() {
-  const w = 16, h = 8.5, d = 12;
+  const w = 16, h = 8.5, d = 12, L = w / 2;
   const [ox, oy] = dxy(d);
-  const L = w / 2;
-  const wins = [-6.4, -3.4, 0.6, 3.6].map((x) =>
-    `<rect x="${x}" y="-7.2" width="2.4" height="2.8" rx="0.3" fill="#fdf3c9" stroke="${INK}" stroke-width="0.5"/>`).join('');
+  const wins = [-6.4, -3.4, 0.6, 3.6].map((x) => win(x, -7.2, 2.4, 2.8, 0.5)).join('');
   return `
   <symbol id="bldg.civ.school" overflow="visible">
     <path d="${P([[L, 0], [L, -h], [L + ox, -h + oy], [L + ox, oy]])}" fill="var(--side,#b08968)" stroke="${INK}" stroke-width="${LINE}" stroke-linejoin="round"/>
     <path d="${P([[-L, -h], [L, -h], [L + ox, -h + oy], [-L + ox, -h + oy]])}" fill="var(--rooftop,#8d8577)" stroke="${INK}" stroke-width="${LINE}" stroke-linejoin="round"/>
     <rect x="${-L}" y="${-h}" width="${w}" height="${h}" fill="var(--body,#d9a06b)" stroke="${INK}" stroke-width="${LINE}" stroke-linejoin="round"/>
-    <rect x="${-L - 0.5}" y="${-h - 0.8}" width="${w + 1}" height="1.4" rx="0.3" fill="var(--trim,#8a5a44)" stroke="${INK}" stroke-width="0.7"/>
+    <rect x="${-L - 0.6}" y="${-h - 0.9}" width="${w + 1.2}" height="1.5" rx="0.35" fill="var(--trim,#8a5a44)" stroke="${INK}" stroke-width="0.8"/>
     ${wins}
-    <!-- entry -->
     <rect x="${L - 3.9}" y="-5.4" width="3.2" height="5.4" rx="0.35" fill="var(--body,#d9a06b)" stroke="${INK}" stroke-width="0.7"/>
     <rect x="${L - 3.3}" y="-4.2" width="2" height="4.2" rx="0.3" fill="#5b4632" stroke="${INK}" stroke-width="0.55"/>
-    <!-- flag -->
     <path d="M${-L + 1.2} ${-h} V${-h - 4.4}" stroke="${INK}" stroke-width="0.55"/>
     <path d="M${-L + 1.2} ${-h - 4.4} h3 l-0.7 1 l0.7 1 h-3 Z" fill="#e05252" stroke="${INK}" stroke-width="0.45"/>
   </symbol>`;
 }
 
-// ---------- trees ----------
-// All trees: trunk + species-charactered canopy, highlight upper-left.
+// ============ TREES v2 — silhouette + texture + color per species ============
 
+// Linden: DENSE, rounded, full formal crown — deep rich green, tight scallops.
 function treeLinden() {
-  // tidy dense teardrop — formal street tree
   return `
   <symbol id="tree.linden" overflow="visible">
-    <path d="M-0.7 0 L-0.5 -2.6 H0.5 L0.7 0 Z" fill="#7a5236" stroke="${INK}" stroke-width="0.55"/>
-    <path d="M0 -12.6 C2.9 -12.2 4.4 -9.8 4.6 -7.4 C4.8 -5 3.6 -2.9 0 -2.6 C-3.6 -2.9 -4.8 -5 -4.6 -7.4 C-4.4 -9.8 -2.9 -12.2 0 -12.6 Z" fill="#4f9e4f" stroke="${INK}" stroke-width="1.05" stroke-linejoin="round"/>
-    <path d="M-2.9 -10.4 C-1.9 -11.6 1.4 -11.9 2.6 -10.6 C1.6 -11 0.3 -10.9 -0.6 -10.5 C-1.5 -10.9 -2.2 -10.7 -2.9 -10.4 Z" fill="#79c46e"/>
-    <path d="M-3.4 -7.6 C-2.4 -8.4 -1 -8.3 -0.2 -7.7" fill="none" stroke="#3d7d3f" stroke-width="0.5" opacity="0.7"/>
-    <path d="M0.6 -5.6 C1.6 -6.3 2.9 -6.1 3.4 -5.4" fill="none" stroke="#3d7d3f" stroke-width="0.5" opacity="0.7"/>
+    <path d="M-0.8 0 L-0.55 -2.4 H0.55 L0.8 0 Z" fill="#7a5236" stroke="${INK}" stroke-width="0.6"/>
+    <path d="M0 -12.2
+      a2.5 2.5 0 0 1 2.5 1.4 a2.4 2.4 0 0 1 2 2.6 a2.3 2.3 0 0 1 0.2 3.2 a2.4 2.4 0 0 1 -2.2 2.6
+      a2.6 2.6 0 0 1 -2.5 1.2 a2.6 2.6 0 0 1 -2.5 -1.2 a2.4 2.4 0 0 1 -2.2 -2.6 a2.3 2.3 0 0 1 0.2 -3.2
+      a2.4 2.4 0 0 1 2 -2.6 a2.5 2.5 0 0 1 2.5 -1.4 Z"
+      fill="#3f8f45" stroke="${INK}" stroke-width="1.2" stroke-linejoin="round"/>
+    <path d="M-2.9 -9.9 a2 2 0 0 1 2.5 -1.3 a2 2 0 0 1 2.4 0.5" fill="none" stroke="#67b45e" stroke-width="1.1" stroke-linecap="round"/>
+    <path d="M-3.3 -6.3 a1.8 1.8 0 0 1 2.1 -0.6 M1 -5.4 a1.8 1.8 0 0 1 2.2 -0.4" fill="none" stroke="#2f6e38" stroke-width="0.7" opacity="0.8"/>
+    <circle cx="-1.7" cy="-10.4" r="0.55" fill="#8fd07e"/>
   </symbol>`;
 }
 
+// Honeylocust: AIRY — small separated leaflet tufts on visible forking branches,
+// yellow-green, lots of sky through the crown.
 function treeHoneylocust() {
-  // airy, open crown: separated feathery tufts on visible limbs
-  const tuft = (x, y, r) => `<circle cx="${x}" cy="${y}" r="${r}" fill="#a5c95e" stroke="${INK}" stroke-width="0.85"/>`;
+  const tuft = (x, y, r, tone) => `<circle cx="${x}" cy="${y}" r="${r}" fill="${tone}" stroke="${INK}" stroke-width="0.75"/>`;
   return `
   <symbol id="tree.honeylocust" overflow="visible">
-    <path d="M-0.6 0 L-0.4 -3.4 H0.4 L0.6 0 Z" fill="#8a6248" stroke="${INK}" stroke-width="0.55"/>
-    <path d="M0 -3 L-2.6 -6.4 M0 -3.4 L0.4 -8 M0 -3.2 L2.8 -5.8" stroke="#8a6248" stroke-width="0.6" fill="none"/>
-    ${tuft(-3.2, -7.4, 2)}${tuft(3.3, -6.8, 1.9)}${tuft(0.4, -9.6, 2.2)}${tuft(-1.4, -5.4, 1.5)}${tuft(2, -8.9, 1.5)}
-    <circle cx="-3.8" cy="-8.1" r="0.75" fill="#cfe08f"/>
-    <circle cx="-0.2" cy="-10.4" r="0.8" fill="#cfe08f"/>
+    <path d="M-0.6 0 L-0.4 -3.8 H0.4 L0.6 0 Z" fill="#8a6248" stroke="${INK}" stroke-width="0.6"/>
+    <path d="M0 -3.4 C-1.4 -5 -2.8 -5.8 -4 -7.4 M0 -3.8 C0.2 -6.4 0.6 -8 0.3 -10.4 M0 -3.6 C1.4 -5.2 3 -5.8 4.1 -7.2 M0.4 -7.6 C1.6 -8.4 2.4 -9 3.2 -10" fill="none" stroke="#8a6248" stroke-width="0.55"/>
+    ${tuft(-4.4, -8.2, 1.5, '#b8cf6e')}${tuft(-2.7, -6.4, 1.15, '#a5c95e')}
+    ${tuft(0.2, -11.2, 1.6, '#b8cf6e')}${tuft(-1.3, -9.6, 1.05, '#cadf8a')}
+    ${tuft(4.4, -7.9, 1.4, '#a5c95e')}${tuft(3.3, -10.6, 1.25, '#cadf8a')}
+    ${tuft(1.8, -8.6, 0.95, '#b8cf6e')}
+    <circle cx="-4.8" cy="-8.7" r="0.5" fill="#e2edad"/>
+    <circle cx="-0.1" cy="-11.8" r="0.5" fill="#e2edad"/>
   </symbol>`;
 }
 
-function treeFlowering() {
-  // small ornamental (lilac/pear/serviceberry class) — blossom puffs
-  const puff = (x, y, r) => `<circle cx="${x}" cy="${y}" r="${r}" fill="#f0b4cc" stroke="${INK}" stroke-width="0.8"/>`;
-  return `
-  <symbol id="tree.flowering" overflow="visible">
-    <path d="M-0.5 0 L-0.35 -2.5 H0.35 L0.5 0 Z" fill="#6b4530" stroke="${INK}" stroke-width="0.5"/>
-    ${puff(-1.9, -4.4, 1.9)}${puff(1.9, -4.6, 1.8)}${puff(0, -6.4, 2)}
-    <circle cx="-0.6" cy="-7.1" r="0.7" fill="#fbdff0"/>
-    <circle cx="-2.5" cy="-5" r="0.55" fill="#fbdff0"/>
-    <circle cx="1.3" cy="-3.6" r="0.4" fill="#fbdff0"/>
-  </symbol>`;
-}
-
-function treeMaple() {
-  // big round lobed crown
-  return `
-  <symbol id="tree.maple" overflow="visible">
-    <path d="M-0.8 0 L-0.55 -3 H0.55 L0.8 0 Z" fill="#7a5236" stroke="${INK}" stroke-width="0.55"/>
-    <path d="M0 -13.4 C1.8 -13.6 3 -12.4 4.2 -11.2 C5.8 -10.4 5.9 -8.2 5 -6.9 C5.6 -4.9 3.8 -3.2 1.9 -3.6 C1 -2.7 -1 -2.7 -1.9 -3.6 C-3.8 -3.2 -5.6 -4.9 -5 -6.9 C-5.9 -8.2 -5.8 -10.4 -4.2 -11.2 C-3 -12.4 -1.8 -13.6 0 -13.4 Z" fill="#57a04a" stroke="${INK}" stroke-width="1.05" stroke-linejoin="round"/>
-    <path d="M-3.6 -10.6 C-2.4 -11.9 0.4 -12.3 1.9 -11.4 C0.6 -11.5 -0.8 -11.3 -1.7 -10.8 C-2.4 -11.1 -3 -10.9 -3.6 -10.6 Z" fill="#83c66f"/>
-    <path d="M-4 -7.2 C-3 -8 -1.6 -7.9 -0.8 -7.3 M1.2 -5.4 C2.2 -6.1 3.5 -5.9 4 -5.2" fill="none" stroke="#417a39" stroke-width="0.5" opacity="0.7"/>
-  </symbol>`;
-}
-
-function treeAsh() {
-  // upright oval crown, slightly pointed top
-  return `
-  <symbol id="tree.ash" overflow="visible">
-    <path d="M-0.7 0 L-0.5 -3 H0.5 L0.7 0 Z" fill="#7a5236" stroke="${INK}" stroke-width="0.55"/>
-    <path d="M0 -13 C2.4 -12 3.9 -9.6 3.9 -7.2 C3.9 -4.8 2.4 -3 0 -2.8 C-2.4 -3 -3.9 -4.8 -3.9 -7.2 C-3.9 -9.6 -2.4 -12 0 -13 Z" fill="#63aa5c" stroke="${INK}" stroke-width="1.05" stroke-linejoin="round"/>
-    <path d="M-2.2 -10.3 C-1.3 -11.4 0.9 -11.6 1.9 -10.7 C0.9 -10.9 -0.3 -10.8 -1 -10.4 Z" fill="#8fce7d"/>
-    <path d="M-2.6 -6.6 C-1.7 -7.3 -0.4 -7.2 0.3 -6.7" fill="none" stroke="#47823f" stroke-width="0.5" opacity="0.7"/>
-  </symbol>`;
-}
-
+// Elm: TALL VASE — trunk splits into arching limbs, crown held high and wide.
 function treeElm() {
-  // vase silhouette: arching limbs, crown held high and wide
   return `
   <symbol id="tree.elm" overflow="visible">
-    <path d="M-0.7 0 C-0.5 -2 -0.6 -3.2 -1.8 -4.6 M0.7 0 C0.5 -2 0.6 -3.2 1.8 -4.6 M0 -1.4 V-4" stroke="#7a5236" stroke-width="0.8" fill="none"/>
-    <path d="M-0.9 0 H0.9 L0.6 -2.4 H-0.6 Z" fill="#7a5236" stroke="${INK}" stroke-width="0.5"/>
-    <path d="M0 -12.8 C3 -12.9 5.6 -11.4 6.2 -9.2 C6.7 -7.4 5.4 -5.7 3.4 -5.5 C2.2 -4.6 0.8 -4.4 0 -4.7 C-0.8 -4.4 -2.2 -4.6 -3.4 -5.5 C-5.4 -5.7 -6.7 -7.4 -6.2 -9.2 C-5.6 -11.4 -3 -12.9 0 -12.8 Z" fill="#4f9455" stroke="${INK}" stroke-width="1.05" stroke-linejoin="round"/>
-    <path d="M-4.4 -10.6 C-3 -11.8 0 -12.1 1.6 -11.2 C0.2 -11.3 -1.4 -11.1 -2.4 -10.6 Z" fill="#7cc06e"/>
+    <path d="M-1 0 H1 L0.7 -2.6 H-0.7 Z" fill="#7a5236" stroke="${INK}" stroke-width="0.6"/>
+    <path d="M-0.5 -2.4 C-1.6 -4.6 -3.6 -6 -4.6 -8.6 M0.5 -2.4 C1.6 -4.6 3.6 -6 4.6 -8.6 M0 -2.6 C0 -5 0.2 -6.6 0 -9" fill="none" stroke="#7a5236" stroke-width="0.85"/>
+    <path d="M0 -15.8
+      C2.9 -15.9 5.6 -14.9 6.6 -13 C7.6 -11.2 6.9 -9.2 5 -8.6
+      C4 -7.6 2.4 -7.4 1.4 -8 C0.6 -7.7 -0.6 -7.7 -1.4 -8
+      C-2.4 -7.4 -4 -7.6 -5 -8.6 C-6.9 -9.2 -7.6 -11.2 -6.6 -13 C-5.6 -14.9 -2.9 -15.9 0 -15.8 Z"
+      fill="#55984f" stroke="${INK}" stroke-width="1.2" stroke-linejoin="round"/>
+    <path d="M-4.6 -13.4 C-3 -14.8 0.6 -15.1 2.4 -14 C0.8 -14.2 -1.2 -13.9 -2.5 -13.3 Z" fill="#82bd74"/>
+    <path d="M-2 -10 a2.2 2.2 0 0 1 2.6 -0.5 M2.2 -11.4 a2 2 0 0 1 2.3 0" fill="none" stroke="#3d7440" stroke-width="0.65" opacity="0.8"/>
   </symbol>`;
 }
 
+// Oak: BROAD + IRREGULAR — wide bumpy asymmetric crown, dark green, heavy limb.
 function treeOak() {
-  // broad, sturdy, cloud-lobed crown — wider than tall
   return `
   <symbol id="tree.oak" overflow="visible">
-    <path d="M-1 0 L-0.7 -3.2 H0.7 L1 0 Z" fill="#6b4a30" stroke="${INK}" stroke-width="0.6"/>
-    <path d="M0 -11.8 C2.2 -12.4 4.2 -11.4 5 -10 C6.8 -9.6 7.2 -7.2 6 -6 C6.2 -4.4 4.4 -3.2 2.8 -3.8 C1.8 -2.9 -1.8 -2.9 -2.8 -3.8 C-4.4 -3.2 -6.2 -4.4 -6 -6 C-7.2 -7.2 -6.8 -9.6 -5 -10 C-4.2 -11.4 -2.2 -12.4 0 -11.8 Z" fill="#4c8f45" stroke="${INK}" stroke-width="1.05" stroke-linejoin="round"/>
-    <path d="M-4.2 -9.4 C-2.8 -10.6 0 -10.9 1.6 -10 C0.2 -10.1 -1.6 -9.9 -2.6 -9.4 Z" fill="#76b465"/>
+    <path d="M-1.2 0 L-0.85 -3 H0.85 L1.2 0 Z" fill="#6b4a30" stroke="${INK}" stroke-width="0.65"/>
+    <path d="M-0.4 -2.8 C-2 -4 -3.6 -4.2 -5.2 -5.6" fill="none" stroke="#6b4a30" stroke-width="0.8"/>
+    <path d="M-1 -10.9
+      C0.4 -12.3 2.9 -12 3.7 -10.7 C5.9 -11 7.5 -9.3 6.9 -7.7 C8.2 -6.5 7.6 -4.5 5.9 -4.1
+      C5.3 -2.9 3.4 -2.5 2.3 -3.2 C1.2 -2.4 -1.1 -2.4 -2.1 -3.2 C-4 -2.6 -6 -3.3 -6.3 -4.9
+      C-7.9 -5.5 -8 -7.7 -6.7 -8.6 C-6.6 -10.3 -4.6 -11.4 -3.1 -10.6 C-2.6 -11.2 -1.7 -11.4 -1 -10.9 Z"
+      fill="#3f7a3f" stroke="${INK}" stroke-width="1.25" stroke-linejoin="round"/>
+    <path d="M-5.2 -8.9 C-4 -10.1 -1.4 -10.6 0.3 -10 C-1.2 -10 -3 -9.6 -4 -9 Z" fill="#699e5c"/>
+    <path d="M-4.6 -5.4 a2 2 0 0 1 2.3 -0.6 M1.4 -4.6 a2 2 0 0 1 2.5 -0.3 M3 -8.9 a1.8 1.8 0 0 1 2.1 0.2" fill="none" stroke="#2c5a2e" stroke-width="0.7" opacity="0.85"/>
   </symbol>`;
 }
 
-// ---------- ambient ----------
+// Maple: rounded but BRIGHT + energetic — vivid green, pointed leafy bumps.
+function treeMaple() {
+  return `
+  <symbol id="tree.maple" overflow="visible">
+    <path d="M-0.8 0 L-0.55 -2.8 H0.55 L0.8 0 Z" fill="#7a5236" stroke="${INK}" stroke-width="0.6"/>
+    <path d="M0 -12.8
+      L1.7 -12.2 L2.9 -11.6 L3.4 -10.3 L4.7 -9.4 L4.6 -7.9 L5.2 -6.5 L4.1 -5.4 L3.7 -4.1 L2.2 -3.8
+      L1.1 -3.1 L0 -3.4 L-1.1 -3.1 L-2.2 -3.8 L-3.7 -4.1 L-4.1 -5.4 L-5.2 -6.5 L-4.6 -7.9 L-4.7 -9.4
+      L-3.4 -10.3 L-2.9 -11.6 L-1.7 -12.2 Z"
+      fill="#6ec24a" stroke="${INK}" stroke-width="1.2" stroke-linejoin="round"/>
+    <path d="M-3.2 -10.2 C-1.9 -11.5 1 -11.8 2.6 -10.8 C1.1 -11 -0.8 -10.8 -1.9 -10.2 Z" fill="#9ade72"/>
+    <path d="M-3.4 -6.4 L-2.2 -7.2 L-1 -6.5 M1.2 -5.2 L2.3 -6 L3.4 -5.3" fill="none" stroke="#4c9433" stroke-width="0.7" opacity="0.8"/>
+  </symbol>`;
+}
+
+// Ash: slim upright oval, pointed tip, vertical streaks — quieter green.
+function treeAsh() {
+  return `
+  <symbol id="tree.ash" overflow="visible">
+    <path d="M-0.7 0 L-0.5 -2.8 H0.5 L0.7 0 Z" fill="#7a5236" stroke="${INK}" stroke-width="0.6"/>
+    <path d="M0 -13.4 C1.9 -12.1 3.2 -9.8 3.2 -7.3 C3.2 -4.8 2 -3 0 -2.8 C-2 -3 -3.2 -4.8 -3.2 -7.3 C-3.2 -9.8 -1.9 -12.1 0 -13.4 Z"
+      fill="#5ea45e" stroke="${INK}" stroke-width="1.15" stroke-linejoin="round"/>
+    <path d="M-1 -10.8 C-1.2 -8.6 -1.2 -6.4 -0.9 -4.4 M1 -10.4 C1.2 -8.4 1.2 -6.6 1 -4.8" fill="none" stroke="#417c44" stroke-width="0.6" opacity="0.8"/>
+    <path d="M-1.6 -11 C-0.9 -12 0.5 -12.4 1.3 -11.7 C0.5 -11.8 -0.6 -11.5 -1.6 -11 Z" fill="#89c682"/>
+  </symbol>`;
+}
+
+// Flowering class: clearly SMALLER, strong pink identity, blossom clusters.
+function treeFlowering() {
+  const puff = (x, y, r, tone) => `<circle cx="${x}" cy="${y}" r="${r}" fill="${tone}" stroke="${INK}" stroke-width="0.8"/>`;
+  return `
+  <symbol id="tree.flowering" overflow="visible">
+    <path d="M-0.55 0 L-0.4 -2.2 H0.4 L0.55 0 Z" fill="#6b4530" stroke="${INK}" stroke-width="0.5"/>
+    <path d="M0 -2 C-0.8 -2.8 -1.6 -3 -2.2 -3.8 M0 -2.2 C0.8 -2.9 1.5 -3.1 2.1 -3.9" fill="none" stroke="#6b4530" stroke-width="0.5"/>
+    ${puff(-2.2, -4.6, 1.7, '#f2a8c8')}${puff(2.1, -4.7, 1.6, '#ef9cc0')}${puff(0, -6.3, 1.8, '#f2a8c8')}
+    <circle cx="-0.7" cy="-7" r="0.6" fill="#fde3f0"/>
+    <circle cx="-2.8" cy="-5.2" r="0.5" fill="#fde3f0"/>
+    <circle cx="1.6" cy="-3.9" r="0.45" fill="#fde3f0"/>
+    <circle cx="2.6" cy="-5.4" r="0.4" fill="#fde3f0"/>
+    <circle cx="0.9" cy="-6.9" r="0.35" fill="#ffffff"/>
+  </symbol>`;
+}
+
+// ============ ambient + ground (unchanged geometry, minor line bump) ============
 
 function car() {
   return `
   <symbol id="veh.car" overflow="visible">
-    <path d="M-2.4 -1.1 C-2.4 -2.2 -1.6 -2.9 -0.7 -2.9 L0.9 -2.9 C1.7 -2.9 2.1 -2.3 2.4 -1.6 L2.4 -0.4 L-2.4 -0.4 Z" fill="var(--body,#e05252)" stroke="${INK}" stroke-width="0.55" stroke-linejoin="round"/>
+    <path d="M-2.4 -1.1 C-2.4 -2.2 -1.6 -2.9 -0.7 -2.9 L0.9 -2.9 C1.7 -2.9 2.1 -2.3 2.4 -1.6 L2.4 -0.4 L-2.4 -0.4 Z" fill="var(--body,#e05252)" stroke="${INK}" stroke-width="0.6" stroke-linejoin="round"/>
     <path d="M-1.5 -1.7 L-1.2 -2.5 L0.7 -2.5 L1.1 -1.7 Z" fill="#bfe4ea" stroke="${INK}" stroke-width="0.4"/>
     <circle cx="-1.4" cy="-0.35" r="0.55" fill="#3a332b" stroke="${INK}" stroke-width="0.3"/>
     <circle cx="1.4" cy="-0.35" r="0.55" fill="#3a332b" stroke="${INK}" stroke-width="0.3"/>
@@ -329,10 +474,7 @@ function car() {
   </symbol>`;
 }
 
-// ---------- ground assets (top-down, rotatable) ----------
-
 function tennisCourt() {
-  // doubles court ~24x11 with apron; drawn centered, long axis = x
   return `
   <symbol id="ground.tennis" overflow="visible">
     <rect x="-15" y="-8.5" width="30" height="17" rx="1.2" fill="#3e7a5e" stroke="#2e5c47" stroke-width="0.7"/>
@@ -344,7 +486,6 @@ function tennisCourt() {
 }
 
 function playgroundGround() {
-  // sand patch + tiny oblique swing frame and slide
   return `
   <symbol id="ground.playground" overflow="visible">
     <ellipse cx="0" cy="0" rx="10" ry="6.5" fill="#efd9a7" stroke="#d9bc82" stroke-width="0.7"/>
@@ -359,30 +500,38 @@ function playgroundGround() {
 
 export function allSymbols() {
   return [
-    polishFlat(), bungalow(), apartment(), garage(),
-    storefront(), cornerTavern(), church(), school(),
+    polishFlatS0(), polishFlatS1(), polishFlatS2(), polishFlatS3(),
+    bungalowS0(), bungalowS1(), bungalowS2(),
+    apartment(), garage(),
+    storefront(), storefrontRow(), cornerTavern(), church(), school(),
     treeLinden(), treeHoneylocust(), treeFlowering(), treeMaple(), treeAsh(), treeElm(), treeOak(),
     car(), tennisCourt(), playgroundGround(),
   ].join('\n');
 }
 
-// Asset metadata the composer needs: rough half-width (m) for spacing, class, layer.
+// structures per assetId (renderer appends .sN when > 1)
+export const STRUCT_COUNT = {
+  'bldg.res.polish_flat': 4,
+  'bldg.res.bungalow': 3,
+};
+
 export const ASSET_META = {
-  'bldg.res.polish_flat': { halfW: 6.5, cls: 'standing' },
-  'bldg.res.bungalow': { halfW: 7, cls: 'standing' },
-  'bldg.res.apartment': { halfW: 9, cls: 'standing' },
+  'bldg.res.polish_flat': { halfW: 7, cls: 'standing' },
+  'bldg.res.bungalow': { halfW: 7.5, cls: 'standing' },
+  'bldg.res.apartment': { halfW: 9.5, cls: 'standing' },
   'bldg.res.garage': { halfW: 5, cls: 'standing' },
   'bldg.com.storefront': { halfW: 7, cls: 'standing' },
+  'bldg.com.storefront_row': { halfW: 12.5, cls: 'standing' },
   'bldg.com.corner_tavern': { halfW: 8, cls: 'standing' },
-  'bldg.civ.church': { halfW: 10, cls: 'standing', hero: true },
+  'bldg.civ.church': { halfW: 11, cls: 'standing', hero: true },
   'bldg.civ.school': { halfW: 10, cls: 'standing' },
-  'tree.linden': { halfW: 4.6, cls: 'tree' },
-  'tree.honeylocust': { halfW: 5, cls: 'tree' },
-  'tree.flowering': { halfW: 3.6, cls: 'tree' },
-  'tree.maple': { halfW: 5.6, cls: 'tree' },
-  'tree.ash': { halfW: 4, cls: 'tree' },
-  'tree.elm': { halfW: 6.2, cls: 'tree' },
-  'tree.oak': { halfW: 6.8, cls: 'tree' },
+  'tree.linden': { halfW: 5, cls: 'tree' },
+  'tree.honeylocust': { halfW: 5.5, cls: 'tree' },
+  'tree.flowering': { halfW: 3.2, cls: 'tree' },
+  'tree.maple': { halfW: 5.4, cls: 'tree' },
+  'tree.ash': { halfW: 3.6, cls: 'tree' },
+  'tree.elm': { halfW: 7, cls: 'tree' },
+  'tree.oak': { halfW: 7.5, cls: 'tree' },
   'veh.car': { halfW: 2.6, cls: 'ambient' },
   'ground.tennis': { halfW: 15, cls: 'ground' },
   'ground.playground': { halfW: 10, cls: 'ground' },

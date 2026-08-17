@@ -41,6 +41,13 @@ import {
   deviceId,
   adjustCoins,
   transferCoins,
+  adjustStars,
+  dropSpawnNow,
+  hostCancelStarClaims,
+  hostReleaseSpaces,
+  hostUnclearSpot,
+  savedHostGame,
+  saveHostGame,
   cfg,
   listSpaceOwners,
   subscribeSpaceOwners,
@@ -563,8 +570,53 @@ export default function App({
       .catch(() => setQrDataUrl(null));
   }, [joinUrl]);
   const [hostConfig, setHostConfig] = useState<GameConfig>(PARTY_CONFIG);
-  const [hostStatus, setHostStatus] = useState<'lobby' | 'live' | 'ended'>('lobby');
+  const [hostStatus, setHostStatus] = useState<'lobby' | 'live' | 'paused' | 'ended'>('lobby');
   const [teams, setTeams] = useState<TeamRow[]>([]);
+  // Live console state: announcement composer + per-team fix-it panel.
+  const [announceText, setAnnounceText] = useState('');
+  const [fixTeamId, setFixTeamId] = useState<string | null>(null);
+  const [fixClaims, setFixClaims] = useState<string[]>([]);
+  const [fixSpot, setFixSpot] = useState('');
+
+  // Resume a hosted game after a refresh (phone locks, tab reloads mid-party).
+  useEffect(() => {
+    if (variant !== 'admin') return;
+    const saved = savedHostGame();
+    if (!saved) return;
+    getGameFull(saved.id)
+      .then((g) => {
+        setHostGame({ id: g.id, code: g.code, name: g.name, status: g.status });
+        setHostStatus(g.status as 'lobby' | 'live' | 'paused' | 'ended');
+        if (g.config) setHostConfig(g.config);
+      })
+      .catch(() => saveHostGame(null)); // game gone → forget it
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [variant]);
+
+  // Host live feed: status/config + activity while the dashboard is open.
+  useEffect(() => {
+    if (variant !== 'admin' || appMode !== 'design' || !hostGame) return;
+    let alive = true;
+    const gid = hostGame.id;
+    const loadEv = () => listEvents(gid).then((e) => alive && setEvents(e)).catch(() => {});
+    const loadGame = () =>
+      getGameFull(gid)
+        .then((g) => {
+          if (!alive) return;
+          setHostStatus(g.status as 'lobby' | 'live' | 'paused' | 'ended');
+        })
+        .catch(() => {});
+    loadEv();
+    loadGame();
+    const u1 = subscribeEvents(gid, loadEv);
+    const u2 = subscribeGame(gid, loadGame);
+    return () => {
+      alive = false;
+      u1();
+      u2();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [variant, appMode, hostGame?.id]);
   const [joinCode, setJoinCode] = useState((initialCode ?? '').toUpperCase());
   const [joinName, setJoinName] = useState('');
   const [joinEmoji, setJoinEmoji] = useState('🎲');
@@ -592,12 +644,133 @@ export default function App({
   async function doPublish() {
     setNetBusy(true);
     try {
-      setHostGame(await publishGame(board.name || 'Birthday Game', board, hostConfig));
+      const g = await publishGame(board.name || 'Birthday Game', board, hostConfig);
+      setHostGame(g);
+      saveHostGame(g); // dashboard survives a refresh
       setHostStatus('lobby');
     } catch (e) {
       alert('Publish failed: ' + (e as Error).message);
     } finally {
       setNetBusy(false);
+    }
+  }
+  async function doPause() {
+    if (!hostGame) return;
+    setNetBusy(true);
+    try {
+      await updateGameStatus(hostGame.id, 'paused');
+      await logEvent(hostGame.id, 'announce', '⏸ The host paused the game — hold tight!');
+      setHostStatus('paused');
+    } catch (e) {
+      alert('Pause failed: ' + (e as Error).message);
+    } finally {
+      setNetBusy(false);
+    }
+  }
+  async function doResume() {
+    if (!hostGame) return;
+    setNetBusy(true);
+    try {
+      await updateGameStatus(hostGame.id, 'live');
+      await logEvent(hostGame.id, 'announce', '▶ Game back on — go!');
+      setHostStatus('live');
+    } catch (e) {
+      alert('Resume failed: ' + (e as Error).message);
+    } finally {
+      setNetBusy(false);
+    }
+  }
+  async function doAnnounce() {
+    if (!hostGame || !announceText.trim()) return;
+    setNetBusy(true);
+    try {
+      await logEvent(hostGame.id, 'announce', `📣 ${announceText.trim()}`);
+      setAnnounceText('');
+    } catch (e) {
+      alert('Announce failed: ' + (e as Error).message);
+    } finally {
+      setNetBusy(false);
+    }
+  }
+  async function doDropSpawn() {
+    if (!hostGame) return;
+    setNetBusy(true);
+    try {
+      await dropSpawnNow(hostGame.id, board, hostConfig.spawnTtlSec);
+      await logEvent(hostGame.id, 'spawn', '🎁 A surprise drop just appeared!');
+    } catch (e) {
+      alert('Drop failed: ' + (e as Error).message);
+    } finally {
+      setNetBusy(false);
+    }
+  }
+  async function doApplyConfig() {
+    if (!hostGame) return;
+    setNetBusy(true);
+    try {
+      await updateGameConfig(hostGame.id, hostConfig);
+      await logEvent(hostGame.id, 'announce', '⚙️ The host tweaked the game settings.');
+    } catch (e) {
+      alert('Apply failed: ' + (e as Error).message);
+    } finally {
+      setNetBusy(false);
+    }
+  }
+  // Per-team fix-it actions (wrench menu).
+  async function fixCoins(teamId: string, delta: number) {
+    try {
+      await adjustCoins(teamId, delta);
+    } catch (e) {
+      alert('Adjust failed: ' + (e as Error).message);
+    }
+  }
+  async function fixStars(teamId: string, delta: number) {
+    try {
+      await adjustStars(teamId, delta);
+    } catch (e) {
+      alert('Adjust failed: ' + (e as Error).message);
+    }
+  }
+  async function openFix(teamId: string) {
+    if (fixTeamId === teamId) {
+      setFixTeamId(null);
+      return;
+    }
+    setFixTeamId(teamId);
+    setFixSpot('');
+    if (hostGame) {
+      myClaims(hostGame.id, teamId)
+        .then(setFixClaims)
+        .catch(() => setFixClaims([]));
+    }
+  }
+  async function fixCancelClaim(teamId: string) {
+    if (!hostGame) return;
+    try {
+      const n = await hostCancelStarClaims(hostGame.id, teamId);
+      alert(n ? 'Star claim cancelled — the bar is free again.' : 'No active claim to cancel.');
+    } catch (e) {
+      alert('Cancel failed: ' + (e as Error).message);
+    }
+  }
+  async function fixReleaseSpaces(teamId: string) {
+    if (!hostGame) return;
+    try {
+      const n = await hostReleaseSpaces(hostGame.id, teamId);
+      alert(n ? `Released ${n} owned space${n > 1 ? 's' : ''}.` : 'This team owns no spaces.');
+    } catch (e) {
+      alert('Release failed: ' + (e as Error).message);
+    }
+  }
+  async function fixUnclear(teamId: string) {
+    if (!hostGame || !fixSpot) return;
+    try {
+      await hostUnclearSpot(hostGame.id, teamId, fixSpot);
+      setFixClaims((c) => c.filter((s) => s !== fixSpot));
+      setFixSpot('');
+      alert('Spot un-cleared — they can do it again.');
+    } catch (e) {
+      alert('Un-clear failed: ' + (e as Error).message);
     }
   }
   async function doStart() {
@@ -637,7 +810,7 @@ export default function App({
       <input
         type="number"
         value={hostConfig[key]}
-        disabled={hostStatus !== 'lobby'}
+        disabled={hostStatus === 'ended'}
         onChange={(e) => setHostConfig((c) => ({ ...c, [key]: Number(e.target.value) }))}
         style={{ width: 72, padding: '3px 6px', border: '1px solid #cfc7b5', borderRadius: 5 }}
       />
@@ -670,7 +843,9 @@ export default function App({
   // --- Online play (slice 2: shared check-ins, coins, live board) ------------
   const [onlineBoard, setOnlineBoard] = useState<Board | null>(null);
   const [onlineConfig, setOnlineConfig] = useState<GameConfig>(PARTY_CONFIG);
-  const [onlineStatus, setOnlineStatus] = useState<'lobby' | 'live' | 'ended'>('live');
+  const [onlineStatus, setOnlineStatus] = useState<'lobby' | 'live' | 'paused' | 'ended'>('live');
+  // Latest host announcement + which one the player has dismissed.
+  const [dismissedAnnounceId, setDismissedAnnounceId] = useState<string | null>(null);
   const [onlineCleared, setOnlineCleared] = useState<string[]>([]);
   const [positions, setPositions] = useState<Position[]>([]);
   const [allSpawns, setAllSpawns] = useState<SpawnRow[]>([]);
@@ -764,7 +939,7 @@ export default function App({
         .then((g) => {
           if (!alive) return;
           if (g.config) setOnlineConfig(g.config);
-          setOnlineStatus((g.status as 'lobby' | 'live' | 'ended') ?? 'live');
+          setOnlineStatus((g.status as 'lobby' | 'live' | 'paused' | 'ended') ?? 'live');
         })
         .catch(() => {});
     loadClaims();
@@ -1565,6 +1740,14 @@ export default function App({
                 ⏳ Waiting for the host to start the game…
               </p>
             )}
+            {onlineStatus === 'paused' && (
+              <p
+                className="hint"
+                style={{ background: '#3b1d1d', borderRadius: 8, padding: '8px 10px', color: '#fecaca', margin: '6px 0' }}
+              >
+                ⏸ Game paused by the host — check-ins are frozen.
+              </p>
+            )}
             <p className="hint">{onlineCleared.length} spots cleared</p>
             <label className="toggle">
               <input type="checkbox" checked={gpsOn} onChange={(e) => setGpsOn(e.target.checked)} />
@@ -2172,50 +2355,144 @@ export default function App({
               </p>
 
               {hostStatus === 'lobby' && (
+                <button className="btn btn--go" onClick={doStart} disabled={netBusy}>
+                  {netBusy ? '…' : '▶ Start game'}
+                </button>
+              )}
+              {(hostStatus === 'live' || hostStatus === 'paused') && (
                 <>
                   <div className="row">
-                    <button className="btn" style={{ flex: 1 }} onClick={() => setHostConfig(PARTY_CONFIG)}>
-                      Party preset
-                    </button>
-                    <button className="btn" style={{ flex: 1 }} onClick={() => setHostConfig(TEST_CONFIG)}>
-                      Test (fast)
+                    {hostStatus === 'live' ? (
+                      <button className="btn" style={{ flex: 1 }} onClick={doPause} disabled={netBusy}>
+                        ⏸ Pause
+                      </button>
+                    ) : (
+                      <button className="btn btn--go" style={{ flex: 1 }} onClick={doResume} disabled={netBusy}>
+                        ▶ Resume
+                      </button>
+                    )}
+                    <button className="btn btn--danger" style={{ flex: 1 }} onClick={doEnd} disabled={netBusy}>
+                      🏁 End
                     </button>
                   </div>
-                  {cfgField('Star cost (🪙)', 'starCost')}
-                  {cfgField('Star meter (sec)', 'meterSec')}
-                  {cfgField('Spawn every ≥ (sec)', 'spawnMinSec')}
-                  {cfgField('Spawn every ≤ (sec)', 'spawnMaxSec')}
-                  {cfgField('Spawns total', 'spawnCount')}
-                  {cfgField('Drop lasts (sec)', 'spawnTtlSec')}
-                  {cfgField('Coins / check-in', 'coinReward')}
-                  {cfgField('GPS radius (m)', 'radiusM')}
-                  {cfgField('Rob amount (🪙)', 'robAmount')}
-                  {cfgField('Claim a space (🪙)', 'claimCost')}
-                  {cfgField('Space toll (🪙)', 'tollAmount')}
-                  <button className="btn btn--go" onClick={doStart} disabled={netBusy}>
-                    {netBusy ? '…' : '▶ Start game'}
+                  <p className="hint" style={{ marginTop: 8 }}>📣 Announce to every phone</p>
+                  <div className="row">
+                    <input
+                      value={announceText}
+                      onChange={(e) => setAnnounceText(e.target.value)}
+                      placeholder="e.g. Final 30 minutes!"
+                      style={{ flex: 1, padding: '6px 8px', border: '1px solid #cfc7b5', borderRadius: 6 }}
+                    />
+                    <button className="btn" style={{ flex: 'none' }} onClick={doAnnounce} disabled={netBusy || !announceText.trim()}>
+                      Send
+                    </button>
+                  </div>
+                  <button className="btn" onClick={doDropSpawn} disabled={netBusy}>
+                    🎁 Drop a bonus spawn now
                   </button>
                 </>
               )}
+              {hostStatus === 'ended' && <p className="hint">Game ended — final standings below.</p>}
 
-              <p className="hint" style={{ marginTop: 6 }}>Standings</p>
-              <div style={{ maxHeight: 130, overflowY: 'auto' }}>
+              <p className="hint" style={{ marginTop: 6 }}>Standings — tap 🔧 to fix a team</p>
+              <div style={{ maxHeight: 260, overflowY: 'auto' }}>
                 {[...teams]
                   .sort((a, b) => b.stars - a.stars || b.coins - a.coins)
                   .map((t) => (
-                    <div key={t.id} className="hint" style={{ margin: '2px 0' }}>
-                      {t.emoji} {t.name} — 🪙 {t.coins} · ⭐ {t.stars}
+                    <div key={t.id}>
+                      <div className="hint" style={{ margin: '2px 0', display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {t.emoji} {t.name} — 🪙 {t.coins} · ⭐ {t.stars}
+                        </span>
+                        <button className="fix-btn" onClick={() => void openFix(t.id)} title="Fix-it tools">
+                          🔧
+                        </button>
+                      </div>
+                      {fixTeamId === t.id && (
+                        <div className="fix-panel">
+                          <div className="row">
+                            <button className="btn" onClick={() => void fixCoins(t.id, 10)}>🪙 +10</button>
+                            <button className="btn" onClick={() => void fixCoins(t.id, -10)}>🪙 −10</button>
+                            <button className="btn" onClick={() => void fixStars(t.id, 1)}>⭐ +1</button>
+                            <button className="btn" onClick={() => void fixStars(t.id, -1)}>⭐ −1</button>
+                          </div>
+                          <div className="row">
+                            <button className="btn btn--ghost" onClick={() => void fixCancelClaim(t.id)}>
+                              Cancel star claim
+                            </button>
+                            <button className="btn btn--ghost" onClick={() => void fixReleaseSpaces(t.id)}>
+                              Release spaces
+                            </button>
+                          </div>
+                          {fixClaims.length > 0 && (
+                            <div className="row">
+                              <select value={fixSpot} onChange={(e) => setFixSpot(e.target.value)} style={{ flex: 1 }}>
+                                <option value="">— un-clear a spot —</option>
+                                {fixClaims.map((sid) => (
+                                  <option key={sid} value={sid}>
+                                    {board.squares.find((s) => s.id === sid)?.title || sid.slice(0, 8)}
+                                  </option>
+                                ))}
+                              </select>
+                              <button className="btn" disabled={!fixSpot} onClick={() => void fixUnclear(t.id)}>
+                                Un-clear
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   ))}
               </div>
 
-              {hostStatus === 'live' && (
-                <button className="btn btn--danger" onClick={doEnd} disabled={netBusy}>
-                  🏁 End game
+              <p className="hint" style={{ marginTop: 6 }}>Activity</p>
+              <div style={{ maxHeight: 130, overflowY: 'auto' }}>
+                {events.length === 0 ? (
+                  <div className="hint">Nothing yet…</div>
+                ) : (
+                  events.map((e) => (
+                    <div key={e.id} className="hint" style={{ margin: '2px 0' }}>
+                      {e.payload?.text ?? e.type}
+                    </div>
+                  ))
+                )}
+              </div>
+
+              <p className="hint" style={{ marginTop: 8 }}>⚙️ Settings {hostStatus === 'lobby' ? '(applied at start)' : '(Apply pushes to all phones)'}</p>
+              {hostStatus === 'lobby' && (
+                <div className="row">
+                  <button className="btn" style={{ flex: 1 }} onClick={() => setHostConfig(PARTY_CONFIG)}>
+                    Party preset
+                  </button>
+                  <button className="btn" style={{ flex: 1 }} onClick={() => setHostConfig(TEST_CONFIG)}>
+                    Test (fast)
+                  </button>
+                </div>
+              )}
+              {cfgField('Star cost (🪙)', 'starCost')}
+              {cfgField('Star meter (sec)', 'meterSec')}
+              {cfgField('Spawn every ≥ (sec)', 'spawnMinSec')}
+              {cfgField('Spawn every ≤ (sec)', 'spawnMaxSec')}
+              {cfgField('Spawns total', 'spawnCount')}
+              {cfgField('Drop lasts (sec)', 'spawnTtlSec')}
+              {cfgField('Coins / check-in', 'coinReward')}
+              {cfgField('GPS radius (m)', 'radiusM')}
+              {cfgField('Rob amount (🪙)', 'robAmount')}
+              {cfgField('Claim a space (🪙)', 'claimCost')}
+              {cfgField('Space toll (🪙)', 'tollAmount')}
+              {(hostStatus === 'live' || hostStatus === 'paused') && (
+                <button className="btn" onClick={doApplyConfig} disabled={netBusy}>
+                  ⚙️ Apply settings now
                 </button>
               )}
-              {hostStatus === 'ended' && <p className="hint">Game ended — final standings above.</p>}
-              <button className="btn btn--ghost" onClick={() => setHostGame(null)}>
+
+              <button
+                className="btn btn--ghost"
+                onClick={() => {
+                  saveHostGame(null);
+                  setHostGame(null);
+                }}
+              >
                 Close dashboard
               </button>
             </>
@@ -2264,6 +2541,19 @@ export default function App({
         >
           {panelOpen ? '🗺️ Expand map' : '☰ Menu'}
         </button>
+        {appMode === 'online' &&
+          (() => {
+            const latest = events.find((e) => e.type === 'announce');
+            if (!latest || latest.id === dismissedAnnounceId) return null;
+            return (
+              <div className="announce-banner">
+                <span>{latest.payload?.text ?? 'Announcement'}</span>
+                <button onClick={() => setDismissedAnnounceId(latest.id)} aria-label="Dismiss">
+                  ✕
+                </button>
+              </div>
+            );
+          })()}
         <BoardCanvas
           board={appMode === 'online' && onlineBoard ? onlineBoard : board}
           mode={mode}

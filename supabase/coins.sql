@@ -35,5 +35,17 @@ begin
 end;
 $$;
 
+-- Add or remove stars from one team (floored at 0). Host fix-it tool.
+create or replace function public.adjust_stars(p_team uuid, p_delta int)
+returns int
+language sql
+as $$
+  update public.teams
+     set stars = greatest(0, stars + p_delta)
+   where id = p_team
+  returning stars;
+$$;
+
 grant execute on function public.adjust_coins(uuid, int) to anon, authenticated;
 grant execute on function public.transfer_coins(uuid, uuid, int) to anon, authenticated;
+grant execute on function public.adjust_stars(uuid, int) to anon, authenticated;

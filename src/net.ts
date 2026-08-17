@@ -30,6 +30,20 @@ export interface Membership {
 
 const MEMBER_KEY = 'mke-membership-v1';
 const DEVICE_KEY = 'mke-device-v1';
+const HOST_KEY = 'mke-hostgame-v1';
+
+/** Persist the hosted game so the dashboard survives a phone refresh mid-party. */
+export function savedHostGame(): GameRow | null {
+  try {
+    return JSON.parse(localStorage.getItem(HOST_KEY) || 'null');
+  } catch {
+    return null;
+  }
+}
+export function saveHostGame(g: GameRow | null) {
+  if (g) localStorage.setItem(HOST_KEY, JSON.stringify(g));
+  else localStorage.removeItem(HOST_KEY);
+}
 
 /** A stable per-phone secret proving ownership of a team. */
 export function deviceId(): string {
@@ -198,6 +212,76 @@ export async function transferCoins(fromId: string, toId: string, amount: number
   const { data, error } = await supabase.rpc('transfer_coins', { p_from: fromId, p_to: toId, p_amount: amount });
   if (error) throw error;
   return (data as number) ?? 0;
+}
+
+/** Add/remove stars from a team (floored at 0). Returns the new count. */
+export async function adjustStars(teamId: string, delta: number): Promise<number> {
+  assertConfigured();
+  const { data, error } = await supabase.rpc('adjust_stars', { p_team: teamId, p_delta: delta });
+  if (error) throw error;
+  return (data as number) ?? 0;
+}
+
+// ---------------------------------------------------------------------------
+// Host live console: instant spawns + per-team fix-it actions.
+// ---------------------------------------------------------------------------
+
+/** Drop one bonus spawn RIGHT NOW at a random spot (host "prompt an event"). */
+export async function dropSpawnNow(gameId: string, board: Board, ttlSec: number): Promise<void> {
+  assertConfigured();
+  const spots = boardSpots(board);
+  if (!spots.length) throw new Error('board has no spots to spawn on');
+  const sq = spots[Math.floor(Math.random() * spots.length)];
+  const now = Date.now();
+  const { error } = await supabase.from('spawns').insert({
+    game_id: gameId,
+    spot_id: sq.id,
+    lat: sq.lat,
+    lng: sq.lng,
+    reward: 35 + Math.floor(Math.random() * 26),
+    spawn_at: new Date(now).toISOString(),
+    expires_at: new Date(now + ttlSec * 1000).toISOString(),
+  });
+  if (error) throw error;
+}
+
+/** Cancel a team's in-progress star claim(s) (marks them lost, frees the bar). */
+export async function hostCancelStarClaims(gameId: string, teamId: string): Promise<number> {
+  assertConfigured();
+  const { data, error } = await supabase
+    .from('star_claims')
+    .update({ status: 'lost' })
+    .eq('game_id', gameId)
+    .eq('team_id', teamId)
+    .eq('status', 'claiming')
+    .select('id');
+  if (error) throw error;
+  return data?.length ?? 0;
+}
+
+/** Release every space a team owns (removes their tolls). */
+export async function hostReleaseSpaces(gameId: string, teamId: string): Promise<number> {
+  assertConfigured();
+  const { data, error } = await supabase
+    .from('space_owners')
+    .delete()
+    .eq('game_id', gameId)
+    .eq('team_id', teamId)
+    .select('id');
+  if (error) throw error;
+  return data?.length ?? 0;
+}
+
+/** Un-clear one spot for a team so they can do it again. */
+export async function hostUnclearSpot(gameId: string, teamId: string, spotId: string): Promise<void> {
+  assertConfigured();
+  const { error } = await supabase
+    .from('spot_claims')
+    .delete()
+    .eq('game_id', gameId)
+    .eq('team_id', teamId)
+    .eq('spot_id', spotId);
+  if (error) throw error;
 }
 
 // ---------------------------------------------------------------------------
@@ -409,7 +493,9 @@ export function subscribeGame(gameId: string, onChange: () => void) {
   };
 }
 
-export async function updateGameStatus(gameId: string, status: 'lobby' | 'live' | 'ended'): Promise<void> {
+export type GameStatus = 'lobby' | 'live' | 'paused' | 'ended';
+
+export async function updateGameStatus(gameId: string, status: GameStatus): Promise<void> {
   assertConfigured();
   const patch: Record<string, unknown> = { status };
   if (status === 'live') patch.started_at = new Date().toISOString();

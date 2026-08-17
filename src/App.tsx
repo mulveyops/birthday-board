@@ -48,6 +48,9 @@ import {
   hostUnclearSpot,
   savedHostGame,
   saveHostGame,
+  sendMessage,
+  listMessages,
+  subscribeMessages,
   cfg,
   listSpaceOwners,
   subscribeSpaceOwners,
@@ -63,6 +66,7 @@ import {
   isNoTableError,
   type LayoutMeta,
   type Membership,
+  type MessageRow,
   type GameRow,
   type TeamRow,
   type Position,
@@ -572,8 +576,7 @@ export default function App({
   const [hostConfig, setHostConfig] = useState<GameConfig>(PARTY_CONFIG);
   const [hostStatus, setHostStatus] = useState<'lobby' | 'live' | 'paused' | 'ended'>('lobby');
   const [teams, setTeams] = useState<TeamRow[]>([]);
-  // Live console state: announcement composer + per-team fix-it panel.
-  const [announceText, setAnnounceText] = useState('');
+  // Live console state: per-team fix-it panel.
   const [fixTeamId, setFixTeamId] = useState<string | null>(null);
   const [fixClaims, setFixClaims] = useState<string[]>([]);
   const [fixSpot, setFixSpot] = useState('');
@@ -606,14 +609,18 @@ export default function App({
           setHostStatus(g.status as 'lobby' | 'live' | 'paused' | 'ended');
         })
         .catch(() => {});
+    const loadMsgs = () => listMessages(gid).then((m) => alive && setMessages(m)).catch(() => {});
     loadEv();
     loadGame();
+    loadMsgs();
     const u1 = subscribeEvents(gid, loadEv);
     const u2 = subscribeGame(gid, loadGame);
+    const u3 = subscribeMessages(gid, loadMsgs);
     return () => {
       alive = false;
       u1();
       u2();
+      u3();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [variant, appMode, hostGame?.id]);
@@ -676,18 +683,6 @@ export default function App({
       setHostStatus('live');
     } catch (e) {
       alert('Resume failed: ' + (e as Error).message);
-    } finally {
-      setNetBusy(false);
-    }
-  }
-  async function doAnnounce() {
-    if (!hostGame || !announceText.trim()) return;
-    setNetBusy(true);
-    try {
-      await logEvent(hostGame.id, 'announce', `📣 ${announceText.trim()}`);
-      setAnnounceText('');
-    } catch (e) {
-      alert('Announce failed: ' + (e as Error).message);
     } finally {
       setNetBusy(false);
     }
@@ -851,6 +846,57 @@ export default function App({
   const [allSpawns, setAllSpawns] = useState<SpawnRow[]>([]);
   const [starClaimRows, setStarClaimRows] = useState<StarClaimRow[]>([]);
   const [events, setEvents] = useState<EventRow[]>([]);
+  // Messaging: shared row store + composer state for whichever surface is active.
+  const [messages, setMessages] = useState<MessageRow[]>([]);
+  const [msgOpen, setMsgOpen] = useState(false);
+  const [msgTo, setMsgTo] = useState<string>('admin'); // 'admin' or a team id
+  const [msgText, setMsgText] = useState('');
+  const [msgSeen, setMsgSeen] = useState(0); // how many of my messages I've seen (unread badge)
+
+  /** Display name for a message party (null = the host). */
+  const msgName = (id: string | null) =>
+    id == null ? 'Host' : teams.find((t) => t.id === id)?.name ?? 'a team';
+  // Messages this team can see: host broadcasts + anything to/from us.
+  const myMsgs = useMemo(() => {
+    const tid = membership?.teamId;
+    if (!tid) return [];
+    return messages.filter(
+      (m) => (m.from_team == null && m.to_team == null) || m.from_team === tid || m.to_team === tid,
+    );
+  }, [messages, membership]);
+  const msgUnread = Math.max(0, myMsgs.length - msgSeen);
+  function openMsgPanel() {
+    setMsgOpen(true);
+    setMsgSeen(myMsgs.length);
+  }
+  async function sendTeamMsg() {
+    if (!membership || !msgText.trim()) return;
+    const to = msgTo === 'admin' ? null : msgTo;
+    try {
+      await sendMessage(membership.gameId, membership.teamId, to, msgText.trim());
+      setMsgText('');
+      setMsgSeen((n) => n + 1); // don't badge our own message
+    } catch (e) {
+      alert('Send failed: ' + (e as Error).message);
+    }
+  }
+  // Host composer: 'all' broadcasts (message + banner event); a team id DMs them.
+  const [hostMsgTo, setHostMsgTo] = useState<string>('all');
+  async function sendHostMsg() {
+    if (!hostGame || !msgText.trim()) return;
+    const text = msgText.trim();
+    try {
+      if (hostMsgTo === 'all') {
+        await sendMessage(hostGame.id, null, null, text);
+        await logEvent(hostGame.id, 'announce', `📣 ${text}`);
+      } else {
+        await sendMessage(hostGame.id, null, hostMsgTo, text);
+      }
+      setMsgText('');
+    } catch (e) {
+      alert('Send failed: ' + (e as Error).message);
+    }
+  }
   const [onlineBarModal, setOnlineBarModal] = useState<{ spotId: string; name: string } | null>(null);
   const [onlineQuizModal, setOnlineQuizModal] = useState<{ spotId: string; name: string } | null>(null);
   // Online chance square: roll → gain/lose/rob. 'rob' opens a team picker.
@@ -934,6 +980,7 @@ export default function App({
       listSpaceOwners(gid)
         .then((o) => alive && setOnlineOwners(Object.fromEntries(o.map((r) => [r.spot_id, r.team_id]))))
         .catch(() => {});
+    const loadMsgs = () => listMessages(gid).then((m) => alive && setMessages(m)).catch(() => {});
     const loadGame = () =>
       getGameFull(gid)
         .then((g) => {
@@ -948,6 +995,7 @@ export default function App({
     loadStars();
     loadEvents();
     loadOwners();
+    loadMsgs();
     loadGame();
     const u1 = subscribeClaims(gid, loadClaims);
     const u2 = subscribePositions(gid, loadPos);
@@ -956,6 +1004,7 @@ export default function App({
     const u5 = subscribeEvents(gid, loadEvents);
     const u6 = subscribeGame(gid, loadGame);
     const u7 = subscribeSpaceOwners(gid, loadOwners);
+    const u8 = subscribeMessages(gid, loadMsgs);
     return () => {
       alive = false;
       u1();
@@ -965,6 +1014,7 @@ export default function App({
       u5();
       u6();
       u7();
+      u8();
     };
   }, [appMode, membership]);
 
@@ -2375,17 +2425,38 @@ export default function App({
                       🏁 End
                     </button>
                   </div>
-                  <p className="hint" style={{ marginTop: 8 }}>📣 Announce to every phone</p>
+                  <p className="hint" style={{ marginTop: 8 }}>💬 Message teams ("everyone" also banners)</p>
+                  <select
+                    value={hostMsgTo}
+                    onChange={(e) => setHostMsgTo(e.target.value)}
+                    style={{ width: '100%', padding: '6px 8px', borderRadius: 6, marginBottom: 4 }}
+                  >
+                    <option value="all">📣 To: everyone</option>
+                    {teams.map((t) => (
+                      <option key={t.id} value={t.id}>
+                        To: {t.emoji} {t.name}
+                      </option>
+                    ))}
+                  </select>
                   <div className="row">
                     <input
-                      value={announceText}
-                      onChange={(e) => setAnnounceText(e.target.value)}
+                      value={msgText}
+                      onChange={(e) => setMsgText(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && void sendHostMsg()}
                       placeholder="e.g. Final 30 minutes!"
                       style={{ flex: 1, padding: '6px 8px', border: '1px solid #cfc7b5', borderRadius: 6 }}
                     />
-                    <button className="btn" style={{ flex: 'none' }} onClick={doAnnounce} disabled={netBusy || !announceText.trim()}>
+                    <button className="btn" style={{ flex: 'none' }} onClick={() => void sendHostMsg()} disabled={netBusy || !msgText.trim()}>
                       Send
                     </button>
+                  </div>
+                  <div style={{ maxHeight: 140, overflowY: 'auto', margin: '4px 0' }}>
+                    {[...messages].reverse().map((m) => (
+                      <div key={m.id} className="hint" style={{ margin: '2px 0' }}>
+                        <b>{msgName(m.from_team)}</b> → {m.to_team ? msgName(m.to_team) : m.from_team ? 'Host' : 'everyone'}: {m.text}
+                      </div>
+                    ))}
+                    {messages.length === 0 && <div className="hint">No messages yet.</div>}
                   </div>
                   <button className="btn" onClick={doDropSpawn} disabled={netBusy}>
                     🎁 Drop a bonus spawn now
@@ -2554,6 +2625,64 @@ export default function App({
               </div>
             );
           })()}
+        {appMode === 'online' && membership && (
+          <button className="msg-fab" onClick={() => (msgOpen ? setMsgOpen(false) : openMsgPanel())}>
+            💬{msgUnread > 0 && <span className="msg-badge">{msgUnread}</span>}
+          </button>
+        )}
+        {appMode === 'online' && membership && msgOpen && (
+          <div className="msg-scrim" onClick={() => setMsgOpen(false)}>
+            <div className="msg-panel" onClick={(e) => e.stopPropagation()}>
+              <div className="msg-head">
+                <span>💬 Messages</span>
+                <button onClick={() => setMsgOpen(false)} aria-label="Close">
+                  ✕
+                </button>
+              </div>
+              <div className="msg-list">
+                {myMsgs.length === 0 ? (
+                  <p className="msg-empty">No messages yet. Rally another team — or ask the host for help.</p>
+                ) : (
+                  myMsgs.map((m) => {
+                    const mine = m.from_team === membership.teamId;
+                    return (
+                      <div key={m.id} className={`msg-row ${mine ? 'msg-row--mine' : ''}`}>
+                        <div className="msg-meta">
+                          {mine ? 'You' : msgName(m.from_team)} →{' '}
+                          {m.to_team ? (m.to_team === membership.teamId ? 'you' : msgName(m.to_team)) : m.from_team ? 'Host' : 'everyone'}
+                        </div>
+                        <div className="msg-bubble">{m.text}</div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+              <div className="msg-compose">
+                <select value={msgTo} onChange={(e) => setMsgTo(e.target.value)}>
+                  <option value="admin">To: Host</option>
+                  {teams
+                    .filter((t) => t.id !== membership.teamId)
+                    .map((t) => (
+                      <option key={t.id} value={t.id}>
+                        To: {t.emoji} {t.name}
+                      </option>
+                    ))}
+                </select>
+                <div className="msg-compose-row">
+                  <input
+                    value={msgText}
+                    onChange={(e) => setMsgText(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && void sendTeamMsg()}
+                    placeholder="Type a message…"
+                  />
+                  <button className="btn btn--go" disabled={!msgText.trim()} onClick={() => void sendTeamMsg()}>
+                    Send
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
         <BoardCanvas
           board={appMode === 'online' && onlineBoard ? onlineBoard : board}
           mode={mode}

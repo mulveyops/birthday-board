@@ -272,6 +272,52 @@ export async function hostReleaseSpaces(gameId: string, teamId: string): Promise
   return data?.length ?? 0;
 }
 
+// ---------------------------------------------------------------------------
+// Messaging: host ↔ teams and team ↔ team. from_team null = host;
+// to_team null = everyone (from host) or to-the-host (from a team).
+// ---------------------------------------------------------------------------
+
+export interface MessageRow {
+  id: string;
+  from_team: string | null;
+  to_team: string | null;
+  text: string;
+  created_at: string;
+}
+
+export async function sendMessage(
+  gameId: string,
+  fromTeam: string | null,
+  toTeam: string | null,
+  text: string,
+): Promise<void> {
+  assertConfigured();
+  const { error } = await supabase.from('messages').insert({ game_id: gameId, from_team: fromTeam, to_team: toTeam, text });
+  if (error) throw error;
+}
+
+export async function listMessages(gameId: string): Promise<MessageRow[]> {
+  assertConfigured();
+  const { data, error } = await supabase
+    .from('messages')
+    .select('id, from_team, to_team, text, created_at')
+    .eq('game_id', gameId)
+    .order('created_at', { ascending: true })
+    .limit(300);
+  if (error) throw error;
+  return (data ?? []) as MessageRow[];
+}
+
+export function subscribeMessages(gameId: string, onChange: () => void) {
+  const ch = supabase
+    .channel(`msgs:${gameId}`)
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `game_id=eq.${gameId}` }, onChange)
+    .subscribe();
+  return () => {
+    supabase.removeChannel(ch);
+  };
+}
+
 /** Un-clear one spot for a team so they can do it again. */
 export async function hostUnclearSpot(gameId: string, teamId: string, spotId: string): Promise<void> {
   assertConfigured();

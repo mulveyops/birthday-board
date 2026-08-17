@@ -51,6 +51,13 @@ import {
   sendMessage,
   listMessages,
   subscribeMessages,
+  listAmbushes,
+  subscribeAmbushes,
+  proposeAmbush,
+  respondAmbush,
+  cancelAmbush,
+  springAmbush,
+  resolveAmbush,
   cfg,
   listSpaceOwners,
   subscribeSpaceOwners,
@@ -67,6 +74,7 @@ import {
   type LayoutMeta,
   type Membership,
   type MessageRow,
+  type AmbushRow,
   type GameRow,
   type TeamRow,
   type Position,
@@ -906,6 +914,32 @@ export default function App({
   const [chanceBusy, setChanceBusy] = useState(false);
   // spot_id → owning team_id (own-a-space toll). Rivals landing here pay a toll.
   const [onlineOwners, setOnlineOwners] = useState<Record<string, string>>({});
+  // Ambushes: active rows + the arm/victim/showdown UI state.
+  const [ambushes, setAmbushes] = useState<AmbushRow[]>([]);
+  const [ambushArmModal, setAmbushArmModal] = useState<{ spotId: string; name: string } | null>(null);
+  const [armAllyId, setArmAllyId] = useState('');
+  const [ambushedName, setAmbushedName] = useState<string | null>(null); // spot name when WE just got trapped
+  const [showdownOpen, setShowdownOpen] = useState(false);
+  const spotAmbush = useMemo(() => {
+    const m: Record<string, AmbushRow> = {};
+    for (const a of ambushes) m[a.spot_id] = a;
+    return m;
+  }, [ambushes]);
+  // A trap proposal waiting on MY yes/no (I'm the named ally).
+  const allyProposal = useMemo(
+    () => ambushes.find((a) => a.status === 'proposed' && a.ally === membership?.teamId) ?? null,
+    [ambushes, membership],
+  );
+  // A sprung trap involving my team → showdown pending.
+  const myShowdown = useMemo(
+    () =>
+      ambushes.find(
+        (a) =>
+          a.status === 'sprung' &&
+          (a.initiator === membership?.teamId || a.ally === membership?.teamId || a.victim === membership?.teamId),
+      ) ?? null,
+    [ambushes, membership],
+  );
   // Bowser: forced gauntlet (trivia or physical) → lose coins by performance.
   const [onlineBowserModal, setOnlineBowserModal] = useState<{ spotId: string; name: string } | null>(null);
   const [bowserLoss, setBowserLoss] = useState<number | null>(null);
@@ -981,6 +1015,7 @@ export default function App({
         .then((o) => alive && setOnlineOwners(Object.fromEntries(o.map((r) => [r.spot_id, r.team_id]))))
         .catch(() => {});
     const loadMsgs = () => listMessages(gid).then((m) => alive && setMessages(m)).catch(() => {});
+    const loadAmbushes = () => listAmbushes(gid).then((a) => alive && setAmbushes(a)).catch(() => {});
     const loadGame = () =>
       getGameFull(gid)
         .then((g) => {
@@ -996,6 +1031,7 @@ export default function App({
     loadEvents();
     loadOwners();
     loadMsgs();
+    loadAmbushes();
     loadGame();
     const u1 = subscribeClaims(gid, loadClaims);
     const u2 = subscribePositions(gid, loadPos);
@@ -1005,6 +1041,7 @@ export default function App({
     const u6 = subscribeGame(gid, loadGame);
     const u7 = subscribeSpaceOwners(gid, loadOwners);
     const u8 = subscribeMessages(gid, loadMsgs);
+    const u9 = subscribeAmbushes(gid, loadAmbushes);
     return () => {
       alive = false;
       u1();
@@ -1015,6 +1052,7 @@ export default function App({
       u6();
       u7();
       u8();
+      u9();
     };
   }, [appMode, membership]);
 
@@ -1081,6 +1119,12 @@ export default function App({
     if (!sq) return;
     const type = onlineNodeType[spotId] ?? 'coin';
     withProximity(sq, () => {
+      // An armed trap? Third parties spring it (the two ambushers pass safely).
+      const trap = spotAmbush[spotId];
+      if (trap && trap.status === 'armed' && trap.initiator !== membership.teamId && trap.ally !== membership.teamId) {
+        void doSpringAmbush(trap, sq);
+        return;
+      }
       if (type === 'bar') {
         setOnlineBarModal({ spotId, name: sq.title || 'Bar' });
         return;
@@ -1094,14 +1138,20 @@ export default function App({
           void handleOwnedSpace(sq, owner);
           return;
         }
-        if (onlineCleared.includes(spotId)) return;
+        if (onlineCleared.includes(spotId)) {
+          openArmOnCleared(spotId, sq);
+          return;
+        }
         setChanceOutcome(null);
         setChanceText('');
         setChanceBusy(false);
         setOnlineChanceModal({ spotId, name: sq.title || 'Chance' });
         return;
       }
-      if (onlineCleared.includes(spotId)) return;
+      if (onlineCleared.includes(spotId)) {
+        openArmOnCleared(spotId, sq);
+        return;
+      }
       // A challenge with authored trivia → answer to earn scaled coins.
       if (type === 'challenge' && (sq.questions?.length ?? 0) > 0) {
         setQuizPick({});
@@ -1123,6 +1173,85 @@ export default function App({
       );
     });
   }
+  // --- Ambush handlers -------------------------------------------------------
+  /** Re-tapping a spot you've cleared → set (or inspect) a trap there. */
+  function openArmOnCleared(spotId: string, sq: Square) {
+    if (onlineStatus !== 'live') return;
+    setArmAllyId('');
+    setAmbushArmModal({ spotId, name: sq.title || 'this spot' });
+  }
+  /** We stepped on an armed trap (guarded server-side → exactly one springer). */
+  async function doSpringAmbush(a: AmbushRow, sq: Square) {
+    if (!membership) return;
+    const won = await springAmbush(a.id, membership.teamId).catch(() => false);
+    if (!won) return;
+    const spot = sq.title || 'a spot';
+    setAmbushedName(spot);
+    const alertText = `🪤 Your trap at ${spot} caught ${myTeam?.name ?? 'a team'} — get there for the showdown!`;
+    logEvent(membership.gameId, 'battle', `🪤 An ambush was sprung at ${spot}!`).catch(() => {});
+    sendMessage(membership.gameId, null, a.initiator, alertText).catch(() => {});
+    sendMessage(membership.gameId, null, a.ally, alertText).catch(() => {});
+  }
+  async function doProposeAmbush() {
+    if (!membership || !ambushArmModal || !armAllyId) return;
+    const stake = cfg.ambushStake(onlineConfig);
+    try {
+      const r = await proposeAmbush(membership.gameId, ambushArmModal.spotId, membership.teamId, armAllyId, stake);
+      if (r === 'nocoins') alert(`Not enough 🪙 (the stake is ${stake}).`);
+      else if (r === 'taken') alert('There is already a trap tied to this spot.');
+      else {
+        sendMessage(
+          membership.gameId,
+          null,
+          armAllyId,
+          `🪤 ${myTeam?.name ?? 'A team'} proposes an ambush at ${ambushArmModal.name} — accept in your game to stake ${stake} 🪙.`,
+        ).catch(() => {});
+        setAmbushArmModal(null);
+      }
+    } catch (e) {
+      alert('Ambush failed: ' + (e as Error).message);
+    }
+  }
+  async function doRespondAmbush(accept: boolean) {
+    if (!allyProposal) return;
+    const stake = cfg.ambushStake(onlineConfig);
+    try {
+      const r = await respondAmbush(allyProposal, accept, stake);
+      if (r === 'nocoins') alert(`Not enough 🪙 to stake (${stake}).`);
+    } catch (e) {
+      alert('Respond failed: ' + (e as Error).message);
+    }
+  }
+  async function doCancelAmbush(a: AmbushRow) {
+    try {
+      await cancelAmbush(a, cfg.ambushStake(onlineConfig));
+      setAmbushArmModal(null);
+    } catch (e) {
+      alert('Cancel failed: ' + (e as Error).message);
+    }
+  }
+  async function doResolveAmbush(ambushersWon: boolean) {
+    if (!membership || !myShowdown) return;
+    const stake = cfg.ambushStake(onlineConfig);
+    const reward = cfg.ambushReward(onlineConfig);
+    try {
+      const ok = await resolveAmbush(myShowdown, ambushersWon, stake, reward);
+      if (ok) {
+        const nameOfTeam = (id: string | null) => teams.find((t) => t.id === id)?.name ?? 'a team';
+        logEvent(
+          membership.gameId,
+          'battle',
+          ambushersWon
+            ? `🪤 ${nameOfTeam(myShowdown.initiator)} & ${nameOfTeam(myShowdown.ally)} won their ambush on ${nameOfTeam(myShowdown.victim)}!`
+            : `🛡 ${nameOfTeam(myShowdown.victim)} fought off ${nameOfTeam(myShowdown.initiator)} & ${nameOfTeam(myShowdown.ally)} and took the pot!`,
+        ).catch(() => {});
+      }
+      setShowdownOpen(false);
+    } catch (e) {
+      alert('Resolve failed: ' + (e as Error).message);
+    }
+  }
+
   // Record the chance spot as cleared (once per team) without a coin reward.
   function markChanceCleared(sq: Square) {
     if (!membership) return;
@@ -2551,6 +2680,8 @@ export default function App({
               {cfgField('Rob amount (🪙)', 'robAmount')}
               {cfgField('Claim a space (🪙)', 'claimCost')}
               {cfgField('Space toll (🪙)', 'tollAmount')}
+              {cfgField('Ambush stake (🪙)', 'ambushStake')}
+              {cfgField('Ambush reward (🪙)', 'ambushReward')}
               {(hostStatus === 'live' || hostStatus === 'paused') && (
                 <button className="btn" onClick={doApplyConfig} disabled={netBusy}>
                   ⚙️ Apply settings now
@@ -2628,6 +2759,11 @@ export default function App({
         {appMode === 'online' && membership && (
           <button className="msg-fab" onClick={() => (msgOpen ? setMsgOpen(false) : openMsgPanel())}>
             💬{msgUnread > 0 && <span className="msg-badge">{msgUnread}</span>}
+          </button>
+        )}
+        {appMode === 'online' && myShowdown && !showdownOpen && (
+          <button className="showdown-banner" onClick={() => setShowdownOpen(true)}>
+            🪤 Ambush showdown — tap to report the result
           </button>
         )}
         {appMode === 'online' && membership && msgOpen && (
@@ -3394,6 +3530,176 @@ export default function App({
               </div>
             );
           })()}
+
+        {ambushArmModal &&
+          membership &&
+          (() => {
+            const trap = spotAmbush[ambushArmModal.spotId];
+            const stake = cfg.ambushStake(onlineConfig);
+            const reward = cfg.ambushReward(onlineConfig);
+            const mineProposed = trap && trap.status === 'proposed' && trap.initiator === membership.teamId;
+            const mineArmed =
+              trap && trap.status === 'armed' && (trap.initiator === membership.teamId || trap.ally === membership.teamId);
+            const others = teams.filter((t) => t.id !== membership.teamId);
+            const close = () => setAmbushArmModal(null);
+            return (
+              <div
+                style={{ position: 'absolute', inset: 0, background: 'rgba(20,16,12,0.42)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}
+                onClick={close}
+              >
+                <div
+                  style={{ width: 340, maxWidth: '90%', background: '#fdfaf2', border: '2px solid #3f3b36', borderRadius: 14, overflow: 'hidden', boxShadow: '0 14px 44px rgba(0,0,0,0.38)', animation: 'pop-in 0.24s cubic-bezier(0.2,0.85,0.35,1.2)' }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div style={{ background: '#7c3aed', color: '#fff', padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <span style={{ fontSize: '1.9rem', lineHeight: 1 }}>🪤</span>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontWeight: 800, fontSize: '1.05rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {ambushArmModal.name}
+                      </div>
+                      <div style={{ fontSize: '0.7rem', opacity: 0.92, textTransform: 'uppercase', letterSpacing: 1.5 }}>Set an ambush</div>
+                    </div>
+                  </div>
+                  <div style={{ padding: '16px 18px' }}>
+                    {mineProposed ? (
+                      <>
+                        <p className="hint" style={{ marginTop: 0 }}>
+                          ⏳ Waiting for <b>{teams.find((t) => t.id === trap.ally)?.name ?? 'your ally'}</b> to accept…
+                        </p>
+                        <button className="btn" style={{ width: '100%' }} onClick={() => void doCancelAmbush(trap)}>
+                          Cancel & refund {stake} 🪙
+                        </button>
+                      </>
+                    ) : mineArmed ? (
+                      <p className="hint" style={{ marginTop: 0 }}>
+                        🤫 Your trap is armed here. First rival team to land on it triggers the showdown.
+                      </p>
+                    ) : trap ? (
+                      <p className="hint" style={{ marginTop: 0 }}>Someone is already plotting at this spot…</p>
+                    ) : others.length === 0 ? (
+                      <p className="hint" style={{ marginTop: 0 }}>No other teams to ally with yet.</p>
+                    ) : (
+                      <>
+                        <p className="hint" style={{ marginTop: 0 }}>
+                          Team up to trap this spot: you and an ally each stake {stake} 🪙. A rival landing here triggers a 2-v-1
+                          showdown — win and you each steal {reward} 🪙 from them; lose and they take the whole pot.
+                        </p>
+                        <select
+                          value={armAllyId}
+                          onChange={(e) => setArmAllyId(e.target.value)}
+                          style={{ width: '100%', padding: '7px 9px', borderRadius: 8, border: '1px solid #cfc7b5', marginBottom: 8 }}
+                        >
+                          <option value="">— pick your ally —</option>
+                          {others.map((t) => (
+                            <option key={t.id} value={t.id}>
+                              {t.emoji} {t.name}
+                            </option>
+                          ))}
+                        </select>
+                        <button
+                          className="btn btn--go"
+                          style={{ width: '100%' }}
+                          disabled={!armAllyId || (myTeam?.coins ?? 0) < stake}
+                          onClick={() => void doProposeAmbush()}
+                        >
+                          {(myTeam?.coins ?? 0) < stake ? `Need ${stake} 🪙` : `🪤 Propose ambush (stake ${stake} 🪙)`}
+                        </button>
+                      </>
+                    )}
+                    <button className="btn btn--ghost" style={{ width: '100%', marginTop: 8 }} onClick={close}>
+                      Close
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+
+        {appMode === 'online' &&
+          allyProposal &&
+          (() => {
+            const stake = cfg.ambushStake(onlineConfig);
+            const from = teams.find((t) => t.id === allyProposal.initiator);
+            const spotName = onlineBoard?.squares.find((s) => s.id === allyProposal.spot_id)?.title || 'a spot';
+            return (
+              <div style={{ position: 'absolute', inset: 0, background: 'rgba(20,16,12,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+                <div
+                  style={{ width: 340, maxWidth: '90%', background: '#fdfaf2', border: '2px solid #3f3b36', borderRadius: 14, overflow: 'hidden', boxShadow: '0 14px 44px rgba(0,0,0,0.38)', animation: 'pop-in 0.24s cubic-bezier(0.2,0.85,0.35,1.2)' }}
+                >
+                  <div style={{ background: '#7c3aed', color: '#fff', padding: '14px 18px', fontWeight: 800 }}>🪤 Ambush proposal</div>
+                  <div style={{ padding: '16px 18px' }}>
+                    <p className="hint" style={{ marginTop: 0 }}>
+                      <b>{from?.name ?? 'A team'}</b> wants to set a trap with you at <b>{spotName}</b>. Accepting stakes{' '}
+                      {stake} 🪙 of your coins into the pot.
+                    </p>
+                    <div className="row">
+                      <button
+                        className="btn btn--go"
+                        style={{ flex: 1 }}
+                        disabled={(myTeam?.coins ?? 0) < stake}
+                        onClick={() => void doRespondAmbush(true)}
+                      >
+                        {(myTeam?.coins ?? 0) < stake ? `Need ${stake} 🪙` : `Accept (${stake} 🪙)`}
+                      </button>
+                      <button className="btn btn--danger" style={{ flex: 1 }} onClick={() => void doRespondAmbush(false)}>
+                        Decline
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+
+        {ambushedName && (
+          <div style={{ position: 'absolute', inset: 0, background: 'rgba(20,16,12,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+            <div
+              style={{ width: 340, maxWidth: '90%', background: '#fdfaf2', border: '2px solid #3f3b36', borderRadius: 14, overflow: 'hidden', boxShadow: '0 14px 44px rgba(0,0,0,0.45)', animation: 'pop-in 0.24s cubic-bezier(0.2,0.85,0.35,1.2)' }}
+            >
+              <div style={{ background: '#b91c1c', color: '#fff', padding: '14px 18px', fontWeight: 800, fontSize: '1.15rem' }}>🪤 AMBUSHED!</div>
+              <div style={{ padding: '16px 18px' }}>
+                <p className="hint" style={{ marginTop: 0 }}>
+                  Two teams set a trap at <b>{ambushedName}</b> — and you walked right into it. They're on their way for a
+                  2-v-1 showdown. Win it and you take their whole pot; lose and they rob you.
+                </p>
+                <button className="btn btn--go" style={{ width: '100%' }} onClick={() => setAmbushedName(null)}>
+                  Bring it on
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {appMode === 'online' && myShowdown && showdownOpen && (
+          <div style={{ position: 'absolute', inset: 0, background: 'rgba(20,16,12,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }} onClick={() => setShowdownOpen(false)}>
+            <div
+              style={{ width: 340, maxWidth: '90%', background: '#fdfaf2', border: '2px solid #3f3b36', borderRadius: 14, overflow: 'hidden', boxShadow: '0 14px 44px rgba(0,0,0,0.38)', animation: 'pop-in 0.24s cubic-bezier(0.2,0.85,0.35,1.2)' }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div style={{ background: '#7c3aed', color: '#fff', padding: '14px 18px', fontWeight: 800 }}>🪤 Showdown</div>
+              <div style={{ padding: '16px 18px' }}>
+                <p className="hint" style={{ marginTop: 0 }}>
+                  <b>{teams.find((t) => t.id === myShowdown.initiator)?.name ?? '?'}</b> &{' '}
+                  <b>{teams.find((t) => t.id === myShowdown.ally)?.name ?? '?'}</b> vs{' '}
+                  <b>{teams.find((t) => t.id === myShowdown.victim)?.name ?? '?'}</b> at{' '}
+                  <b>{onlineBoard?.squares.find((s) => s.id === myShowdown.spot_id)?.title || 'the spot'}</b>. Meet up, play a
+                  physical challenge (defender's pick), then report the result — once, on any phone.
+                </p>
+                <div className="row">
+                  <button className="btn btn--go" style={{ flex: 1 }} onClick={() => void doResolveAmbush(true)}>
+                    🪤 Ambushers won
+                  </button>
+                  <button className="btn" style={{ flex: 1 }} onClick={() => void doResolveAmbush(false)}>
+                    🛡 Defender won
+                  </button>
+                </div>
+                <button className="btn btn--ghost" style={{ width: '100%', marginTop: 8 }} onClick={() => setShowdownOpen(false)}>
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {battleModal && (
           <div

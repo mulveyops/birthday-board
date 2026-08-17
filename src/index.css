@@ -901,6 +901,31 @@ body {
   flex: none;
   margin-top: 0;
 }
+
+/* Ambush showdown: persistent tap target while a sprung trap awaits its result */
+.showdown-banner {
+  position: absolute;
+  top: 66px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 650;
+  max-width: 92%;
+  padding: 10px 16px;
+  border-radius: 999px;
+  border: 3px solid #2b2b3a;
+  background: #7c3aed;
+  color: #fff;
+  font-family: 'Fredoka', system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  box-shadow: 0 4px 0 #2b2b3a, 0 12px 26px rgba(0, 0, 0, 0.3);
+  animation: pop-in 0.28s cubic-bezier(0.2, 0.85, 0.35, 1.2);
+}
+.showdown-banner:active {
+  transform: translateX(-50%) translateY(3px);
+  box-shadow: 0 1px 0 #2b2b3a;
+}
 .panel h2 {
   margin: 0 0 8px;
   font-size: 12px;

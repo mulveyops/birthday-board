@@ -318,6 +318,148 @@ export function subscribeMessages(gameId: string, onChange: () => void) {
   };
 }
 
+// ---------------------------------------------------------------------------
+// Ambushes: two allied teams escrow coins on a spot; a third team springs it.
+// ---------------------------------------------------------------------------
+
+export interface AmbushRow {
+  id: string;
+  spot_id: string;
+  initiator: string;
+  ally: string;
+  victim: string | null;
+  status: string; // proposed | armed | sprung | won | lost | cancelled
+}
+
+/** Active-ish ambushes for a game (proposed/armed/sprung). */
+export async function listAmbushes(gameId: string): Promise<AmbushRow[]> {
+  assertConfigured();
+  const { data, error } = await supabase
+    .from('ambushes')
+    .select('id, spot_id, initiator, ally, victim, status')
+    .eq('game_id', gameId)
+    .in('status', ['proposed', 'armed', 'sprung']);
+  if (error) throw error;
+  return (data ?? []) as AmbushRow[];
+}
+
+export function subscribeAmbushes(gameId: string, onChange: () => void) {
+  const ch = supabase
+    .channel(`ambush:${gameId}`)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'ambushes', filter: `game_id=eq.${gameId}` }, onChange)
+    .subscribe();
+  return () => {
+    supabase.removeChannel(ch);
+  };
+}
+
+/** Propose a trap: escrow the initiator's stake. The partial-unique index makes
+ *  at most one active trap per spot → 'taken' if someone beat you to it. */
+export async function proposeAmbush(
+  gameId: string,
+  spotId: string,
+  initiatorId: string,
+  allyId: string,
+  stake: number,
+): Promise<'ok' | 'taken' | 'nocoins'> {
+  assertConfigured();
+  const { data: team } = await supabase.from('teams').select('coins').eq('id', initiatorId).single();
+  if (((team as { coins: number } | null)?.coins ?? 0) < stake) return 'nocoins';
+  const { error } = await supabase
+    .from('ambushes')
+    .insert({ game_id: gameId, spot_id: spotId, initiator: initiatorId, ally: allyId, status: 'proposed' });
+  if (error) {
+    if (error.code === '23505') return 'taken';
+    throw error;
+  }
+  await adjustCoins(initiatorId, -stake);
+  return 'ok';
+}
+
+/** Ally answers a proposal. Accept escrows their stake; decline refunds the
+ *  initiator. Guarded on status so it happens exactly once. */
+export async function respondAmbush(
+  a: AmbushRow,
+  accept: boolean,
+  stake: number,
+): Promise<'ok' | 'nocoins' | 'gone'> {
+  assertConfigured();
+  if (accept) {
+    const { data: team } = await supabase.from('teams').select('coins').eq('id', a.ally).single();
+    if (((team as { coins: number } | null)?.coins ?? 0) < stake) return 'nocoins';
+  }
+  const { data, error } = await supabase
+    .from('ambushes')
+    .update({ status: accept ? 'armed' : 'cancelled' })
+    .eq('id', a.id)
+    .eq('status', 'proposed')
+    .select('id');
+  if (error) throw error;
+  if (!(data?.length ?? 0)) return 'gone';
+  if (accept) await adjustCoins(a.ally, -stake);
+  else await adjustCoins(a.initiator, stake); // refund
+  return 'ok';
+}
+
+/** Initiator withdraws an unanswered proposal (refunds their stake). */
+export async function cancelAmbush(a: AmbushRow, stake: number): Promise<boolean> {
+  assertConfigured();
+  const { data, error } = await supabase
+    .from('ambushes')
+    .update({ status: 'cancelled' })
+    .eq('id', a.id)
+    .eq('status', 'proposed')
+    .select('id');
+  if (error) throw error;
+  const ok = (data?.length ?? 0) > 0;
+  if (ok) await adjustCoins(a.initiator, stake);
+  return ok;
+}
+
+/** A victim steps on an armed trap. Guarded → exactly one springer. */
+export async function springAmbush(ambushId: string, victimId: string): Promise<boolean> {
+  assertConfigured();
+  const { data, error } = await supabase
+    .from('ambushes')
+    .update({ status: 'sprung', victim: victimId, sprung_at: new Date().toISOString() })
+    .eq('id', ambushId)
+    .eq('status', 'armed')
+    .select('id');
+  if (error) throw error;
+  return (data?.length ?? 0) > 0;
+}
+
+/** Report the showdown result (guarded → exactly one reporter pays out).
+ *  Ambushers win: pot back + each steals `reward` from the victim.
+ *  Victim wins: they take the whole pot. */
+export async function resolveAmbush(
+  a: AmbushRow,
+  ambushersWon: boolean,
+  stake: number,
+  reward: number,
+): Promise<boolean> {
+  assertConfigured();
+  const { data, error } = await supabase
+    .from('ambushes')
+    .update({ status: ambushersWon ? 'won' : 'lost' })
+    .eq('id', a.id)
+    .eq('status', 'sprung')
+    .select('id');
+  if (error) throw error;
+  if (!(data?.length ?? 0)) return false;
+  if (ambushersWon) {
+    await adjustCoins(a.initiator, stake);
+    await adjustCoins(a.ally, stake);
+    if (a.victim) {
+      await transferCoins(a.victim, a.initiator, reward);
+      await transferCoins(a.victim, a.ally, reward);
+    }
+  } else if (a.victim) {
+    await adjustCoins(a.victim, stake * 2);
+  }
+  return true;
+}
+
 /** Un-clear one spot for a team so they can do it again. */
 export async function hostUnclearSpot(gameId: string, teamId: string, spotId: string): Promise<void> {
   assertConfigured();
@@ -455,6 +597,8 @@ export interface GameConfig {
   robAmount: number; // coins stolen on a "rob a team" chance
   claimCost: number; // coins to buy (own) a space on a claim chance
   tollAmount: number; // coins a visitor pays the owner of a space
+  ambushStake: number; // coins each ambusher escrows to arm a trap
+  ambushReward: number; // coins each ambusher steals from the victim on a win
 }
 
 /** Config value with a fallback (older published games lack newer fields). */
@@ -462,6 +606,8 @@ export const cfg = {
   robAmount: (c: Partial<GameConfig> | undefined) => c?.robAmount ?? 20,
   claimCost: (c: Partial<GameConfig> | undefined) => c?.claimCost ?? 20,
   tollAmount: (c: Partial<GameConfig> | undefined) => c?.tollAmount ?? 10,
+  ambushStake: (c: Partial<GameConfig> | undefined) => c?.ambushStake ?? 20,
+  ambushReward: (c: Partial<GameConfig> | undefined) => c?.ambushReward ?? 25,
 };
 
 export const PARTY_CONFIG: GameConfig = {
@@ -476,6 +622,8 @@ export const PARTY_CONFIG: GameConfig = {
   robAmount: 20,
   claimCost: 20,
   tollAmount: 10,
+  ambushStake: 20,
+  ambushReward: 25,
 };
 export const TEST_CONFIG: GameConfig = {
   starCost: 40,
@@ -489,6 +637,8 @@ export const TEST_CONFIG: GameConfig = {
   robAmount: 20,
   claimCost: 20,
   tollAmount: 10,
+  ambushStake: 20,
+  ambushReward: 25,
 };
 
 export interface GameFull {

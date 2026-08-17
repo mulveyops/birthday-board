@@ -592,14 +592,13 @@ function cornerTavern() {
 
 // ============ CIVIC ============
 
-// St. Hedwig hero v2 — more bespoke, more assertive: cream-trimmed red brick,
-// twin pinnacles, rose window, triple arched entry, taller copper spire w/ cross.
-function church() {
+// s0 — traditional tower church (St. Hedwig-adjacent language, strongest civic)
+function churchS0() {
   const w = 16, h = 13, d = 15, L = w / 2;
   const [ox, oy] = dxy(d);
   const arch = (x, wd, ht) => `<path d="M${x} -4.6 L${x} ${-4.6 - ht} A${wd / 2} ${wd * 0.6} 0 0 1 ${x + wd} ${-4.6 - ht} L${x + wd} -4.6 Z" fill="#a9c8e8" stroke="${INK}" stroke-width="0.55"/>`;
   return `
-  <symbol id="bldg.civ.church" overflow="visible">
+  <symbol id="bldg.civ.church.s0" overflow="visible">
     <!-- nave roof plane -->
     <path d="${P([[0, -h - 5], [L + 1.2, -h], [L + 1.2 + ox, -h + oy], [ox, -h - 5 + oy]])}" fill="var(--roof,#6e5a4a)" stroke="${INK}" stroke-width="${LINE}" stroke-linejoin="round"/>
     <!-- nave -->
@@ -639,12 +638,55 @@ function church() {
   </symbol>`;
 }
 
-function school() {
+// s1 — twin-tower parish church: wider facade, visibly different skyline.
+function churchS1() {
+  const w = 18, h = 12, L = w / 2;
+  const [ox, oy] = dxy(13);
+  const tower = (tx) => `
+    <rect x="${tx - 2.4}" y="-21" width="4.8" height="21" fill="var(--body,#cdae8a)" stroke="${INK}" stroke-width="${LINE}"/>
+    <rect x="${tx - 2.4}" y="-21" width="0.8" height="21" fill="#eddfc0" stroke="${INK}" stroke-width="0.4"/>
+    <path d="M${tx - 1.3} -16.5 L${tx - 1.3} -19 A1.3 1.4 0 0 1 ${tx + 1.3} -19 L${tx + 1.3} -16.5 Z" fill="#a9c8e8" stroke="${INK}" stroke-width="0.5"/>
+    <rect x="${tx - 2}" y="-23.6" width="4" height="2.6" fill="#eddfc0" stroke="${INK}" stroke-width="0.7"/>
+    <path d="${P([[tx - 2.6, -23.6], [tx, -28.4], [tx + 2.6, -23.6]])}" fill="#5a8f7c" stroke="${INK}" stroke-width="0.75"/>
+    <path d="M${tx} -28.4 V-30.2 M${tx - 0.9} -29.6 H${tx + 0.9}" stroke="${INK}" stroke-width="0.5"/>`;
+  return `
+  <symbol id="bldg.civ.church.s1" overflow="visible">
+    <path d="${P([[0, -h - 4], [L + 1, -h], [L + 1 + ox, -h + oy], [ox, -h - 4 + oy]])}" fill="var(--roof,#6e5a4a)" stroke="${INK}" stroke-width="${LINE}" stroke-linejoin="round"/>
+    <rect x="${-L}" y="${-h}" width="${w}" height="${h}" fill="var(--body,#cdae8a)" stroke="${INK}" stroke-width="${LINE}" stroke-linejoin="round"/>
+    <path d="${P([[-L - 1, -h], [0, -h - 4], [L + 1, -h]])}" fill="var(--roof,#6e5a4a)" stroke="${INK}" stroke-width="${LINE}" stroke-linejoin="round"/>
+    <circle cx="0" cy="-8.6" r="1.9" fill="#a9c8e8" stroke="${INK}" stroke-width="0.55"/>
+    <path d="M0 -10.5 V-6.7 M-1.9 -8.6 H1.9" stroke="${INK}" stroke-width="0.3" opacity="0.75"/>
+    ${tower(-L + 2.4)}${tower(L - 2.4)}
+    <path d="M-1.7 0 L-1.7 -3.8 A1.7 1.9 0 0 1 1.7 -3.8 L1.7 0 Z" fill="#5b4632" stroke="${INK}" stroke-width="0.6"/>
+    <rect x="-2.6" y="-0.7" width="5.2" height="1" fill="#cfc4ad" stroke="${INK}" stroke-width="0.5"/>
+  </symbol>`;
+}
+
+// s2 — smaller neighborhood church: modest steeple, quiet presence.
+function churchS2() {
+  const w = 10, h = 8, L = w / 2;
+  const [ox, oy] = dxy(9);
+  return `
+  <symbol id="bldg.civ.church.s2" overflow="visible">
+    <path d="${P([[0, -h - 3.4], [L + 0.9, -h], [L + 0.9 + ox, -h + oy], [ox, -h - 3.4 + oy]])}" fill="var(--roof,#7d6b5a)" stroke="${INK}" stroke-width="${LINE}" stroke-linejoin="round"/>
+    <rect x="${-L}" y="${-h}" width="${w}" height="${h}" fill="var(--body,#e8e0cf)" stroke="${INK}" stroke-width="${LINE}" stroke-linejoin="round"/>
+    <path d="${P([[-L - 0.9, -h], [0, -h - 3.4], [L + 0.9, -h]])}" fill="var(--roof,#7d6b5a)" stroke="${INK}" stroke-width="${LINE}" stroke-linejoin="round"/>
+    <rect x="-1.4" y="-14.6" width="2.8" height="4" fill="var(--body,#e8e0cf)" stroke="${INK}" stroke-width="0.7"/>
+    <path d="${P([[-1.9, -14.6], [0, -18.6], [1.9, -14.6]])}" fill="#5a8f7c" stroke="${INK}" stroke-width="0.65"/>
+    <path d="M0 -18.6 V-20.2 M-0.8 -19.7 H0.8" stroke="${INK}" stroke-width="0.5"/>
+    <circle cx="0" cy="-6.4" r="1.15" fill="#a9c8e8" stroke="${INK}" stroke-width="0.5"/>
+    <path d="M-2.2 -3.8 h1.6 v3.8 h-1.6 Z M0.6 -3.8 h1.6 v3.8 h-1.6 Z" fill="#a9c8e8" stroke="${INK}" stroke-width="0.45"/>
+    <path d="M-1.5 0 L-1.5 -3 A1.5 1.7 0 0 1 1.5 -3 L1.5 0 Z" fill="#5b4632" stroke="${INK}" stroke-width="0.55"/>
+  </symbol>`;
+}
+
+// s0 — neighborhood brick school: broad institutional frontage, flag.
+function schoolS0() {
   const w = 16, h = 8.5, d = 12, L = w / 2;
   const [ox, oy] = dxy(d);
   const wins = [-6.4, -3.4, 0.6, 3.6].map((x) => win(x, -7.2, 2.4, 2.8, 0.5)).join('');
   return `
-  <symbol id="bldg.civ.school" overflow="visible">
+  <symbol id="bldg.civ.school.s0" overflow="visible">
     <path d="${P([[L, 0], [L, -h], [L + ox, -h + oy], [L + ox, oy]])}" fill="var(--side,#b08968)" stroke="${INK}" stroke-width="${LINE}" stroke-linejoin="round"/>
     <path d="${P([[-L, -h], [L, -h], [L + ox, -h + oy], [-L + ox, -h + oy]])}" fill="var(--rooftop,#8d8577)" stroke="${INK}" stroke-width="${LINE}" stroke-linejoin="round"/>
     <rect x="${-L}" y="${-h}" width="${w}" height="${h}" fill="var(--body,#d9a06b)" stroke="${INK}" stroke-width="${LINE}" stroke-linejoin="round"/>
@@ -654,6 +696,31 @@ function school() {
     <rect x="${L - 3.3}" y="-4.2" width="2" height="4.2" rx="0.3" fill="#5b4632" stroke="${INK}" stroke-width="0.55"/>
     <path d="M${-L + 1.2} ${-h} V${-h - 4.4}" stroke="${INK}" stroke-width="0.55"/>
     <path d="M${-L + 1.2} ${-h - 4.4} h3 l-0.7 1 l0.7 1 h-3 Z" fill="#e05252" stroke="${INK}" stroke-width="0.45"/>
+  </symbol>`;
+}
+
+// s1 — older multi-story school: taller mass, vertical bays, historic cornice.
+function schoolS1() {
+  const w = 17, h = 14, d = 13, L = w / 2;
+  const [ox, oy] = dxy(d);
+  const wins = [];
+  for (let r = 0; r < 3; r++) for (const x of [-6.9, -4, 1.6, 4.5])
+    wins.push(win(x, -12.6 + r * 3.9, 2.4, 2.9, 0.5));
+  return `
+  <symbol id="bldg.civ.school.s1" overflow="visible">
+    <path d="${P([[L, 0], [L, -h], [L + ox, -h + oy], [L + ox, oy]])}" fill="var(--side,#9a6a4e)" stroke="${INK}" stroke-width="${LINE}" stroke-linejoin="round"/>
+    <path d="${P([[-L, -h], [L, -h], [L + ox, -h + oy], [-L + ox, -h + oy]])}" fill="var(--rooftop,#8d8577)" stroke="${INK}" stroke-width="${LINE}" stroke-linejoin="round"/>
+    <rect x="${-L}" y="${-h}" width="${w}" height="${h}" fill="var(--body,#c98a5e)" stroke="${INK}" stroke-width="${LINE}" stroke-linejoin="round"/>
+    <rect x="${-L - 0.7}" y="${-h - 1.1}" width="${w + 1.4}" height="1.8" rx="0.4" fill="var(--trim,#8a5a44)" stroke="${INK}" stroke-width="0.85"/>
+    <!-- center entry bay rises above the cornice -->
+    <rect x="-1.9" y="${-h - 2.3}" width="3.8" height="${h + 2.3}" fill="var(--bay,#b3754a)" stroke="${INK}" stroke-width="0.8"/>
+    <path d="${P([[-2.5, -h - 2.3], [0, -h - 3.9], [2.5, -h - 2.3]])}" fill="var(--trim,#8a5a44)" stroke="${INK}" stroke-width="0.7"/>
+    ${wins.join('')}
+    ${win(-1.2, -12.4, 2.4, 2.6, 0.5)}${win(-1.2, -8.5, 2.4, 2.6, 0.5)}
+    <path d="M-1.6 0 L-1.6 -3.7 A1.6 1.8 0 0 1 1.6 -3.7 L1.6 0 Z" fill="#4a3a2c" stroke="${INK}" stroke-width="0.6"/>
+    <rect x="-2.8" y="-0.75" width="5.6" height="1.05" fill="#cfc4ad" stroke="${INK}" stroke-width="0.5"/>
+    <path d="M0 ${-h - 3.9} V${-h - 7.3}" stroke="${INK}" stroke-width="0.5"/>
+    <path d="M0 ${-h - 7.3} h2.7 l-0.6 0.9 l0.6 0.9 h-2.7 Z" fill="#e05252" stroke="${INK}" stroke-width="0.4"/>
   </symbol>`;
 }
 
@@ -794,16 +861,101 @@ function tennisCourt() {
   </symbol>`;
 }
 
-function playgroundGround() {
+// ---- playground kit pieces (tiny standing elements on a play surface) ----
+const pgSurface = (rx, ry) => `<ellipse cx="0" cy="0" rx="${rx}" ry="${ry}" fill="#efd9a7" stroke="#d9bc82" stroke-width="0.7"/>`;
+const pgSwings = (x) => `
+  <g transform="translate(${x} 0)">
+    <path d="M-2.6 1.5 L-1.3 -3 M0 1.5 L-1.3 -3 M-4 1.5 L-2.8 -3 M-2.8 -3 L-1.3 -3" stroke="#5f7285" stroke-width="0.55" fill="none"/>
+    <path d="M-2.4 -3 V-0.6 M-1.7 -3 V-0.6" stroke="${INK}" stroke-width="0.3"/>
+    <rect x="-2.65" y="-0.6" width="0.6" height="0.4" fill="#e07a2f" stroke="${INK}" stroke-width="0.2"/>
+    <rect x="-1.95" y="-0.6" width="0.6" height="0.4" fill="#3f8ecc" stroke="${INK}" stroke-width="0.2"/>
+  </g>`;
+const pgSlide = (x) => `
+  <g transform="translate(${x} 0)">
+    <path d="M0 1.2 L0 -2.4 L3.3 0.2 L3.3 1.2" fill="#f2c04c" stroke="${INK}" stroke-width="0.4" stroke-linejoin="round"/>
+    <rect x="-0.5" y="-3.2" width="1.1" height="1" fill="#e05252" stroke="${INK}" stroke-width="0.3"/>
+  </g>`;
+const pgClimber = (x) => `
+  <g transform="translate(${x} 0)">
+    <path d="M-2.2 0.8 A2.2 2.2 0 0 1 2.2 0.8" fill="none" stroke="#3f8ecc" stroke-width="0.5"/>
+    <path d="M-1.5 -0.9 A1.7 1.9 0 0 1 1.5 -0.9 M-0.7 -1.4 A0.9 1 0 0 1 0.7 -1.4 M0 0.8 V-1.6 M-1.9 0.8 V-0.5 M1.9 0.8 V-0.5" fill="none" stroke="#3f8ecc" stroke-width="0.4"/>
+  </g>`;
+const pgSandbox = (x) => `
+  <g transform="translate(${x} 0.4)">
+    <rect x="-1.9" y="-1.4" width="3.8" height="2.4" rx="0.3" fill="#e8c987" stroke="#b3915a" stroke-width="0.45"/>
+    <circle cx="0.5" cy="-0.2" r="0.4" fill="#e05252" stroke="${INK}" stroke-width="0.25"/>
+  </g>`;
+const pgSeesaw = (x) => `
+  <g transform="translate(${x} 0)">
+    <path d="M-2.4 -0.4 L2.4 -1.4" stroke="#e07a2f" stroke-width="0.5"/>
+    <path d="M0 -0.9 L0 0.4" stroke="${INK}" stroke-width="0.4"/>
+    <rect x="-2.8" y="-0.8" width="0.8" height="0.6" rx="0.15" fill="#3f8ecc" stroke="${INK}" stroke-width="0.2"/>
+    <rect x="2" y="-1.8" width="0.8" height="0.6" rx="0.15" fill="#e05252" stroke="${INK}" stroke-width="0.2"/>
+  </g>`;
+const pgBench = (x) => `
+  <g transform="translate(${x} 0.6)">
+    <rect x="-1.3" y="-0.9" width="2.6" height="0.55" rx="0.15" fill="#8a6248" stroke="${INK}" stroke-width="0.3"/>
+    <path d="M-1 -0.35 V0.3 M1 -0.35 V0.3" stroke="${INK}" stroke-width="0.25"/>
+  </g>`;
+
+// Playground compositions — three deterministic scene layouts, never one icon.
+function playgroundS0() { // classic: swings + slide + sandbox
+  return `<symbol id="ground.playground.s0" overflow="visible">${pgSurface(10, 6.5)}${pgSwings(-4.6)}${pgSlide(3.2)}${pgSandbox(-0.4)}</symbol>`;
+}
+function playgroundS1() { // climber-centered + slide + bench
+  return `<symbol id="ground.playground.s1" overflow="visible">${pgSurface(9, 6)}${pgClimber(-2.8)}${pgSlide(2.4)}${pgBench(6.2)}</symbol>`;
+}
+function playgroundS2() { // swings + seesaw + sandbox (small)
+  return `<symbol id="ground.playground.s2" overflow="visible">${pgSurface(8.5, 5.5)}${pgSwings(-3.6)}${pgSeesaw(2.6)}${pgSandbox(5.6)}</symbol>`;
+}
+
+// Basketball court — real geometry, simplified: rect + key paint + center + hoops.
+function basketballCourt() {
   return `
-  <symbol id="ground.playground" overflow="visible">
-    <ellipse cx="0" cy="0" rx="10" ry="6.5" fill="#efd9a7" stroke="#d9bc82" stroke-width="0.7"/>
-    <path d="M-6.5 1.5 L-5 -3 M-3.5 1.5 L-5 -3 M-8 1.5 L-6.6 -3 M-6.6 -3 L-5 -3" stroke="#5f7285" stroke-width="0.55" fill="none"/>
-    <path d="M-6.1 -3 V-0.6 M-5.4 -3 V-0.6" stroke="${INK}" stroke-width="0.3"/>
-    <rect x="-6.35" y="-0.6" width="0.6" height="0.4" fill="#e07a2f" stroke="${INK}" stroke-width="0.2"/>
-    <rect x="-5.65" y="-0.6" width="0.6" height="0.4" fill="#3f8ecc" stroke="${INK}" stroke-width="0.2"/>
-    <path d="M3.5 1.2 L3.5 -2.4 L6.8 0.2 L6.8 1.2" fill="#f2c04c" stroke="${INK}" stroke-width="0.4" stroke-linejoin="round"/>
-    <rect x="3" y="-3.2" width="1.1" height="1" fill="#e05252" stroke="${INK}" stroke-width="0.3"/>
+  <symbol id="ground.basketball" overflow="visible">
+    <rect x="-13" y="-7.5" width="26" height="15" rx="1" fill="#b0aa9c" stroke="#8f897c" stroke-width="0.7"/>
+    <rect x="-12.2" y="-6.7" width="24.4" height="13.4" fill="none" stroke="#fdf6e3" stroke-width="0.5"/>
+    <circle cx="0" cy="0" r="2.6" fill="none" stroke="#fdf6e3" stroke-width="0.5"/>
+    <path d="M0 -6.7 V6.7" stroke="#fdf6e3" stroke-width="0.5"/>
+    <path d="M-12.2 -2.6 h5 v5.2 h-5 Z M12.2 -2.6 h-5 v5.2 h5 Z" fill="#7d9e8a" stroke="#fdf6e3" stroke-width="0.5"/>
+    <path d="M-12.6 -1.6 V1.6 M12.6 -1.6 V1.6" stroke="${INK}" stroke-width="0.7"/>
+    <circle cx="-11.5" cy="0" r="0.55" fill="none" stroke="#e07a2f" stroke-width="0.45"/>
+    <circle cx="11.5" cy="0" r="0.55" fill="none" stroke="#e07a2f" stroke-width="0.45"/>
+  </symbol>`;
+}
+
+// Baseball diamond — the recognizable non-rectangular silhouette, compressed.
+// Drawn with home plate at bottom (-y up); rotate to real orientation.
+function baseballDiamond() {
+  return `
+  <symbol id="ground.baseball" overflow="visible">
+    <!-- outfield grass wedge -->
+    <path d="M0 8 L-15 -7 A19 19 0 0 1 15 -7 Z" fill="#8fc463" stroke="#79ab52" stroke-width="0.7" stroke-linejoin="round"/>
+    <!-- infield skin -->
+    <path d="M0 7 L-8.5 -1.5 L0 -10 L8.5 -1.5 Z" fill="#d9a869" stroke="#b3854e" stroke-width="0.7" stroke-linejoin="round"/>
+    <!-- infield grass -->
+    <path d="M0 4.6 L-6 -1.5 L0 -7.6 L6 -1.5 Z" fill="#a2d474" stroke="#84b95c" stroke-width="0.5"/>
+    <!-- base paths -->
+    <path d="M0 5.8 L-7.2 -1.5 L0 -8.8 L7.2 -1.5 Z" fill="none" stroke="#fdf6e3" stroke-width="0.65"/>
+    <rect x="-0.65" y="5.15" width="1.3" height="1.3" fill="#fbfbf7" stroke="${INK}" stroke-width="0.3" transform="rotate(45 0 5.8)"/>
+    <rect x="-7.85" y="-2.15" width="1.3" height="1.3" fill="#fbfbf7" stroke="${INK}" stroke-width="0.3" transform="rotate(45 -7.2 -1.5)"/>
+    <rect x="-0.65" y="-9.45" width="1.3" height="1.3" fill="#fbfbf7" stroke="${INK}" stroke-width="0.3" transform="rotate(45 0 -8.8)"/>
+    <rect x="6.55" y="-2.15" width="1.3" height="1.3" fill="#fbfbf7" stroke="${INK}" stroke-width="0.3" transform="rotate(45 7.2 -1.5)"/>
+    <!-- mound -->
+    <circle cx="0" cy="-1.5" r="1.05" fill="#d9a869" stroke="#b3854e" stroke-width="0.45"/>
+    <!-- backstop behind home -->
+    <path d="M-4.6 9.6 Q0 6.6 4.6 9.6" fill="none" stroke="#8a8f96" stroke-width="0.7"/>
+    <path d="M-3.2 9 V7.6 M0 8.1 V6.8 M3.2 9 V7.6" stroke="#8a8f96" stroke-width="0.35"/>
+  </symbol>`;
+}
+
+// Picnic table — mapped park furniture, top-down, tiny.
+function picnicTable() {
+  return `
+  <symbol id="ground.picnic_table" overflow="visible">
+    <rect x="-1.5" y="-1" width="3" height="2" rx="0.25" fill="#a97c50" stroke="${INK}" stroke-width="0.4"/>
+    <rect x="-1.5" y="-1.8" width="3" height="0.55" rx="0.2" fill="#8a6248" stroke="${INK}" stroke-width="0.3"/>
+    <rect x="-1.5" y="1.25" width="3" height="0.55" rx="0.2" fill="#8a6248" stroke="${INK}" stroke-width="0.3"/>
   </symbol>`;
 }
 
@@ -817,10 +969,11 @@ export function allSymbols() {
     ...[0, 1, 2].map((t) => storefrontRowS(2, t)),
     ...[0, 1, 2].map((t) => storefrontRowS(3, t)),
     mixedUseS0(), mixedUseS1(), mixedUseS2(),
-    cornerTavern(), church(), school(),
+    cornerTavern(), churchS0(), churchS1(), churchS2(), schoolS0(), schoolS1(),
     treeLinden(), treeHoneylocust(), treeFlowering(), floweringS1(), treeMaple(), treeAsh(), treeElm(), treeOak(),
     coniferS0(), coniferS1(), coniferS2(),
-    car(), tennisCourt(), playgroundGround(),
+    car(), tennisCourt(), basketballCourt(), baseballDiamond(),
+    playgroundS0(), playgroundS1(), playgroundS2(), picnicTable(),
   ].join('\n');
 }
 
@@ -833,6 +986,9 @@ export const STRUCT_COUNT = {
   'bldg.res.shed': 2,
   'bldg.res.rowhouse': 1,
   'bldg.com.mixed_use': 3,
+  'bldg.civ.church': 3,
+  'bldg.civ.school': 2,
+  'ground.playground': 3,
   'tree.flowering': 2,
   'tree.conifer': 3,
 };
@@ -865,5 +1021,8 @@ export const ASSET_META = {
   'tree.oak': { halfW: 9, cls: 'tree' },
   'veh.car': { halfW: 2.6, cls: 'ambient' },
   'ground.tennis': { halfW: 15, cls: 'ground' },
+  'ground.basketball': { halfW: 13, cls: 'ground' },
+  'ground.baseball': { halfW: 16, cls: 'ground' },
   'ground.playground': { halfW: 10, cls: 'ground' },
+  'ground.picnic_table': { halfW: 2, cls: 'ground' },
 };

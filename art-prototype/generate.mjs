@@ -102,22 +102,65 @@ const canPlaceT = (x, y) =>
 const commitB = (entry, r) => { scene.push(entry); placedB.push({ x: entry.x, y: entry.y, r }); };
 const commitT = (entry) => { scene.push(entry); placedT.push({ x: entry.x, y: entry.y }); };
 
-// ---- 1. ground assets from real leisure polygons ----
-const seenGround = [];
+// ---- 1. parks + recreation from real leisure geometry ----
+// park polygons: programmed open space, not a green void — they get a ground
+// tint, their real pitches/playgrounds, mapped picnic tables, and OSM trees
+const parkPolys = [];
 for (const el of raw.leisure.elements ?? []) {
-  if (el.type !== 'way' || !el.geometry) continue;
+  if (el.type !== 'way' || !el.geometry || el.tags?.leisure !== 'park') continue;
+  const c = cent(el.geometry);
+  if (!inSlice(c.lat, c.lng)) continue;
+  parkPolys.push({ name: el.tags.name, pts: el.geometry.map((g) => [X(g.lon), Y(g.lat)]) });
+}
+const inPark = (x, y) => parkPolys.some((pk) => {
+  let inside = false;
+  const p = pk.pts;
+  for (let i = 0, j = p.length - 1; i < p.length; j = i++) {
+    if (p[i][1] > y !== p[j][1] > y && x < ((p[j][0] - p[i][0]) * (y - p[i][1])) / (p[j][1] - p[i][1]) + p[i][0]) inside = !inside;
+  }
+  return inside;
+});
+
+const seenGround = [];
+const SPORT_ASSET = { tennis: 'ground.tennis', basketball: 'ground.basketball', baseball: 'ground.baseball' };
+for (const el of raw.leisure.elements ?? []) {
+  if (!el.geometry) {
+    // mapped picnic tables inside parks: low-priority park detail
+    if (el.type === 'node' && el.tags?.leisure === 'picnic_table') {
+      const x = X(el.lon), y = Y(el.lat);
+      if (inSlice(el.lat, el.lon) && inPark(x, y) && scene.filter((e) => e.assetId === 'ground.picnic_table').length < 10) {
+        scene.push({ assetId: 'ground.picnic_table', variant: 0, x: +x.toFixed(1), y: +y.toFixed(1), scale: 1, rotation: Math.round(hash01(x, y) * 60 - 30), layer: 'ground', priority: 8, src: 'osm:picnic_table' });
+      }
+    }
+    continue;
+  }
+  if (el.type !== 'way') continue;
   const t = el.tags ?? {};
   const c = cent(el.geometry);
   if (!inSlice(c.lat, c.lng)) continue;
   const x = X(c.lng), y = Y(c.lat);
-  if (t.leisure === 'pitch' && t.sport === 'tennis') {
-    if (seenGround.some((g) => Math.hypot(g.x - x, g.y - y) < 20)) continue;
-    seenGround.push({ x, y });
-    scene.push({ assetId: 'ground.tennis', variant: 0, x, y, scale: 1, rotation: +longestEdgeAngle(el.geometry).toFixed(1), layer: 'ground', priority: 2, src: 'osm:pitch' });
+  if (t.leisure === 'pitch' && SPORT_ASSET[t.sport]) {
+    // adjacent courts render individually (real layout); 8m dedupe kills only
+    // duplicate mapping, not neighbors
+    if (seenGround.some((g) => Math.hypot(g.x - x, g.y - y) < 8)) continue;
+    const scale = t.sport === 'baseball' ? 1.6 : t.sport === 'tennis' ? 1 : 0.85;
+    // anti-overlap: our simplified courts are bigger than the real footprints,
+    // so nudge a same-sport neighbor apart instead of letting symbols collide
+    const minSep = (t.sport === 'tennis' ? 18 : t.sport === 'basketball' ? 25 : 30) * scale;
+    let nx = x, ny = y;
+    const near = seenGround.find((g) => g.sport === t.sport && Math.hypot(g.x - x, g.y - y) < minSep);
+    if (near) {
+      const d = Math.hypot(x - near.x, y - near.y) || 1;
+      nx = near.x + ((x - near.x) / d) * minSep;
+      ny = near.y + ((y - near.y) / d) * minSep;
+    }
+    seenGround.push({ x: nx, y: ny, sport: t.sport });
+    scene.push({ assetId: SPORT_ASSET[t.sport], variant: 0, x: +nx.toFixed(1), y: +ny.toFixed(1), scale, rotation: +longestEdgeAngle(el.geometry).toFixed(1), layer: 'ground', priority: 2, src: `osm:pitch:${t.sport}` });
   } else if (t.leisure === 'playground') {
     if (seenGround.some((g) => Math.hypot(g.x - x, g.y - y) < 26)) continue;
     seenGround.push({ x, y });
-    scene.push({ assetId: 'ground.playground', variant: 0, x, y, scale: 1.6, rotation: 0, layer: 'ground', priority: 2, src: 'osm:playground' });
+    // composition varies deterministically so six playgrounds don't stamp
+    scene.push({ assetId: 'ground.playground', structure: Math.floor(hash01(x, y) * 3), variant: 0, x: +x.toFixed(1), y: +y.toFixed(1), scale: 1.6, rotation: 0, layer: 'ground', priority: 3, src: 'osm:playground' });
   }
 }
 
@@ -129,8 +172,16 @@ const classify = (el) => {
   const lv = parseFloat(t['building:levels'] ?? '0');
   const area = areaOf(el.geometry);
   const name = t.name;
-  if (b === 'church') return { assetId: 'bldg.civ.church', priority: 0, s: 1.7, name };
-  if (b === 'school' || t.amenity === 'school') return { assetId: 'bldg.civ.school', priority: 1, s: 1.2, name };
+  if (b === 'church' || (t.amenity === 'place_of_worship' && b !== 'construction' && b)) {
+    // real data picks the skyline: tall/large -> tower church, wide -> twin-tower
+    // parish, small -> neighborhood church
+    const structure = lv >= 4 || area > 450 ? 0 : area > 320 ? 1 : 2;
+    return { assetId: 'bldg.civ.church', priority: 1, s: [1.7, 1.4, 1.15][structure], name, structure };
+  }
+  if (b === 'school' || t.amenity === 'school') {
+    const structure = lv >= 3 ? 1 : 0;
+    return { assetId: 'bldg.civ.school', priority: 1, s: 1.2, name, structure };
+  }
   const isBar = name && [...bars].some((k) => name.toLowerCase().includes(k));
   if (isBar) return { assetId: 'bldg.com.corner_tavern', priority: 2, s: 1.3, name };
   if (b === 'retail' || b === 'commercial') {
@@ -358,6 +409,26 @@ for (const t of treeData) {
   treeStats.cast++;
 }
 
+// ---- 3a2. OSM tree nodes inside parks: the city inventory covers streets,
+// OSM covers park interiors — species unknown, so hash-pick a shade family
+let parkTrees = 0;
+for (const el of raw.trees.elements ?? []) {
+  if (el.type !== 'node' || el.tags?.natural !== 'tree') continue;
+  if (!inSlice(el.lat, el.lon)) continue;
+  const x = X(el.lon), y = Y(el.lat);
+  if (!inPark(x, y)) continue;
+  if (distToRoad(x, y).d < 15 || distToNode(x, y) < 20) continue;
+  if (!canPlaceT(x, y)) continue;
+  // parks breathe: wider tree spacing than street terraces, and canopies must
+  // not bury the recreation assets
+  if (!placedT.every((p) => Math.hypot(p.x - x, p.y - y) >= 10)) continue;
+  if (scene.some((e) => e.layer === 'ground' && e.assetId !== 'ground.picnic_table' && Math.hypot(e.x - x, e.y - y) < 15)) continue;
+  const h = hash01(x * 1.3, y * 0.9);
+  const assetId = ['tree.maple', 'tree.linden', 'tree.ash', 'tree.oak'][Math.floor(h * 4)];
+  commitT({ assetId, structure: 0, variant: Math.floor(h * 96), x: +x.toFixed(1), y: +y.toFixed(1), scale: +(0.9 + h * 0.4).toFixed(2), rotation: 0, layer: 'standing', priority: 7, src: 'osm:tree' });
+  parkTrees++;
+}
+
 // ---- 3b. yard conifers: procedural dressing tucked behind a few houses
 // (the city street inventory has zero conifers — these are private-yard trees)
 let conifers = 0;
@@ -532,6 +603,8 @@ ${Array.from({ length: 60 }, (_, i) => {
   const gr = 16 + hash01(i, i) * 34;
   return `<circle cx="${gx.toFixed(0)}" cy="${gy.toFixed(0)}" r="${gr.toFixed(0)}" fill="#9ecb6a" opacity="0.35"/>`;
 }).join('')}
+<!-- PARK GROUND — programmed open space gets its own richer green -->
+${parkPolys.map((pk) => `<polygon points="${pk.pts.map((p) => `${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ')}" fill="#a2d06c" stroke="#92c05d" stroke-width="1.2" stroke-linejoin="round"/>`).join('\n')}
 <!-- QUIET PROPERTY FABRIC — real lot lines, below everything but grass -->
 ${(() => {
   const style = {
@@ -548,7 +621,7 @@ ${(() => {
     .join('\n');
 })()}
 <!-- ground assets (top-down, rotated to real geometry) -->
-${groundEls.map((e) => `<use href="#${e.assetId}" transform="translate(${e.x} ${e.y}) rotate(${e.rotation}) scale(${e.scale})"/>`).join('\n')}
+${groundEls.map((e) => `<use href="#${symbolRef(e)}" transform="translate(${e.x} ${e.y}) rotate(${e.rotation}) scale(${e.scale})"/>`).join('\n')}
 <!-- sidewalk apron -->
 ${edgeLines.map((pts) => `<polyline points="${pts}" fill="none" stroke="${SIDEWALK}" stroke-width="${CASING_M + 11}" stroke-linecap="round" stroke-linejoin="round"/>`).join('\n')}
 <!-- THE PATH: casing, fill, nodes -->

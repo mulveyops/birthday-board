@@ -11,8 +11,15 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, '..');
 const SCRATCH = 'C:/Users/Steven/AppData/Local/Temp/claude/C--Users-Steven-Documents-Birthday-2026/5d610d7c-43c1-4149-9704-c942971ebd14/scratchpad';
 
-// ---- slice: St. Hedwig -> Wolski's -> Pulaski courts, Brady St south edge ----
-const SLICE = { S: 43.0518, W: -87.8992, N: 43.0566, E: -87.8934 };
+// ---- slices: pass a key as argv[2]; default = the canonical test slice ----
+const SLICES = {
+  // St. Hedwig -> Wolski's -> Pulaski courts, Brady St south edge
+  pulaski: { S: 43.0518, W: -87.8992, N: 43.0566, E: -87.8934, out: 'style-c-slice' },
+  // Cass Street Park quadrant (vocabulary-scaling test: unseen ground)
+  cass: { S: 43.0493, W: -87.9035, N: 43.0541, E: -87.8975, out: 'style-c-slice-b' },
+};
+const SLICE = SLICES[process.argv[2] ?? 'pulaski'];
+if (!SLICE) throw new Error(`unknown slice: ${process.argv[2]}`);
 const MARGIN = 25; // world meters of grass beyond the slice
 
 const board = JSON.parse(readFileSync(join(ROOT, 'birthday-board.json'), 'utf8'));
@@ -126,10 +133,17 @@ const classify = (el) => {
   if (b === 'retail' || b === 'commercial') {
     return { assetId: 'bldg.com.storefront', priority: 3, s: Math.min(1.15, 0.85 + area / 900), name };
   }
-  if (b === 'apartments' || b === 'condominium' || (lv >= 3 && area > 250)) {
-    return { assetId: 'bldg.res.apartment', priority: 4, s: Math.min(1.2, 0.85 + lv * 0.06), name, lv };
+  if (b === 'terrace') {
+    return { assetId: 'bldg.res.rowhouse', priority: 3, s: Math.max(0.95, Math.min(1.25, Math.sqrt(area) / 13)), name, structure: 0 };
   }
-  if (b === 'garage' || b === 'shed' || b === 'barn' || b === 'roof') {
+  if (b === 'apartments' || b === 'condominium' || (lv >= 3 && area > 250)) {
+    return { assetId: 'bldg.res.apartment', priority: 3, s: Math.min(1.2, 0.85 + lv * 0.06), name, lv };
+  }
+  if (b === 'shed') {
+    if (area < 8 || area > 40) return null;
+    return { assetId: 'bldg.res.shed', priority: 6, s: Math.max(0.9, Math.min(1.15, Math.sqrt(area) / 4.5)), name, structure: Math.floor(hash01(area * 3.1, area + 1) * 2) };
+  }
+  if (b === 'garage' || b === 'barn' || b === 'roof') {
     if (area < 18 || area > 90) return null;
     return { assetId: 'bldg.res.garage', priority: 6, s: Math.max(0.85, Math.min(1.15, Math.sqrt(area) / 7)), name };
   }
@@ -146,6 +160,13 @@ const classify = (el) => {
   }
   return null;
 };
+
+// alley geometry up front so garages can face their alley
+const alleyPts = [];
+for (const el of raw.transport.elements ?? []) {
+  if (el.type === 'way' && el.tags?.highway === 'service' && el.tags.service === 'alley' && el.geometry)
+    for (const g of el.geometry) alleyPts.push([X(g.lon), Y(g.lat)]);
+}
 
 let candidates = [];
 for (const el of raw.buildings.elements ?? []) {
@@ -203,10 +224,10 @@ for (const c of candidates) {
   if (distToNode(x, y) < NODE_CLEAR[c.priority]) continue;
   const r = meta.halfW * c.s;
   if (!canPlaceB(x, y, r)) continue;
-  if (c.assetId === 'bldg.res.garage') {
-    // a garage alone in a field reads as debris — only place near a building
+  if (c.assetId === 'bldg.res.garage' || c.assetId === 'bldg.res.shed') {
+    // an outbuilding alone in a field reads as debris — only place near a building
     if (!placedB.some((p) => Math.hypot(p.x - x, p.y - y) < 24)) continue;
-    if (++garages > 9) continue;
+    if (++garages > 12) continue;
   }
   // min-readable rule: an asset too small to read gets suppressed, never shrunk
   if (c.s < 0.85) continue;
@@ -216,9 +237,16 @@ for (const c of candidates) {
   if (c.assetId === 'bldg.res.apartment') {
     structure = (c.lv ?? 0) >= 4 ? 3 : distToNode(x, y) < 36 ? 2 : c.area > 280 ? 1 : 0;
   }
+  // garages near a mapped alley become the flat-roof alley type, facing it
+  let garageFacing;
+  if (c.assetId === 'bldg.res.garage' && alleyPts.length) {
+    let bestA = null;
+    for (const p of alleyPts) { const d2 = Math.hypot(p[0] - x, p[1] - y); if (!bestA || d2 < bestA.d) bestA = { d: d2, px: p[0], py: p[1] }; }
+    if (bestA && bestA.d < 30) { structure = 1; garageFacing = Math.round(Math.atan2(bestA.py - y, bestA.px - x) * 180 / Math.PI); }
+  }
   // facing: screen-space bearing toward the frontage this asset addresses
   // (corner assets face their intersection, street assets face the street)
-  let facing;
+  let facing = garageFacing;
   if (c.assetId.startsWith('bldg.com') || (c.assetId === 'bldg.res.apartment' && structure === 2)) {
     let tx, ty;
     if (c.assetId === 'bldg.com.corner_tavern' || structure === 2) {
@@ -259,8 +287,25 @@ for (const t of treeData) {
   if (road.d < 15) { x = road.qx + road.nx * 15; y = road.qy + road.ny * 15; }
   if (distToNode(x, y) < 22) { treeStats.skipped++; continue; }
   if (!canPlaceT(x, y)) { treeStats.skipped++; continue; }
-  commitT({ assetId, variant: Math.floor(hash01(x, y) * 96), x: +x.toFixed(1), y: +y.toFixed(1), scale: +s.toFixed(2), rotation: 0, layer: 'standing', priority: 7, src: `city:${t.species} ${t.dbh_in}"` });
+  const structure = assetId === 'tree.flowering' ? Math.floor(hash01(x * 0.9, y * 1.1) * 2) : 0;
+  commitT({ assetId, structure, variant: Math.floor(hash01(x, y) * 96), x: +x.toFixed(1), y: +y.toFixed(1), scale: +s.toFixed(2), rotation: 0, layer: 'standing', priority: 7, src: `city:${t.species} ${t.dbh_in}"` });
   treeStats.cast++;
+}
+
+// ---- 3b. yard conifers: procedural dressing tucked behind a few houses
+// (the city street inventory has zero conifers — these are private-yard trees)
+let conifers = 0;
+for (const e of [...scene]) {
+  if (conifers >= 12) break;
+  if (e.layer !== 'standing' || (e.assetId !== 'bldg.res.polish_flat' && e.assetId !== 'bldg.res.bungalow')) continue;
+  if (hash01(e.x * 2.1, e.y * 1.7) > 0.34) continue;
+  const road = distToRoad(e.x, e.y);
+  const bx = e.x - road.nx * 10 + (hash01(e.y, e.x) - 0.5) * 9;
+  const by = e.y - road.ny * 10 + (hash01(e.x + 7, e.y) - 0.5) * 9;
+  if (distToRoad(bx, by).d < 15.5 || distToNode(bx, by) < 22) continue;
+  if (!canPlaceT(bx, by)) continue;
+  commitT({ assetId: 'tree.conifer', structure: Math.floor(hash01(bx, by) * 3), variant: 0, x: +bx.toFixed(1), y: +by.toFixed(1), scale: +(0.9 + hash01(by, bx) * 0.35).toFixed(2), rotation: 0, layer: 'standing', priority: 7, src: 'procedural:yard_conifer' });
+  conifers++;
 }
 
 // ---- 4. parked cars: ambient, near commercial frontage, E-W streets only ----
@@ -280,7 +325,7 @@ for (const [ax, ay, bx, by] of roadSegs) {
     if (distToNode(x, y) < 22) continue;
     if (!placedT.every((p) => Math.hypot(p.x - x, p.y - y) >= 5)) continue;
     if (!placedB.every((p) => Math.hypot(p.x - x, p.y - y) >= 7)) continue;
-    scene.push({ assetId: 'veh.car', variant: Math.floor(hash01(x, y) * 96), x: +x.toFixed(1), y: +y.toFixed(1), scale: 2.1, rotation: 0, layer: 'standing', priority: 8, src: 'ambient' });
+    scene.push({ assetId: 'veh.car', variant: Math.floor(hash01(x, y) * 96), x: +x.toFixed(1), y: +y.toFixed(1), scale: 2.1, rotation: 0, layer: 'standing', priority: 8, src: 'procedural:parked_car' });
     placedB.push({ x, y, r: 4 });
     cars++;
   }
@@ -292,7 +337,7 @@ for (const [ax, ay, bx, by] of roadSegs) {
 const propStats = { driveway: 0, alley: 0, fence: 0, retaining_wall: 0, wall: 0, hedge: 0, walk: 0 };
 const inView = (x, y) => x > -5 && y > -5 && x < W + 5 && y < H + 5;
 // clip a polyline against the road pavement and the viewport; return sub-runs
-const clipRuns = (pts) => {
+const clipRuns = (pts, minLen = 4) => {
   const runs = [];
   let cur = [];
   for (const [x, y] of pts) {
@@ -300,7 +345,7 @@ const clipRuns = (pts) => {
     else if (cur.length) { runs.push(cur); cur = []; }
   }
   if (cur.length) runs.push(cur);
-  return runs.filter((r2) => r2.length >= 2 && r2.reduce((s2, p, i) => i ? s2 + Math.hypot(p[0] - r2[i - 1][0], p[1] - r2[i - 1][1]) : 0, 0) > 4);
+  return runs.filter((r2) => r2.length >= 2 && r2.reduce((s2, p, i) => i ? s2 + Math.hypot(p[0] - r2[i - 1][0], p[1] - r2[i - 1][1]) : 0, 0) > minLen);
 };
 const pushProp = (kind, pts) => {
   scene.push({ assetId: `prop.${kind}`, layer: 'property', pts, src: kind === 'walk' ? 'derived' : 'osm' });
@@ -311,7 +356,8 @@ for (const el of raw.transport.elements ?? []) {
   const svc = el.tags.service;
   if (svc !== 'driveway' && svc !== 'alley') continue;
   const pts = el.geometry.map((g) => [X(g.lon), Y(g.lat)]);
-  for (const run of clipRuns(pts)) {
+  // driveway fragments under 7.5m visible read as disconnected dashes — drop
+  for (const run of clipRuns(pts, svc === 'driveway' ? 7.5 : 4)) {
     if (svc === 'driveway') {
       // only driveways that serve a building we actually rendered
       if (propStats.driveway >= 130) continue;
@@ -336,7 +382,8 @@ for (const e of scene) {
   const road = distToRoad(e.x, e.y);
   if (road.d < 14.5 || road.d > 30) continue;
   const ex = road.qx + road.nx * 13.6, ey = road.qy + road.ny * 13.6;
-  pushProp('walk', [[+e.x.toFixed(1), +(e.y + 0.6).toFixed(1)], [+ex.toFixed(1), +ey.toFixed(1)]]);
+  scene.push({ assetId: 'prop.walk', layer: 'property', pts: [[+e.x.toFixed(1), +(e.y + 0.6).toFixed(1)], [+ex.toFixed(1), +ey.toFixed(1)]], src: 'procedural:entry_walk' });
+  propStats.walk++;
 }
 
 // ================= RENDER =================
@@ -367,6 +414,10 @@ const variantStyle = (e) => {
     const b = (i) => SHOP_BODIES[(v + i * 2) % SHOP_BODIES.length];
     const a = (i) => AWNINGS[(v + i * 3 + 1) % AWNINGS.length];
     return `--b0:${b(0)};--b1:${b(1)};--b2:${b(2)};--a0:${a(0)};--a1:${a(1)};--a2:${a(2)};--side:${shade(b(2), -22)}`;
+  }
+  if (e.assetId === 'bldg.res.rowhouse') {
+    const u = (i) => HOUSE_BODIES[(v + i * 3) % HOUSE_BODIES.length];
+    return `--u0:${u(0)};--u1:${u(1)};--u2:${u(2)}`;
   }
   if (e.assetId === 'veh.car') return `--body:${CAR_BODIES[v % CAR_BODIES.length]}`;
   if (e.assetId === 'bldg.res.apartment' && (e.structure ?? 0) === 0) {
@@ -462,9 +513,9 @@ ${standingEls.map((e) => {
 </svg>`;
 
 mkdirSync(join(HERE, 'out'), { recursive: true });
-writeFileSync(join(HERE, 'out', 'style-c-slice.svg'), svg);
-writeFileSync(join(HERE, 'out', 'scene-model.json'), JSON.stringify({ slice: SLICE, counts: countScene(), scene }, null, 1));
-writeFileSync(join(HERE, 'out', 'style-c-slice.html'),
+writeFileSync(join(HERE, 'out', `${SLICE.out}.svg`), svg);
+writeFileSync(join(HERE, 'out', `${SLICE.out}.scene-model.json`), JSON.stringify({ slice: SLICE, counts: countScene(), scene }, null, 1));
+writeFileSync(join(HERE, 'out', `${SLICE.out}.html`),
   `<!doctype html><meta charset="utf-8"><title>Style C slice</title><body style="margin:0;background:#7ec4e0">${svg.replace('<svg ', '<svg style="width:100vw;height:100vh;display:block" ')}</body>`);
 
 function countScene() {

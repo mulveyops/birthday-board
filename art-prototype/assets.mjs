@@ -276,16 +276,124 @@ function apartmentS3() {
   </symbol>`;
 }
 
-function garage() {
+// s0 — front-gable detached garage.
+function garageS0() {
   const w = 6.6, h = 3.5, d = 4, L = w / 2;
   const [ox, oy] = dxy(d);
   return `
-  <symbol id="bldg.res.garage" overflow="visible">
+  <symbol id="bldg.res.garage.s0" overflow="visible">
     <path d="${P([[0, -h - 1.8], [L + 0.6, -h], [L + 0.6 + ox, -h + oy], [ox, -h - 1.8 + oy]])}" fill="var(--roof,#8a6248)" stroke="${INK}" stroke-width="1" stroke-linejoin="round"/>
     <rect x="${-L}" y="${-h}" width="${w}" height="${h}" fill="var(--body,#e8ddc4)" stroke="${INK}" stroke-width="1" stroke-linejoin="round"/>
     <path d="${P([[-L - 0.6, -h], [0, -h - 1.8], [L + 0.6, -h]])}" fill="var(--roof,#8a6248)" stroke="${INK}" stroke-width="1" stroke-linejoin="round"/>
     <rect x="${-L + 1}" y="-2.8" width="${w - 2}" height="2.8" rx="0.3" fill="var(--door,#9a8265)" stroke="${INK}" stroke-width="0.6"/>
     <path d="M${-L + 1} -1.9 h${w - 2}" stroke="${INK}" stroke-width="0.35" opacity="0.5"/>
+  </symbol>`;
+}
+
+// s1 — alley garage: flat roof (full deck per roof rule), wide door, utilitarian.
+function garageS1() {
+  const w = 6.8, h = 3.1, d = 5.5, L = w / 2;
+  const [ox, oy] = dxy(d);
+  return `
+  <symbol id="bldg.res.garage.s1" overflow="visible">
+    <path d="${P([[L, 0], [L, -h], [L + ox, -h + oy], [L + ox, oy]])}" fill="var(--side,#c2b394)" stroke="${INK}" stroke-width="0.9" stroke-linejoin="round"/>
+    <path d="${P([[-L, -h], [L, -h], [L + ox, -h + oy], [-L + ox, -h + oy]])}" fill="var(--rooftop,#8d8577)" stroke="${INK}" stroke-width="0.9" stroke-linejoin="round"/>
+    <rect x="${-L}" y="${-h}" width="${w}" height="${h}" fill="var(--body,#d4c8a8)" stroke="${INK}" stroke-width="1" stroke-linejoin="round"/>
+    <rect x="${-L - 0.4}" y="${-h - 0.6}" width="${w + 0.8}" height="1" rx="0.25" fill="var(--trim,#8a7a60)" stroke="${INK}" stroke-width="0.55"/>
+    <rect x="${-L + 0.8}" y="-2.5" width="${w - 3}" height="2.5" rx="0.25" fill="var(--door,#9a8265)" stroke="${INK}" stroke-width="0.55"/>
+    <path d="M${-L + 0.8} -1.7 h${w - 3} M${-L + 0.8} -0.9 h${w - 3}" stroke="${INK}" stroke-width="0.3" opacity="0.5"/>
+    <rect x="${L - 1.9}" y="-2.4" width="1.3" height="2.4" rx="0.2" fill="#7a6a50" stroke="${INK}" stroke-width="0.45"/>
+  </symbol>`;
+}
+
+// Sheds — environmental seasoning, smaller and simpler than garages.
+function shedS0() {
+  const w = 4, h = 2.4, L = w / 2;
+  return `
+  <symbol id="bldg.res.shed.s0" overflow="visible">
+    <rect x="${-L}" y="${-h}" width="${w}" height="${h}" fill="var(--body,#cbb896)" stroke="${INK}" stroke-width="0.9" stroke-linejoin="round"/>
+    <path d="${P([[-L - 0.5, -h], [0, -h - 1.4], [L + 0.5, -h]])}" fill="var(--roof,#7d6b5a)" stroke="${INK}" stroke-width="0.9" stroke-linejoin="round"/>
+    <rect x="-0.8" y="-1.9" width="1.6" height="1.9" rx="0.2" fill="var(--door,#8a7355)" stroke="${INK}" stroke-width="0.5"/>
+    <path d="M0 -1.9 V0" stroke="${INK}" stroke-width="0.3" opacity="0.6"/>
+  </symbol>`;
+}
+function shedS1() {
+  const w = 4.4, h = 2.2, L = w / 2;
+  return `
+  <symbol id="bldg.res.shed.s1" overflow="visible">
+    <rect x="${-L}" y="${-h}" width="${w}" height="${h}" fill="var(--body,#b9b09a)" stroke="${INK}" stroke-width="0.9" stroke-linejoin="round"/>
+    <path d="${P([[-L - 0.5, -h], [L + 0.5, -h - 1.1], [L + 0.5, -h]])}" fill="var(--roof,#6e6250)" stroke="${INK}" stroke-width="0.9" stroke-linejoin="round"/>
+    <rect x="${-L + 0.6}" y="-1.7" width="1.4" height="1.7" rx="0.2" fill="var(--door,#8a7355)" stroke="${INK}" stroke-width="0.5"/>
+    <rect x="${L - 1.7}" y="-1.6" width="1.1" height="0.9" rx="0.15" fill="#fdf3c9" stroke="${INK}" stroke-width="0.4"/>
+  </symbol>`;
+}
+
+// Rowhouse — 3 attached residential units, shared walls, small stoops.
+function rowhouseS0() {
+  const w = 16.5, h = 10.5, d = 10, L = w / 2;
+  const [ox, oy] = dxy(d);
+  const unitW = w / 3;
+  const units = [0, 1, 2].map((i) => {
+    const x0 = -L + i * unitW;
+    return `
+    <rect x="${x0}" y="${-h}" width="${unitW}" height="${h}" fill="var(--u${i},#d9a8a0)" stroke="${INK}" stroke-width="0.9"/>
+    ${win(x0 + 0.9, -9.3, 2, 2.5, 0.5)}${win(x0 + unitW - 2.9, -9.3, 2, 2.5, 0.5)}
+    ${win(x0 + 0.9, -5.3, 2, 2.4, 0.5)}
+    <rect x="${x0 + unitW - 2.9}" y="-4" width="2" height="4" rx="0.3" fill="var(--door,#6b4530)" stroke="${INK}" stroke-width="0.55"/>
+    <rect x="${x0 + unitW - 3.3}" y="-0.6" width="2.8" height="0.9" fill="#cfc4ad" stroke="${INK}" stroke-width="0.45"/>`;
+  }).join('');
+  return `
+  <symbol id="bldg.res.rowhouse.s0" overflow="visible">
+    <path d="${P([[L, 0], [L, -h], [L + ox, -h + oy], [L + ox, oy]])}" fill="var(--side,#a8766a)" stroke="${INK}" stroke-width="${LINE}" stroke-linejoin="round"/>
+    <path d="${P([[-L, -h], [L, -h], [L + ox, -h + oy], [-L + ox, -h + oy]])}" fill="var(--rooftop,#8d8577)" stroke="${INK}" stroke-width="${LINE}" stroke-linejoin="round"/>
+    ${units}
+    <rect x="${-L - 0.6}" y="${-h - 0.9}" width="${w + 1.2}" height="1.5" rx="0.35" fill="var(--trim,#8a5a44)" stroke="${INK}" stroke-width="0.8"/>
+  </symbol>`;
+}
+
+// Conifers — yard/park dressing only (zero street conifers in the city data).
+function coniferS0() { // spruce: stacked tiers, dark blue-green
+  return `
+  <symbol id="tree.conifer.s0" overflow="visible">
+    <rect x="-0.55" y="-1.9" width="1.1" height="1.9" rx="0.3" fill="#6e4f38" stroke="${INK}" stroke-width="0.5"/>
+    <path d="${P([[-3.6, -1.8], [3.6, -1.8], [0, -6]])}" fill="#3d7261" stroke="${INK}" stroke-width="1.05" stroke-linejoin="round"/>
+    <path d="${P([[-3, -4.8], [3, -4.8], [0, -8.6]])}" fill="#447e6a" stroke="${INK}" stroke-width="1.05" stroke-linejoin="round"/>
+    <path d="${P([[-2.3, -7.6], [2.3, -7.6], [0, -11.4]])}" fill="#4f8f77" stroke="${INK}" stroke-width="1.05" stroke-linejoin="round"/>
+    <path d="M-2 -3.2 h1.4 M0.8 -6.1 h1.3 M-1.4 -8.8 h1.1" stroke="#2c5a4a" stroke-width="0.5" opacity="0.8"/>
+  </symbol>`;
+}
+function coniferS1() { // pine: bare trunk, irregular asymmetric foliage clouds
+  return `
+  <symbol id="tree.conifer.s1" overflow="visible">
+    <path d="M-0.6 0 C-0.4 -2.4 -0.5 -4.4 -0.2 -6.6 L0.6 -6.6 C0.5 -4.4 0.6 -2.4 0.8 0 Z" fill="#7a5a3c" stroke="${INK}" stroke-width="0.55"/>
+    <path d="M0 -6 C-1.4 -6.8 -2.6 -7 -3.6 -8.2 M0.2 -6.6 C1.2 -7.6 2.2 -7.8 3 -8.8" fill="none" stroke="#7a5a3c" stroke-width="0.6"/>
+    <ellipse cx="-3.6" cy="-8.9" rx="2.3" ry="1.3" fill="#527a4a" stroke="${INK}" stroke-width="0.85"/>
+    <ellipse cx="2.9" cy="-9.4" rx="2.1" ry="1.2" fill="#5a854f" stroke="${INK}" stroke-width="0.85"/>
+    <ellipse cx="-0.4" cy="-11.2" rx="2.6" ry="1.4" fill="#639158" stroke="${INK}" stroke-width="0.85"/>
+    <ellipse cx="-1.4" cy="-11.7" rx="0.9" ry="0.45" fill="#8fb97e"/>
+  </symbol>`;
+}
+function coniferS2() { // arborvitae: dense narrow column
+  return `
+  <symbol id="tree.conifer.s2" overflow="visible">
+    <path d="M0 -7.6 C1.3 -7 1.7 -5.2 1.7 -3.4 C1.7 -1.4 1 -0.2 0 0 C-1 -0.2 -1.7 -1.4 -1.7 -3.4 C-1.7 -5.2 -1.3 -7 0 -7.6 Z"
+      fill="#4a7d52" stroke="${INK}" stroke-width="0.95" stroke-linejoin="round"/>
+    <path d="M-0.5 -6.2 C-0.7 -4.6 -0.7 -2.6 -0.5 -1 M0.5 -6 C0.7 -4.6 0.7 -2.8 0.5 -1.2" fill="none" stroke="#35603c" stroke-width="0.45" opacity="0.8"/>
+    <path d="M-0.9 -6.6 C-0.4 -7.3 0.4 -7.4 0.8 -6.9 C0.3 -7 -0.4 -6.9 -0.9 -6.6 Z" fill="#6ea470"/>
+  </symbol>`;
+}
+
+// Flowering s1 — looser multi-cluster crown with visible branchlets.
+function floweringS1() {
+  const puff = (x, y, r, tone) => `<circle cx="${x}" cy="${y}" r="${r}" fill="${tone}" stroke="${INK}" stroke-width="0.75"/>`;
+  return `
+  <symbol id="tree.flowering.s1" overflow="visible">
+    <path d="M-0.5 0 L-0.35 -2 H0.35 L0.5 0 Z" fill="#6b4530" stroke="${INK}" stroke-width="0.5"/>
+    <path d="M0 -1.8 C-1.2 -2.6 -2.2 -2.8 -3 -4 M0 -2 C1.1 -2.8 2 -3 2.8 -4.2 M0 -2 C0.1 -3.2 0.2 -4 0.1 -5.2" fill="none" stroke="#6b4530" stroke-width="0.5"/>
+    ${puff(-3.1, -4.9, 1.3, '#f2a8c8')}${puff(2.9, -5, 1.25, '#f7c3da')}${puff(0.1, -6.2, 1.45, '#ef9cc0')}${puff(-1.4, -3.9, 0.95, '#f7c3da')}${puff(1.5, -3.7, 0.85, '#f2a8c8')}
+    <circle cx="-0.5" cy="-6.9" r="0.5" fill="#fde3f0"/>
+    <circle cx="-3.6" cy="-5.4" r="0.4" fill="#fde3f0"/>
+    <circle cx="2.4" cy="-4.4" r="0.35" fill="#ffffff"/>
   </symbol>`;
 }
 
@@ -529,7 +637,7 @@ function treeAsh() {
 function treeFlowering() {
   const puff = (x, y, r, tone) => `<circle cx="${x}" cy="${y}" r="${r}" fill="${tone}" stroke="${INK}" stroke-width="0.8"/>`;
   return `
-  <symbol id="tree.flowering" overflow="visible">
+  <symbol id="tree.flowering.s0" overflow="visible">
     <path d="M-0.55 0 L-0.4 -2.2 H0.4 L0.55 0 Z" fill="#6b4530" stroke="${INK}" stroke-width="0.5"/>
     <path d="M0 -2 C-0.8 -2.8 -1.6 -3 -2.2 -3.8 M0 -2.2 C0.8 -2.9 1.5 -3.1 2.1 -3.9" fill="none" stroke="#6b4530" stroke-width="0.5"/>
     ${puff(-2.2, -4.6, 1.7, '#f2a8c8')}${puff(2.1, -4.7, 1.6, '#ef9cc0')}${puff(0, -6.3, 1.8, '#f2a8c8')}
@@ -583,9 +691,11 @@ export function allSymbols() {
   return [
     polishFlatS0(), polishFlatS1(), polishFlatS2(), polishFlatS3(),
     bungalowS0(), bungalowS1(), bungalowS2(),
-    apartmentS0(), apartmentS1(), apartmentS2(), apartmentS3(), garage(),
+    apartmentS0(), apartmentS1(), apartmentS2(), apartmentS3(),
+    garageS0(), garageS1(), shedS0(), shedS1(), rowhouseS0(),
     storefront(), storefrontRow(), cornerTavern(), church(), school(),
-    treeLinden(), treeHoneylocust(), treeFlowering(), treeMaple(), treeAsh(), treeElm(), treeOak(),
+    treeLinden(), treeHoneylocust(), treeFlowering(), floweringS1(), treeMaple(), treeAsh(), treeElm(), treeOak(),
+    coniferS0(), coniferS1(), coniferS2(),
     car(), tennisCourt(), playgroundGround(),
   ].join('\n');
 }
@@ -595,6 +705,11 @@ export const STRUCT_COUNT = {
   'bldg.res.polish_flat': 4,
   'bldg.res.bungalow': 3,
   'bldg.res.apartment': 4,
+  'bldg.res.garage': 2,
+  'bldg.res.shed': 2,
+  'bldg.res.rowhouse': 1,
+  'tree.flowering': 2,
+  'tree.conifer': 3,
 };
 
 export const ASSET_META = {
@@ -602,6 +717,9 @@ export const ASSET_META = {
   'bldg.res.bungalow': { halfW: 7.5, cls: 'standing' },
   'bldg.res.apartment': { halfW: 9.5, cls: 'standing' },
   'bldg.res.garage': { halfW: 5, cls: 'standing' },
+  'bldg.res.shed': { halfW: 3, cls: 'standing' },
+  'bldg.res.rowhouse': { halfW: 10, cls: 'standing' },
+  'tree.conifer': { halfW: 3.6, cls: 'tree' },
   'bldg.com.storefront': { halfW: 7, cls: 'standing' },
   'bldg.com.storefront_row': { halfW: 12.5, cls: 'standing' },
   'bldg.com.corner_tavern': { halfW: 8, cls: 'standing' },

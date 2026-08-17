@@ -5,7 +5,7 @@
 import { readFileSync, writeFileSync, mkdirSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
-import { allSymbols, ASSET_META, STRUCT_COUNT, INK, HOUSE_BODIES, HOUSE_ROOFS, SHOP_BODIES, AWNINGS, CAR_BODIES } from './assets.mjs';
+import { allSymbols, ASSET_META, STRUCT_COUNT, TREATMENT_COUNT, INK, HOUSE_BODIES, HOUSE_ROOFS, SHOP_BODIES, AWNINGS, CAR_BODIES } from './assets.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, '..');
@@ -17,6 +17,8 @@ const SLICES = {
   pulaski: { S: 43.0518, W: -87.8992, N: 43.0566, E: -87.8934, out: 'style-c-slice' },
   // Cass Street Park quadrant (vocabulary-scaling test: unseen ground)
   cass: { S: 43.0493, W: -87.9035, N: 43.0541, E: -87.8975, out: 'style-c-slice-b' },
+  // Phase B Test A: the Brady Street commercial spine + Wolski's + transitions
+  brady: { S: 43.0517, W: -87.8998, N: 43.0558, E: -87.8933, out: 'style-c-brady' },
 };
 const SLICE = SLICES[process.argv[2] ?? 'pulaski'];
 if (!SLICE) throw new Error(`unknown slice: ${process.argv[2]}`);
@@ -92,7 +94,8 @@ const longestEdgeAngle = (g) => {
 const scene = []; // {assetId, variant, x, y, scale, rotation, layer, priority, name?}
 const placedB = []; // buildings
 const placedT = []; // trees
-const canPlaceB = (x, y, r) => placedB.every((p) => Math.hypot(p.x - x, p.y - y) >= (p.r + r) * 1.05);
+// commercial frontage packs tighter than detached residential (street-wall rhythm)
+const canPlaceB = (x, y, r, f = 1.05) => placedB.every((p) => Math.hypot(p.x - x, p.y - y) >= (p.r + r) * f);
 const canPlaceT = (x, y) =>
   placedT.every((p) => Math.hypot(p.x - x, p.y - y) >= 7) &&
   placedB.every((p) => Math.hypot(p.x - x, p.y - y) >= 4.5); // terrace trees may front the houses
@@ -131,7 +134,12 @@ const classify = (el) => {
   const isBar = name && [...bars].some((k) => name.toLowerCase().includes(k));
   if (isBar) return { assetId: 'bldg.com.corner_tavern', priority: 2, s: 1.3, name };
   if (b === 'retail' || b === 'commercial') {
-    return { assetId: 'bldg.com.storefront', priority: 3, s: Math.min(1.15, 0.85 + area / 900), name };
+    // multi-level commercial = mixed-use (shop below, homes above); the urban
+    // bridge between storefront and apartment fabric
+    if (lv >= 3 || (lv >= 2 && area > 180)) {
+      return { assetId: 'bldg.com.mixed_use', priority: 2, s: Math.min(1.15, 0.9 + lv * 0.05), name, lv };
+    }
+    return { assetId: 'bldg.com.storefront', priority: 4, s: Math.min(1.15, 0.85 + area / 900), name };
   }
   if (b === 'terrace') {
     return { assetId: 'bldg.res.rowhouse', priority: 3, s: Math.max(0.95, Math.min(1.25, Math.sqrt(area) / 13)), name, structure: 0 };
@@ -160,6 +168,33 @@ const classify = (el) => {
   }
   return null;
 };
+
+// POI category index: business category influences storefront TREATMENT
+// (awning/sign/window/patio character), never a floating icon
+const poiCats = [];
+for (const el of raw.pois.elements ?? []) {
+  const t = el.tags ?? {};
+  const c = el.center ?? el;
+  if (c.lat == null) continue;
+  let cat = null;
+  if (['bar', 'pub', 'biergarten'].includes(t.amenity)) { cat = 'bar'; }
+  else if (['restaurant', 'fast_food'].includes(t.amenity)) cat = 'food';
+  else if (['cafe', 'ice_cream'].includes(t.amenity)) cat = 'cafe';
+  else if (t.shop === 'bakery' || t.shop === 'confectionery') cat = 'bakery';
+  else if (['hairdresser', 'beauty', 'tattoo', 'dry_cleaning'].includes(t.shop)) cat = 'salon';
+  else if (t.shop) cat = 'shop';
+  if (cat) poiCats.push({ x: X(c.lon), y: Y(c.lat), cat, name: t.name });
+}
+const catNear = (x, y, r = 20) => {
+  let best = null;
+  for (const p of poiCats) {
+    const d = Math.hypot(p.x - x, p.y - y);
+    if (d < r && (!best || d < best.d)) best = { d, cat: p.cat };
+  }
+  return best?.cat ?? null;
+};
+// category -> storefront treatment index (t0..t5, see assets.mjs)
+const CAT_TREATMENT = { bakery: 0, food: 0, salon: 1, shop: 2, cafe: 3, bar: 5 };
 
 // alley geometry up front so garages can face their alley
 const alleyPts = [];
@@ -199,6 +234,7 @@ for (const el of raw.buildings.elements ?? []) {
       out.push({
         assetId: 'bldg.com.storefront_row', priority: 3,
         s: 1, name: undefined,
+        structure: xs.length - 2, // s0 = 2-bay, s1 = 3-bay
         x: xs.reduce((s2, v) => s2 + v.x, 0) / xs.length,
         y: xs.reduce((s2, v) => s2 + v.y, 0) / xs.length,
         area: xs.reduce((s2, v) => s2 + v.area, 0),
@@ -208,9 +244,22 @@ for (const el of raw.buildings.elements ?? []) {
   }
   candidates = [...rest, ...out];
 }
+// rule: a bar POI in a commercial building near an intersection promotes the
+// building to a corner tavern (the Brady Street pattern) — before the sort so
+// taverns claim their corners first
+for (const c of candidates) {
+  if ((c.assetId !== 'bldg.com.storefront' && c.assetId !== 'bldg.com.mixed_use') || distToNode(c.x, c.y) >= 34) continue;
+  let bar = null;
+  for (const p of poiCats) {
+    if (p.cat !== 'bar') continue;
+    const d = Math.hypot(p.x - c.x, p.y - c.y);
+    if (d < 17 && (!bar || d < bar.d)) bar = { d, name: p.name };
+  }
+  if (bar) { c.assetId = 'bldg.com.corner_tavern'; c.priority = 2; c.s = Math.max(c.s, 1.15); c.name = c.name ?? bar.name; c.structure = 0; }
+}
 candidates.sort((a, b) => a.priority - b.priority || b.area - a.area);
 
-const NODE_CLEAR = { 0: 26, 1: 26, 2: 21, 3: 23, 4: 26, 5: 24, 6: 22 };
+const NODE_CLEAR = { 0: 26, 1: 26, 2: 20, 3: 22, 4: 20, 5: 24, 6: 22 };
 let garages = 0;
 for (const c of candidates) {
   const meta = ASSET_META[c.assetId];
@@ -223,7 +272,7 @@ for (const c of candidates) {
   else if (road.d > 34 && c.priority >= 5) continue; // deep-interior houses: negative space
   if (distToNode(x, y) < NODE_CLEAR[c.priority]) continue;
   const r = meta.halfW * c.s;
-  if (!canPlaceB(x, y, r)) continue;
+  if (!canPlaceB(x, y, r, c.assetId.startsWith('bldg.com') ? 0.82 : 1.05)) continue;
   if (c.assetId === 'bldg.res.garage' || c.assetId === 'bldg.res.shed') {
     // an outbuilding alone in a field reads as debris — only place near a building
     if (!placedB.some((p) => Math.hypot(p.x - x, p.y - y) < 24)) continue;
@@ -237,6 +286,9 @@ for (const c of candidates) {
   if (c.assetId === 'bldg.res.apartment') {
     structure = (c.lv ?? 0) >= 4 ? 3 : distToNode(x, y) < 36 ? 2 : c.area > 280 ? 1 : 0;
   }
+  if (c.assetId === 'bldg.com.mixed_use') {
+    structure = distToNode(x, y) < 34 ? 2 : (c.lv ?? 0) >= 3 ? 1 : 0;
+  }
   // garages near a mapped alley become the flat-roof alley type, facing it
   let garageFacing;
   if (c.assetId === 'bldg.res.garage' && alleyPts.length) {
@@ -247,9 +299,12 @@ for (const c of candidates) {
   // facing: screen-space bearing toward the frontage this asset addresses
   // (corner assets face their intersection, street assets face the street)
   let facing = garageFacing;
-  if (c.assetId.startsWith('bldg.com') || (c.assetId === 'bldg.res.apartment' && structure === 2)) {
+  const isCornerForm = c.assetId === 'bldg.com.corner_tavern' ||
+    (c.assetId === 'bldg.res.apartment' && structure === 2) ||
+    (c.assetId === 'bldg.com.mixed_use' && structure === 2);
+  if (c.assetId.startsWith('bldg.com') || isCornerForm) {
     let tx, ty;
-    if (c.assetId === 'bldg.com.corner_tavern' || structure === 2) {
+    if (isCornerForm) {
       let best = null;
       for (const n2 of nodes) { const d2 = Math.hypot(n2.x - x, n2.y - y); if (!best || d2 < best.d) best = { d: d2, x: n2.x, y: n2.y }; }
       tx = best.x; ty = best.y;
@@ -257,7 +312,18 @@ for (const c of candidates) {
     facing = Math.round(Math.atan2(ty - y, tx - x) * 180 / Math.PI);
   }
   const h = hash01(x, y);
-  commitB({ assetId: c.assetId, variant: Math.floor(h * 96), structure, facing, x: +x.toFixed(1), y: +y.toFixed(1), scale: +c.s.toFixed(2), rotation: 0, layer: 'standing', priority: c.priority, name: c.name, src: 'osm:building' }, r);
+  // commercial treatment from business category (variant = treatment*16 + palette)
+  let variant = Math.floor(h * 96);
+  const nT = TREATMENT_COUNT[c.assetId];
+  if (nT) {
+    const cat = catNear(x, y);
+    const t = c.assetId === 'bldg.com.storefront'
+      ? (cat != null ? CAT_TREATMENT[cat] : Math.floor(h * nT))
+      : Math.floor(h * nT); // row layouts rotate; bays inside already vary
+    commitB({ assetId: c.assetId, variant: (t % nT) * 16 + Math.floor(h * 16), structure, facing, x: +x.toFixed(1), y: +y.toFixed(1), scale: +c.s.toFixed(2), rotation: 0, layer: 'standing', priority: c.priority, name: c.name, cat: cat ?? undefined, src: 'osm:building' }, r);
+    continue;
+  }
+  commitB({ assetId: c.assetId, variant, structure, facing, x: +x.toFixed(1), y: +y.toFixed(1), scale: +c.s.toFixed(2), rotation: 0, layer: 'standing', priority: c.priority, name: c.name, src: 'osm:building' }, r);
 }
 
 // ---- 3. trees: real city inventory, species -> asset, DBH -> scale ----
@@ -406,13 +472,15 @@ const variantStyle = (e) => {
     const roof = HOUSE_ROOFS[(v + 2) % HOUSE_ROOFS.length];
     return `--body:${body};--roof:${roof};--roofdark:${shade(roof, -26)};--side:${shade(body, -18)}`;
   }
-  if (e.assetId === 'bldg.com.storefront') {
-    const body = SHOP_BODIES[v % SHOP_BODIES.length];
-    return `--body:${body};--side:${shade(body, -22)};--awn:${AWNINGS[v % AWNINGS.length]}`;
+  if (e.assetId === 'bldg.com.storefront' || e.assetId === 'bldg.com.mixed_use') {
+    const p = v % 16;
+    const body = SHOP_BODIES[p % SHOP_BODIES.length];
+    return `--body:${body};--side:${shade(body, -22)};--awn:${AWNINGS[p % AWNINGS.length]}`;
   }
   if (e.assetId === 'bldg.com.storefront_row') {
-    const b = (i) => SHOP_BODIES[(v + i * 2) % SHOP_BODIES.length];
-    const a = (i) => AWNINGS[(v + i * 3 + 1) % AWNINGS.length];
+    const p = v % 16;
+    const b = (i) => SHOP_BODIES[(p + i * 2) % SHOP_BODIES.length];
+    const a = (i) => AWNINGS[(p + i * 3 + 1) % AWNINGS.length];
     return `--b0:${b(0)};--b1:${b(1)};--b2:${b(2)};--a0:${a(0)};--a1:${a(1)};--a2:${a(2)};--side:${shade(b(2), -22)}`;
   }
   if (e.assetId === 'bldg.res.rowhouse') {
@@ -426,7 +494,13 @@ const variantStyle = (e) => {
   }
   return '';
 };
-const symbolRef = (e) => (STRUCT_COUNT[e.assetId] ? `${e.assetId}.s${(e.structure ?? 0) % STRUCT_COUNT[e.assetId]}` : e.assetId);
+const symbolRef = (e) => {
+  const nT = TREATMENT_COUNT[e.assetId];
+  const t = nT ? Math.floor((e.variant ?? 0) / 16) % nT : 0;
+  if (e.assetId === 'bldg.com.storefront') return `${e.assetId}.t${t}`;
+  if (e.assetId === 'bldg.com.storefront_row') return `${e.assetId}.s${(e.structure ?? 0) % 2}.t${t}`;
+  return STRUCT_COUNT[e.assetId] ? `${e.assetId}.s${(e.structure ?? 0) % STRUCT_COUNT[e.assetId]}` : e.assetId;
+};
 function shade(hex, amt) {
   const n = parseInt(hex.slice(1), 16);
   const c = (x) => Math.max(0, Math.min(255, x + amt));

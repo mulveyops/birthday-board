@@ -10,14 +10,15 @@
   "ground.playground": 1,
   "ground.tennis": 1,
   "bldg.civ.church": 2,
+  "bldg.com.mixed_use": 11,
+  "bldg.com.corner_tavern": 1,
   "bldg.res.apartment": 35,
-  "bldg.com.storefront": 15,
-  "bldg.com.storefront_row": 7,
   "bldg.res.rowhouse": 3,
-  "bldg.res.polish_flat": 83,
-  "bldg.res.bungalow": 17,
+  "bldg.com.storefront_row": 2,
+  "bldg.com.storefront": 14,
+  "bldg.res.polish_flat": 80,
+  "bldg.res.bungalow": 18,
   "bldg.res.garage": 6,
-  "bldg.res.shed": 1,
   "tree.maple": 63,
   "tree.elm": 17,
   "tree.flowering": 38,
@@ -32,7 +33,7 @@
   "prop.fence": 32,
   "prop.wall": 5,
   "prop.retaining_wall": 17,
-  "prop.walk": 52
+  "prop.walk": 49
  },
  "scene": [
   {
@@ -81,6 +82,166 @@
    "layer": "standing",
    "priority": 0,
    "name": "Old Mount Zion New Jerusalem",
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.com.mixed_use",
+   "variant": 5,
+   "structure": 2,
+   "facing": -129,
+   "x": 362.4,
+   "y": 169.7,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 2,
+   "name": "Glorioso's Italian Market",
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.com.mixed_use",
+   "variant": 32,
+   "structure": 0,
+   "facing": -90,
+   "x": 492.2,
+   "y": 173.4,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 2,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.com.mixed_use",
+   "variant": 29,
+   "structure": 2,
+   "facing": 38,
+   "x": 104.6,
+   "y": 128.1,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 2,
+   "name": "Casablanca",
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.com.mixed_use",
+   "variant": 5,
+   "structure": 1,
+   "facing": 90,
+   "x": 77.7,
+   "y": 43.8,
+   "scale": 1.05,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 2,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.com.mixed_use",
+   "variant": 18,
+   "structure": 0,
+   "facing": -179,
+   "x": 51.5,
+   "y": 514.7,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 2,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.com.mixed_use",
+   "variant": 44,
+   "structure": 0,
+   "facing": 90,
+   "x": 399.7,
+   "y": 129.2,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 2,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.com.mixed_use",
+   "variant": 10,
+   "structure": 1,
+   "facing": -89,
+   "x": 177,
+   "y": 168.3,
+   "scale": 1.05,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 2,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.com.corner_tavern",
+   "variant": 72,
+   "structure": 0,
+   "facing": -144,
+   "x": 56.4,
+   "y": 165.8,
+   "scale": 1.15,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 2,
+   "name": "Angelo's Piano Lounge",
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.com.mixed_use",
+   "variant": 18,
+   "structure": 0,
+   "facing": -179,
+   "x": 484.9,
+   "y": 99.8,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 2,
+   "name": "Three Holy Women Parish Offices",
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.com.mixed_use",
+   "variant": 84,
+   "structure": 2,
+   "facing": 40,
+   "x": 323.2,
+   "y": 130.1,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 2,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.com.mixed_use",
+   "variant": 42,
+   "structure": 1,
+   "facing": -90,
+   "x": 396.7,
+   "y": 170.2,
+   "scale": 1.05,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 2,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.com.mixed_use",
+   "variant": 36,
+   "structure": 1,
+   "facing": -90,
+   "x": 510.1,
+   "y": 171,
+   "scale": 1.05,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 2,
    "src": "osm:building"
   },
   {
@@ -136,46 +297,6 @@
    "src": "osm:building"
   },
   {
-   "assetId": "bldg.com.storefront",
-   "variant": 48,
-   "structure": 0,
-   "facing": -89,
-   "x": 362.4,
-   "y": 170,
-   "scale": 1.15,
-   "rotation": 0,
-   "layer": "standing",
-   "priority": 3,
-   "name": "Glorioso's Italian Market",
-   "src": "osm:building"
-  },
-  {
-   "assetId": "bldg.com.storefront_row",
-   "variant": 82,
-   "structure": 0,
-   "facing": -90,
-   "x": 501.1,
-   "y": 173.5,
-   "scale": 1,
-   "rotation": 0,
-   "layer": "standing",
-   "priority": 3,
-   "src": "osm:building"
-  },
-  {
-   "assetId": "bldg.com.storefront_row",
-   "variant": 7,
-   "structure": 0,
-   "facing": 91,
-   "x": 389.9,
-   "y": 127.9,
-   "scale": 1,
-   "rotation": 0,
-   "layer": "standing",
-   "priority": 3,
-   "src": "osm:building"
-  },
-  {
    "assetId": "bldg.res.apartment",
    "variant": 14,
    "structure": 3,
@@ -214,19 +335,6 @@
    "src": "osm:building"
   },
   {
-   "assetId": "bldg.com.storefront_row",
-   "variant": 7,
-   "structure": 0,
-   "facing": -179,
-   "x": 52.3,
-   "y": 523.6,
-   "scale": 1,
-   "rotation": 0,
-   "layer": "standing",
-   "priority": 3,
-   "src": "osm:building"
-  },
-  {
    "assetId": "bldg.res.apartment",
    "variant": 13,
    "structure": 1,
@@ -236,20 +344,6 @@
    "rotation": 0,
    "layer": "standing",
    "priority": 3,
-   "src": "osm:building"
-  },
-  {
-   "assetId": "bldg.com.storefront",
-   "variant": 18,
-   "structure": 0,
-   "facing": 90,
-   "x": 104.6,
-   "y": 127.8,
-   "scale": 1.15,
-   "rotation": 0,
-   "layer": "standing",
-   "priority": 3,
-   "name": "Casablanca",
    "src": "osm:building"
   },
   {
@@ -305,32 +399,6 @@
    "src": "osm:building"
   },
   {
-   "assetId": "bldg.com.storefront_row",
-   "variant": 81,
-   "structure": 0,
-   "facing": -89,
-   "x": 186.9,
-   "y": 170.9,
-   "scale": 1,
-   "rotation": 0,
-   "layer": "standing",
-   "priority": 3,
-   "src": "osm:building"
-  },
-  {
-   "assetId": "bldg.com.storefront",
-   "variant": 83,
-   "structure": 0,
-   "facing": 90,
-   "x": 77.7,
-   "y": 43.7,
-   "scale": 1.15,
-   "rotation": 0,
-   "layer": "standing",
-   "priority": 3,
-   "src": "osm:building"
-  },
-  {
    "assetId": "bldg.res.apartment",
    "variant": 29,
    "structure": 2,
@@ -358,16 +426,14 @@
   },
   {
    "assetId": "bldg.res.apartment",
-   "variant": 40,
-   "structure": 2,
-   "facing": -148,
-   "x": 488.9,
-   "y": 83.2,
-   "scale": 1.03,
+   "variant": 84,
+   "structure": 3,
+   "x": 209.1,
+   "y": 179.8,
+   "scale": 1.09,
    "rotation": 0,
    "layer": "standing",
    "priority": 3,
-   "name": "Hedwig House Apartments",
    "src": "osm:building"
   },
   {
@@ -377,19 +443,6 @@
    "x": 261.5,
    "y": 362.8,
    "scale": 1.09,
-   "rotation": 0,
-   "layer": "standing",
-   "priority": 3,
-   "src": "osm:building"
-  },
-  {
-   "assetId": "bldg.com.storefront_row",
-   "variant": 23,
-   "structure": 0,
-   "facing": -89,
-   "x": 318.7,
-   "y": 172.1,
-   "scale": 1,
    "rotation": 0,
    "layer": "standing",
    "priority": 3,
@@ -448,7 +501,7 @@
   },
   {
    "assetId": "bldg.com.storefront_row",
-   "variant": 5,
+   "variant": 0,
    "structure": 0,
    "facing": -90,
    "x": 431.3,
@@ -457,20 +510,7 @@
    "rotation": 0,
    "layer": "standing",
    "priority": 3,
-   "src": "osm:building"
-  },
-  {
-   "assetId": "bldg.com.storefront",
-   "variant": 81,
-   "structure": 0,
-   "facing": -179,
-   "x": 56.2,
-   "y": 241.2,
-   "scale": 1.15,
-   "rotation": 0,
-   "layer": "standing",
-   "priority": 3,
-   "name": "Lucky Liu's",
+   "cat": "shop",
    "src": "osm:building"
   },
   {
@@ -511,45 +551,6 @@
    "src": "osm:building"
   },
   {
-   "assetId": "bldg.com.storefront",
-   "variant": 17,
-   "structure": 0,
-   "facing": -179,
-   "x": 74.3,
-   "y": 470,
-   "scale": 1.15,
-   "rotation": 0,
-   "layer": "standing",
-   "priority": 3,
-   "src": "osm:building"
-  },
-  {
-   "assetId": "bldg.com.storefront",
-   "variant": 22,
-   "structure": 0,
-   "facing": -179,
-   "x": 55.8,
-   "y": 165.7,
-   "scale": 1.15,
-   "rotation": 0,
-   "layer": "standing",
-   "priority": 3,
-   "src": "osm:building"
-  },
-  {
-   "assetId": "bldg.com.storefront",
-   "variant": 26,
-   "structure": 0,
-   "facing": -89,
-   "x": 161.3,
-   "y": 168.2,
-   "scale": 1.15,
-   "rotation": 0,
-   "layer": "standing",
-   "priority": 3,
-   "src": "osm:building"
-  },
-  {
    "assetId": "bldg.res.apartment",
    "variant": 81,
    "structure": 2,
@@ -577,22 +578,8 @@
    "src": "osm:building"
   },
   {
-   "assetId": "bldg.com.storefront",
-   "variant": 33,
-   "structure": 0,
-   "facing": 91,
-   "x": 79.2,
-   "y": 122.1,
-   "scale": 1.13,
-   "rotation": 0,
-   "layer": "standing",
-   "priority": 3,
-   "name": "Zayna's Pizza",
-   "src": "osm:building"
-  },
-  {
    "assetId": "bldg.com.storefront_row",
-   "variant": 6,
+   "variant": 1,
    "structure": 0,
    "facing": 91,
    "x": 288.2,
@@ -601,6 +588,7 @@
    "rotation": 0,
    "layer": "standing",
    "priority": 3,
+   "cat": "salon",
    "src": "osm:building"
   },
   {
@@ -717,32 +705,6 @@
    "src": "osm:building"
   },
   {
-   "assetId": "bldg.com.storefront",
-   "variant": 34,
-   "structure": 0,
-   "facing": 90,
-   "x": 412.1,
-   "y": 131,
-   "scale": 1.03,
-   "rotation": 0,
-   "layer": "standing",
-   "priority": 3,
-   "src": "osm:building"
-  },
-  {
-   "assetId": "bldg.com.storefront",
-   "variant": 26,
-   "structure": 0,
-   "facing": -90,
-   "x": 396.7,
-   "y": 169.8,
-   "scale": 1.03,
-   "rotation": 0,
-   "layer": "standing",
-   "priority": 3,
-   "src": "osm:building"
-  },
-  {
    "assetId": "bldg.res.apartment",
    "variant": 65,
    "structure": 0,
@@ -762,58 +724,6 @@
    "x": 420.4,
    "y": 206.7,
    "scale": 1.03,
-   "rotation": 0,
-   "layer": "standing",
-   "priority": 3,
-   "src": "osm:building"
-  },
-  {
-   "assetId": "bldg.com.storefront",
-   "variant": 36,
-   "structure": 0,
-   "facing": -89,
-   "x": 329.9,
-   "y": 85.5,
-   "scale": 1.01,
-   "rotation": 0,
-   "layer": "standing",
-   "priority": 3,
-   "src": "osm:building"
-  },
-  {
-   "assetId": "bldg.com.storefront",
-   "variant": 76,
-   "structure": 0,
-   "facing": 91,
-   "x": 178.6,
-   "y": 129.1,
-   "scale": 1.01,
-   "rotation": 0,
-   "layer": "standing",
-   "priority": 3,
-   "src": "osm:building"
-  },
-  {
-   "assetId": "bldg.com.storefront",
-   "variant": 7,
-   "structure": 0,
-   "facing": -89,
-   "x": 283.3,
-   "y": 168.7,
-   "scale": 0.98,
-   "rotation": 0,
-   "layer": "standing",
-   "priority": 3,
-   "src": "osm:building"
-  },
-  {
-   "assetId": "bldg.com.storefront",
-   "variant": 59,
-   "structure": 0,
-   "facing": -179,
-   "x": 485.9,
-   "y": 56,
-   "scale": 0.98,
    "rotation": 0,
    "layer": "standing",
    "priority": 3,
@@ -845,7 +755,187 @@
   },
   {
    "assetId": "bldg.com.storefront",
-   "variant": 10,
+   "variant": 1,
+   "structure": 0,
+   "facing": 91,
+   "x": 380.1,
+   "y": 126.7,
+   "scale": 1.15,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 4,
+   "name": "Emperor of China",
+   "cat": "food",
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.com.storefront",
+   "variant": 13,
+   "structure": 0,
+   "facing": -179,
+   "x": 56.2,
+   "y": 241.2,
+   "scale": 1.15,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 4,
+   "name": "Lucky Liu's",
+   "cat": "food",
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.com.storefront",
+   "variant": 18,
+   "structure": 0,
+   "facing": -179,
+   "x": 74.3,
+   "y": 470,
+   "scale": 1.15,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 4,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.com.storefront",
+   "variant": 36,
+   "structure": 0,
+   "facing": -89,
+   "x": 161.3,
+   "y": 168.2,
+   "scale": 1.15,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 4,
+   "cat": "shop",
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.com.storefront",
+   "variant": 5,
+   "structure": 0,
+   "facing": 91,
+   "x": 79.2,
+   "y": 122.1,
+   "scale": 1.13,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 4,
+   "name": "Zayna's Pizza",
+   "cat": "food",
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.com.storefront",
+   "variant": 91,
+   "structure": 0,
+   "facing": 91,
+   "x": 49.7,
+   "y": 532.1,
+   "scale": 1.03,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 4,
+   "cat": "bar",
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.com.storefront",
+   "variant": 53,
+   "structure": 0,
+   "facing": 90,
+   "x": 412.1,
+   "y": 131,
+   "scale": 1.03,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 4,
+   "cat": "cafe",
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.com.storefront",
+   "variant": 53,
+   "structure": 0,
+   "facing": -89,
+   "x": 196.8,
+   "y": 168,
+   "scale": 1.02,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 4,
+   "cat": "cafe",
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.com.storefront",
+   "variant": 38,
+   "structure": 0,
+   "facing": -89,
+   "x": 329.9,
+   "y": 85.5,
+   "scale": 1.01,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 4,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.com.storefront",
+   "variant": 28,
+   "structure": 0,
+   "facing": 91,
+   "x": 178.6,
+   "y": 129.1,
+   "scale": 1.01,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 4,
+   "cat": "salon",
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.com.storefront",
+   "variant": 56,
+   "structure": 0,
+   "facing": -89,
+   "x": 314.6,
+   "y": 169,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 4,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.com.storefront",
+   "variant": 1,
+   "structure": 0,
+   "facing": -89,
+   "x": 283.3,
+   "y": 168.7,
+   "scale": 0.98,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 4,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.com.storefront",
+   "variant": 57,
+   "structure": 0,
+   "facing": -179,
+   "x": 485.9,
+   "y": 56,
+   "scale": 0.98,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 4,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.com.storefront",
+   "variant": 1,
    "structure": 0,
    "facing": -179,
    "x": 51.8,
@@ -853,7 +943,7 @@
    "scale": 0.94,
    "rotation": 0,
    "layer": "standing",
-   "priority": 3,
+   "priority": 4,
    "src": "osm:building"
   },
   {
@@ -874,18 +964,6 @@
    "structure": 2,
    "x": 313.4,
    "y": 242,
-   "scale": 1.45,
-   "rotation": 0,
-   "layer": "standing",
-   "priority": 5,
-   "src": "osm:building"
-  },
-  {
-   "assetId": "bldg.res.polish_flat",
-   "variant": 58,
-   "structure": 2,
-   "x": 215.6,
-   "y": 169.9,
    "scale": 1.45,
    "rotation": 0,
    "layer": "standing",
@@ -1122,18 +1200,6 @@
   },
   {
    "assetId": "bldg.res.polish_flat",
-   "variant": 48,
-   "structure": 2,
-   "x": 214.2,
-   "y": 194.3,
-   "scale": 1.38,
-   "rotation": 0,
-   "layer": "standing",
-   "priority": 5,
-   "src": "osm:building"
-  },
-  {
-   "assetId": "bldg.res.polish_flat",
    "variant": 66,
    "structure": 2,
    "x": 114.4,
@@ -1246,6 +1312,18 @@
    "structure": 1,
    "x": 362.2,
    "y": 328.1,
+   "scale": 1.34,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.polish_flat",
+   "variant": 21,
+   "structure": 0,
+   "x": 212.5,
+   "y": 211.8,
    "scale": 1.34,
    "rotation": 0,
    "layer": "standing",
@@ -1423,18 +1501,6 @@
   },
   {
    "assetId": "bldg.res.polish_flat",
-   "variant": 52,
-   "structure": 1,
-   "x": 214,
-   "y": 222.6,
-   "scale": 1.26,
-   "rotation": 0,
-   "layer": "standing",
-   "priority": 5,
-   "src": "osm:building"
-  },
-  {
-   "assetId": "bldg.res.polish_flat",
    "variant": 40,
    "structure": 1,
    "x": 154.1,
@@ -1471,6 +1537,18 @@
   },
   {
    "assetId": "bldg.res.polish_flat",
+   "variant": 48,
+   "structure": 0,
+   "x": 211.1,
+   "y": 231.5,
+   "scale": 1.23,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.polish_flat",
    "variant": 89,
    "structure": 1,
    "x": 364.6,
@@ -1487,18 +1565,6 @@
    "structure": 1,
    "x": 448.6,
    "y": 47,
-   "scale": 1.23,
-   "rotation": 0,
-   "layer": "standing",
-   "priority": 5,
-   "src": "osm:building"
-  },
-  {
-   "assetId": "bldg.res.polish_flat",
-   "variant": 44,
-   "structure": 0,
-   "x": 210.8,
-   "y": 242.1,
    "scale": 1.23,
    "rotation": 0,
    "layer": "standing",
@@ -1819,18 +1885,6 @@
   },
   {
    "assetId": "bldg.res.polish_flat",
-   "variant": 18,
-   "structure": 1,
-   "x": 331.1,
-   "y": 128.4,
-   "scale": 1.13,
-   "rotation": 0,
-   "layer": "standing",
-   "priority": 5,
-   "src": "osm:building"
-  },
-  {
-   "assetId": "bldg.res.polish_flat",
    "variant": 14,
    "structure": 0,
    "x": 435.8,
@@ -1884,6 +1938,18 @@
    "x": 281.4,
    "y": 305.5,
    "scale": 1.09,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.bungalow",
+   "variant": 69,
+   "structure": 2,
+   "x": 316.8,
+   "y": 193.4,
+   "scale": 1.08,
    "rotation": 0,
    "layer": "standing",
    "priority": 5,
@@ -2088,18 +2154,6 @@
    "x": 109.1,
    "y": 29.1,
    "scale": 0.97,
-   "rotation": 0,
-   "layer": "standing",
-   "priority": 6,
-   "src": "osm:building"
-  },
-  {
-   "assetId": "bldg.res.shed",
-   "variant": 64,
-   "structure": 0,
-   "x": 313.5,
-   "y": 127.8,
-   "scale": 1.15,
    "rotation": 0,
    "layer": "standing",
    "priority": 6,
@@ -8766,21 +8820,6 @@
    "layer": "property",
    "pts": [
     [
-     215.6,
-     170.5
-    ],
-    [
-     215.7,
-     162.4
-    ]
-   ],
-   "src": "procedural:entry_walk"
-  },
-  {
-   "assetId": "prop.walk",
-   "layer": "property",
-   "pts": [
-    [
      262.8,
      265.1
     ],
@@ -8892,21 +8931,6 @@
     [
      446.6,
      252.9
-    ]
-   ],
-   "src": "procedural:entry_walk"
-  },
-  {
-   "assetId": "prop.walk",
-   "layer": "property",
-   "pts": [
-    [
-     214.2,
-     194.9
-    ],
-    [
-     224.4,
-     194.4
     ]
    ],
    "src": "procedural:entry_walk"
@@ -9066,21 +9090,6 @@
    "layer": "property",
    "pts": [
     [
-     214,
-     223.2
-    ],
-    [
-     224,
-     222.7
-    ]
-   ],
-   "src": "procedural:entry_walk"
-  },
-  {
-   "assetId": "prop.walk",
-   "layer": "property",
-   "pts": [
-    [
      154.1,
      471.6
     ],
@@ -9111,6 +9120,21 @@
    "layer": "property",
    "pts": [
     [
+     211.1,
+     232.1
+    ],
+    [
+     223.9,
+     231.7
+    ]
+   ],
+   "src": "procedural:entry_walk"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
      364.6,
      201.9
     ],
@@ -9132,21 +9156,6 @@
     [
      450.2,
      47
-    ]
-   ],
-   "src": "procedural:entry_walk"
-  },
-  {
-   "assetId": "prop.walk",
-   "layer": "property",
-   "pts": [
-    [
-     210.8,
-     242.7
-    ],
-    [
-     223.8,
-     242.3
     ]
    ],
    "src": "procedural:entry_walk"

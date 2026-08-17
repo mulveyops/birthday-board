@@ -399,51 +399,171 @@ function floweringS1() {
 
 // ============ COMMERCIAL ============
 
-function storefront() {
-  const w = 10.5, h = 9.5, d = 10, L = w / 2;
-  const [ox, oy] = dxy(d);
+// ============ MODULAR STOREFRONT TREATMENT VOCABULARY ============
+// Reusable pieces composed into concrete symbols. Business category selects a
+// treatment COMBO (encoded in variant, see generate.mjs); palette recolors it.
+// No icons: category shows through awning/sign/window/patio character only.
+
+const trtAwningStriped = (x, w, awnVar) => {
   const stripes = [0, 1, 2, 3, 4].map((i) =>
-    `<rect x="${-L + 0.2 + (i * (w - 0.4)) / 5}" y="-5.4" width="${(w - 0.4) / 10}" height="2.1" fill="#fdf6e3"/>`).join('');
+    `<rect x="${x + 0.2 + (i * (w - 0.4)) / 5}" y="-4.5" width="${(w - 0.4) / 10}" height="1.85" fill="#fdf6e3"/>`).join('');
+  return `<path d="${P([[x - 0.5, -3], [x + w + 0.5, -3], [x + w, -4.5], [x, -4.5]])}" fill="${awnVar}" stroke="${INK}" stroke-width="0.7"/>${stripes}`;
+};
+const trtAwningSolid = (x, w, awnVar) =>
+  `<path d="${P([[x - 0.5, -3], [x + w + 0.5, -3], [x + w, -4.5], [x, -4.5]])}" fill="${awnVar}" stroke="${INK}" stroke-width="0.7"/>
+   <path d="M${x + 0.4} -3.4 L${x + w - 0.4} -3.4" stroke="#00000022" stroke-width="0.45"/>`;
+const trtSignBand = (x, w, tone = 'var(--sign,#fdf6e3)') =>
+  `<rect x="${x + 0.5}" y="-5.5" width="${w - 1}" height="1.6" rx="0.3" fill="${tone}" stroke="${INK}" stroke-width="0.5"/>
+   <path d="M${x + 1.4} -4.7 h${w - 2.8}" stroke="#00000033" stroke-width="0.55"/>`;
+const trtSignHang = (x, side = -1) =>
+  `<path d="M${x} -7.4 h${side * 2.2}" stroke="${INK}" stroke-width="0.55"/>
+   <rect x="${x + side * 2.2 - (side < 0 ? 2.4 : 0)}" y="-7" width="2.4" height="1.7" rx="0.3" fill="var(--sign,#fdf6e3)" stroke="${INK}" stroke-width="0.5"/>`;
+const trtWinDisplay = (x, w) =>
+  `<rect x="${x}" y="-2.9" width="${w}" height="2.9" fill="#bfe4ea" stroke="${INK}" stroke-width="0.55"/>
+   <path d="M${x + 0.6} -0.4 L${x + 1.9} -2.4" stroke="#ffffff" stroke-width="0.5" opacity="0.85"/>
+   <path d="M${x} -1.1 h${w}" stroke="#8fb5bd" stroke-width="0.35" opacity="0.8"/>`;
+const trtWinNarrow = (x) =>
+  `<rect x="${x}" y="-3" width="1.7" height="3" fill="#bfe4ea" stroke="${INK}" stroke-width="0.5"/>
+   <rect x="${x + 2.4}" y="-3" width="1.7" height="3" fill="#bfe4ea" stroke="${INK}" stroke-width="0.5"/>`;
+const trtWinWarm = (x, w) =>
+  `<rect x="${x}" y="-3.1" width="${w}" height="3.1" fill="#f6c568" stroke="${INK}" stroke-width="0.55"/>
+   <path d="M${x + w / 2} -3.1 V0 M${x} -1.4 h${w}" stroke="${INK}" stroke-width="0.35" opacity="0.7"/>`;
+const trtPatio = (x) => `
+   <g transform="translate(${x} 1.6)">
+     <circle r="1.15" fill="#e8dcc2" stroke="${INK}" stroke-width="0.45"/>
+     <path d="M0 -1.1 V-2.6 M-1.5 -2.6 A1.6 1 0 0 1 1.5 -2.6 Z" fill="#c9584a" stroke="${INK}" stroke-width="0.4"/>
+     <circle cx="3" cy="0.4" r="0.95" fill="#e8dcc2" stroke="${INK}" stroke-width="0.4"/>
+   </g>`;
+const trtPlanters = (x1, x2) =>
+  [x1, x2].map((px) => `
+   <rect x="${px}" y="-1.2" width="1.6" height="1.2" rx="0.2" fill="#8a5a44" stroke="${INK}" stroke-width="0.4"/>
+   <circle cx="${px + 0.45}" cy="-1.5" r="0.55" fill="#5da24b" stroke="${INK}" stroke-width="0.35"/>
+   <circle cx="${px + 1.15}" cy="-1.6" r="0.5" fill="#79b25c" stroke="${INK}" stroke-width="0.35"/>`).join('');
+
+// shared 2-story commercial shell
+function comShell(w, h, d, extra = '') {
+  const L = w / 2;
+  const [ox, oy] = dxy(d);
   return `
-  <symbol id="bldg.com.storefront" overflow="visible">
     <path d="${P([[L, 0], [L, -h], [L + ox, -h + oy], [L + ox, oy]])}" fill="var(--side,#b0574b)" stroke="${INK}" stroke-width="${LINE}" stroke-linejoin="round"/>
     <path d="${P([[-L, -h], [L, -h], [L + ox, -h + oy], [-L + ox, -h + oy]])}" fill="var(--rooftop,#8d8577)" stroke="${INK}" stroke-width="${LINE}" stroke-linejoin="round"/>
     <rect x="${-L}" y="${-h}" width="${w}" height="${h}" fill="var(--body,#e0685a)" stroke="${INK}" stroke-width="${LINE}" stroke-linejoin="round"/>
     <rect x="${-L - 0.6}" y="${-h - 0.9}" width="${w + 1.2}" height="1.5" rx="0.35" fill="var(--trim,#8a5a44)" stroke="${INK}" stroke-width="0.8"/>
-    ${win(-L + 1.2, -8.4, 2.2, 2.6, 0.5)}${win(-1.1, -8.4, 2.2, 2.6, 0.5)}${win(L - 3.4, -8.4, 2.2, 2.6, 0.5)}
-    <rect x="${-L + 0.6}" y="-5.55" width="${w - 1.2}" height="1.5" rx="0.3" fill="var(--sign,#fdf6e3)" stroke="${INK}" stroke-width="0.5"/>
-    <path d="${P([[-L - 0.7, -3.3], [L + 0.7, -3.3], [L + 0.2, -4.6], [-L - 0.2, -4.6]])}" fill="var(--awn,#c93b3b)" stroke="${INK}" stroke-width="0.7"/>
-    ${stripes}
-    <rect x="${-L + 0.8}" y="-3" width="${w - 4.6}" height="3" fill="#bfe4ea" stroke="${INK}" stroke-width="0.55"/>
-    <path d="M${-L + 1.5} -0.4 L${-L + 3.2} -2.6" stroke="#ffffff" stroke-width="0.5" opacity="0.8"/>
-    <rect x="${L - 3.2}" y="-3.2" width="2.4" height="3.2" rx="0.3" fill="var(--door,#5b4632)" stroke="${INK}" stroke-width="0.55"/>
+    ${extra}`;
+}
+
+// Single storefront: 6 treatment combos (category-driven, see generate.mjs).
+//   t0 bakery/food: striped awning + display window
+//   t1 salon/service: solid awning + narrow windows + band
+//   t2 shop: deep sign band + display window
+//   t3 cafe: solid awning + patio tables
+//   t4 shop+planters: band + display + planters
+//   t5 bar-ish storefront: warm windows + hanging sign
+function storefrontT(t) {
+  const w = 10.5, h = 9.5, L = w / 2;
+  const upper = `${win(-L + 1.2, -8.4, 2.2, 2.6, 0.5)}${win(-1.1, -8.4, 2.2, 2.6, 0.5)}${win(L - 3.4, -8.4, 2.2, 2.6, 0.5)}`;
+  const door = `<rect x="${L - 3.1}" y="-3.2" width="2.3" height="3.2" rx="0.3" fill="var(--door,#5b4632)" stroke="${INK}" stroke-width="0.55"/>`;
+  const T = [
+    trtAwningStriped(-L, w, 'var(--awn,#c93b3b)') + trtWinDisplay(-L + 0.8, w - 4.8) + door,
+    trtAwningSolid(-L, w, 'var(--awn,#2f7d5d)') + trtSignBand(-L, w) + trtWinNarrow(-L + 1.2) + door,
+    trtSignBand(-L, w, 'var(--awn,#c93b3b)') + trtWinDisplay(-L + 0.8, w - 4.8) + door,
+    trtAwningSolid(-L, w, 'var(--awn,#c9702f)') + trtWinDisplay(-L + 0.8, w - 5.6) + door + trtPatio(-L - 2.4),
+    trtSignBand(-L, w) + trtWinDisplay(-L + 0.8, w - 4.8) + door + trtPlanters(-L + 0.4, L - 0.6),
+    trtWinWarm(-L + 0.9, w - 4.9) + door + trtSignHang(-L),
+  ][t];
+  return `
+  <symbol id="bldg.com.storefront.t${t}" overflow="visible">
+    ${comShell(w, h, 10, upper)}
+    ${T}
   </symbol>`;
 }
 
-// NEW: 3-bay storefront ROW — stepped parapets, three awnings, one building.
-function storefrontRow() {
-  const w = 21, h = 10, d = 10, L = w / 2;
-  const [ox, oy] = dxy(d);
-  const bayW = w / 3;
-  const parapet = [1.4, 0, 0.8]; // stepped skyline
-  const bays = [0, 1, 2].map((i) => {
+// Storefront row: structure = bay count (s0 = 2-bay, s1 = 3-bay), three
+// treatment layouts each; per-bay body/awning colors; ONE building silhouette.
+function storefrontRowS(nBays, t) {
+  const bayW = 7.2, w = bayW * nBays, h = 10, L = w / 2;
+  const [ox, oy] = dxy(10);
+  const parapets = nBays === 2 ? [1.2, 0] : [1.4, 0, 0.8];
+  // layout table: per-bay treatment picks
+  const layouts = [
+    ['awnStr', 'band'], ['band', 'awnSol'], ['awnSol', 'warm'],
+  ];
+  const layouts3 = [
+    ['awnStr', 'band', 'awnSol'], ['band', 'awnStr', 'planters'], ['awnSol', 'warm', 'awnStr'],
+  ];
+  const lay = (nBays === 2 ? layouts : layouts3)[t];
+  const bays = Array.from({ length: nBays }, (_, i) => {
     const x0 = -L + i * bayW;
-    const ph = parapet[i];
+    const ph = parapets[i];
+    const kind = lay[i];
+    const front =
+      kind === 'awnStr' ? trtAwningStriped(x0, bayW, `var(--a${i},#c93b3b)`) + trtWinDisplay(x0 + 0.7, bayW - 3.6)
+      : kind === 'awnSol' ? trtAwningSolid(x0, bayW, `var(--a${i},#2f7d5d)`) + trtWinDisplay(x0 + 0.7, bayW - 3.6)
+      : kind === 'warm' ? trtWinWarm(x0 + 0.7, bayW - 3.4) + trtSignBand(x0, bayW)
+      : kind === 'planters' ? trtSignBand(x0, bayW) + trtWinDisplay(x0 + 0.7, bayW - 3.6) + trtPlanters(x0 + 0.3, x0 + bayW - 1.9)
+      : trtSignBand(x0, bayW, `var(--a${i},#fdf6e3)`) + trtWinDisplay(x0 + 0.7, bayW - 3.6);
     return `
     <rect x="${x0}" y="${-h - ph}" width="${bayW}" height="${h + ph}" fill="var(--b${i},#e0685a)" stroke="${INK}" stroke-width="1"/>
     <rect x="${x0 - 0.25}" y="${-h - ph - 0.85}" width="${bayW + 0.5}" height="1.35" rx="0.3" fill="var(--trim,#8a5a44)" stroke="${INK}" stroke-width="0.7"/>
-    ${win(x0 + 1, -8.6 + (ph > 1 ? 0.4 : 0), 2.1, 2.5, 0.5)}${win(x0 + bayW - 3.1, -8.6 + (ph > 1 ? 0.4 : 0), 2.1, 2.5, 0.5)}
-    <path d="${P([[x0 + 0.3, -3.2], [x0 + bayW - 0.3, -3.2], [x0 + bayW - 0.7, -4.5], [x0 + 0.7, -4.5]])}" fill="var(--a${i},#c93b3b)" stroke="${INK}" stroke-width="0.65"/>
-    <rect x="${x0 + 0.25 + bayW * 0.14}" y="-4.5" width="${bayW * 0.16}" height="1.3" fill="#fdf6e3"/>
-    <rect x="${x0 + 0.25 + bayW * 0.5}" y="-4.5" width="${bayW * 0.16}" height="1.3" fill="#fdf6e3"/>
-    <rect x="${x0 + 0.8}" y="-2.9" width="${bayW - 3.6}" height="2.9" fill="#bfe4ea" stroke="${INK}" stroke-width="0.5"/>
-    <rect x="${x0 + bayW - 2.6}" y="-3.1" width="1.9" height="3.1" rx="0.3" fill="#5b4632" stroke="${INK}" stroke-width="0.5"/>`;
+    ${win(x0 + 0.9, -8.6, 2, 2.5, 0.5)}${win(x0 + bayW - 2.9, -8.6, 2, 2.5, 0.5)}
+    ${front}
+    <rect x="${x0 + bayW - 2.5}" y="-3.1" width="1.8" height="3.1" rx="0.3" fill="#5b4632" stroke="${INK}" stroke-width="0.5"/>`;
   }).join('');
   return `
-  <symbol id="bldg.com.storefront_row" overflow="visible">
-    <path d="${P([[L, 0], [L, -h - parapet[2]], [L + ox, -h - parapet[2] + oy], [L + ox, oy]])}" fill="var(--side,#b0574b)" stroke="${INK}" stroke-width="${LINE}" stroke-linejoin="round"/>
-    <path d="${P([[-L, -h - parapet[0]], [L, -h - parapet[2]], [L + ox, -h - parapet[2] + oy], [-L + ox, -h - parapet[0] + oy]])}" fill="var(--rooftop,#8d8577)" stroke="${INK}" stroke-width="1" stroke-linejoin="round"/>
+  <symbol id="bldg.com.storefront_row.s${nBays - 2}.t${t}" overflow="visible">
+    <path d="${P([[L, 0], [L, -h - parapets[nBays - 1]], [L + ox, -h - parapets[nBays - 1] + oy], [L + ox, oy]])}" fill="var(--side,#b0574b)" stroke="${INK}" stroke-width="${LINE}" stroke-linejoin="round"/>
+    <path d="${P([[-L, -h - parapets[0]], [L, -h - parapets[nBays - 1]], [L + ox, -h - parapets[nBays - 1] + oy], [-L + ox, -h - parapets[0] + oy]])}" fill="var(--rooftop,#8d8577)" stroke="${INK}" stroke-width="1" stroke-linejoin="round"/>
     ${bays}
+  </symbol>`;
+}
+
+// Mixed use: commercial ground floor + residential floors above.
+// s0 — narrow 2-story shop+apartment; s1 — 3-story brick; s2 — corner (facing-aware).
+function mixedUseS0() {
+  const w = 9.5, h = 10;
+  const L = w / 2;
+  return `
+  <symbol id="bldg.com.mixed_use.s0" overflow="visible">
+    ${comShell(w, h, 10, '')}
+    ${win(-L + 1.1, -8.8, 2.3, 2.8, 0.5)}${win(L - 3.4, -8.8, 2.3, 2.8, 0.5)}
+    <path d="M${-L} -5.7 h${w}" stroke="var(--trim,#8a5a44)" stroke-width="0.55"/>
+    ${trtAwningStriped(-L, w, 'var(--awn,#c93b3b)')}
+    ${trtWinDisplay(-L + 0.8, w - 4.6)}
+    <rect x="${L - 3}" y="-3.2" width="2.2" height="3.2" rx="0.3" fill="var(--door,#5b4632)" stroke="${INK}" stroke-width="0.55"/>
+  </symbol>`;
+}
+function mixedUseS1() {
+  const w = 12, h = 13.5, L = w / 2;
+  const rows = [0, 1].map((r) =>
+    `${win(-L + 1.1, -12.2 + r * 3.6, 2.2, 2.6, 0.5)}${win(-1.1, -12.2 + r * 3.6, 2.2, 2.6, 0.5)}${win(L - 3.3, -12.2 + r * 3.6, 2.2, 2.6, 0.5)}`).join('');
+  return `
+  <symbol id="bldg.com.mixed_use.s1" overflow="visible">
+    ${comShell(w, h, 11, '')}
+    ${rows}
+    <path d="M${-L} -5.6 h${w}" stroke="var(--trim,#8a5a44)" stroke-width="0.55"/>
+    ${trtSignBand(-L, w, 'var(--awn,#fdf6e3)')}
+    ${trtWinDisplay(-L + 0.8, w - 5)}
+    <rect x="${L - 3.4}" y="-3.2" width="2.4" height="3.2" rx="0.3" fill="var(--door,#5b4632)" stroke="${INK}" stroke-width="0.55"/>
+  </symbol>`;
+}
+function mixedUseS2() {
+  const w = 13, h = 13, L = w / 2;
+  const [ox, oy] = dxy(11);
+  const rows = [0, 1].map((r) =>
+    `${win(-L + 1.1, -11.8 + r * 3.5, 2.2, 2.5, 0.5)}${win(-L + 4.6, -11.8 + r * 3.5, 2.2, 2.5, 0.5)}${win(L - 4.9, -11.8 + r * 3.5, 2.2, 2.5, 0.5)}`).join('');
+  return `
+  <symbol id="bldg.com.mixed_use.s2" overflow="visible">
+    <path d="${P([[L, 0], [L, -h], [L + ox, -h + oy], [L + ox, oy]])}" fill="var(--side,#8a4a40)" stroke="${INK}" stroke-width="${LINE}" stroke-linejoin="round"/>
+    <path d="${P([[-L, -h], [L, -h], [L + ox, -h + oy], [-L + ox, -h + oy]])}" fill="var(--rooftop,#8d8577)" stroke="${INK}" stroke-width="${LINE}" stroke-linejoin="round"/>
+    <path d="${P([[-L, 0], [-L, -h], [L, -h], [L, -3.8], [L - 2.7, 0]])}" fill="var(--body,#c96a52)" stroke="${INK}" stroke-width="${LINE}" stroke-linejoin="round"/>
+    <rect x="${-L - 0.6}" y="${-h - 0.9}" width="${w + 1.2}" height="1.5" rx="0.35" fill="var(--trim,#8a5a44)" stroke="${INK}" stroke-width="0.8"/>
+    ${rows}
+    <path d="M${-L} -5.5 h${w}" stroke="var(--trim,#8a5a44)" stroke-width="0.55"/>
+    ${trtAwningSolid(-L, w - 3.4, 'var(--awn,#2f7d5d)')}
+    ${trtWinDisplay(-L + 0.8, w - 8)}
+    <path d="${P([[L - 2.5, 0], [L - 0.5, -2.9], [L - 0.5, -6], [L - 3.6, -6], [L - 3.6, 0]])}" fill="var(--side,#8a4a40)" stroke="${INK}" stroke-width="0.7"/>
+    <rect x="${L - 3.2}" y="-4.2" width="2.1" height="4.2" rx="0.3" fill="#4a3423" stroke="${INK}" stroke-width="0.55"/>
+    ${trtSignHang(-L)}
   </symbol>`;
 }
 
@@ -693,7 +813,11 @@ export function allSymbols() {
     bungalowS0(), bungalowS1(), bungalowS2(),
     apartmentS0(), apartmentS1(), apartmentS2(), apartmentS3(),
     garageS0(), garageS1(), shedS0(), shedS1(), rowhouseS0(),
-    storefront(), storefrontRow(), cornerTavern(), church(), school(),
+    ...[0, 1, 2, 3, 4, 5].map(storefrontT),
+    ...[0, 1, 2].map((t) => storefrontRowS(2, t)),
+    ...[0, 1, 2].map((t) => storefrontRowS(3, t)),
+    mixedUseS0(), mixedUseS1(), mixedUseS2(),
+    cornerTavern(), church(), school(),
     treeLinden(), treeHoneylocust(), treeFlowering(), floweringS1(), treeMaple(), treeAsh(), treeElm(), treeOak(),
     coniferS0(), coniferS1(), coniferS2(),
     car(), tennisCourt(), playgroundGround(),
@@ -708,8 +832,14 @@ export const STRUCT_COUNT = {
   'bldg.res.garage': 2,
   'bldg.res.shed': 2,
   'bldg.res.rowhouse': 1,
+  'bldg.com.mixed_use': 3,
   'tree.flowering': 2,
   'tree.conifer': 3,
+};
+// commercial treatment counts (encoded in variant: variant = t*16 + palette)
+export const TREATMENT_COUNT = {
+  'bldg.com.storefront': 6,
+  'bldg.com.storefront_row': 3,
 };
 
 export const ASSET_META = {
@@ -722,6 +852,7 @@ export const ASSET_META = {
   'tree.conifer': { halfW: 3.6, cls: 'tree' },
   'bldg.com.storefront': { halfW: 7, cls: 'standing' },
   'bldg.com.storefront_row': { halfW: 12.5, cls: 'standing' },
+  'bldg.com.mixed_use': { halfW: 7.5, cls: 'standing' },
   'bldg.com.corner_tavern': { halfW: 8, cls: 'standing' },
   'bldg.civ.church': { halfW: 11, cls: 'standing', hero: true },
   'bldg.civ.school': { halfW: 10, cls: 'standing' },

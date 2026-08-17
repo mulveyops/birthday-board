@@ -24,7 +24,14 @@
   "tree.oak": 10,
   "tree.linden": 27,
   "tree.elm": 15,
-  "veh.car": 8
+  "veh.car": 8,
+  "prop.driveway": 83,
+  "prop.alley": 2,
+  "prop.fence": 42,
+  "prop.wall": 15,
+  "prop.retaining_wall": 20,
+  "prop.hedge": 1,
+  "prop.walk": 49
  },
  "scene": [
   {
@@ -89,6 +96,7 @@
    "assetId": "bldg.com.corner_tavern",
    "variant": 53,
    "structure": 0,
+   "facing": 93,
    "x": 242.6,
    "y": 175,
    "scale": 1.3,
@@ -102,6 +110,7 @@
    "assetId": "bldg.com.corner_tavern",
    "variant": 55,
    "structure": 0,
+   "facing": -47,
    "x": 98.3,
    "y": 92.9,
    "scale": 1.3,
@@ -115,6 +124,7 @@
    "assetId": "bldg.com.storefront_row",
    "variant": 86,
    "structure": 0,
+   "facing": 90,
    "x": 412.4,
    "y": 407.9,
    "scale": 1,
@@ -127,6 +137,7 @@
    "assetId": "bldg.com.storefront_row",
    "variant": 81,
    "structure": 0,
+   "facing": -90,
    "x": 151.3,
    "y": 451.8,
    "scale": 1,
@@ -139,6 +150,7 @@
    "assetId": "bldg.com.storefront_row",
    "variant": 93,
    "structure": 0,
+   "facing": -90,
    "x": 367,
    "y": 453.4,
    "scale": 1,
@@ -151,6 +163,7 @@
    "assetId": "bldg.com.storefront_row",
    "variant": 2,
    "structure": 0,
+   "facing": 91,
    "x": 40.1,
    "y": 406.2,
    "scale": 1,
@@ -163,6 +176,7 @@
    "assetId": "bldg.com.storefront_row",
    "variant": 37,
    "structure": 0,
+   "facing": 90,
    "x": 275.5,
    "y": 406.4,
    "scale": 1,
@@ -175,6 +189,7 @@
    "assetId": "bldg.com.storefront_row",
    "variant": 77,
    "structure": 0,
+   "facing": 91,
    "x": 322,
    "y": 408.3,
    "scale": 1,
@@ -187,6 +202,7 @@
    "assetId": "bldg.com.storefront_row",
    "variant": 26,
    "structure": 0,
+   "facing": -90,
    "x": 256.2,
    "y": 452.5,
    "scale": 1,
@@ -199,6 +215,7 @@
    "assetId": "bldg.com.storefront_row",
    "variant": 87,
    "structure": 0,
+   "facing": 1,
    "x": 91.5,
    "y": 242.4,
    "scale": 1,
@@ -211,6 +228,7 @@
    "assetId": "bldg.com.storefront_row",
    "variant": 7,
    "structure": 0,
+   "facing": -89,
    "x": 303.7,
    "y": 452.9,
    "scale": 1,
@@ -223,6 +241,7 @@
    "assetId": "bldg.com.storefront_row",
    "variant": 84,
    "structure": 0,
+   "facing": 90,
    "x": 447.3,
    "y": 409.2,
    "scale": 1,
@@ -235,6 +254,7 @@
    "assetId": "bldg.com.storefront_row",
    "variant": 80,
    "structure": 0,
+   "facing": -90,
    "x": 417.9,
    "y": 453.9,
    "scale": 1,
@@ -247,6 +267,7 @@
    "assetId": "bldg.com.storefront_row",
    "variant": 35,
    "structure": 0,
+   "facing": 90,
    "x": 241.9,
    "y": 407.7,
    "scale": 1,
@@ -259,6 +280,7 @@
    "assetId": "bldg.com.storefront_row",
    "variant": 53,
    "structure": 0,
+   "facing": -90,
    "x": 81.5,
    "y": 451.3,
    "scale": 1,
@@ -271,6 +293,7 @@
    "assetId": "bldg.com.storefront_row",
    "variant": 20,
    "structure": 0,
+   "facing": -79,
    "x": 348.5,
    "y": 361.2,
    "scale": 1,
@@ -283,6 +306,7 @@
    "assetId": "bldg.com.storefront",
    "variant": 22,
    "structure": 0,
+   "facing": -179,
    "x": 135.1,
    "y": 378.1,
    "scale": 1.15,
@@ -296,6 +320,7 @@
    "assetId": "bldg.com.storefront",
    "variant": 89,
    "structure": 0,
+   "facing": 158,
    "x": 280.9,
    "y": 276.4,
    "scale": 1.11,
@@ -308,6 +333,7 @@
    "assetId": "bldg.com.storefront",
    "variant": 67,
    "structure": 0,
+   "facing": 90,
    "x": 97.4,
    "y": 165.4,
    "scale": 1.07,
@@ -320,6 +346,7 @@
    "assetId": "bldg.com.storefront",
    "variant": 91,
    "structure": 0,
+   "facing": -179,
    "x": 238.2,
    "y": 351,
    "scale": 1.06,
@@ -332,6 +359,7 @@
    "assetId": "bldg.com.storefront",
    "variant": 19,
    "structure": 0,
+   "facing": -22,
    "x": 243,
    "y": 293.3,
    "scale": 1.04,
@@ -345,6 +373,7 @@
    "assetId": "bldg.com.storefront",
    "variant": 35,
    "structure": 0,
+   "facing": 1,
    "x": 197.4,
    "y": 460.5,
    "scale": 1.04,
@@ -357,6 +386,7 @@
    "assetId": "bldg.com.storefront",
    "variant": 78,
    "structure": 0,
+   "facing": 90,
    "x": 62.3,
    "y": 409.3,
    "scale": 1.03,
@@ -369,6 +399,7 @@
    "assetId": "bldg.com.storefront",
    "variant": 13,
    "structure": 0,
+   "facing": -90,
    "x": 46.9,
    "y": 448.1,
    "scale": 1.03,
@@ -381,6 +412,7 @@
    "assetId": "bldg.com.storefront",
    "variant": 69,
    "structure": 0,
+   "facing": -21,
    "x": 204.9,
    "y": 190.4,
    "scale": 1.02,
@@ -393,6 +425,7 @@
    "assetId": "bldg.com.storefront",
    "variant": 5,
    "structure": 0,
+   "facing": -90,
    "x": 453.6,
    "y": 288.6,
    "scale": 1.02,
@@ -405,6 +438,7 @@
    "assetId": "bldg.com.storefront",
    "variant": 27,
    "structure": 0,
+   "facing": -179,
    "x": 392,
    "y": 225.7,
    "scale": 1.01,
@@ -417,6 +451,7 @@
    "assetId": "bldg.com.storefront",
    "variant": 87,
    "structure": 0,
+   "facing": -31,
    "x": 191.9,
    "y": 165.8,
    "scale": 1.01,
@@ -429,6 +464,7 @@
    "assetId": "bldg.com.storefront",
    "variant": 52,
    "structure": 0,
+   "facing": 90,
    "x": 387.4,
    "y": 249.4,
    "scale": 1,
@@ -441,6 +477,7 @@
    "assetId": "bldg.com.storefront",
    "variant": 81,
    "structure": 0,
+   "facing": -179,
    "x": 134.6,
    "y": 251.2,
    "scale": 0.99,
@@ -453,6 +490,7 @@
    "assetId": "bldg.com.storefront",
    "variant": 4,
    "structure": 0,
+   "facing": -179,
    "x": 136.1,
    "y": 334.3,
    "scale": 0.98,
@@ -465,6 +503,7 @@
    "assetId": "bldg.com.storefront",
    "variant": 76,
    "structure": 0,
+   "facing": -90,
    "x": 390.9,
    "y": 289,
    "scale": 0.96,
@@ -476,7 +515,7 @@
   {
    "assetId": "bldg.res.apartment",
    "variant": 5,
-   "structure": 0,
+   "structure": 3,
    "x": 29.4,
    "y": 100.7,
    "scale": 1.2,
@@ -489,7 +528,7 @@
   {
    "assetId": "bldg.res.apartment",
    "variant": 71,
-   "structure": 0,
+   "structure": 3,
    "x": 28,
    "y": 46,
    "scale": 1.09,
@@ -501,7 +540,7 @@
   {
    "assetId": "bldg.res.apartment",
    "variant": 71,
-   "structure": 0,
+   "structure": 3,
    "x": 294.5,
    "y": 523,
    "scale": 1.2,
@@ -514,7 +553,7 @@
   {
    "assetId": "bldg.res.apartment",
    "variant": 71,
-   "structure": 0,
+   "structure": 3,
    "x": 89.6,
    "y": 400.9,
    "scale": 1.09,
@@ -527,7 +566,7 @@
   {
    "assetId": "bldg.res.apartment",
    "variant": 58,
-   "structure": 0,
+   "structure": 3,
    "x": 144.8,
    "y": 94.9,
    "scale": 1.09,
@@ -540,7 +579,7 @@
   {
    "assetId": "bldg.res.apartment",
    "variant": 88,
-   "structure": 0,
+   "structure": 1,
    "x": 135.6,
    "y": 552.2,
    "scale": 0.97,
@@ -552,7 +591,7 @@
   {
    "assetId": "bldg.res.apartment",
    "variant": 80,
-   "structure": 0,
+   "structure": 1,
    "x": 491.8,
    "y": 236.9,
    "scale": 1.03,
@@ -564,7 +603,8 @@
   {
    "assetId": "bldg.res.apartment",
    "variant": 61,
-   "structure": 0,
+   "structure": 2,
+   "facing": -126,
    "x": 136.6,
    "y": 213,
    "scale": 0.97,
@@ -576,7 +616,8 @@
   {
    "assetId": "bldg.res.apartment",
    "variant": 15,
-   "structure": 0,
+   "structure": 2,
+   "facing": -7,
    "x": 184.1,
    "y": 524.6,
    "scale": 0.97,
@@ -600,7 +641,8 @@
   {
    "assetId": "bldg.res.apartment",
    "variant": 83,
-   "structure": 0,
+   "structure": 2,
+   "facing": -130,
    "x": 391.6,
    "y": 103.8,
    "scale": 0.97,
@@ -672,7 +714,8 @@
   {
    "assetId": "bldg.res.apartment",
    "variant": 5,
-   "structure": 0,
+   "structure": 2,
+   "facing": 41,
    "x": 247.5,
    "y": 61.2,
    "scale": 0.97,
@@ -2285,7 +2328,7 @@
    "variant": 15,
    "x": 102.6,
    "y": 120.6,
-   "scale": 1.7,
+   "scale": 2.05,
    "rotation": 0,
    "layer": "standing",
    "priority": 7,
@@ -3275,7 +3318,7 @@
    "variant": 16,
    "x": 234.1,
    "y": 316.9,
-   "scale": 1.7,
+   "scale": 1.81,
    "rotation": 0,
    "layer": "standing",
    "priority": 7,
@@ -3715,7 +3758,7 @@
    "variant": 86,
    "x": 203.9,
    "y": 330,
-   "scale": 1.7,
+   "scale": 1.77,
    "rotation": 0,
    "layer": "standing",
    "priority": 7,
@@ -3737,7 +3780,7 @@
    "variant": 36,
    "x": 234.3,
    "y": 301.7,
-   "scale": 1.7,
+   "scale": 1.81,
    "rotation": 0,
    "layer": "standing",
    "priority": 7,
@@ -4490,6 +4533,4350 @@
    "layer": "standing",
    "priority": 8,
    "src": "ambient"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     174.3,
+     381.9
+    ],
+    [
+     174.4,
+     375.2
+    ],
+    [
+     204,
+     375.4
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.alley",
+   "layer": "property",
+   "pts": [
+    [
+     60.1,
+     565.3
+    ],
+    [
+     60.2,
+     556.2
+    ],
+    [
+     60.5,
+     526.6
+    ],
+    [
+     60.6,
+     521.1
+    ],
+    [
+     60.6,
+     517.4
+    ],
+    [
+     60.8,
+     502.5
+    ],
+    [
+     60.8,
+     499.4
+    ],
+    [
+     60.9,
+     496.5
+    ],
+    [
+     60.9,
+     493.6
+    ],
+    [
+     61,
+     487.9
+    ],
+    [
+     61,
+     482
+    ],
+    [
+     61.1,
+     478.4
+    ],
+    [
+     61.2,
+     465.1
+    ],
+    [
+     61.4,
+     451.8
+    ],
+    [
+     61.4,
+     450.4
+    ],
+    [
+     61.5,
+     442.4
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.alley",
+   "layer": "property",
+   "pts": [
+    [
+     41.8,
+     442.4
+    ],
+    [
+     41.6,
+     460.7
+    ],
+    [
+     41.6,
+     465.1
+    ],
+    [
+     41.5,
+     470.7
+    ],
+    [
+     41.5,
+     473.8
+    ],
+    [
+     41.5,
+     475.5
+    ],
+    [
+     41.5,
+     477.2
+    ],
+    [
+     41.4,
+     480.1
+    ],
+    [
+     41.4,
+     482.7
+    ],
+    [
+     41.3,
+     488.4
+    ],
+    [
+     41.3,
+     492
+    ],
+    [
+     41.3,
+     496.3
+    ],
+    [
+     41.2,
+     506.5
+    ],
+    [
+     41,
+     520.5
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     406.3,
+     577.7
+    ],
+    [
+     401.3,
+     574.3
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     412.9,
+     568.6
+    ],
+    [
+     408.5,
+     565.6
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     408,
+     575.1
+    ],
+    [
+     403.1,
+     571.7
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     452.3,
+     492.1
+    ],
+    [
+     462.5,
+     498.9
+    ],
+    [
+     470.3,
+     487
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     424.7,
+     540.1
+    ],
+    [
+     421.5,
+     545.1
+    ],
+    [
+     425.4,
+     547.6
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     429.2,
+     543
+    ],
+    [
+     424.7,
+     540.1
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     409.6,
+     572.8
+    ],
+    [
+     404.8,
+     569.4
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     472,
+     479.8
+    ],
+    [
+     463.9,
+     477
+    ],
+    [
+     459.7,
+     475.1
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     411.3,
+     561.4
+    ],
+    [
+     408.5,
+     565.6
+    ],
+    [
+     407.7,
+     566.8
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     404.8,
+     569.4
+    ],
+    [
+     403.1,
+     571.7
+    ],
+    [
+     401.3,
+     574.3
+    ],
+    [
+     399.5,
+     576.9
+    ],
+    [
+     404.5,
+     580.3
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     267.5,
+     458.9
+    ],
+    [
+     263.6,
+     458.9
+    ],
+    [
+     257.9,
+     458.8
+    ],
+    [
+     257.8,
+     462.8
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     267.5,
+     456.3
+    ],
+    [
+     263.6,
+     456.3
+    ],
+    [
+     263.6,
+     458.9
+    ],
+    [
+     263.6,
+     461.6
+    ],
+    [
+     267.5,
+     461.6
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     254.9,
+     508.3
+    ],
+    [
+     271.5,
+     508.3
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     167.4,
+     443.7
+    ],
+    [
+     173.9,
+     443.7
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     172.5,
+     492.6
+    ],
+    [
+     179.1,
+     492.7
+    ],
+    [
+     179.1,
+     496.8
+    ],
+    [
+     180.2,
+     497.6
+    ],
+    [
+     183,
+     498.5
+    ],
+    [
+     185.4,
+     499
+    ],
+    [
+     187.3,
+     499.5
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     172.5,
+     496.8
+    ],
+    [
+     179.1,
+     496.8
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     166.3,
+     508.5
+    ],
+    [
+     173.6,
+     508.5
+    ],
+    [
+     175.9,
+     513.9
+    ],
+    [
+     176.5,
+     514.6
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     176.5,
+     514.6
+    ],
+    [
+     177.5,
+     516
+    ],
+    [
+     178.9,
+     516.9
+    ],
+    [
+     180.3,
+     517.3
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     140.3,
+     569.3
+    ],
+    [
+     140.4,
+     565
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     148.5,
+     539.8
+    ],
+    [
+     148.1,
+     540.1
+    ],
+    [
+     146.8,
+     540.4
+    ],
+    [
+     144.3,
+     540.7
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     130.7,
+     529.1
+    ],
+    [
+     150.8,
+     529
+    ],
+    [
+     153,
+     527.9
+    ],
+    [
+     155.6,
+     526.1
+    ],
+    [
+     157.9,
+     526.1
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     144.8,
+     470.6
+    ],
+    [
+     147.3,
+     470.6
+    ],
+    [
+     152.9,
+     467.2
+    ],
+    [
+     155.6,
+     467.2
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     155.7,
+     495.1
+    ],
+    [
+     151.1,
+     495.2
+    ],
+    [
+     148.7,
+     495.7
+    ],
+    [
+     143.8,
+     497.7
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     56.3,
+     484.7
+    ],
+    [
+     56.1,
+     496.5
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     8.7,
+     475.3
+    ],
+    [
+     41.5,
+     475.5
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     51.4,
+     517.3
+    ],
+    [
+     60.6,
+     517.4
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     68.8,
+     451.8
+    ],
+    [
+     61.4,
+     451.8
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     63.6,
+     520.7
+    ],
+    [
+     63.5,
+     526.6
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     63.1,
+     531.7
+    ],
+    [
+     63.1,
+     526.6
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     61.2,
+     465.1
+    ],
+    [
+     70.7,
+     464.6
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     51.4,
+     521.1
+    ],
+    [
+     60.6,
+     521.1
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     65.9,
+     531.7
+    ],
+    [
+     65.9,
+     526.6
+    ],
+    [
+     63.5,
+     526.6
+    ],
+    [
+     63.1,
+     526.6
+    ],
+    [
+     60.5,
+     526.6
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     280.6,
+     385.5
+    ],
+    [
+     280.6,
+     387.9
+    ],
+    [
+     267.4,
+     388
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     160.8,
+     381.8
+    ],
+    [
+     174.3,
+     381.9
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     167.6,
+     365.2
+    ],
+    [
+     167.6,
+     367.8
+    ],
+    [
+     170.3,
+     367.8
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     170.3,
+     365.2
+    ],
+    [
+     170.3,
+     367.8
+    ],
+    [
+     173.1,
+     369.2
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     173.2,
+     365.2
+    ],
+    [
+     173.1,
+     369.2
+    ],
+    [
+     173.1,
+     373.6
+    ],
+    [
+     174.4,
+     375.2
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     503.8,
+     180.9
+    ],
+    [
+     503.8,
+     182.6
+    ],
+    [
+     503.8,
+     184.9
+    ],
+    [
+     503.8,
+     188.1
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     442.2,
+     320.1
+    ],
+    [
+     438.2,
+     319.2
+    ],
+    [
+     432.2,
+     316.3
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     437.1,
+     346.2
+    ],
+    [
+     434.8,
+     344.9
+    ],
+    [
+     430.9,
+     342.2
+    ],
+    [
+     422.6,
+     342.1
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     434.3,
+     371.1
+    ],
+    [
+     429.9,
+     371.1
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     434.3,
+     366.4
+    ],
+    [
+     434.3,
+     371.1
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     394.9,
+     332.2
+    ],
+    [
+     397.5,
+     331.8
+    ],
+    [
+     407,
+     330.2
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     388.2,
+     293.5
+    ],
+    [
+     396.5,
+     294
+    ],
+    [
+     402.3,
+     294.6
+    ],
+    [
+     414.4,
+     295.3
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     442.6,
+     123.8
+    ],
+    [
+     441,
+     124.5
+    ],
+    [
+     435.7,
+     129.9
+    ],
+    [
+     427.1,
+     129.9
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     428.5,
+     147.2
+    ],
+    [
+     429.7,
+     147.2
+    ],
+    [
+     431.3,
+     147
+    ],
+    [
+     433.5,
+     146.4
+    ],
+    [
+     440.5,
+     146.4
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     428.5,
+     144.2
+    ],
+    [
+     438.4,
+     144.2
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     428.5,
+     141.5
+    ],
+    [
+     436.3,
+     141.4
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     428.5,
+     138.4
+    ],
+    [
+     433,
+     138.4
+    ],
+    [
+     434.5,
+     139.1
+    ],
+    [
+     436.3,
+     141.4
+    ],
+    [
+     436.6,
+     141.9
+    ],
+    [
+     438.4,
+     144.2
+    ],
+    [
+     439.4,
+     145.5
+    ],
+    [
+     440.5,
+     146.4
+    ],
+    [
+     441.3,
+     147.1
+    ],
+    [
+     443.3,
+     147.6
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     439.6,
+     152.3
+    ],
+    [
+     439.5,
+     159.6
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     429.8,
+     176.1
+    ],
+    [
+     439.1,
+     177.2
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     434.5,
+     255.7
+    ],
+    [
+     434.6,
+     247.9
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     403.5,
+     211.9
+    ],
+    [
+     412.7,
+     212.5
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     403.5,
+     170.6
+    ],
+    [
+     405.8,
+     170.9
+    ],
+    [
+     408.2,
+     171.4
+    ],
+    [
+     417.9,
+     171.5
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     401.2,
+     244
+    ],
+    [
+     404.8,
+     243.7
+    ],
+    [
+     408.6,
+     243.1
+    ],
+    [
+     411.3,
+     242.5
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     235,
+     56.1
+    ],
+    [
+     235.2,
+     54.7
+    ],
+    [
+     236,
+     53.7
+    ],
+    [
+     239.4,
+     50.1
+    ],
+    [
+     241.1,
+     48.4
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     347.9,
+     256.7
+    ],
+    [
+     333.7,
+     255.6
+    ],
+    [
+     330.9,
+     255.5
+    ],
+    [
+     327.7,
+     255.5
+    ],
+    [
+     327.7,
+     252.3
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     331.8,
+     242.9
+    ],
+    [
+     340.3,
+     242.9
+    ],
+    [
+     342.3,
+     243.6
+    ],
+    [
+     343.9,
+     244.1
+    ],
+    [
+     345,
+     244.3
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     342.9,
+     219.8
+    ],
+    [
+     333.3,
+     217.6
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     257,
+     355.3
+    ],
+    [
+     254.8,
+     356.1
+    ],
+    [
+     251.8,
+     356.8
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     150.8,
+     312.7
+    ],
+    [
+     146.9,
+     312.7
+    ],
+    [
+     146.9,
+     315.9
+    ],
+    [
+     147,
+     319.1
+    ],
+    [
+     150.8,
+     319
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     141.6,
+     307.2
+    ],
+    [
+     149.9,
+     306.7
+    ],
+    [
+     149.9,
+     303.7
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     154.4,
+     117.9
+    ],
+    [
+     154.4,
+     120.3
+    ],
+    [
+     161.2,
+     120.3
+    ],
+    [
+     164.8,
+     121.3
+    ],
+    [
+     169,
+     121.3
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     175.9,
+     168.5
+    ],
+    [
+     182.2,
+     168.5
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     177,
+     164.1
+    ],
+    [
+     182.2,
+     164.2
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     182.2,
+     170.4
+    ],
+    [
+     182.2,
+     168.5
+    ],
+    [
+     182.2,
+     164.2
+    ],
+    [
+     182.2,
+     161.1
+    ],
+    [
+     176.9,
+     161.1
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     157.6,
+     167.9
+    ],
+    [
+     152.8,
+     167.9
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     152.8,
+     169.7
+    ],
+    [
+     152.8,
+     167.9
+    ],
+    [
+     152.8,
+     160.6
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     161.4,
+     156.9
+    ],
+    [
+     158.5,
+     156.9
+    ],
+    [
+     158.5,
+     156.5
+    ],
+    [
+     158.6,
+     153.6
+    ],
+    [
+     161.4,
+     153.7
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     93.2,
+     155.8
+    ],
+    [
+     101.2,
+     155.8
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     147.1,
+     156.5
+    ],
+    [
+     158.5,
+     156.5
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     155.6,
+     144.9
+    ],
+    [
+     155.6,
+     137.9
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     170.7,
+     145.1
+    ],
+    [
+     170.7,
+     137
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     162.3,
+     204.8
+    ],
+    [
+     167.9,
+     204.8
+    ],
+    [
+     167.7,
+     217.1
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     74.2,
+     380.6
+    ],
+    [
+     74.2,
+     378.2
+    ],
+    [
+     77.4,
+     378.2
+    ],
+    [
+     82.2,
+     378.2
+    ],
+    [
+     85.8,
+     378.2
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     71.1,
+     232.7
+    ],
+    [
+     69.5,
+     227.6
+    ],
+    [
+     69.5,
+     220.3
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     0.8,
+     99.7
+    ],
+    [
+     1.7,
+     99.7
+    ],
+    [
+     5.8,
+     99.8
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     22.4,
+     140.2
+    ],
+    [
+     13.4,
+     140.1
+    ],
+    [
+     5.4,
+     140.1
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     53.9,
+     507.2
+    ],
+    [
+     53.9,
+     496.5
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     47.7,
+     507.2
+    ],
+    [
+     47.7,
+     496.4
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     37.8,
+     457.1
+    ],
+    [
+     37.8,
+     460.7
+    ],
+    [
+     41.6,
+     460.7
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     473.4,
+     439.9
+    ],
+    [
+     473.4,
+     440.9
+    ],
+    [
+     465.4,
+     452.6
+    ],
+    [
+     472.2,
+     457.5
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     404.7,
+     66.3
+    ],
+    [
+     404.3,
+     50.6
+    ],
+    [
+     390.6,
+     46
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     461.6,
+     51.1
+    ],
+    [
+     461,
+     51.1
+    ],
+    [
+     460.7,
+     61.3
+    ],
+    [
+     417.8,
+     66.2
+    ],
+    [
+     416.8,
+     66.3
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     467,
+     469.7
+    ],
+    [
+     470,
+     465.5
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     467.4,
+     503.8
+    ],
+    [
+     485.4,
+     515.9
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     490.3,
+     509
+    ],
+    [
+     472.4,
+     496.7
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     480.5,
+     524.1
+    ],
+    [
+     462,
+     511.8
+    ],
+    [
+     467.4,
+     503.8
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     466.8,
+     578.7
+    ],
+    [
+     468.5,
+     579.9
+    ],
+    [
+     469.1,
+     579
+    ],
+    [
+     469.9,
+     577.8
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.wall",
+   "layer": "property",
+   "pts": [
+    [
+     454.2,
+     522.1
+    ],
+    [
+     447.2,
+     532.4
+    ],
+    [
+     446.7,
+     533.2
+    ],
+    [
+     435.2,
+     550.1
+    ],
+    [
+     432.3,
+     554.4
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.wall",
+   "layer": "property",
+   "pts": [
+    [
+     489.3,
+     549.4
+    ],
+    [
+     490.9,
+     546.9
+    ],
+    [
+     471.1,
+     533.6
+    ],
+    [
+     454.2,
+     522.1
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     376.2,
+     491.8
+    ],
+    [
+     376.1,
+     482.6
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     359.6,
+     483.1
+    ],
+    [
+     360.2,
+     482.5
+    ],
+    [
+     376.1,
+     482.6
+    ],
+    [
+     381.2,
+     482.4
+    ],
+    [
+     382.8,
+     482.4
+    ],
+    [
+     382.3,
+     471.5
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     249.2,
+     473
+    ],
+    [
+     249.2,
+     482.1
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.wall",
+   "layer": "property",
+   "pts": [
+    [
+     279.6,
+     541.6
+    ],
+    [
+     279.6,
+     536
+    ],
+    [
+     282.3,
+     533.9
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     274.5,
+     537.2
+    ],
+    [
+     274.6,
+     528
+    ],
+    [
+     276,
+     528
+    ],
+    [
+     276,
+     537.2
+    ],
+    [
+     274.5,
+     537.2
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     313.1,
+     505.9
+    ],
+    [
+     309.8,
+     503.7
+    ],
+    [
+     310.6,
+     502.7
+    ],
+    [
+     313.8,
+     505
+    ],
+    [
+     313.1,
+     505.9
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     244.7,
+     464
+    ],
+    [
+     252.7,
+     464
+    ],
+    [
+     252.6,
+     473
+    ],
+    [
+     249.2,
+     473
+    ],
+    [
+     244.3,
+     472.9
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.wall",
+   "layer": "property",
+   "pts": [
+    [
+     281.4,
+     549
+    ],
+    [
+     288.1,
+     549
+    ],
+    [
+     289,
+     545.3
+    ],
+    [
+     289,
+     543.2
+    ],
+    [
+     289.1,
+     540.8
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     308.5,
+     505.5
+    ],
+    [
+     313.8,
+     509
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     313.2,
+     510.3
+    ],
+    [
+     307.7,
+     506.5
+    ],
+    [
+     308.5,
+     505.5
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     230.3,
+     518.6
+    ],
+    [
+     242.5,
+     518.6
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     245.3,
+     491
+    ],
+    [
+     253.4,
+     491
+    ],
+    [
+     254.3,
+     491
+    ],
+    [
+     272.9,
+     491.1
+    ],
+    [
+     272.9,
+     492.1
+    ],
+    [
+     272.9,
+     500.7
+    ],
+    [
+     254.9,
+     500.5
+    ],
+    [
+     253.9,
+     500.5
+    ],
+    [
+     245.1,
+     500.5
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.wall",
+   "layer": "property",
+   "pts": [
+    [
+     164.1,
+     525.3
+    ],
+    [
+     164.1,
+     530.4
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.wall",
+   "layer": "property",
+   "pts": [
+    [
+     172.3,
+     490.7
+    ],
+    [
+     172.3,
+     490.3
+    ],
+    [
+     186.8,
+     490.4
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.wall",
+   "layer": "property",
+   "pts": [
+    [
+     173.3,
+     525.3
+    ],
+    [
+     164.1,
+     525.3
+    ],
+    [
+     164,
+     518.2
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     146,
+     571.9
+    ],
+    [
+     146.1,
+     562.7
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     40,
+     465.1
+    ],
+    [
+     25.6,
+     465
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     51.2,
+     469.1
+    ],
+    [
+     51.2,
+     467.9
+    ],
+    [
+     51.2,
+     461.4
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     39,
+     495.1
+    ],
+    [
+     31.3,
+     495
+    ],
+    [
+     31.3,
+     499.4
+    ],
+    [
+     31.2,
+     503.7
+    ],
+    [
+     31.2,
+     504.5
+    ],
+    [
+     39.1,
+     504.6
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.retaining_wall",
+   "layer": "property",
+   "pts": [
+    [
+     7.4,
+     528
+    ],
+    [
+     1.2,
+     528
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.retaining_wall",
+   "layer": "property",
+   "pts": [
+    [
+     1.2,
+     523.2
+    ],
+    [
+     8.1,
+     523.3
+    ],
+    [
+     8.6,
+     523
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.hedge",
+   "layer": "property",
+   "pts": [
+    [
+     41.5,
+     554.8
+    ],
+    [
+     39.4,
+     554.8
+    ],
+    [
+     39.3,
+     537.4
+    ],
+    [
+     41.4,
+     537.4
+    ],
+    [
+     41.5,
+     554.8
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     27.7,
+     508.2
+    ],
+    [
+     33.4,
+     508.2
+    ],
+    [
+     33.4,
+     514
+    ],
+    [
+     30.5,
+     514
+    ],
+    [
+     23.4,
+     514
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     76.4,
+     580.1
+    ],
+    [
+     76.4,
+     577.7
+    ],
+    [
+     78.8,
+     577.7
+    ],
+    [
+     79.3,
+     577.7
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     425.1,
+     399.8
+    ],
+    [
+     425.1,
+     393.3
+    ],
+    [
+     434.5,
+     393.4
+    ],
+    [
+     447.4,
+     393.5
+    ],
+    [
+     447.4,
+     395.3
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     288.1,
+     389.8
+    ],
+    [
+     282.4,
+     389.7
+    ],
+    [
+     282.4,
+     401.7
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     337.7,
+     384.3
+    ],
+    [
+     337.7,
+     384.6
+    ],
+    [
+     337.7,
+     396.1
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.wall",
+   "layer": "property",
+   "pts": [
+    [
+     482.6,
+     372.8
+    ],
+    [
+     492.9,
+     372.8
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.wall",
+   "layer": "property",
+   "pts": [
+    [
+     429.4,
+     329.6
+    ],
+    [
+     424.6,
+     329.6
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     453.9,
+     372.7
+    ],
+    [
+     425.2,
+     372.5
+    ],
+    [
+     418.3,
+     372.5
+    ],
+    [
+     418.3,
+     365.6
+    ],
+    [
+     418.3,
+     364.9
+    ],
+    [
+     415.5,
+     365.6
+    ],
+    [
+     382.6,
+     365.5
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.retaining_wall",
+   "layer": "property",
+   "pts": [
+    [
+     419.4,
+     285.3
+    ],
+    [
+     400.1,
+     285.4
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     457.1,
+     185.4
+    ],
+    [
+     457,
+     179.8
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     283.9,
+     172.3
+    ],
+    [
+     283.8,
+     165.2
+    ],
+    [
+     277.1,
+     165.2
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     274.8,
+     165.2
+    ],
+    [
+     272.6,
+     165.1
+    ],
+    [
+     271.6,
+     164.8
+    ],
+    [
+     270.1,
+     164.3
+    ],
+    [
+     268.8,
+     163.9
+    ],
+    [
+     259.4,
+     163.9
+    ],
+    [
+     259.4,
+     172.1
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     254.8,
+     123.5
+    ],
+    [
+     254.3,
+     154.1
+    ],
+    [
+     255.8,
+     155.5
+    ],
+    [
+     256.4,
+     156.1
+    ],
+    [
+     257,
+     156.6
+    ],
+    [
+     257.3,
+     156.9
+    ],
+    [
+     285.8,
+     157.4
+    ],
+    [
+     286.3,
+     123.7
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     359.2,
+     133.4
+    ],
+    [
+     359.2,
+     132.3
+    ],
+    [
+     359.6,
+     124.2
+    ],
+    [
+     286.3,
+     123.7
+    ],
+    [
+     254.8,
+     123.5
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     359.2,
+     135.1
+    ],
+    [
+     359.1,
+     149.7
+    ],
+    [
+     358.2,
+     194.4
+    ],
+    [
+     358.2,
+     195.3
+    ],
+    [
+     357.7,
+     208.7
+    ],
+    [
+     345.6,
+     208.8
+    ],
+    [
+     337.8,
+     208.1
+    ],
+    [
+     297,
+     207.8
+    ],
+    [
+     297.1,
+     172.4
+    ],
+    [
+     283.9,
+     172.3
+    ],
+    [
+     259.4,
+     172.1
+    ],
+    [
+     245.5,
+     172
+    ],
+    [
+     234.5,
+     172
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     357.3,
+     139.3
+    ],
+    [
+     357.4,
+     136.9
+    ],
+    [
+     354,
+     133.3
+    ],
+    [
+     350.3,
+     133.2
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     349.8,
+     134.8
+    ],
+    [
+     343.7,
+     134.8
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     356.2,
+     146
+    ],
+    [
+     356.2,
+     140.4
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.retaining_wall",
+   "layer": "property",
+   "pts": [
+    [
+     355.4,
+     270.3
+    ],
+    [
+     355.9,
+     270.3
+    ],
+    [
+     356,
+     266.5
+    ],
+    [
+     354.4,
+     266.4
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.retaining_wall",
+   "layer": "property",
+   "pts": [
+    [
+     354.2,
+     277
+    ],
+    [
+     355.8,
+     277.1
+    ],
+    [
+     355.9,
+     273.1
+    ],
+    [
+     355.4,
+     273
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.retaining_wall",
+   "layer": "property",
+   "pts": [
+    [
+     324.9,
+     257
+    ],
+    [
+     295.9,
+     256.8
+    ],
+    [
+     295.7,
+     285.2
+    ],
+    [
+     326.6,
+     285.4
+    ],
+    [
+     341,
+     285.5
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.retaining_wall",
+   "layer": "property",
+   "pts": [
+    [
+     253,
+     183.6
+    ],
+    [
+     248.5,
+     183.6
+    ],
+    [
+     248.3,
+     183.8
+    ],
+    [
+     248.1,
+     184.2
+    ],
+    [
+     248,
+     192.9
+    ],
+    [
+     245.5,
+     192.9
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.wall",
+   "layer": "property",
+   "pts": [
+    [
+     243.4,
+     189.8
+    ],
+    [
+     243.5,
+     184.7
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     318.1,
+     351.4
+    ],
+    [
+     324.5,
+     352.3
+    ],
+    [
+     324.5,
+     352.7
+    ],
+    [
+     327.5,
+     352.6
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     337.7,
+     384.3
+    ],
+    [
+     337.7,
+     384.6
+    ],
+    [
+     331.7,
+     384.6
+    ],
+    [
+     304.2,
+     384.5
+    ],
+    [
+     295.6,
+     384.5
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.retaining_wall",
+   "layer": "property",
+   "pts": [
+    [
+     202.5,
+     385.5
+    ],
+    [
+     202.5,
+     383.3
+    ],
+    [
+     204.4,
+     383.3
+    ],
+    [
+     204.4,
+     381
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.wall",
+   "layer": "property",
+   "pts": [
+    [
+     141.2,
+     104.7
+    ],
+    [
+     141.2,
+     99.7
+    ],
+    [
+     138.7,
+     99.7
+    ],
+    [
+     138.6,
+     97.6
+    ],
+    [
+     132.6,
+     97.7
+    ],
+    [
+     132.6,
+     95.9
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.wall",
+   "layer": "property",
+   "pts": [
+    [
+     135.2,
+     88.9
+    ],
+    [
+     135.1,
+     90.3
+    ],
+    [
+     144.6,
+     90.3
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.wall",
+   "layer": "property",
+   "pts": [
+    [
+     151.7,
+     94.5
+    ],
+    [
+     151.7,
+     98.3
+    ],
+    [
+     144.2,
+     98.3
+    ],
+    [
+     144.2,
+     94.5
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.retaining_wall",
+   "layer": "property",
+   "pts": [
+    [
+     159.4,
+     134.6
+    ],
+    [
+     159.1,
+     134.6
+    ],
+    [
+     159.2,
+     124.8
+    ],
+    [
+     159.2,
+     122.5
+    ],
+    [
+     149.9,
+     122.5
+    ],
+    [
+     150,
+     110.4
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.wall",
+   "layer": "property",
+   "pts": [
+    [
+     152.3,
+     172.2
+    ],
+    [
+     146.7,
+     172.2
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.retaining_wall",
+   "layer": "property",
+   "pts": [
+    [
+     196.3,
+     192.8
+    ],
+    [
+     195.8,
+     192.2
+    ],
+    [
+     195.6,
+     191.2
+    ],
+    [
+     195.6,
+     190.9
+    ],
+    [
+     192.6,
+     191
+    ],
+    [
+     192.6,
+     189.6
+    ],
+    [
+     195.6,
+     189.6
+    ],
+    [
+     195.6,
+     183.7
+    ],
+    [
+     195.6,
+     183.4
+    ],
+    [
+     184.9,
+     183.6
+    ],
+    [
+     184.9,
+     186.5
+    ],
+    [
+     183.6,
+     186.6
+    ],
+    [
+     183.6,
+     183.6
+    ],
+    [
+     178.7,
+     183.6
+    ],
+    [
+     168.5,
+     183.6
+    ],
+    [
+     168.3,
+     183.6
+    ],
+    [
+     168.3,
+     171.8
+    ],
+    [
+     168.8,
+     171.8
+    ],
+    [
+     168.8,
+     171.5
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.retaining_wall",
+   "layer": "property",
+   "pts": [
+    [
+     161.4,
+     158.6
+    ],
+    [
+     158,
+     158.6
+    ],
+    [
+     148.3,
+     158.6
+    ],
+    [
+     147.1,
+     158.6
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.wall",
+   "layer": "property",
+   "pts": [
+    [
+     144.6,
+     148.1
+    ],
+    [
+     144.6,
+     147.1
+    ],
+    [
+     147.1,
+     147.1
+    ],
+    [
+     151.5,
+     147.1
+    ],
+    [
+     159.4,
+     147.1
+    ],
+    [
+     167.5,
+     147.2
+    ],
+    [
+     176.7,
+     147.2
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.retaining_wall",
+   "layer": "property",
+   "pts": [
+    [
+     173.2,
+     134.7
+    ],
+    [
+     166.5,
+     134.6
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     139.4,
+     244.3
+    ],
+    [
+     139.5,
+     235.5
+    ],
+    [
+     133.3,
+     235.4
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.retaining_wall",
+   "layer": "property",
+   "pts": [
+    [
+     34.5,
+     251.6
+    ],
+    [
+     40.9,
+     251.7
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.retaining_wall",
+   "layer": "property",
+   "pts": [
+    [
+     9.5,
+     88.5
+    ],
+    [
+     0.9,
+     88.6
+    ],
+    [
+     0.9,
+     90.1
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.retaining_wall",
+   "layer": "property",
+   "pts": [
+    [
+     9.8,
+     92.6
+    ],
+    [
+     8.4,
+     92.6
+    ],
+    [
+     8.4,
+     91.9
+    ],
+    [
+     4,
+     91.9
+    ],
+    [
+     4,
+     94.3
+    ],
+    [
+     0.9,
+     94.4
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     49.1,
+     38
+    ],
+    [
+     47.6,
+     38.1
+    ],
+    [
+     46.7,
+     23.2
+    ],
+    [
+     9,
+     25.4
+    ],
+    [
+     8.6,
+     26.2
+    ],
+    [
+     8,
+     26.9
+    ],
+    [
+     7.5,
+     27.5
+    ],
+    [
+     6.7,
+     27.9
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     -3.7,
+     66
+    ],
+    [
+     -3.7,
+     67.1
+    ],
+    [
+     4.1,
+     66.7
+    ],
+    [
+     3.9,
+     63.9
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.retaining_wall",
+   "layer": "property",
+   "pts": [
+    [
+     11.1,
+     90.2
+    ],
+    [
+     2.3,
+     90.3
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.retaining_wall",
+   "layer": "property",
+   "pts": [
+    [
+     91.9,
+     89.9
+    ],
+    [
+     90.5,
+     89.9
+    ],
+    [
+     83.4,
+     89.9
+    ],
+    [
+     76.4,
+     89.8
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.retaining_wall",
+   "layer": "property",
+   "pts": [
+    [
+     61.7,
+     95.5
+    ],
+    [
+     54.8,
+     95.8
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.retaining_wall",
+   "layer": "property",
+   "pts": [
+    [
+     96.9,
+     159.7
+    ],
+    [
+     95.9,
+     159.9
+    ],
+    [
+     92.5,
+     159.9
+    ],
+    [
+     91.1,
+     160
+    ],
+    [
+     87.6,
+     160
+    ],
+    [
+     83.8,
+     159.9
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     14.3,
+     144
+    ],
+    [
+     39.4,
+     144.3
+    ],
+    [
+     39.3,
+     152.5
+    ],
+    [
+     24,
+     152.3
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.retaining_wall",
+   "layer": "property",
+   "pts": [
+    [
+     14.9,
+     128.6
+    ],
+    [
+     60.8,
+     128.9
+    ],
+    [
+     60.9,
+     112.9
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     244.1,
+     487
+    ],
+    [
+     230.1,
+     486.2
+    ]
+   ],
+   "src": "derived"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     154.1,
+     241.5
+    ],
+    [
+     154.1,
+     253.8
+    ]
+   ],
+   "src": "derived"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     167.9,
+     130.5
+    ],
+    [
+     174.3,
+     126
+    ]
+   ],
+   "src": "derived"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     140.2,
+     140.7
+    ],
+    [
+     130.8,
+     139.9
+    ]
+   ],
+   "src": "derived"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     393.3,
+     191.1
+    ],
+    [
+     385.9,
+     190.4
+    ]
+   ],
+   "src": "derived"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     37.1,
+     324.7
+    ],
+    [
+     37,
+     331.3
+    ]
+   ],
+   "src": "derived"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     84.4,
+     531.6
+    ],
+    [
+     96.8,
+     531.2
+    ]
+   ],
+   "src": "derived"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     255.1,
+     103.5
+    ],
+    [
+     255.2,
+     95.5
+    ]
+   ],
+   "src": "derived"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     493.8,
+     121.3
+    ],
+    [
+     486.7,
+     120.6
+    ]
+   ],
+   "src": "derived"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     349.4,
+     303.6
+    ],
+    [
+     356.5,
+     303.1
+    ]
+   ],
+   "src": "derived"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     417.1,
+     531.1
+    ],
+    [
+     407.2,
+     523.5
+    ]
+   ],
+   "src": "derived"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     138.3,
+     117.7
+    ],
+    [
+     131.2,
+     117
+    ]
+   ],
+   "src": "derived"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     350.4,
+     252.9
+    ],
+    [
+     357.5,
+     252.4
+    ]
+   ],
+   "src": "derived"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     196.5,
+     288.7
+    ],
+    [
+     196.5,
+     281.1
+    ]
+   ],
+   "src": "derived"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     319.6,
+     103.7
+    ],
+    [
+     319.7,
+     96.1
+    ]
+   ],
+   "src": "derived"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     448.5,
+     155.4
+    ],
+    [
+     458.9,
+     155
+    ]
+   ],
+   "src": "derived"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     239.7,
+     316.9
+    ],
+    [
+     232.7,
+     316.2
+    ]
+   ],
+   "src": "derived"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     195.9,
+     317.3
+    ],
+    [
+     205.5,
+     316.8
+    ]
+   ],
+   "src": "derived"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     265.8,
+     237
+    ],
+    [
+     259.5,
+     238.9
+    ]
+   ],
+   "src": "derived"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     94.6,
+     215.2
+    ],
+    [
+     102.4,
+     214.7
+    ]
+   ],
+   "src": "derived"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     394,
+     137.1
+    ],
+    [
+     386.9,
+     136.4
+    ]
+   ],
+   "src": "derived"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     66.2,
+     94.3
+    ],
+    [
+     65.8,
+     86.9
+    ]
+   ],
+   "src": "derived"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     390.7,
+     317.8
+    ],
+    [
+     383.4,
+     317.1
+    ]
+   ],
+   "src": "derived"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     384.4,
+     497.1
+    ],
+    [
+     390.1,
+     500.6
+    ]
+   ],
+   "src": "derived"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     353.2,
+     119.5
+    ],
+    [
+     360.1,
+     119
+    ]
+   ],
+   "src": "derived"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     134.9,
+     292.6
+    ],
+    [
+     128.2,
+     291.9
+    ]
+   ],
+   "src": "derived"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     98.8,
+     325.9
+    ],
+    [
+     100.5,
+     325.3
+    ]
+   ],
+   "src": "derived"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     350.5,
+     488.7
+    ],
+    [
+     343.9,
+     488.2
+    ]
+   ],
+   "src": "derived"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     94.3,
+     301.8
+    ],
+    [
+     100.9,
+     301.3
+    ]
+   ],
+   "src": "derived"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     171.4,
+     288.2
+    ],
+    [
+     171.4,
+     281
+    ]
+   ],
+   "src": "derived"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     449.9,
+     476.1
+    ],
+    [
+     444.1,
+     471.4
+    ]
+   ],
+   "src": "derived"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     95.7,
+     366.2
+    ],
+    [
+     99.7,
+     365.7
+    ]
+   ],
+   "src": "derived"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     78.6,
+     369.9
+    ],
+    [
+     78.7,
+     359
+    ]
+   ],
+   "src": "derived"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     492.8,
+     156.1
+    ],
+    [
+     486.1,
+     155.4
+    ]
+   ],
+   "src": "derived"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     40.3,
+     205.5
+    ],
+    [
+     40.3,
+     198.2
+    ]
+   ],
+   "src": "derived"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     40.6,
+     286.7
+    ],
+    [
+     40.7,
+     279.8
+    ]
+   ],
+   "src": "derived"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     366.5,
+     523
+    ],
+    [
+     371.8,
+     526.3
+    ]
+   ],
+   "src": "derived"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     79.2,
+     205.3
+    ],
+    [
+     79.2,
+     198.5
+    ]
+   ],
+   "src": "derived"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     392.7,
+     166.4
+    ],
+    [
+     386.4,
+     165.7
+    ]
+   ],
+   "src": "derived"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     176.4,
+     460.1
+    ],
+    [
+     176.5,
+     443.2
+    ]
+   ],
+   "src": "derived"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     285.1,
+     102.4
+    ],
+    [
+     285.2,
+     95.8
+    ]
+   ],
+   "src": "derived"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     55.9,
+     247.3
+    ],
+    [
+     55.8,
+     252.8
+    ]
+   ],
+   "src": "derived"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     489.7,
+     313.3
+    ],
+    [
+     483.3,
+     312.6
+    ]
+   ],
+   "src": "derived"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     131.4,
+     466.1
+    ],
+    [
+     125.1,
+     465.4
+    ]
+   ],
+   "src": "derived"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     179,
+     247.7
+    ],
+    [
+     179,
+     253.9
+    ]
+   ],
+   "src": "derived"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     423,
+     289.4
+    ],
+    [
+     423,
+     282.6
+    ]
+   ],
+   "src": "derived"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     315.2,
+     312.3
+    ],
+    [
+     314,
+     317.9
+    ]
+   ],
+   "src": "derived"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     206,
+     114.9
+    ],
+    [
+     200.9,
+     117.4
+    ]
+   ],
+   "src": "derived"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     451.4,
+     219.6
+    ],
+    [
+     457.6,
+     219.1
+    ]
+   ],
+   "src": "derived"
   }
  ]
 }

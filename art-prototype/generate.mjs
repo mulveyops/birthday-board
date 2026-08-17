@@ -127,7 +127,7 @@ const classify = (el) => {
     return { assetId: 'bldg.com.storefront', priority: 3, s: Math.min(1.15, 0.85 + area / 900), name };
   }
   if (b === 'apartments' || b === 'condominium' || (lv >= 3 && area > 250)) {
-    return { assetId: 'bldg.res.apartment', priority: 4, s: Math.min(1.2, 0.85 + lv * 0.06), name };
+    return { assetId: 'bldg.res.apartment', priority: 4, s: Math.min(1.2, 0.85 + lv * 0.06), name, lv };
   }
   if (b === 'garage' || b === 'shed' || b === 'barn' || b === 'roof') {
     if (area < 18 || area > 90) return null;
@@ -208,8 +208,28 @@ for (const c of candidates) {
     if (!placedB.some((p) => Math.hypot(p.x - x, p.y - y) < 24)) continue;
     if (++garages > 9) continue;
   }
+  // min-readable rule: an asset too small to read gets suppressed, never shrunk
+  if (c.s < 0.85) continue;
+  // apartment structure from data: 4+ stories -> tall s3; near a corner -> s2;
+  // big footprint -> wide brick s1; else narrow walk-up s0
+  let structure = c.structure ?? 0;
+  if (c.assetId === 'bldg.res.apartment') {
+    structure = (c.lv ?? 0) >= 4 ? 3 : distToNode(x, y) < 36 ? 2 : c.area > 280 ? 1 : 0;
+  }
+  // facing: screen-space bearing toward the frontage this asset addresses
+  // (corner assets face their intersection, street assets face the street)
+  let facing;
+  if (c.assetId.startsWith('bldg.com') || (c.assetId === 'bldg.res.apartment' && structure === 2)) {
+    let tx, ty;
+    if (c.assetId === 'bldg.com.corner_tavern' || structure === 2) {
+      let best = null;
+      for (const n2 of nodes) { const d2 = Math.hypot(n2.x - x, n2.y - y); if (!best || d2 < best.d) best = { d: d2, x: n2.x, y: n2.y }; }
+      tx = best.x; ty = best.y;
+    } else { tx = road.qx; ty = road.qy; }
+    facing = Math.round(Math.atan2(ty - y, tx - x) * 180 / Math.PI);
+  }
   const h = hash01(x, y);
-  commitB({ assetId: c.assetId, variant: Math.floor(h * 96), structure: c.structure ?? 0, x: +x.toFixed(1), y: +y.toFixed(1), scale: +c.s.toFixed(2), rotation: 0, layer: 'standing', priority: c.priority, name: c.name, src: 'osm:building' }, r);
+  commitB({ assetId: c.assetId, variant: Math.floor(h * 96), structure, facing, x: +x.toFixed(1), y: +y.toFixed(1), scale: +c.s.toFixed(2), rotation: 0, layer: 'standing', priority: c.priority, name: c.name, src: 'osm:building' }, r);
 }
 
 // ---- 3. trees: real city inventory, species -> asset, DBH -> scale ----
@@ -229,7 +249,9 @@ let treeStats = { cast: 0, skipped: 0 };
 for (const t of treeData) {
   if (!inSlice(t.lat, t.lng)) continue;
   const assetId = speciesAsset(t);
-  const s = Math.max(0.85, Math.min(1.7, 0.85 + (t.dbh_in ?? 8) / 24));
+  // mature elm/oak become small environmental landmarks — higher scale ceiling
+  const cap = assetId === 'tree.elm' || assetId === 'tree.oak' ? 2.05 : 1.7;
+  const s = Math.max(0.85, Math.min(cap, 0.85 + (t.dbh_in ?? 8) / 24));
   let x = X(t.lng), y = Y(t.lat);
   const road = distToRoad(x, y);
   // terrace band: trees stand just off the road edge (half-width 13m) so
@@ -264,6 +286,59 @@ for (const [ax, ay, bx, by] of roadSegs) {
   }
 }
 
+// ---- 5. QUIET PROPERTY-GROUNDING LAYER (real mapped lot fabric) ----
+// driveways/alleys from highway=service, fences/walls from barrier ways,
+// short entry walks derived per placed house. Low contrast, planar, selective.
+const propStats = { driveway: 0, alley: 0, fence: 0, retaining_wall: 0, wall: 0, hedge: 0, walk: 0 };
+const inView = (x, y) => x > -5 && y > -5 && x < W + 5 && y < H + 5;
+// clip a polyline against the road pavement and the viewport; return sub-runs
+const clipRuns = (pts) => {
+  const runs = [];
+  let cur = [];
+  for (const [x, y] of pts) {
+    if (inView(x, y) && distToRoad(x, y).d > 13.2) cur.push([+x.toFixed(1), +y.toFixed(1)]);
+    else if (cur.length) { runs.push(cur); cur = []; }
+  }
+  if (cur.length) runs.push(cur);
+  return runs.filter((r2) => r2.length >= 2 && r2.reduce((s2, p, i) => i ? s2 + Math.hypot(p[0] - r2[i - 1][0], p[1] - r2[i - 1][1]) : 0, 0) > 4);
+};
+const pushProp = (kind, pts) => {
+  scene.push({ assetId: `prop.${kind}`, layer: 'property', pts, src: kind === 'walk' ? 'derived' : 'osm' });
+  propStats[kind]++;
+};
+for (const el of raw.transport.elements ?? []) {
+  if (el.type !== 'way' || !el.geometry || el.tags?.highway !== 'service') continue;
+  const svc = el.tags.service;
+  if (svc !== 'driveway' && svc !== 'alley') continue;
+  const pts = el.geometry.map((g) => [X(g.lon), Y(g.lat)]);
+  for (const run of clipRuns(pts)) {
+    if (svc === 'driveway') {
+      // only driveways that serve a building we actually rendered
+      if (propStats.driveway >= 130) continue;
+      if (!run.some(([x, y]) => placedB.some((p) => Math.hypot(p.x - x, p.y - y) < 30))) continue;
+      pushProp('driveway', run);
+    } else pushProp('alley', run);
+  }
+}
+for (const el of raw.trees.elements ?? []) {
+  if (el.type !== 'way' || !el.geometry || !el.tags?.barrier) continue;
+  const kind = el.tags.barrier;
+  if (!['fence', 'retaining_wall', 'wall', 'hedge'].includes(kind)) continue;
+  if (propStats.fence + propStats.retaining_wall + propStats.wall >= 190) continue;
+  const pts = el.geometry.map((g) => [X(g.lon), Y(g.lat)]);
+  for (const run of clipRuns(pts)) pushProp(kind, run);
+}
+// derived entry walks: house front door -> sidewalk edge
+for (const e of scene) {
+  if (e.layer !== 'standing') continue;
+  if (e.assetId !== 'bldg.res.polish_flat' && e.assetId !== 'bldg.res.bungalow') continue;
+  if (hash01(e.x * 1.3, e.y * 0.7) > 0.55) continue;
+  const road = distToRoad(e.x, e.y);
+  if (road.d < 14.5 || road.d > 30) continue;
+  const ex = road.qx + road.nx * 13.6, ey = road.qy + road.ny * 13.6;
+  pushProp('walk', [[+e.x.toFixed(1), +(e.y + 0.6).toFixed(1)], [+ex.toFixed(1), +ey.toFixed(1)]]);
+}
+
 // ================= RENDER =================
 const GRASS = '#a9d476';
 const ROAD_FILL = '#f3ead6';
@@ -294,7 +369,7 @@ const variantStyle = (e) => {
     return `--b0:${b(0)};--b1:${b(1)};--b2:${b(2)};--a0:${a(0)};--a1:${a(1)};--a2:${a(2)};--side:${shade(b(2), -22)}`;
   }
   if (e.assetId === 'veh.car') return `--body:${CAR_BODIES[v % CAR_BODIES.length]}`;
-  if (e.assetId === 'bldg.res.apartment') {
+  if (e.assetId === 'bldg.res.apartment' && (e.structure ?? 0) === 0) {
     const body = ['#e0b48f', '#d9a8a0', '#c9c09a'][v % 3];
     return `--body:${body};--side:${shade(body, -20)}`;
   }
@@ -332,6 +407,21 @@ ${Array.from({ length: 60 }, (_, i) => {
   const gr = 16 + hash01(i, i) * 34;
   return `<circle cx="${gx.toFixed(0)}" cy="${gy.toFixed(0)}" r="${gr.toFixed(0)}" fill="#9ecb6a" opacity="0.35"/>`;
 }).join('')}
+<!-- QUIET PROPERTY FABRIC — real lot lines, below everything but grass -->
+${(() => {
+  const style = {
+    driveway: 'stroke="#cfc7ae" stroke-width="2.8" stroke-linecap="round" opacity="0.9"',
+    alley: 'stroke="#d8cfb6" stroke-width="5.5" stroke-linecap="round" opacity="0.9"',
+    walk: 'stroke="#e3dbc6" stroke-width="1.3" stroke-linecap="round" opacity="0.95"',
+    fence: 'stroke="#a08453" stroke-width="0.55" stroke-dasharray="2.1 1.5" opacity="0.75"',
+    retaining_wall: 'stroke="#a29a8a" stroke-width="1.25" stroke-linecap="round" opacity="0.9"',
+    wall: 'stroke="#a29a8a" stroke-width="1.05" stroke-linecap="round" opacity="0.9"',
+    hedge: 'stroke="#4f8f45" stroke-width="1.9" stroke-linecap="round" opacity="0.85"',
+  };
+  return scene.filter((e) => e.layer === 'property')
+    .map((e) => `<polyline points="${e.pts.map((p) => p.join(',')).join(' ')}" fill="none" ${style[e.assetId.slice(5)] ?? style.fence}/>`)
+    .join('\n');
+})()}
 <!-- ground assets (top-down, rotated to real geometry) -->
 ${groundEls.map((e) => `<use href="#${e.assetId}" transform="translate(${e.x} ${e.y}) rotate(${e.rotation}) scale(${e.scale})"/>`).join('\n')}
 <!-- sidewalk apron -->
@@ -359,7 +449,10 @@ ${standingEls.map(shadowFor).join('')}
 <!-- standing assets, painter-sorted -->
 ${standingEls.map((e) => {
   const st = variantStyle(e);
-  const base = `<use href="#${symbolRef(e)}" transform="translate(${e.x} ${e.y}) scale(${e.scale})"${st ? ` style="${st}"` : ''}/>`;
+  // facing-aware mirror: flip the sprite when its frontage (street/corner)
+  // lies clearly to the west, so doors/chamfers address what they belong to
+  const mirror = e.facing != null && Math.cos(e.facing * Math.PI / 180) < -0.45;
+  const base = `<use href="#${symbolRef(e)}" transform="translate(${e.x} ${e.y}) scale(${mirror ? -e.scale : e.scale} ${e.scale})"${st ? ` style="${st}"` : ''}/>`;
   if (e.assetId === 'bldg.com.corner_tavern') {
     const label = (e.name ?? 'TAVERN').toUpperCase().split(/\s+/)[0].replace(/[^A-Z'’\-]/g, '').slice(0, 9) || 'TAVERN';
     return base + `<text x="${e.x}" y="${(e.y - 7.55 * e.scale).toFixed(1)}" font-size="${(1.7 * e.scale).toFixed(2)}" font-weight="700" text-anchor="middle" fill="#f2c94c" letter-spacing="0.12">${label}</text>`;

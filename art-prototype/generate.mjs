@@ -8,6 +8,8 @@ import { dirname, join } from 'path';
 import { allSymbols, ASSET_META, STRUCT_COUNT, TREATMENT_COUNT, INK, HOUSE_BODIES, HOUSE_ROOFS, SHOP_BODIES, AWNINGS, CAR_BODIES } from './assets.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
+// raster heroes participate in normal placement/collision via ASSET_META
+ASSET_META['hero.st_hedwig'] = { halfW: 22, cls: 'standing', hero: true };
 const ROOT = join(HERE, '..');
 const SCRATCH = 'C:/Users/Steven/AppData/Local/Temp/claude/C--Users-Steven-Documents-Birthday-2026/5d610d7c-43c1-4149-9704-c942971ebd14/scratchpad';
 
@@ -172,6 +174,10 @@ const classify = (el) => {
   const lv = parseFloat(t['building:levels'] ?? '0');
   const area = areaOf(el.geometry);
   const name = t.name;
+  // Phase D2 raster hero test: St. Hedwig only, name-keyed
+  if (name && /hedwig catholic/i.test(name)) {
+    return { assetId: 'hero.st_hedwig', priority: 0, s: 1, name, structure: 0 };
+  }
   if (b === 'church' || (t.amenity === 'place_of_worship' && b !== 'construction' && b)) {
     // real data picks the skyline: tall/large -> tower church, wide -> twin-tower
     // parish, small -> neighborhood church
@@ -600,6 +606,58 @@ for (const e of scene.filter((s2) => s2.assetId === 'prop.alley')) {
   if (placeFurn('infra.dumpster', jx, jy, { clear: 30, src: 'procedural:dumpster' })) dumpsters++;
 }
 
+// ---- 7. HERO EVICTION: heroes claim visual territory (30m), path untouched ----
+// suppress ordinary buildings (prio>=4), furniture/cars (8), procedural & park
+// trees; KEEP city-inventory street trees outside 20m, all ground assets, path
+const HERO_RASTER = {
+  'hero.st_hedwig': {
+    file: join(HERE, 'heroes', 'st-hedwig-v1.png'),
+    widthM: 60,            // display width in world meters (aspect preserved)
+    aspect: 1402 / 1122,   // h/w of the bitmap
+    anchorX: 0.42,         // tower-base door center in the bitmap
+    anchorY: 0.91,
+    evict: 30,
+  },
+};
+const heroes = scene.filter((e) => HERO_RASTER[e.assetId]);
+if (heroes.length) {
+  const keep = (e) => {
+    for (const hz of heroes) {
+      if (e === hz) continue;
+      const d = Math.hypot(e.x - hz.x, e.y - hz.y);
+      const R = HERO_RASTER[hz.assetId].evict;
+      if (d > R) continue;
+      if (e.layer === 'ground') continue;                             // recreation stays
+      if (e.layer === 'property') continue;                           // handled below by kind
+      if (e.priority <= 3 && !e.assetId.startsWith('tree.') && e.layer === 'standing') continue; // civic/commercial neighbors stay
+      if (e.src?.startsWith('city:') && d > 20) continue;             // real street trees survive at the terrace band
+      return false;
+    }
+    return true;
+  };
+  const before = scene.length;
+  const propMid = (e) => [(e.pts[0][0] + e.pts[e.pts.length - 1][0]) / 2, (e.pts[0][1] + e.pts[e.pts.length - 1][1]) / 2];
+  const kept = scene.filter((e) => {
+    if (e.layer === 'property' && (e.assetId === 'prop.walk' || e.assetId === 'prop.driveway')) {
+      // baked-in sidewalk/landscaping in the raster replaces derived walks nearby
+      const [mx, my] = propMid(e);
+      return !heroes.some((hz) => Math.hypot(mx - hz.x, my - hz.y) < 26);
+    }
+    if (e.assetId === 'prop.parking') {
+      // a half-hidden lot poking out from behind a hero reads as an artifact —
+      // drop the lot if ANY vertex sits inside the hero zone
+      return !heroes.some((hz) => e.pts.some((p) => Math.hypot(p[0] - hz.x, p[1] - hz.y) < 40));
+    }
+    if (e.src === 'procedural:parking_cluster') {
+      return !heroes.some((hz) => Math.hypot(e.x - hz.x, e.y - hz.y) < 42);
+    }
+    return keep(e);
+  });
+  scene.length = 0;
+  scene.push(...kept);
+  console.error('hero eviction removed', before - kept.length, 'entries');
+}
+
 // ================= RENDER =================
 const GRASS = '#a9d476';
 const ROAD_FILL = '#f3ead6';
@@ -658,9 +716,13 @@ function shade(hex, amt) {
 const groundEls = scene.filter((e) => e.layer === 'ground');
 const standingEls = scene.filter((e) => e.layer === 'standing').sort((a, b) => a.y - b.y);
 
+const heroData = {};
+for (const [id, cfg] of Object.entries(HERO_RASTER)) {
+  try { heroData[id] = 'data:image/png;base64,' + readFileSync(cfg.file).toString('base64'); } catch { /* missing file: hero renders nothing */ }
+}
 const shadowFor = (e) => {
   const m = ASSET_META[e.assetId];
-  if (m.cls === 'ground') return '';
+  if (!m || m.cls === 'ground') return '';
   const rx = (m.halfW * 0.92 * e.scale).toFixed(1);
   return `<ellipse cx="${e.x + 1.2}" cy="${e.y + 1.3}" rx="${rx}" ry="${(m.cls === 'tree' ? 1.9 : 2.6)}" fill="#2c2318" opacity="0.13"/>`;
 };
@@ -743,6 +805,13 @@ ${nodes.map((n) => {
 ${standingEls.map(shadowFor).join('')}
 <!-- standing assets, painter-sorted -->
 ${standingEls.map((e) => {
+  // raster heroes: <image> in the same painter sort, anchored at the tower base
+  if (HERO_RASTER[e.assetId] && heroData[e.assetId]) {
+    const cfg = HERO_RASTER[e.assetId];
+    const w2 = cfg.widthM, h2 = w2 * cfg.aspect;
+    return `<ellipse cx="${e.x}" cy="${e.y + 2}" rx="${(w2 * 0.38).toFixed(1)}" ry="3.4" fill="#2c2318" opacity="0.13"/>` +
+      `<image href="${heroData[e.assetId]}" x="${(e.x - w2 * cfg.anchorX).toFixed(1)}" y="${(e.y - h2 * cfg.anchorY).toFixed(1)}" width="${w2}" height="${h2.toFixed(1)}"/>`;
+  }
   const st = variantStyle(e);
   // facing-aware mirror: flip the sprite when its frontage (street/corner)
   // lies clearly to the west, so doors/chamfers address what they belong to

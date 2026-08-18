@@ -7,10 +7,10 @@
   "out": "style-c-slice"
  },
  "counts": {
-  "ground.picnic_table": 1,
+  "furniture.picnic_table": 1,
   "ground.tennis": 2,
   "ground.playground": 2,
-  "bldg.civ.church": 1,
+  "hero.st_hedwig": 1,
   "bldg.civ.school": 1,
   "bldg.com.mixed_use": 17,
   "bldg.com.corner_tavern": 7,
@@ -22,25 +22,33 @@
   "bldg.res.garage": 4,
   "bldg.res.shed": 1,
   "tree.maple": 56,
-  "tree.flowering": 58,
+  "tree.flowering": 57,
   "tree.ash": 49,
   "tree.honeylocust": 16,
   "tree.oak": 13,
   "tree.linden": 28,
   "tree.elm": 15,
   "tree.conifer": 4,
-  "veh.car": 8,
-  "prop.driveway": 56,
+  "vehicle.parked_car": 16,
+  "prop.driveway": 55,
   "prop.alley": 2,
   "prop.fence": 42,
   "prop.wall": 15,
   "prop.retaining_wall": 20,
   "prop.hedge": 1,
-  "prop.walk": 46
+  "prop.walk": 46,
+  "prop.parking": 7,
+  "furniture.bus_stop": 3,
+  "furniture.flagpole": 1,
+  "furniture.hydrant": 8,
+  "furniture.bench": 9,
+  "furniture.trash_can": 3,
+  "furniture.bike_rack": 9,
+  "infra.dumpster": 1
  },
  "scene": [
   {
-   "assetId": "ground.picnic_table",
+   "assetId": "furniture.picnic_table",
    "variant": 0,
    "x": 242.6,
    "y": 155.9,
@@ -97,15 +105,15 @@
    "src": "osm:pitch:tennis"
   },
   {
-   "assetId": "bldg.civ.church",
-   "variant": 27,
+   "assetId": "hero.st_hedwig",
+   "variant": 29,
    "structure": 0,
    "x": 152.6,
-   "y": 403.6,
-   "scale": 1.7,
+   "y": 401.8,
+   "scale": 1,
    "rotation": 0,
    "layer": "standing",
-   "priority": 1,
+   "priority": 0,
    "name": "Saint Hedwig Catholic Church",
    "src": "osm:building"
   },
@@ -3173,18 +3181,6 @@
   },
   {
    "assetId": "tree.flowering",
-   "structure": 0,
-   "variant": 35,
-   "x": 162.6,
-   "y": 414.5,
-   "scale": 0.93,
-   "rotation": 0,
-   "layer": "standing",
-   "priority": 7,
-   "src": "city:Pear, Callery 2\""
-  },
-  {
-   "assetId": "tree.flowering",
    "structure": 1,
    "variant": 6,
    "x": 65.2,
@@ -5020,7 +5016,8 @@
    "src": "procedural:yard_conifer"
   },
   {
-   "assetId": "veh.car",
+   "assetId": "vehicle.parked_car",
+   "structure": 0,
    "variant": 48,
    "x": 76.1,
    "y": 62.8,
@@ -5031,7 +5028,8 @@
    "src": "procedural:parked_car"
   },
   {
-   "assetId": "veh.car",
+   "assetId": "vehicle.parked_car",
+   "structure": 0,
    "variant": 65,
    "x": 94.6,
    "y": 81.8,
@@ -5042,7 +5040,8 @@
    "src": "procedural:parked_car"
   },
   {
-   "assetId": "veh.car",
+   "assetId": "vehicle.parked_car",
+   "structure": 1,
    "variant": 83,
    "x": 187,
    "y": 419.7,
@@ -5053,7 +5052,8 @@
    "src": "procedural:parked_car"
   },
   {
-   "assetId": "veh.car",
+   "assetId": "vehicle.parked_car",
+   "structure": 0,
    "variant": 13,
    "x": 61.3,
    "y": 355.2,
@@ -5064,7 +5064,8 @@
    "src": "procedural:parked_car"
   },
   {
-   "assetId": "veh.car",
+   "assetId": "vehicle.parked_car",
+   "structure": 0,
    "variant": 56,
    "x": 440.5,
    "y": 73.7,
@@ -5075,7 +5076,8 @@
    "src": "procedural:parked_car"
   },
   {
-   "assetId": "veh.car",
+   "assetId": "vehicle.parked_car",
+   "structure": 0,
    "variant": 51,
    "x": 94.5,
    "y": 256.8,
@@ -5086,7 +5088,8 @@
    "src": "procedural:parked_car"
   },
   {
-   "assetId": "veh.car",
+   "assetId": "vehicle.parked_car",
+   "structure": 0,
    "variant": 76,
    "x": 37,
    "y": 174.6,
@@ -5097,7 +5100,8 @@
    "src": "procedural:parked_car"
   },
   {
-   "assetId": "veh.car",
+   "assetId": "vehicle.parked_car",
+   "structure": 1,
    "variant": 49,
    "x": 285.8,
    "y": 440.4,
@@ -5657,21 +5661,6 @@
     [
      267.4,
      388
-    ]
-   ],
-   "src": "osm"
-  },
-  {
-   "assetId": "prop.driveway",
-   "layer": "property",
-   "pts": [
-    [
-     160.8,
-     381.8
-    ],
-    [
-     174.3,
-     381.9
     ]
    ],
    "src": "osm"
@@ -8952,6 +8941,927 @@
     ]
    ],
    "src": "procedural:entry_walk"
+  },
+  {
+   "assetId": "prop.parking",
+   "layer": "property",
+   "pts": [
+    [
+     410.8,
+     384.2
+    ],
+    [
+     380.3,
+     384
+    ],
+    [
+     380.3,
+     378.8
+    ],
+    [
+     378.7,
+     378.8
+    ],
+    [
+     378.7,
+     371.9
+    ],
+    [
+     382.5,
+     371.9
+    ],
+    [
+     382.6,
+     366.4
+    ],
+    [
+     416.9,
+     366.7
+    ],
+    [
+     416.9,
+     373.8
+    ],
+    [
+     453.9,
+     374.2
+    ],
+    [
+     453.9,
+     379.1
+    ],
+    [
+     456.3,
+     379.1
+    ],
+    [
+     456.3,
+     386.5
+    ],
+    [
+     454.5,
+     386.5
+    ],
+    [
+     454.5,
+     392
+    ],
+    [
+     411.5,
+     391.6
+    ],
+    [
+     411.5,
+     385.2
+    ],
+    [
+     410.8,
+     384.2
+    ]
+   ],
+   "src": "osm:parking"
+  },
+  {
+   "assetId": "vehicle.parked_car",
+   "structure": 1,
+   "variant": 20,
+   "x": 428.2,
+   "y": 379.8,
+   "scale": 1.9,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "procedural:parking_cluster"
+  },
+  {
+   "assetId": "vehicle.parked_car",
+   "structure": 0,
+   "variant": 21,
+   "x": 422.2,
+   "y": 379.8,
+   "scale": 1.9,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "procedural:parking_cluster"
+  },
+  {
+   "assetId": "vehicle.parked_car",
+   "structure": 2,
+   "variant": 39,
+   "x": 416.2,
+   "y": 379.7,
+   "scale": 1.9,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "procedural:parking_cluster"
+  },
+  {
+   "assetId": "vehicle.parked_car",
+   "structure": 0,
+   "variant": 8,
+   "x": 410.2,
+   "y": 379.7,
+   "scale": 1.9,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "procedural:parking_cluster"
+  },
+  {
+   "assetId": "vehicle.parked_car",
+   "structure": 0,
+   "variant": 69,
+   "x": 404.2,
+   "y": 379.6,
+   "scale": 1.9,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "procedural:parking_cluster"
+  },
+  {
+   "assetId": "prop.parking",
+   "layer": "property",
+   "pts": [
+    [
+     315.2,
+     543.3
+    ],
+    [
+     290.5,
+     543.2
+    ],
+    [
+     289,
+     543.2
+    ],
+    [
+     289,
+     545.3
+    ],
+    [
+     288.1,
+     549
+    ],
+    [
+     281.4,
+     549
+    ],
+    [
+     276,
+     549
+    ],
+    [
+     275.9,
+     543.1
+    ],
+    [
+     263.7,
+     543.1
+    ],
+    [
+     263.7,
+     546.9
+    ],
+    [
+     262.7,
+     546.9
+    ],
+    [
+     259.1,
+     546.8
+    ],
+    [
+     256,
+     546.8
+    ],
+    [
+     254.7,
+     546.8
+    ],
+    [
+     254.7,
+     541.4
+    ],
+    [
+     229.6,
+     541.2
+    ],
+    [
+     229.6,
+     542.9
+    ],
+    [
+     229.6,
+     547
+    ],
+    [
+     229.5,
+     547.5
+    ],
+    [
+     229,
+     547.8
+    ],
+    [
+     226.6,
+     547.8
+    ],
+    [
+     226.6,
+     553.7
+    ],
+    [
+     228.3,
+     553.7
+    ],
+    [
+     229,
+     554
+    ],
+    [
+     229.5,
+     554.5
+    ],
+    [
+     229.5,
+     560.2
+    ],
+    [
+     267.4,
+     560.2
+    ],
+    [
+     315.1,
+     561.2
+    ],
+    [
+     315.1,
+     555.6
+    ],
+    [
+     315.1,
+     552.2
+    ],
+    [
+     315.2,
+     548.9
+    ],
+    [
+     315.3,
+     545.2
+    ],
+    [
+     315.2,
+     543.3
+    ]
+   ],
+   "src": "osm:parking"
+  },
+  {
+   "assetId": "vehicle.parked_car",
+   "structure": 1,
+   "variant": 22,
+   "x": 260.5,
+   "y": 548.4,
+   "scale": 1.9,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "procedural:parking_cluster"
+  },
+  {
+   "assetId": "vehicle.parked_car",
+   "structure": 0,
+   "variant": 87,
+   "x": 266.5,
+   "y": 548.5,
+   "scale": 1.9,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "procedural:parking_cluster"
+  },
+  {
+   "assetId": "vehicle.parked_car",
+   "structure": 0,
+   "variant": 43,
+   "x": 272.5,
+   "y": 548.6,
+   "scale": 1.9,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "procedural:parking_cluster"
+  },
+  {
+   "assetId": "prop.parking",
+   "layer": "property",
+   "pts": [
+    [
+     455.6,
+     519.7
+    ],
+    [
+     466.4,
+     504.5
+    ],
+    [
+     455.9,
+     497.1
+    ],
+    [
+     445.1,
+     512.3
+    ],
+    [
+     455.6,
+     519.7
+    ]
+   ],
+   "src": "osm:parking"
+  },
+  {
+   "assetId": "prop.parking",
+   "layer": "property",
+   "pts": [
+    [
+     428.6,
+     538.1
+    ],
+    [
+     432,
+     533.1
+    ],
+    [
+     437.1,
+     525.5
+    ],
+    [
+     447.2,
+     532.4
+    ],
+    [
+     446.7,
+     533.2
+    ],
+    [
+     435.2,
+     550.1
+    ],
+    [
+     425.1,
+     543.2
+    ],
+    [
+     427.5,
+     539.6
+    ],
+    [
+     428.6,
+     538.1
+    ]
+   ],
+   "src": "osm:parking"
+  },
+  {
+   "assetId": "prop.parking",
+   "layer": "property",
+   "pts": [
+    [
+     454.2,
+     522.1
+    ],
+    [
+     455.2,
+     520.6
+    ],
+    [
+     461.6,
+     511.7
+    ],
+    [
+     478.3,
+     523
+    ],
+    [
+     477.6,
+     524
+    ],
+    [
+     473.8,
+     529.7
+    ],
+    [
+     471.1,
+     533.6
+    ],
+    [
+     454.2,
+     522.1
+    ]
+   ],
+   "src": "osm:parking"
+  },
+  {
+   "assetId": "prop.parking",
+   "layer": "property",
+   "pts": [
+    [
+     341.2,
+     474.1
+    ],
+    [
+     348.8,
+     474.2
+    ],
+    [
+     350.6,
+     474.2
+    ],
+    [
+     358,
+     474.2
+    ],
+    [
+     359.8,
+     474.2
+    ],
+    [
+     362.1,
+     474.2
+    ],
+    [
+     381.1,
+     474.7
+    ],
+    [
+     381.2,
+     482.4
+    ],
+    [
+     360.2,
+     482.5
+    ],
+    [
+     341,
+     482.1
+    ],
+    [
+     341.2,
+     474.1
+    ]
+   ],
+   "src": "osm:parking"
+  },
+  {
+   "assetId": "prop.parking",
+   "layer": "property",
+   "pts": [
+    [
+     254.9,
+     500.5
+    ],
+    [
+     254.9,
+     508.3
+    ],
+    [
+     254.8,
+     512.1
+    ],
+    [
+     247.8,
+     512
+    ],
+    [
+     247.7,
+     518.6
+    ],
+    [
+     272.8,
+     518.8
+    ],
+    [
+     272.9,
+     500.7
+    ],
+    [
+     254.9,
+     500.5
+    ]
+   ],
+   "src": "osm:parking"
+  },
+  {
+   "assetId": "furniture.bus_stop",
+   "structure": 0,
+   "variant": 0,
+   "x": 320.6,
+   "y": 444.5,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "osm:bus_stop"
+  },
+  {
+   "assetId": "furniture.flagpole",
+   "structure": 0,
+   "variant": 0,
+   "x": 314.6,
+   "y": 504.7,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "osm:flagpole"
+  },
+  {
+   "assetId": "furniture.hydrant",
+   "structure": 0,
+   "variant": 0,
+   "x": 378.1,
+   "y": 417.3,
+   "scale": 1.15,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "osm:fire_hydrant"
+  },
+  {
+   "assetId": "furniture.hydrant",
+   "structure": 0,
+   "variant": 0,
+   "x": 482,
+   "y": 425.5,
+   "scale": 1.15,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "osm:fire_hydrant"
+  },
+  {
+   "assetId": "furniture.hydrant",
+   "structure": 0,
+   "variant": 0,
+   "x": 484.3,
+   "y": 255.9,
+   "scale": 1.15,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "osm:fire_hydrant"
+  },
+  {
+   "assetId": "furniture.hydrant",
+   "structure": 0,
+   "variant": 0,
+   "x": 479.1,
+   "y": 71.7,
+   "scale": 1.15,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "osm:fire_hydrant"
+  },
+  {
+   "assetId": "furniture.hydrant",
+   "structure": 0,
+   "variant": 0,
+   "x": 360.4,
+   "y": 326.7,
+   "scale": 1.15,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "osm:fire_hydrant"
+  },
+  {
+   "assetId": "furniture.hydrant",
+   "structure": 0,
+   "variant": 0,
+   "x": 261.7,
+   "y": 319.2,
+   "scale": 1.15,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "osm:fire_hydrant"
+  },
+  {
+   "assetId": "furniture.hydrant",
+   "structure": 0,
+   "variant": 0,
+   "x": 201,
+   "y": 169.8,
+   "scale": 1.15,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "osm:fire_hydrant"
+  },
+  {
+   "assetId": "furniture.hydrant",
+   "structure": 0,
+   "variant": 0,
+   "x": 459.4,
+   "y": 449.5,
+   "scale": 1.15,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "osm:fire_hydrant"
+  },
+  {
+   "assetId": "furniture.bus_stop",
+   "structure": 0,
+   "variant": 0,
+   "x": 125,
+   "y": 415.4,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "osm:bus_stop"
+  },
+  {
+   "assetId": "furniture.bus_stop",
+   "structure": 0,
+   "variant": 0,
+   "x": 98.6,
+   "y": 416.8,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "osm:bus_stop"
+  },
+  {
+   "assetId": "furniture.bench",
+   "structure": 0,
+   "variant": 0,
+   "x": 316,
+   "y": 530.5,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "osm:bench"
+  },
+  {
+   "assetId": "furniture.bench",
+   "structure": 0,
+   "variant": 0,
+   "x": 316.3,
+   "y": 517.9,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "osm:bench"
+  },
+  {
+   "assetId": "furniture.bench",
+   "structure": 0,
+   "variant": 0,
+   "x": 296.5,
+   "y": 501.4,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "osm:bench"
+  },
+  {
+   "assetId": "furniture.trash_can",
+   "structure": 0,
+   "variant": 0,
+   "x": 232.5,
+   "y": 416.2,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "osm:waste_basket"
+  },
+  {
+   "assetId": "furniture.bike_rack",
+   "structure": 0,
+   "variant": 0,
+   "x": 204,
+   "y": 404.2,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "osm:bicycle_parking"
+  },
+  {
+   "assetId": "furniture.bench",
+   "structure": 0,
+   "variant": 0,
+   "x": 229.7,
+   "y": 152.3,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "osm:bench"
+  },
+  {
+   "assetId": "furniture.trash_can",
+   "structure": 0,
+   "variant": 0,
+   "x": 350.5,
+   "y": 132.8,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "osm:waste_basket"
+  },
+  {
+   "assetId": "furniture.bench",
+   "structure": 0,
+   "variant": 0,
+   "x": 357,
+   "y": 144.9,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "osm:bench"
+  },
+  {
+   "assetId": "furniture.bench",
+   "structure": 0,
+   "variant": 0,
+   "x": 258.6,
+   "y": 162.3,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "osm:bench"
+  },
+  {
+   "assetId": "furniture.bench",
+   "structure": 0,
+   "variant": 0,
+   "x": 234.6,
+   "y": 175.1,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "osm:bench"
+  },
+  {
+   "assetId": "furniture.bench",
+   "structure": 0,
+   "variant": 0,
+   "x": 233.3,
+   "y": 291.8,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "osm:bench"
+  },
+  {
+   "assetId": "furniture.trash_can",
+   "structure": 0,
+   "variant": 0,
+   "x": 52.8,
+   "y": 87.8,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "osm:waste_basket"
+  },
+  {
+   "assetId": "furniture.bench",
+   "structure": 0,
+   "variant": 0,
+   "x": 104,
+   "y": 171.2,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "osm:bench"
+  },
+  {
+   "assetId": "furniture.bike_rack",
+   "structure": 0,
+   "variant": 0,
+   "x": 429.8,
+   "y": 417.8,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "osm:bicycle_parking"
+  },
+  {
+   "assetId": "furniture.bike_rack",
+   "structure": 0,
+   "variant": 0,
+   "x": 98,
+   "y": 452,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "osm:bicycle_parking"
+  },
+  {
+   "assetId": "furniture.bike_rack",
+   "structure": 0,
+   "variant": 0,
+   "x": 204.9,
+   "y": 443.6,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "osm:bicycle_parking"
+  },
+  {
+   "assetId": "furniture.bike_rack",
+   "structure": 0,
+   "variant": 0,
+   "x": 157.2,
+   "y": 443.2,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "osm:bicycle_parking"
+  },
+  {
+   "assetId": "furniture.bike_rack",
+   "structure": 0,
+   "variant": 0,
+   "x": 378.4,
+   "y": 444.9,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "osm:bicycle_parking"
+  },
+  {
+   "assetId": "furniture.bike_rack",
+   "structure": 0,
+   "variant": 0,
+   "x": 433.6,
+   "y": 445.4,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "osm:bicycle_parking"
+  },
+  {
+   "assetId": "furniture.bike_rack",
+   "structure": 0,
+   "variant": 0,
+   "x": 320.6,
+   "y": 416.9,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "osm:bicycle_parking"
+  },
+  {
+   "assetId": "furniture.bike_rack",
+   "structure": 0,
+   "variant": 0,
+   "x": 99,
+   "y": 390.1,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "osm:bicycle_parking"
+  },
+  {
+   "assetId": "infra.dumpster",
+   "structure": 0,
+   "variant": 0,
+   "x": 41.9,
+   "y": 483.1,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "procedural:dumpster"
   }
  ]
 }

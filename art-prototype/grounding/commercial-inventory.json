@@ -1,0 +1,2435 @@
+{
+ "generated": "2026-08-18",
+ "area": "Lower East Side board polygon",
+ "counts": {
+  "bakery": 1,
+  "cafe": 9,
+  "entertainment": 2,
+  "grocery_specialty": 2,
+  "other_local": 3,
+  "restaurant": 18,
+  "retail": 8,
+  "salon_service": 11,
+  "tavern_bar": 23
+ },
+ "businesses": [
+  {
+   "name": "Peter Sciortino's Bakery",
+   "category": "bakery",
+   "lat": 43.05282,
+   "lng": -87.89788,
+   "address": "1101 East Brady Street",
+   "osmTags": {
+    "shop": "bakery",
+    "start_date": "1947"
+   },
+   "building": {
+    "id": 434818560,
+    "areaM2": 760,
+    "dims": "40x24m",
+    "levels": "2",
+    "material": "cream_city_brick",
+    "buildingTag": "retail",
+    "historic": true,
+    "architecture": null,
+    "startDate": "1889",
+    "name": null
+   },
+   "frontage": {
+    "faces": "N",
+    "streetDistM": 17
+   },
+   "corner": true,
+   "nodeDistM": 26,
+   "distinctive": true
+  },
+  {
+   "name": "Apollo Cafe",
+   "category": "cafe",
+   "lat": 43.053133,
+   "lng": -87.894678,
+   "address": "1310 East Brady Street",
+   "osmTags": {
+    "amenity": "cafe",
+    "building:levels": "2",
+    "building:material": "aluminum/vinyl_siding",
+    "building:part": "retail",
+    "cuisine": "greek"
+   },
+   "building": {
+    "id": 452199173,
+    "areaM2": 717,
+    "dims": "36x22m",
+    "levels": "2",
+    "material": "aluminum/vinyl_siding",
+    "buildingTag": "retail",
+    "historic": false,
+    "architecture": null,
+    "startDate": "1997",
+    "name": null
+   },
+   "frontage": {
+    "faces": "S",
+    "streetDistM": 20
+   },
+   "corner": false,
+   "nodeDistM": 48,
+   "distinctive": false
+  },
+  {
+   "name": "Brewed Cafe",
+   "category": "cafe",
+   "lat": 43.053052,
+   "lng": -87.896465,
+   "address": "1208 East Brady Street",
+   "osmTags": {
+    "amenity": "cafe"
+   },
+   "building": {
+    "id": 452301291,
+    "areaM2": 144,
+    "dims": "13x11m",
+    "levels": "2",
+    "material": "clapboard",
+    "buildingTag": "retail",
+    "historic": true,
+    "architecture": "queen_anne",
+    "startDate": "1888",
+    "name": null
+   },
+   "frontage": {
+    "faces": "S",
+    "streetDistM": 10
+   },
+   "corner": true,
+   "nodeDistM": 32,
+   "distinctive": true
+  },
+  {
+   "name": "Coffeetails",
+   "category": "cafe",
+   "lat": 43.049638,
+   "lng": -87.903261,
+   "address": "1506 North Van Buren Street",
+   "osmTags": {
+    "amenity": "cafe",
+    "start_date": "2008"
+   },
+   "building": {
+    "id": 411100873,
+    "areaM2": 420,
+    "dims": "25x22m",
+    "levels": "2",
+    "material": "brick",
+    "buildingTag": "retail",
+    "historic": false,
+    "architecture": null,
+    "startDate": "1919",
+    "name": null
+   },
+   "frontage": {
+    "faces": "W",
+    "streetDistM": 15
+   },
+   "corner": false,
+   "nodeDistM": 92,
+   "distinctive": false
+  },
+  {
+   "name": "Dryhootch Coffeehouse",
+   "category": "cafe",
+   "lat": 43.053183,
+   "lng": -87.898618,
+   "address": "1030 East Brady Street",
+   "osmTags": {
+    "amenity": "cafe"
+   },
+   "building": {
+    "id": 183249003,
+    "areaM2": 92,
+    "dims": "16x6m",
+    "levels": "2",
+    "material": "wood",
+    "buildingTag": "house",
+    "historic": true,
+    "architecture": "front_gabled",
+    "startDate": "1890",
+    "name": "Dryhootch"
+   },
+   "frontage": {
+    "faces": "S",
+    "streetDistM": 23
+   },
+   "corner": false,
+   "nodeDistM": 46,
+   "distinctive": true
+  },
+  {
+   "name": "Fro Zone",
+   "category": "cafe",
+   "lat": 43.053137,
+   "lng": -87.894412,
+   "address": "1320 East Brady Street",
+   "osmTags": {
+    "amenity": "ice_cream",
+    "building:levels": "2",
+    "building:material": "aluminum/vinyl_siding",
+    "building:part": "retail",
+    "cuisine": "ice_cream",
+    "start_date": "2017-06-29"
+   },
+   "building": {
+    "id": 452199174,
+    "areaM2": 405,
+    "dims": "22x22m",
+    "levels": "2",
+    "material": "aluminum/vinyl_siding",
+    "buildingTag": "retail",
+    "historic": false,
+    "architecture": null,
+    "startDate": "1997",
+    "name": null
+   },
+   "frontage": {
+    "faces": "S",
+    "streetDistM": 21
+   },
+   "corner": false,
+   "nodeDistM": 52,
+   "distinctive": false
+  },
+  {
+   "name": "Jona's Pit Stop",
+   "category": "cafe",
+   "lat": 43.052868,
+   "lng": -87.898799,
+   "address": "1023 East Brady Street",
+   "osmTags": {
+    "amenity": "ice_cream",
+    "cuisine": "mexican",
+    "start_date": "2019-12"
+   },
+   "building": {
+    "id": 437216056,
+    "areaM2": 156,
+    "dims": "23x8m",
+    "levels": "2",
+    "material": "clapboard",
+    "buildingTag": "house",
+    "historic": true,
+    "architecture": "queen_anne",
+    "startDate": "1890",
+    "name": null
+   },
+   "frontage": {
+    "faces": "N",
+    "streetDistM": 12
+   },
+   "corner": false,
+   "nodeDistM": 56,
+   "distinctive": true
+  },
+  {
+   "name": "Rochambo Coffee & Tea House",
+   "category": "cafe",
+   "lat": 43.052852,
+   "lng": -87.894871,
+   "address": "1317 East Brady Street",
+   "osmTags": {
+    "amenity": "cafe",
+    "start_date": "1995"
+   },
+   "building": {
+    "id": 432950067,
+    "areaM2": 125,
+    "dims": "16x9m",
+    "levels": "2",
+    "material": "brick",
+    "buildingTag": "retail",
+    "historic": true,
+    "architecture": "queen_anne",
+    "startDate": "1875",
+    "name": null
+   },
+   "frontage": {
+    "faces": "N",
+    "streetDistM": 11
+   },
+   "corner": true,
+   "nodeDistM": 30,
+   "distinctive": true
+  },
+  {
+   "name": "Sip & Purr Cat Café",
+   "category": "cafe",
+   "lat": 43.052872,
+   "lng": -87.901171,
+   "address": "833 East Brady Street",
+   "osmTags": {
+    "amenity": "cafe"
+   },
+   "building": {
+    "id": 1373041071,
+    "areaM2": 272,
+    "dims": "24x12m",
+    "levels": "2",
+    "material": null,
+    "buildingTag": "yes",
+    "historic": false,
+    "architecture": null,
+    "startDate": null,
+    "name": null
+   },
+   "frontage": {
+    "faces": "N",
+    "streetDistM": 13
+   },
+   "corner": true,
+   "nodeDistM": 27,
+   "distinctive": false
+  },
+  {
+   "name": "The Deep Groove",
+   "category": "cafe",
+   "lat": 43.05307,
+   "lng": -87.896682,
+   "address": "1200 East Brady Street",
+   "osmTags": {
+    "amenity": "cafe"
+   },
+   "building": {
+    "id": 452301292,
+    "areaM2": 173,
+    "dims": "16x12m",
+    "levels": "2",
+    "material": "cream_city_brick",
+    "buildingTag": "retail",
+    "historic": true,
+    "architecture": "romanesque_revival",
+    "startDate": "1880",
+    "name": null
+   },
+   "frontage": {
+    "faces": "S",
+    "streetDistM": 12
+   },
+   "corner": true,
+   "nodeDistM": 17,
+   "distinctive": true
+  },
+  {
+   "name": "Cass Street Boys & Girls Club",
+   "category": "entertainment",
+   "lat": 43.051542,
+   "lng": -87.902412,
+   "address": null,
+   "osmTags": {
+    "amenity": "community_centre"
+   },
+   "building": {
+    "id": 435768615,
+    "areaM2": 2487,
+    "dims": "95x31m",
+    "levels": "5",
+    "material": "brick",
+    "buildingTag": "school",
+    "historic": false,
+    "architecture": null,
+    "startDate": "1904",
+    "name": null
+   },
+   "frontage": {
+    "faces": "E",
+    "streetDistM": 20
+   },
+   "corner": true,
+   "nodeDistM": 30,
+   "distinctive": false
+  },
+  {
+   "name": "Eventi",
+   "category": "entertainment",
+   "lat": 43.053071,
+   "lng": -87.898877,
+   "address": "1020 East Brady Street",
+   "osmTags": {
+    "amenity": "events_venue"
+   },
+   "building": {
+    "id": 183249008,
+    "areaM2": 327,
+    "dims": "23x15m",
+    "levels": "2",
+    "material": "brick",
+    "buildingTag": "retail",
+    "historic": true,
+    "architecture": "mediterranean_revival",
+    "startDate": "1927",
+    "name": null
+   },
+   "frontage": {
+    "faces": "S",
+    "streetDistM": 11
+   },
+   "corner": false,
+   "nodeDistM": 55,
+   "distinctive": true
+  },
+  {
+   "name": "Glorioso's Italian Market",
+   "category": "grocery_specialty",
+   "lat": 43.052782,
+   "lng": -87.899255,
+   "address": "1011 East Brady Street",
+   "osmTags": {
+    "building": "retail",
+    "building:architect": "Myers E. Becongia",
+    "building:levels": "2",
+    "building:material": "stucco",
+    "cuisine": "italian",
+    "historic": "building",
+    "shop": "supermarket",
+    "start_date": "1913"
+   },
+   "building": {
+    "id": 183343192,
+    "areaM2": 909,
+    "dims": "40x30m",
+    "levels": "2",
+    "material": "stucco",
+    "buildingTag": "retail",
+    "historic": true,
+    "architecture": null,
+    "startDate": "1913",
+    "name": "Glorioso's Italian Market"
+   },
+   "frontage": {
+    "faces": "N",
+    "streetDistM": 22
+   },
+   "corner": true,
+   "nodeDistM": 32,
+   "distinctive": true
+  },
+  {
+   "name": "Tina's Food Market",
+   "category": "grocery_specialty",
+   "lat": 43.050193,
+   "lng": -87.896736,
+   "address": "1518 North Franklin Place",
+   "osmTags": {
+    "shop": "convenience"
+   },
+   "building": {
+    "id": 410359043,
+    "areaM2": 203,
+    "dims": "17x17m",
+    "levels": "2",
+    "material": "clapboard",
+    "buildingTag": "office",
+    "historic": false,
+    "architecture": "side_gabled",
+    "startDate": "1898",
+    "name": null
+   },
+   "frontage": {
+    "faces": "SE",
+    "streetDistM": 12
+   },
+   "corner": false,
+   "nodeDistM": 38,
+   "distinctive": false
+  },
+  {
+   "name": "Johnsen Schmaling Architects",
+   "category": "other_local",
+   "lat": 43.052861,
+   "lng": -87.899889,
+   "address": "1699 North Astor Street",
+   "osmTags": {
+    "office": "architect"
+   },
+   "building": {
+    "id": 439039483,
+    "areaM2": 139,
+    "dims": "17x8m",
+    "levels": "2",
+    "material": "brick",
+    "buildingTag": "retail",
+    "historic": true,
+    "architecture": "romanesque_revival",
+    "startDate": "1903",
+    "name": null
+   },
+   "frontage": {
+    "faces": "N",
+    "streetDistM": 13
+   },
+   "corner": true,
+   "nodeDistM": 31,
+   "distinctive": true
+  },
+  {
+   "name": "The Business Coworking Lounge",
+   "category": "other_local",
+   "lat": 43.054543,
+   "lng": -87.90063,
+   "address": "902 East Hamilton Street",
+   "osmTags": {
+    "office": "coworking",
+    "start_date": "2020-02-15"
+   },
+   "building": {
+    "id": 404667157,
+    "areaM2": 1366,
+    "dims": "42x37m",
+    "levels": "2",
+    "material": "brick; metal",
+    "buildingTag": "barn",
+    "historic": false,
+    "architecture": "contemporary",
+    "startDate": "1891",
+    "name": "Hamilton Stables"
+   },
+   "frontage": {
+    "faces": "S",
+    "streetDistM": 11
+   },
+   "corner": true,
+   "nodeDistM": 22,
+   "distinctive": false
+  },
+  {
+   "name": "Three Holy Women Parish Offices",
+   "category": "other_local",
+   "lat": 43.053427,
+   "lng": -87.897817,
+   "address": "1716 North Humboldt Avenue",
+   "osmTags": {
+    "building": "commercial",
+    "building:architect": "Herman J. Esser",
+    "building:architecture": "neoclassical",
+    "building:levels": "2",
+    "building:levels:underground": "1",
+    "building:material": "brick",
+    "historic": "building",
+    "office": "religion",
+    "start_date": "1900"
+   },
+   "building": {
+    "id": 183248497,
+    "areaM2": 278,
+    "dims": "23x14m",
+    "levels": "2",
+    "material": "brick",
+    "buildingTag": "commercial",
+    "historic": true,
+    "architecture": "neoclassical",
+    "startDate": "1900",
+    "name": "Three Holy Women Parish Offices"
+   },
+   "frontage": {
+    "faces": "W",
+    "streetDistM": 24
+   },
+   "corner": false,
+   "nodeDistM": 40,
+   "distinctive": true
+  },
+  {
+   "name": "Casablanca",
+   "category": "restaurant",
+   "lat": 43.053194,
+   "lng": -87.902525,
+   "address": "728 East Brady Street",
+   "osmTags": {
+    "amenity": "restaurant",
+    "building": "retail",
+    "building:architecture": "contemporary",
+    "building:levels": "2",
+    "cuisine": "mediterranean",
+    "historic": "building",
+    "start_date": "1956"
+   },
+   "building": {
+    "id": 183248584,
+    "areaM2": 570,
+    "dims": "26x27m",
+    "levels": "2",
+    "material": null,
+    "buildingTag": "retail",
+    "historic": true,
+    "architecture": "contemporary",
+    "startDate": "1956",
+    "name": "Casablanca"
+   },
+   "frontage": {
+    "faces": "E",
+    "streetDistM": 21
+   },
+   "corner": true,
+   "nodeDistM": 34,
+   "distinctive": true
+  },
+  {
+   "name": "Curry Hut",
+   "category": "restaurant",
+   "lat": 43.056036,
+   "lng": -87.897892,
+   "address": "1888 North Humboldt Avenue",
+   "osmTags": {
+    "amenity": "restaurant",
+    "cuisine": "indian"
+   },
+   "building": {
+    "id": 475574883,
+    "areaM2": 913,
+    "dims": "40x26m",
+    "levels": "4",
+    "material": null,
+    "buildingTag": "apartments",
+    "historic": false,
+    "architecture": null,
+    "startDate": "2006",
+    "name": "Kane Place Lofts"
+   },
+   "frontage": {
+    "faces": "W",
+    "streetDistM": 13
+   },
+   "corner": true,
+   "nodeDistM": 21,
+   "distinctive": false
+  },
+  {
+   "name": "DORSIA",
+   "category": "restaurant",
+   "lat": 43.052767,
+   "lng": -87.89511,
+   "address": "1301; 1303; 1305; 1307 East Brady Street",
+   "osmTags": {
+    "amenity": "restaurant",
+    "building": "retail",
+    "building:architecture": "front_gabled",
+    "building:levels": "1",
+    "building:levels:underground": "1",
+    "building:material": "clapboard",
+    "cuisine": "italian",
+    "historic": "building",
+    "start_date": "1882"
+   },
+   "building": {
+    "id": 432950048,
+    "areaM2": 534,
+    "dims": "33x22m",
+    "levels": "1",
+    "material": "clapboard",
+    "buildingTag": "retail",
+    "historic": true,
+    "architecture": "front_gabled",
+    "startDate": "1882",
+    "name": "DORSIA"
+   },
+   "frontage": {
+    "faces": "N",
+    "streetDistM": 21
+   },
+   "corner": true,
+   "nodeDistM": 23,
+   "distinctive": true
+  },
+  {
+   "name": "Easy Tyger",
+   "category": "restaurant",
+   "lat": 43.053063,
+   "lng": -87.89585,
+   "address": "1230 East Brady Street",
+   "osmTags": {
+    "amenity": "restaurant",
+    "cuisine": "world"
+   },
+   "building": {
+    "id": 452301287,
+    "areaM2": 276,
+    "dims": "23x12m",
+    "levels": "2",
+    "material": "brick",
+    "buildingTag": "retail",
+    "historic": true,
+    "architecture": "neoclassical",
+    "startDate": "1916",
+    "name": null
+   },
+   "frontage": {
+    "faces": "S",
+    "streetDistM": 12
+   },
+   "corner": false,
+   "nodeDistM": 53,
+   "distinctive": true
+  },
+  {
+   "name": "Emperor of China",
+   "category": "restaurant",
+   "lat": 43.053202,
+   "lng": -87.899132,
+   "address": "1010 East Brady Street",
+   "osmTags": {
+    "amenity": "restaurant",
+    "building": "retail",
+    "building:architect": "Donald Forbes",
+    "building:architecture": "contemporary",
+    "building:levels": "1",
+    "building:material": "brick",
+    "cuisine": "chinese",
+    "historic": "building",
+    "start_date": "1961"
+   },
+   "building": {
+    "id": 183249002,
+    "areaM2": 433,
+    "dims": "31x22m",
+    "levels": "1",
+    "material": "brick",
+    "buildingTag": "retail",
+    "historic": true,
+    "architecture": "contemporary",
+    "startDate": "1961",
+    "name": "Emperor of China"
+   },
+   "frontage": {
+    "faces": "S",
+    "streetDistM": 25
+   },
+   "corner": false,
+   "nodeDistM": 42,
+   "distinctive": true
+  },
+  {
+   "name": "Jimmy John's",
+   "category": "restaurant",
+   "lat": 43.053157,
+   "lng": -87.894065,
+   "address": "1344 East Brady Street",
+   "osmTags": {
+    "amenity": "fast_food",
+    "building": "commercial",
+    "building:architect": "Theodore Schutz",
+    "building:architecture": "commercial_vernacular",
+    "building:levels": "1",
+    "building:use": "retail",
+    "cuisine": "sandwich",
+    "historic": "building",
+    "start_date": "1913"
+   },
+   "building": {
+    "id": 452199181,
+    "areaM2": 236,
+    "dims": "26x9m",
+    "levels": "1",
+    "material": null,
+    "buildingTag": "commercial",
+    "historic": true,
+    "architecture": "commercial_vernacular",
+    "startDate": "1913",
+    "name": "Jimmy John's"
+   },
+   "frontage": {
+    "faces": "S",
+    "streetDistM": 23
+   },
+   "corner": true,
+   "nodeDistM": 30,
+   "distinctive": true
+  },
+  {
+   "name": "Kompali Taqueria",
+   "category": "restaurant",
+   "lat": 43.052845,
+   "lng": -87.896606,
+   "address": "1205 East Brady Street",
+   "osmTags": {
+    "amenity": "restaurant",
+    "cuisine": "mexican",
+    "start_date": "2018-01-29"
+   },
+   "building": {
+    "id": 183249500,
+    "areaM2": 262,
+    "dims": "19x15m",
+    "levels": "2",
+    "material": "brick",
+    "buildingTag": "commercial",
+    "historic": true,
+    "architecture": "tudor_revival",
+    "startDate": "1931",
+    "name": null
+   },
+   "frontage": {
+    "faces": "N",
+    "streetDistM": 13
+   },
+   "corner": true,
+   "nodeDistM": 23,
+   "distinctive": true
+  },
+  {
+   "name": "La Masa Empanada Bar",
+   "category": "restaurant",
+   "lat": 43.053134,
+   "lng": -87.894767,
+   "address": "1300 East Brady Street",
+   "osmTags": {
+    "amenity": "restaurant",
+    "building:levels": "2",
+    "building:material": "aluminum/vinyl_siding",
+    "building:part": "retail",
+    "cuisine": "empanada"
+   },
+   "building": {
+    "id": 452199173,
+    "areaM2": 717,
+    "dims": "36x22m",
+    "levels": "2",
+    "material": "aluminum/vinyl_siding",
+    "buildingTag": "retail",
+    "historic": false,
+    "architecture": null,
+    "startDate": "1997",
+    "name": null
+   },
+   "frontage": {
+    "faces": "W",
+    "streetDistM": 18
+   },
+   "corner": false,
+   "nodeDistM": 42,
+   "distinctive": false
+  },
+  {
+   "name": "Lucky Liu's",
+   "category": "restaurant",
+   "lat": 43.052159,
+   "lng": -87.903055,
+   "address": "1664 North Van Buren Street",
+   "osmTags": {
+    "amenity": "restaurant",
+    "building": "retail",
+    "building:architecture": "contemporary",
+    "building:levels": "1",
+    "building:material": "brick",
+    "cuisine": "chinese;japanese",
+    "start_date": "1958"
+   },
+   "building": {
+    "id": 439039481,
+    "areaM2": 306,
+    "dims": "27x12m",
+    "levels": "1",
+    "material": "brick",
+    "buildingTag": "retail",
+    "historic": false,
+    "architecture": "contemporary",
+    "startDate": "1958",
+    "name": "Lucky Liu's"
+   },
+   "frontage": {
+    "faces": "W",
+    "streetDistM": 27
+   },
+   "corner": false,
+   "nodeDistM": 86,
+   "distinctive": true
+  },
+  {
+   "name": "Pitch's Lounge & Restaurant",
+   "category": "restaurant",
+   "lat": 43.054532,
+   "lng": -87.898233,
+   "address": "1801 North Humboldt Avenue",
+   "osmTags": {
+    "amenity": "restaurant",
+    "cuisine": "barbecue"
+   },
+   "building": {
+    "id": 478341799,
+    "areaM2": 386,
+    "dims": "28x16m",
+    "levels": "2",
+    "material": "brick; board_and_batten",
+    "buildingTag": "retail",
+    "historic": false,
+    "architecture": "commercial_vernacular",
+    "startDate": "1890",
+    "name": null
+   },
+   "frontage": {
+    "faces": "S",
+    "streetDistM": 12
+   },
+   "corner": true,
+   "nodeDistM": 17,
+   "distinctive": false
+  },
+  {
+   "name": "Qdoba",
+   "category": "restaurant",
+   "lat": 43.053156,
+   "lng": -87.893948,
+   "address": "1348 East Brady Street",
+   "osmTags": {
+    "amenity": "fast_food",
+    "building": "retail",
+    "building:levels": "2",
+    "building:material": "brick",
+    "cuisine": "mexican",
+    "start_date": "2017-04"
+   },
+   "building": {
+    "id": 452199180,
+    "areaM2": 226,
+    "dims": "26x9m",
+    "levels": "2",
+    "material": "brick",
+    "buildingTag": "retail",
+    "historic": false,
+    "architecture": null,
+    "startDate": "2017-04",
+    "name": "Qdoba"
+   },
+   "frontage": {
+    "faces": "E",
+    "streetDistM": 16
+   },
+   "corner": true,
+   "nodeDistM": 25,
+   "distinctive": false
+  },
+  {
+   "name": "Shawarma Palace",
+   "category": "restaurant",
+   "lat": 43.053098,
+   "lng": -87.898301,
+   "address": "1701 North Humboldt Avenue",
+   "osmTags": {
+    "amenity": "fast_food",
+    "start_date": "2019-09-01"
+   },
+   "building": {
+    "id": 455235591,
+    "areaM2": 945,
+    "dims": "45x27m",
+    "levels": "4",
+    "material": null,
+    "buildingTag": "apartments",
+    "historic": false,
+    "architecture": null,
+    "startDate": "2017-07",
+    "name": "Keystone on Brady"
+   },
+   "frontage": {
+    "faces": "S",
+    "streetDistM": 14
+   },
+   "corner": true,
+   "nodeDistM": 20,
+   "distinctive": false
+  },
+  {
+   "name": "Tauro Cocina",
+   "category": "restaurant",
+   "lat": 43.053847,
+   "lng": -87.90299,
+   "address": "1758 North Water Street",
+   "osmTags": {
+    "amenity": "restaurant"
+   },
+   "building": {
+    "id": 68998546,
+    "areaM2": 449,
+    "dims": "29x33m",
+    "levels": "3",
+    "material": "cream_city_brick",
+    "buildingTag": "retail",
+    "historic": false,
+    "architecture": "queen_anne",
+    "startDate": "1890",
+    "name": null
+   },
+   "frontage": {
+    "faces": "S",
+    "streetDistM": 10
+   },
+   "corner": false,
+   "nodeDistM": 61,
+   "distinctive": false
+  },
+  {
+   "name": "Thainamite",
+   "category": "restaurant",
+   "lat": 43.053073,
+   "lng": -87.899675,
+   "address": "932 East Brady Street",
+   "osmTags": {
+    "amenity": "restaurant"
+   },
+   "building": {
+    "id": 183249007,
+    "areaM2": 223,
+    "dims": "27x9m",
+    "levels": "2",
+    "material": "brick",
+    "buildingTag": "retail",
+    "historic": true,
+    "architecture": null,
+    "startDate": "1895",
+    "name": null
+   },
+   "frontage": {
+    "faces": "S",
+    "streetDistM": 11
+   },
+   "corner": true,
+   "nodeDistM": 15,
+   "distinctive": true
+  },
+  {
+   "name": "The Diplomat",
+   "category": "restaurant",
+   "lat": 43.052889,
+   "lng": -87.901681,
+   "address": "815 East Brady Street",
+   "osmTags": {
+    "amenity": "restaurant",
+    "cuisine": "new_american",
+    "start_date": "2005"
+   },
+   "building": {
+    "id": 444225333,
+    "areaM2": 295,
+    "dims": "17x18m",
+    "levels": "3",
+    "material": "brick",
+    "buildingTag": "retail",
+    "historic": true,
+    "architecture": "mediterranean_revival",
+    "startDate": "1927",
+    "name": null
+   },
+   "frontage": {
+    "faces": "N",
+    "streetDistM": 11
+   },
+   "corner": false,
+   "nodeDistM": 44,
+   "distinctive": true
+  },
+  {
+   "name": "The King Crab Shack",
+   "category": "restaurant",
+   "lat": 43.053056,
+   "lng": -87.894317,
+   "address": "1330 East Brady Street",
+   "osmTags": {
+    "amenity": "restaurant",
+    "cuisine": "seafood",
+    "start_date": "2017-12"
+   },
+   "building": {
+    "id": 452199174,
+    "areaM2": 405,
+    "dims": "22x22m",
+    "levels": "2",
+    "material": "aluminum/vinyl_siding",
+    "buildingTag": "retail",
+    "historic": false,
+    "architecture": null,
+    "startDate": "1997",
+    "name": null
+   },
+   "frontage": {
+    "faces": "S",
+    "streetDistM": 12
+   },
+   "corner": false,
+   "nodeDistM": 42,
+   "distinctive": false
+  },
+  {
+   "name": "Twisted Plants",
+   "category": "restaurant",
+   "lat": 43.052834,
+   "lng": -87.89581,
+   "address": "1233 East Brady Street",
+   "osmTags": {
+    "amenity": "restaurant",
+    "cuisine": "american;burger"
+   },
+   "building": {
+    "id": 433550661,
+    "areaM2": 178,
+    "dims": "23x8m",
+    "levels": "1",
+    "material": "brick",
+    "buildingTag": "retail",
+    "historic": true,
+    "architecture": "commercial_vernacular",
+    "startDate": "1935",
+    "name": null
+   },
+   "frontage": {
+    "faces": "N",
+    "streetDistM": 14
+   },
+   "corner": false,
+   "nodeDistM": 50,
+   "distinctive": true
+  },
+  {
+   "name": "Zayna's Pizza",
+   "category": "restaurant",
+   "lat": 43.053229,
+   "lng": -87.902857,
+   "address": "714 East Brady Street",
+   "osmTags": {
+    "amenity": "restaurant",
+    "building": "commercial",
+    "building:architect": "B. Franceschi",
+    "building:architecture": "contemporary",
+    "building:levels": "1",
+    "building:material": "fieldstone",
+    "building:use": "retail",
+    "cuisine": "italian",
+    "historic": "building",
+    "start_date": "1971"
+   },
+   "building": {
+    "id": 376170018,
+    "areaM2": 256,
+    "dims": "31x9m",
+    "levels": "1",
+    "material": "fieldstone",
+    "buildingTag": "commercial",
+    "historic": true,
+    "architecture": "contemporary",
+    "startDate": "1971",
+    "name": "Zayna's Pizza"
+   },
+   "frontage": {
+    "faces": "S",
+    "streetDistM": 26
+   },
+   "corner": false,
+   "nodeDistM": 53,
+   "distinctive": true
+  },
+  {
+   "name": "Art Smart's Dart Mart & Juggling Emporium",
+   "category": "retail",
+   "lat": 43.052853,
+   "lng": -87.898284,
+   "address": "1695 North Humboldt Avenue",
+   "osmTags": {
+    "shop": "hobby",
+    "start_date": "1985"
+   },
+   "building": {
+    "id": 437216044,
+    "areaM2": 179,
+    "dims": "16x11m",
+    "levels": "2",
+    "material": "aluminum/vinyl_siding",
+    "buildingTag": "retail",
+    "historic": true,
+    "architecture": "front_gabled",
+    "startDate": "1880",
+    "name": null
+   },
+   "frontage": {
+    "faces": "E",
+    "streetDistM": 12
+   },
+   "corner": true,
+   "nodeDistM": 18,
+   "distinctive": true
+  },
+  {
+   "name": "Cranky Uncle Trotsky's Vintage Stereo Repair",
+   "category": "retail",
+   "lat": 43.050716,
+   "lng": -87.896749,
+   "address": "1604 North Franklin Place",
+   "osmTags": {
+    "shop": "electronics",
+    "start_date": "2003"
+   },
+   "building": {
+    "id": 434595378,
+    "areaM2": 177,
+    "dims": "18x11m",
+    "levels": "1",
+    "material": null,
+    "buildingTag": "residential",
+    "historic": false,
+    "architecture": null,
+    "startDate": "1875",
+    "name": null
+   },
+   "frontage": {
+    "faces": "W",
+    "streetDistM": 11
+   },
+   "corner": true,
+   "nodeDistM": 25,
+   "distinctive": false
+  },
+  {
+   "name": "Famous Smoke Shop",
+   "category": "retail",
+   "lat": 43.052851,
+   "lng": -87.896349,
+   "address": "1213 East Brady Street",
+   "osmTags": {
+    "shop": "tobacco"
+   },
+   "building": {
+    "id": 433550682,
+    "areaM2": 191,
+    "dims": "15x13m",
+    "levels": "2",
+    "material": "brick",
+    "buildingTag": "retail",
+    "historic": true,
+    "architecture": "commercial_vernacular",
+    "startDate": "1923",
+    "name": null
+   },
+   "frontage": {
+    "faces": "N",
+    "streetDistM": 12
+   },
+   "corner": false,
+   "nodeDistM": 41,
+   "distinctive": true
+  },
+  {
+   "name": "MKE Vape",
+   "category": "retail",
+   "lat": 43.05286,
+   "lng": -87.898934,
+   "address": "1017 East Brady Street",
+   "osmTags": {
+    "building:levels": "1",
+    "building:part": "retail",
+    "shop": "tobacco"
+   },
+   "building": {
+    "id": 437216054,
+    "areaM2": 158,
+    "dims": "21x8m",
+    "levels": "3",
+    "material": "clapboard",
+    "buildingTag": "retail",
+    "historic": true,
+    "architecture": "queen_anne",
+    "startDate": "1885",
+    "name": null
+   },
+   "frontage": {
+    "faces": "N",
+    "streetDistM": 13
+   },
+   "corner": false,
+   "nodeDistM": 52,
+   "distinctive": true
+  },
+  {
+   "name": "Sherwin-Williams",
+   "category": "retail",
+   "lat": 43.052837,
+   "lng": -87.901859,
+   "address": "807 East Brady Street",
+   "osmTags": {
+    "shop": "paint"
+   },
+   "building": {
+    "id": 439039456,
+    "areaM2": 285,
+    "dims": "18x16m",
+    "levels": "1",
+    "material": "brick",
+    "buildingTag": "commercial",
+    "historic": true,
+    "architecture": null,
+    "startDate": "1925",
+    "name": null
+   },
+   "frontage": {
+    "faces": "N",
+    "streetDistM": 17
+   },
+   "corner": true,
+   "nodeDistM": 33,
+   "distinctive": true
+  },
+  {
+   "name": "Sole Salvation",
+   "category": "retail",
+   "lat": 43.052803,
+   "lng": -87.898285,
+   "address": "1693 North Humboldt Avenue",
+   "osmTags": {
+    "shop": "clothes"
+   },
+   "building": {
+    "id": 437216044,
+    "areaM2": 179,
+    "dims": "16x11m",
+    "levels": "2",
+    "material": "aluminum/vinyl_siding",
+    "buildingTag": "retail",
+    "historic": true,
+    "architecture": "front_gabled",
+    "startDate": "1880",
+    "name": null
+   },
+   "frontage": {
+    "faces": "E",
+    "streetDistM": 12
+   },
+   "corner": true,
+   "nodeDistM": 22,
+   "distinctive": true
+  },
+  {
+   "name": "The Bikesmiths",
+   "category": "retail",
+   "lat": 43.054632,
+   "lng": -87.900304,
+   "address": "914 East Hamilton Street",
+   "osmTags": {
+    "shop": "bicycle"
+   },
+   "building": {
+    "id": 404667157,
+    "areaM2": 1366,
+    "dims": "42x37m",
+    "levels": "2",
+    "material": "brick; metal",
+    "buildingTag": "barn",
+    "historic": false,
+    "architecture": "contemporary",
+    "startDate": "1891",
+    "name": "Hamilton Stables"
+   },
+   "frontage": {
+    "faces": "S",
+    "streetDistM": 21
+   },
+   "corner": false,
+   "nodeDistM": 50,
+   "distinctive": false
+  },
+  {
+   "name": "Uncommon Items",
+   "category": "retail",
+   "lat": 43.05312,
+   "lng": -87.894504,
+   "address": "1316 East Brady Street",
+   "osmTags": {
+    "building:levels": "1",
+    "building:material": "aluminum/vinyl_siding",
+    "building:part": "retail",
+    "shop": "clothes"
+   },
+   "building": {
+    "id": 452199174,
+    "areaM2": 405,
+    "dims": "22x22m",
+    "levels": "2",
+    "material": "aluminum/vinyl_siding",
+    "buildingTag": "retail",
+    "historic": false,
+    "architecture": null,
+    "startDate": "1997",
+    "name": null
+   },
+   "frontage": {
+    "faces": "S",
+    "streetDistM": 19
+   },
+   "corner": false,
+   "nodeDistM": 58,
+   "distinctive": false
+  },
+  {
+   "name": "Black Ink",
+   "category": "salon_service",
+   "lat": 43.052877,
+   "lng": -87.897524,
+   "address": "1117 East Brady Street",
+   "osmTags": {
+    "shop": "tattoo"
+   },
+   "building": {
+    "id": 434818585,
+    "areaM2": 118,
+    "dims": "9x14m",
+    "levels": "3",
+    "material": "cream_city_brick",
+    "buildingTag": "retail",
+    "historic": true,
+    "architecture": "queen_anne",
+    "startDate": "1888",
+    "name": null
+   },
+   "frontage": {
+    "faces": "N",
+    "streetDistM": 10
+   },
+   "corner": false,
+   "nodeDistM": 50,
+   "distinctive": true
+  },
+  {
+   "name": "Brady East STD Clinic",
+   "category": "salon_service",
+   "lat": 43.053094,
+   "lng": -87.895536,
+   "address": "1240 East Brady Street",
+   "osmTags": {
+    "amenity": "clinic",
+    "office": "healthcare",
+    "start_date": "1974-10"
+   },
+   "building": {
+    "id": 452301286,
+    "areaM2": 127,
+    "dims": "19x8m",
+    "levels": "2",
+    "material": "brick",
+    "buildingTag": "retail",
+    "historic": true,
+    "architecture": "front_gabled",
+    "startDate": "1900",
+    "name": null
+   },
+   "frontage": {
+    "faces": "S",
+    "streetDistM": 15
+   },
+   "corner": true,
+   "nodeDistM": 30,
+   "distinctive": true
+  },
+  {
+   "name": "Classics Barbershop",
+   "category": "salon_service",
+   "lat": 43.053071,
+   "lng": -87.900197,
+   "address": "918 East Brady Street",
+   "osmTags": {
+    "shop": "hairdresser",
+    "start_date": "2015"
+   },
+   "building": {
+    "id": 455385346,
+    "areaM2": 144,
+    "dims": "18x8m",
+    "levels": "2",
+    "material": "wood",
+    "buildingTag": "retail",
+    "historic": true,
+    "architecture": "queen_anne",
+    "startDate": "1890",
+    "name": null
+   },
+   "frontage": {
+    "faces": "S",
+    "streetDistM": 10
+   },
+   "corner": false,
+   "nodeDistM": 54,
+   "distinctive": true
+  },
+  {
+   "name": "Dapper Classic Barbershop",
+   "category": "salon_service",
+   "lat": 43.052871,
+   "lng": -87.896406,
+   "address": "1209 East Brady Street",
+   "osmTags": {
+    "shop": "hairdresser"
+   },
+   "building": {
+    "id": 433550682,
+    "areaM2": 191,
+    "dims": "15x13m",
+    "levels": "2",
+    "material": "brick",
+    "buildingTag": "retail",
+    "historic": true,
+    "architecture": "commercial_vernacular",
+    "startDate": "1923",
+    "name": null
+   },
+   "frontage": {
+    "faces": "N",
+    "streetDistM": 10
+   },
+   "corner": false,
+   "nodeDistM": 36,
+   "distinctive": true
+  },
+  {
+   "name": "Fazio's Dry Cleaning & Tailoring",
+   "category": "salon_service",
+   "lat": 43.052888,
+   "lng": -87.898683,
+   "address": "1027 East Brady Street",
+   "osmTags": {
+    "shop": "dry_cleaning"
+   },
+   "building": {
+    "id": 437216055,
+    "areaM2": 137,
+    "dims": "12x13m",
+    "levels": "2",
+    "material": "aluminum/vinyl_siding",
+    "buildingTag": "retail",
+    "historic": true,
+    "architecture": null,
+    "startDate": "1885",
+    "name": null
+   },
+   "frontage": {
+    "faces": "N",
+    "streetDistM": 9
+   },
+   "corner": false,
+   "nodeDistM": 46,
+   "distinctive": true
+  },
+  {
+   "name": "Halo Hair Spa",
+   "category": "salon_service",
+   "lat": 43.052845,
+   "lng": -87.896098,
+   "address": "1221 East Brady Street",
+   "osmTags": {
+    "shop": "hairdresser"
+   },
+   "building": {
+    "id": 433550685,
+    "areaM2": 169,
+    "dims": "24x8m",
+    "levels": "2",
+    "material": "brick",
+    "buildingTag": "retail",
+    "historic": true,
+    "architecture": "boomtown",
+    "startDate": "1870",
+    "name": null
+   },
+   "frontage": {
+    "faces": "N",
+    "streetDistM": 13
+   },
+   "corner": false,
+   "nodeDistM": 61,
+   "distinctive": true
+  },
+  {
+   "name": "Metro Hand Car Wash & Detailing Centre",
+   "category": "salon_service",
+   "lat": 43.049727,
+   "lng": -87.903132,
+   "address": "1510 North Van Buren Street",
+   "osmTags": {
+    "amenity": "car_wash"
+   },
+   "building": {
+    "id": 411100873,
+    "areaM2": 420,
+    "dims": "25x22m",
+    "levels": "2",
+    "material": "brick",
+    "buildingTag": "retail",
+    "historic": false,
+    "architecture": null,
+    "startDate": "1919",
+    "name": null
+   },
+   "frontage": {
+    "faces": "W",
+    "streetDistM": 25
+   },
+   "corner": false,
+   "nodeDistM": 87,
+   "distinctive": false
+  },
+  {
+   "name": "MKE Shears",
+   "category": "salon_service",
+   "lat": 43.052715,
+   "lng": -87.896716,
+   "address": "1690 North Franklin Place",
+   "osmTags": {
+    "shop": "hairdresser"
+   },
+   "building": {
+    "id": 433777046,
+    "areaM2": 174,
+    "dims": "25x8m",
+    "levels": "2",
+    "material": "brick",
+    "buildingTag": "retail",
+    "historic": true,
+    "architecture": "boomtown",
+    "startDate": "1870",
+    "name": null
+   },
+   "frontage": {
+    "faces": "W",
+    "streetDistM": 10
+   },
+   "corner": true,
+   "nodeDistM": 29,
+   "distinctive": true
+  },
+  {
+   "name": "Saints and Sinners Tattoo",
+   "category": "salon_service",
+   "lat": 43.052874,
+   "lng": -87.895997,
+   "address": "1225 East Brady Street",
+   "osmTags": {
+    "shop": "tattoo",
+    "start_date": "2008"
+   },
+   "building": {
+    "id": 433550689,
+    "areaM2": 145,
+    "dims": "21x7m",
+    "levels": "2",
+    "material": "wood",
+    "buildingTag": "retail",
+    "historic": true,
+    "architecture": "side_gabled",
+    "startDate": "1888",
+    "name": null
+   },
+   "frontage": {
+    "faces": "N",
+    "streetDistM": 9
+   },
+   "corner": false,
+   "nodeDistM": 64,
+   "distinctive": true
+  },
+  {
+   "name": "Studio D Day Spa",
+   "category": "salon_service",
+   "lat": 43.052057,
+   "lng": -87.903201,
+   "address": "1658 North Van Buren Street",
+   "osmTags": {
+    "building:levels": "1",
+    "building:part": "retail",
+    "shop": "beauty",
+    "start_date": "1926"
+   },
+   "building": {
+    "id": 439039406,
+    "areaM2": 211,
+    "dims": "24x10m",
+    "levels": "3",
+    "material": "brick",
+    "buildingTag": "residential",
+    "historic": false,
+    "architecture": "italianate",
+    "startDate": "1900",
+    "name": null
+   },
+   "frontage": {
+    "faces": "W",
+    "streetDistM": 15
+   },
+   "corner": false,
+   "nodeDistM": 91,
+   "distinctive": false
+  },
+  {
+   "name": "UniPrice Cleaners",
+   "category": "salon_service",
+   "lat": 43.052868,
+   "lng": -87.895902,
+   "address": "1229 East Brady Street",
+   "osmTags": {
+    "shop": "dry_cleaning"
+   },
+   "building": {
+    "id": 433550683,
+    "areaM2": 7,
+    "dims": "7x1m",
+    "levels": null,
+    "material": null,
+    "buildingTag": "roof",
+    "historic": false,
+    "architecture": null,
+    "startDate": null,
+    "name": null
+   },
+   "frontage": {
+    "faces": "N",
+    "streetDistM": 10
+   },
+   "corner": false,
+   "nodeDistM": 56,
+   "distinctive": false
+  },
+  {
+   "name": "Angelo's Piano Lounge",
+   "category": "tavern_bar",
+   "lat": 43.052716,
+   "lng": -87.903184,
+   "address": "1686 North Van Buren Street",
+   "osmTags": {
+    "amenity": "bar",
+    "building:levels": "1",
+    "building:part": "retail",
+    "start_date": "1922"
+   },
+   "building": {
+    "id": 439039416,
+    "areaM2": 245,
+    "dims": "25x11m",
+    "levels": "3",
+    "material": "aluminum/vinyl_siding",
+    "buildingTag": "house",
+    "historic": false,
+    "architecture": "queen_anne",
+    "startDate": "1890",
+    "name": null
+   },
+   "frontage": {
+    "faces": "W",
+    "streetDistM": 15
+   },
+   "corner": false,
+   "nodeDistM": 38,
+   "distinctive": true
+  },
+  {
+   "name": "Club Brady",
+   "category": "tavern_bar",
+   "lat": 43.052841,
+   "lng": -87.89419,
+   "address": "1339 East Brady Street",
+   "osmTags": {
+    "amenity": "bar",
+    "start_date": "1984"
+   },
+   "building": {
+    "id": 432950047,
+    "areaM2": 232,
+    "dims": "21x17m",
+    "levels": "2",
+    "material": "board_and_batten",
+    "buildingTag": "retail",
+    "historic": true,
+    "architecture": "commercial_vernacular",
+    "startDate": "1885",
+    "name": null
+   },
+   "frontage": {
+    "faces": "N",
+    "streetDistM": 12
+   },
+   "corner": true,
+   "nodeDistM": 32,
+   "distinctive": true
+  },
+  {
+   "name": "Eagle Park Brewing Company",
+   "category": "tavern_bar",
+   "lat": 43.054225,
+   "lng": -87.901468,
+   "address": "823 East Hamilton Street",
+   "osmTags": {
+    "amenity": "pub",
+    "building": "garage",
+    "building:architecture": "mediterranean_revival",
+    "building:levels": "1",
+    "building:levels:underground": "1",
+    "building:material": "brick",
+    "building:use": "industrial; retail",
+    "craft": "brewery",
+    "start_date": "1920"
+   },
+   "building": {
+    "id": 404667270,
+    "areaM2": 504,
+    "dims": "30x20m",
+    "levels": "1",
+    "material": "brick",
+    "buildingTag": "garage",
+    "historic": false,
+    "architecture": "mediterranean_revival",
+    "startDate": "1920",
+    "name": "Eagle Park Brewing Company"
+   },
+   "frontage": {
+    "faces": "N",
+    "streetDistM": 25
+   },
+   "corner": false,
+   "nodeDistM": 55,
+   "distinctive": false
+  },
+  {
+   "name": "Fink’s",
+   "category": "tavern_bar",
+   "lat": 43.056059,
+   "lng": -87.898287,
+   "address": "1875 North Humboldt Avenue",
+   "osmTags": {
+    "amenity": "bar",
+    "building": "retail",
+    "building:architect:2001": "Scott Genke",
+    "building:architecture": "front_gabled",
+    "building:levels": "1",
+    "start_date": "1894"
+   },
+   "building": {
+    "id": 183095138,
+    "areaM2": 126,
+    "dims": "17x7m",
+    "levels": "1",
+    "material": null,
+    "buildingTag": "retail",
+    "historic": false,
+    "architecture": "front_gabled",
+    "startDate": "1894",
+    "name": "Fink’s"
+   },
+   "frontage": {
+    "faces": "N",
+    "streetDistM": 14
+   },
+   "corner": true,
+   "nodeDistM": 24,
+   "distinctive": true
+  },
+  {
+   "name": "Hi Hat Garage",
+   "category": "tavern_bar",
+   "lat": 43.053221,
+   "lng": -87.895248,
+   "address": "1709 North Arlington Place",
+   "osmTags": {
+    "amenity": "pub",
+    "building": "garage",
+    "building:architecture": "20th_century_commerical",
+    "building:levels": "1",
+    "building:material": "concrete",
+    "building:use": "retail",
+    "historic": "building",
+    "start_date": "1922"
+   },
+   "building": {
+    "id": 183343189,
+    "areaM2": 224,
+    "dims": "22x10m",
+    "levels": "1",
+    "material": "concrete",
+    "buildingTag": "garage",
+    "historic": true,
+    "architecture": "20th_century_commerical",
+    "startDate": "1922",
+    "name": "Hi Hat Garage"
+   },
+   "frontage": {
+    "faces": "E",
+    "streetDistM": 22
+   },
+   "corner": true,
+   "nodeDistM": 30,
+   "distinctive": true
+  },
+  {
+   "name": "Hi Hat Lounge",
+   "category": "tavern_bar",
+   "lat": 43.053066,
+   "lng": -87.895153,
+   "address": "1701 North Arlington Place",
+   "osmTags": {
+    "amenity": "pub",
+    "cuisine": "new_american",
+    "start_date": "1998"
+   },
+   "building": {
+    "id": 183343190,
+    "areaM2": 275,
+    "dims": "22x15m",
+    "levels": "2",
+    "material": "cream_city_brick",
+    "buildingTag": "retail",
+    "historic": true,
+    "architecture": "astylistic_utilitarian",
+    "startDate": "1872",
+    "name": null
+   },
+   "frontage": {
+    "faces": "SE",
+    "streetDistM": 9
+   },
+   "corner": true,
+   "nodeDistM": 14,
+   "distinctive": true
+  },
+  {
+   "name": "Hosed on Brady",
+   "category": "tavern_bar",
+   "lat": 43.052678,
+   "lng": -87.897001,
+   "address": "1689 North Franklin Place",
+   "osmTags": {
+    "amenity": "bar",
+    "start_date": "2009"
+   },
+   "building": {
+    "id": 434818583,
+    "areaM2": 168,
+    "dims": "18x10m",
+    "levels": "2",
+    "material": "brick",
+    "buildingTag": "retail",
+    "historic": true,
+    "architecture": "boomtown",
+    "startDate": "1883",
+    "name": null
+   },
+   "frontage": {
+    "faces": "E",
+    "streetDistM": 13
+   },
+   "corner": true,
+   "nodeDistM": 34,
+   "distinctive": true
+  },
+  {
+   "name": "Jack's American Pub",
+   "category": "tavern_bar",
+   "lat": 43.052835,
+   "lng": -87.894706,
+   "address": "1323 East Brady Street",
+   "osmTags": {
+    "amenity": "pub",
+    "cuisine": "new_american",
+    "start_date": "2003"
+   },
+   "building": {
+    "id": 432950064,
+    "areaM2": 354,
+    "dims": "23x21m",
+    "levels": "2",
+    "material": "brick",
+    "buildingTag": "retail",
+    "historic": false,
+    "architecture": null,
+    "startDate": null,
+    "name": null
+   },
+   "frontage": {
+    "faces": "N",
+    "streetDistM": 13
+   },
+   "corner": false,
+   "nodeDistM": 44,
+   "distinctive": true
+  },
+  {
+   "name": "Jamo's",
+   "category": "tavern_bar",
+   "lat": 43.054511,
+   "lng": -87.894809,
+   "address": "1800 North Arlington Place",
+   "osmTags": {
+    "amenity": "bar"
+   },
+   "building": {
+    "id": 467677661,
+    "areaM2": 134,
+    "dims": "18x8m",
+    "levels": "2",
+    "material": "aluminum/vinyl_siding",
+    "buildingTag": "retail",
+    "historic": true,
+    "architecture": "front_gabled",
+    "startDate": "1890",
+    "name": null
+   },
+   "frontage": {
+    "faces": "W",
+    "streetDistM": 11
+   },
+   "corner": true,
+   "nodeDistM": 16,
+   "distinctive": true
+  },
+  {
+   "name": "Jo-Cat's Pub",
+   "category": "tavern_bar",
+   "lat": 43.052853,
+   "lng": -87.895003,
+   "address": "1311 East Brady Street",
+   "osmTags": {
+    "amenity": "pub",
+    "start_date": "1978"
+   },
+   "building": {
+    "id": 432950065,
+    "areaM2": 129,
+    "dims": "14x10m",
+    "levels": "2",
+    "material": null,
+    "buildingTag": "retail",
+    "historic": true,
+    "architecture": "front_gabled",
+    "startDate": "1875",
+    "name": null
+   },
+   "frontage": {
+    "faces": "N",
+    "streetDistM": 11
+   },
+   "corner": true,
+   "nodeDistM": 21,
+   "distinctive": true
+  },
+  {
+   "name": "Malone's on Brady",
+   "category": "tavern_bar",
+   "lat": 43.052845,
+   "lng": -87.894485,
+   "address": "1329 East Brady Street",
+   "osmTags": {
+    "amenity": "bar",
+    "start_date": "2013-09-02"
+   },
+   "building": {
+    "id": 432950066,
+    "areaM2": 129,
+    "dims": "20x7m",
+    "levels": "2",
+    "material": null,
+    "buildingTag": "retail",
+    "historic": true,
+    "architecture": "front_gabled",
+    "startDate": "1885",
+    "name": null
+   },
+   "frontage": {
+    "faces": "N",
+    "streetDistM": 12
+   },
+   "corner": false,
+   "nodeDistM": 55,
+   "distinctive": true
+  },
+  {
+   "name": "Mangos Cafe",
+   "category": "tavern_bar",
+   "lat": 43.052602,
+   "lng": -87.903189,
+   "address": "1682 North Van Buren Street",
+   "osmTags": {
+    "amenity": "bar",
+    "building:levels": "1",
+    "building:part": "retail",
+    "cuisine": "american",
+    "start_date": "1928"
+   },
+   "building": {
+    "id": 439039482,
+    "areaM2": 244,
+    "dims": "20x12m",
+    "levels": "3",
+    "material": "asphalt",
+    "buildingTag": "house",
+    "historic": false,
+    "architecture": "queen_anne",
+    "startDate": "1901",
+    "name": null
+   },
+   "frontage": {
+    "faces": "W",
+    "streetDistM": 15
+   },
+   "corner": false,
+   "nodeDistM": 49,
+   "distinctive": false
+  },
+  {
+   "name": "MKE's Smallest Bar",
+   "category": "tavern_bar",
+   "lat": 43.052792,
+   "lng": -87.89441,
+   "address": "1329 East Brady Street",
+   "osmTags": {
+    "amenity": "bar",
+    "leisure": "outdoor_seating"
+   },
+   "building": {
+    "id": 432950066,
+    "areaM2": 129,
+    "dims": "20x7m",
+    "levels": "2",
+    "material": null,
+    "buildingTag": "retail",
+    "historic": true,
+    "architecture": "front_gabled",
+    "startDate": "1885",
+    "name": null
+   },
+   "frontage": {
+    "faces": "N",
+    "streetDistM": 17
+   },
+   "corner": false,
+   "nodeDistM": 50,
+   "distinctive": true
+  },
+  {
+   "name": "Pete's Pub",
+   "category": "tavern_bar",
+   "lat": 43.053072,
+   "lng": -87.895696,
+   "address": "1234 East Brady Street",
+   "osmTags": {
+    "amenity": "pub",
+    "start_date": "2020-05"
+   },
+   "building": {
+    "id": 183343188,
+    "areaM2": 345,
+    "dims": "15x25m",
+    "levels": "3",
+    "material": "brick",
+    "buildingTag": "apartments",
+    "historic": true,
+    "architecture": "neoclassical",
+    "startDate": "1897",
+    "name": null
+   },
+   "frontage": {
+    "faces": "S",
+    "streetDistM": 13
+   },
+   "corner": false,
+   "nodeDistM": 41,
+   "distinctive": true
+  },
+  {
+   "name": "Red Lion Pub on Tannery Row",
+   "category": "tavern_bar",
+   "lat": 43.055311,
+   "lng": -87.900958,
+   "address": "1850 North Water Street",
+   "osmTags": {
+    "amenity": "pub",
+    "building": "retail",
+    "building:architecture": "commercial_vernacular",
+    "building:levels": "2",
+    "building:levels:underground": "1",
+    "building:material": "brick",
+    "building:use": "retail; apartments",
+    "cuisine": "british",
+    "start_date": "1890"
+   },
+   "building": {
+    "id": 183095130,
+    "areaM2": 409,
+    "dims": "43x10m",
+    "levels": "2",
+    "material": "brick",
+    "buildingTag": "retail",
+    "historic": false,
+    "architecture": "commercial_vernacular",
+    "startDate": "1890",
+    "name": "Red Lion Pub on Tannery Row"
+   },
+   "frontage": {
+    "faces": "NW",
+    "streetDistM": 14
+   },
+   "corner": false,
+   "nodeDistM": 96,
+   "distinctive": true
+  },
+  {
+   "name": "Regano's Roman Coin",
+   "category": "tavern_bar",
+   "lat": 43.053149,
+   "lng": -87.899324,
+   "address": "1004 East Brady Street",
+   "osmTags": {
+    "amenity": "pub",
+    "building:levels": "2",
+    "building:levels:underground": "1",
+    "building:material": "brick",
+    "building:part": "retail",
+    "start_date": "1890"
+   },
+   "building": {
+    "id": 183249004,
+    "areaM2": 207,
+    "dims": "30x9m",
+    "levels": "2",
+    "material": "brick",
+    "buildingTag": "residential",
+    "historic": true,
+    "architecture": "romanesque_revival",
+    "startDate": "1890",
+    "name": null
+   },
+   "frontage": {
+    "faces": "W",
+    "streetDistM": 14
+   },
+   "corner": true,
+   "nodeDistM": 26,
+   "distinctive": true
+  },
+  {
+   "name": "Scaffidi’s Hideout",
+   "category": "tavern_bar",
+   "lat": 43.055266,
+   "lng": -87.898224,
+   "address": "1837 North Humboldt Avenue",
+   "osmTags": {
+    "amenity": "bar",
+    "leisure": "sports_centre"
+   },
+   "building": {
+    "id": 489662026,
+    "areaM2": 197,
+    "dims": "12x19m",
+    "levels": "2",
+    "material": null,
+    "buildingTag": "retail",
+    "historic": false,
+    "architecture": "boomtown",
+    "startDate": "1894",
+    "name": null
+   },
+   "frontage": {
+    "faces": "S",
+    "streetDistM": 12
+   },
+   "corner": true,
+   "nodeDistM": 17,
+   "distinctive": true
+  },
+  {
+   "name": "The Standard Tavern",
+   "category": "tavern_bar",
+   "lat": 43.054184,
+   "lng": -87.896531,
+   "address": "1754 North Franklin Place",
+   "osmTags": {
+    "amenity": "bar",
+    "building": "retail",
+    "building:architect": "Thomas Schutz",
+    "building:architecture": "front_gabled",
+    "building:units": "3",
+    "building:use": "retail; apartments",
+    "historic": "building",
+    "start_date": "1888"
+   },
+   "building": {
+    "id": 475422574,
+    "areaM2": 172,
+    "dims": "26x7m",
+    "levels": null,
+    "material": null,
+    "buildingTag": "retail",
+    "historic": true,
+    "architecture": "front_gabled",
+    "startDate": "1888",
+    "name": "The Standard Tavern"
+   },
+   "frontage": {
+    "faces": "W",
+    "streetDistM": 23
+   },
+   "corner": true,
+   "nodeDistM": 27,
+   "distinctive": true
+  },
+  {
+   "name": "Thurman’s 15",
+   "category": "tavern_bar",
+   "lat": 43.053681,
+   "lng": -87.895215,
+   "address": "1731 North Arlington Place",
+   "osmTags": {
+    "amenity": "bar",
+    "building": "retail",
+    "building:architecture": "front_gabled",
+    "building:levels": "2",
+    "building:levels:underground": "1",
+    "building:material": "aluminum/vinyl_siding",
+    "building:use": "retail; apartments",
+    "historic": "building",
+    "start_date": "1890"
+   },
+   "building": {
+    "id": 475189183,
+    "areaM2": 134,
+    "dims": "20x7m",
+    "levels": "2",
+    "material": "aluminum/vinyl_siding",
+    "buildingTag": "retail",
+    "historic": true,
+    "architecture": "front_gabled",
+    "startDate": "1890",
+    "name": "Thurman’s 15"
+   },
+   "frontage": {
+    "faces": "N",
+    "streetDistM": 11
+   },
+   "corner": true,
+   "nodeDistM": 22,
+   "distinctive": true
+  },
+  {
+   "name": "Up and Under Pub",
+   "category": "tavern_bar",
+   "lat": 43.053058,
+   "lng": -87.89632,
+   "address": "1216 East Brady Street",
+   "osmTags": {
+    "amenity": "pub",
+    "start_date": "1977"
+   },
+   "building": {
+    "id": 452301289,
+    "areaM2": 282,
+    "dims": "25x12m",
+    "levels": "2",
+    "material": "brick",
+    "buildingTag": "retail",
+    "historic": true,
+    "architecture": "high_victorian_italianate",
+    "startDate": "1885",
+    "name": null
+   },
+   "frontage": {
+    "faces": "S",
+    "streetDistM": 11
+   },
+   "corner": false,
+   "nodeDistM": 43,
+   "distinctive": true
+  },
+  {
+   "name": "Wolski's Tavern",
+   "category": "tavern_bar",
+   "lat": 43.055222,
+   "lng": -87.896607,
+   "address": "1836 North Pulaski Street",
+   "osmTags": {
+    "amenity": "bar",
+    "building": "retail",
+    "building:architecture": "front_gabled",
+    "building:levels": "2",
+    "building:levels:underground": "1",
+    "building:material": "wood",
+    "building:units": "2",
+    "historic": "building",
+    "start_date": "1895"
+   },
+   "building": {
+    "id": 471643467,
+    "areaM2": 192,
+    "dims": "18x13m",
+    "levels": "2",
+    "material": "wood",
+    "buildingTag": "retail",
+    "historic": true,
+    "architecture": "front_gabled",
+    "startDate": "1895",
+    "name": "Wolski's Tavern"
+   },
+   "frontage": {
+    "faces": "W",
+    "streetDistM": 14
+   },
+   "corner": false,
+   "nodeDistM": 89,
+   "distinctive": true
+  },
+  {
+   "name": "WürstBar",
+   "category": "tavern_bar",
+   "lat": 43.052794,
+   "lng": -87.895608,
+   "address": "1239 East Brady Street",
+   "osmTags": {
+    "amenity": "bar"
+   },
+   "building": {
+    "id": 433550666,
+    "areaM2": 155,
+    "dims": "19x9m",
+    "levels": "2",
+    "material": null,
+    "buildingTag": "retail",
+    "historic": false,
+    "architecture": null,
+    "startDate": null,
+    "name": null
+   },
+   "frontage": {
+    "faces": "E",
+    "streetDistM": 13
+   },
+   "corner": false,
+   "nodeDistM": 36,
+   "distinctive": true
+  },
+  {
+   "name": "Y-Not II",
+   "category": "tavern_bar",
+   "lat": 43.049499,
+   "lng": -87.90309,
+   "address": "706 East Lyon Street",
+   "osmTags": {
+    "amenity": "bar",
+    "start_date": "1968"
+   },
+   "building": {
+    "id": 717944843,
+    "areaM2": 491,
+    "dims": "24x20m",
+    "levels": "3",
+    "material": "brick",
+    "buildingTag": "apartments",
+    "historic": false,
+    "architecture": "spanish_colonial",
+    "startDate": "1922",
+    "name": "Van Lyon Apartments"
+   },
+   "frontage": {
+    "faces": "S",
+    "streetDistM": 15
+   },
+   "corner": false,
+   "nodeDistM": 75,
+   "distinctive": true
+  }
+ ]
+}

@@ -1,0 +1,215 @@
+{
+ "generated": "2026-08-18",
+ "rules": [
+  "No invented readable text on generic assets",
+  "Strongly top-down near-head-on camera, roof dominant, walls vertically compressed",
+  "Transparent background, no sidewalk apron, foundation planting only"
+ ],
+ "treeClasses": {
+  "maple": {
+   "count": 139,
+   "dbhMin": 1,
+   "dbhMedian": 9,
+   "dbhMax": 38,
+   "species": {
+    "Maple, Hedge": 13,
+    "Maple, Norway": 77,
+    "Maple, Amur": 9,
+    "Maple, Freeman": 16,
+    "Maple, Shantung": 5,
+    "Maple, Silver": 6,
+    "Maple, Tatar": 3,
+    "Maple, Miyabe's": 8,
+    "Maple, Sugar": 2
+   }
+  },
+  "flowering_ornamental": {
+   "count": 137,
+   "dbhMin": 1,
+   "dbhMedian": 3,
+   "dbhMax": 13,
+   "species": {
+    "Serviceberry, Apple": 6,
+    "Serviceberry, Shadblow": 8,
+    "Apple": 12,
+    "Pear, Callery": 37,
+    "Lilac, Japanese tree": 72,
+    "Hawthorn, Thornless Cockspur": 2
+   }
+  },
+  "elm": {
+   "count": 51,
+   "dbhMin": 2,
+   "dbhMedian": 7,
+   "dbhMax": 41,
+   "species": {
+    "Hackberry, Common": 8,
+    "Elm, Smooth-leaf": 6,
+    "Elm, American": 2,
+    "Elm, Hybrid": 21,
+    "Elm spp": 14
+   }
+  },
+  "ash": {
+   "count": 114,
+   "dbhMin": 6,
+   "dbhMedian": 18,
+   "dbhMax": 32,
+   "species": {
+    "Ash, White": 8,
+    "Ash, Green": 106
+   }
+  },
+  "honeylocust": {
+   "count": 77,
+   "dbhMin": 2,
+   "dbhMedian": 14,
+   "dbhMax": 27,
+   "species": {
+    "Honeylocust": 77
+   }
+  },
+  "other": {
+   "count": 13,
+   "dbhMin": 1,
+   "dbhMedian": 2,
+   "dbhMax": 29,
+   "species": {
+    "Coffeetree, Kentucky": 2,
+    "Birch, River": 1,
+    "Ginkgo": 1,
+    "Sweetgum, American": 2,
+    "Ironwood": 2,
+    "N/A": 4,
+    "Catalpa, Northern": 1
+   }
+  },
+  "oak": {
+   "count": 41,
+   "dbhMin": 2,
+   "dbhMedian": 3,
+   "dbhMax": 21,
+   "species": {
+    "Oak, Swamp white": 18,
+    "Oak, Bur": 8,
+    "Oak, English and Swamp White": 6,
+    "Oak, English": 9
+   }
+  },
+  "linden": {
+   "count": 143,
+   "dbhMin": 2,
+   "dbhMedian": 15,
+   "dbhMax": 35,
+   "species": {
+    "Linden, Littleleaf": 99,
+    "Linden spp": 33,
+    "Linden, Crimean": 8,
+    "Linden, Silver": 1,
+    "Linden, American (Basswood)": 2
+   }
+  }
+ },
+ "pack": [
+  {
+   "assetId": "raster.res.polish_flat.s0_stacked_porch",
+   "boardInstances": 348,
+   "rationale": "workhorse: 2-story flats dominate"
+  },
+  {
+   "assetId": "raster.res.polish_flat.s1_front_gable_bay",
+   "boardInstances": 348,
+   "rationale": "silhouette variety within the dominant family"
+  },
+  {
+   "assetId": "raster.res.polish_flat.s3_porch_gable",
+   "boardInstances": 348,
+   "rationale": "third flat silhouette to prevent stamping"
+  },
+  {
+   "assetId": "raster.res.wide_duplex",
+   "boardInstances": 79,
+   "rationale": "data-selected: 2-story footprints >=165m2"
+  },
+  {
+   "assetId": "raster.res.bungalow_craftsman",
+   "boardInstances": 175,
+   "rationale": "1-story family lead silhouette"
+  },
+  {
+   "assetId": "raster.res.bungalow_hipped_dormer",
+   "boardInstances": 175,
+   "rationale": "1-story variety"
+  },
+  {
+   "assetId": "raster.res.cottage_side_gable",
+   "boardInstances": 175,
+   "rationale": "1-story variety"
+  },
+  {
+   "assetId": "raster.res.apartment_walkup_3story",
+   "boardInstances": 37,
+   "rationale": "most common apartment form"
+  },
+  {
+   "assetId": "raster.res.apartment_wide_brick",
+   "boardInstances": 22,
+   "rationale": "large-footprint apartment form"
+  },
+  {
+   "assetId": "raster.res.apartment_corner",
+   "boardInstances": 37,
+   "rationale": "corner apartment (facing-aware)"
+  },
+  {
+   "assetId": "raster.com.storefront_single",
+   "boardInstances": 77,
+   "rationale": "generic 1-business frontage — NO invented names"
+  },
+  {
+   "assetId": "raster.com.storefront_row_3bay",
+   "boardInstances": 0,
+   "rationale": "dense-corridor workhorse"
+  },
+  {
+   "assetId": "raster.com.mixed_use_3story",
+   "boardInstances": 0,
+   "rationale": "commercial-residential bridge"
+  },
+  {
+   "assetId": "raster.res.detached_garage",
+   "boardInstances": 96,
+   "rationale": "alley fabric"
+  },
+  {
+   "assetId": "raster.tree.linden",
+   "boardInstances": 143,
+   "rationale": "top street tree"
+  },
+  {
+   "assetId": "raster.tree.maple",
+   "boardInstances": 139,
+   "rationale": "2nd most common genus"
+  },
+  {
+   "assetId": "raster.tree.honeylocust",
+   "boardInstances": 77,
+   "rationale": "airy silhouette anchor"
+  },
+  {
+   "assetId": "raster.tree.flowering_ornamental",
+   "boardInstances": 137,
+   "rationale": "18% of street trees, distinct class"
+  },
+  {
+   "assetId": "raster.tree.elm_mature",
+   "boardInstances": 51,
+   "rationale": "landmark-scale vase (also covers hero elm later)"
+  },
+  {
+   "assetId": "raster.tree.oak_mature",
+   "boardInstances": 41,
+   "rationale": "broadest crown, landmark-scale"
+  }
+ ]
+}

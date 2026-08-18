@@ -1480,6 +1480,32 @@ body {
 .content-page .qedit-q {
   font-size: 1rem;
 }
+/* Edit-space bank/deck pickers: compact scrollable checkbox lists. */
+.bank-pick {
+  margin-top: 10px;
+}
+.bank-pick-list {
+  max-height: 180px;
+  overflow-y: auto;
+  border: 1px solid #d9d2c2;
+  border-radius: 8px;
+  padding: 4px 6px;
+  background: #faf7ef;
+}
+.bank-pick-row {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  padding: 3px 0;
+  font-size: 0.82rem;
+  line-height: 1.25;
+  cursor: pointer;
+}
+.bank-pick-row input {
+  flex: none;
+  transform: translateY(1px);
+}
+
 .content-savebar {
   position: sticky;
   top: 0;

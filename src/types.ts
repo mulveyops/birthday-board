@@ -20,6 +20,8 @@ export interface LatLng {
 
 /** One multiple-choice trivia question — pinned on a square or in the shared bank. */
 export interface TriviaQuestion {
+  /** Content-row id (present on bank questions; used by Square.questionIds). */
+  id?: string;
   q: string;
   /** 2–4 answer options. */
   choices: string[];
@@ -47,8 +49,13 @@ export interface Square extends LatLng {
   notes: string;
   /** Coins awarded, or the magnitude/difficulty of the square. */
   reward: number;
-  /** Multiple-choice trivia for a challenge square; auto-scored in play. */
+  /** One-off custom trivia written directly on this square; auto-scored in play. */
   questions?: TriviaQuestion[];
+  /** Specific shared-bank questions picked for this spot (references, so bank
+   * edits flow through). Picked questions leave the general shuffle. */
+  questionIds?: string[];
+  /** Chance only: limit this spot's draws to these deck cards (empty/unset = whole deck). */
+  cardIds?: string[];
 }
 
 /** A path connecting two squares. Directed = one-way (from → to). */

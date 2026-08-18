@@ -721,8 +721,9 @@ export async function publishGame(name: string, board: Board, config: GameConfig
   // content edits can't shift what's live. Tolerate a missing content table.
   try {
     const [bank, deck] = await Promise.all([listContent<TriviaQuestion>('trivia'), listContent<ChanceCard>('chance')]);
-    payload.triviaBank = bank.map((r) => r.data);
-    payload.chanceDeck = deck.map((r) => r.data);
+    // The content-row id becomes the canonical id, so Square.questionIds/cardIds resolve.
+    payload.triviaBank = bank.map((r) => ({ ...r.data, id: r.id }));
+    payload.chanceDeck = deck.map((r) => ({ ...r.data, id: r.id }));
   } catch {
     /* content table not set up yet → publish without a bank/deck */
   }

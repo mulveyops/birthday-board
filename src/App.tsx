@@ -63,6 +63,8 @@ import {
   subscribeSpaceOwners,
   claimSpace,
   uploadTriviaPhoto,
+  listContent,
+  subscribeContent,
   listLayouts,
   getLayout,
   createLayout,
@@ -135,27 +137,42 @@ function deriveNodeType(spots: Square[]): Record<string, SpotType> {
   }
   return m;
 }
-/** Questions a challenge spot deals. Pinned questions (authored on the square)
- * win; otherwise the spot gets its deterministic share of the shared bank —
- * seeded by game id, so every phone deals the same questions at the same spot
- * and spots don't repeat a question until the bank runs out. */
+/** A spot's hand-chosen questions: one-off custom ones win, else its picked
+ * bank questions (id references, resolved against the given bank). */
+function resolvePinnedQuestions(sq: Square | undefined, bank: TriviaQuestion[]): TriviaQuestion[] {
+  if (!sq) return [];
+  if (sq.questions?.length) return sq.questions;
+  if (sq.questionIds?.length) {
+    const by = new Map(bank.filter((q) => q.id).map((q) => [q.id as string, q]));
+    return sq.questionIds.map((id) => by.get(id)).filter((q): q is TriviaQuestion => !!q);
+  }
+  return [];
+}
+/** Questions a challenge spot deals. Pinned/picked questions win; otherwise the
+ * spot gets its deterministic share of the unclaimed shared bank — seeded by
+ * game id, so every phone deals the same questions at the same spot and spots
+ * don't repeat a question until the bank runs out. */
 function questionsForSpot(board: Board, seed: string, spotId: string): TriviaQuestion[] {
-  const sq = board.squares.find((s) => s.id === spotId);
-  if (sq?.questions?.length) return sq.questions;
   const bank = board.triviaBank ?? [];
-  if (!bank.length) return [];
+  const sq = board.squares.find((s) => s.id === spotId);
+  const pinned = resolvePinnedQuestions(sq, bank);
+  if (pinned.length) return pinned;
+  // Questions hand-picked onto ANY spot leave the general shuffle.
+  const taken = new Set(board.squares.flatMap((s) => s.questionIds ?? []));
+  const pool = bank.filter((q) => !q.id || !taken.has(q.id));
+  if (!pool.length) return [];
   const spotIds = board.squares
-    .filter((s) => s.type === 'challenge' && !s.questions?.length)
+    .filter((s) => s.type === 'challenge' && !resolvePinnedQuestions(s, bank).length)
     .map((s) => s.id)
     .sort();
   const idx = Math.max(0, spotIds.indexOf(spotId));
-  const order = bank
+  const order = pool
     .map((q, i) => ({ q, k: strHash01(`${seed}:${i}`) }))
     .sort((a, b) => a.k - b.k)
     .map((x) => x.q);
-  const per = Math.max(1, Math.min(4, Math.floor(bank.length / Math.max(1, spotIds.length)) || 1));
+  const per = Math.max(1, Math.min(4, Math.floor(pool.length / Math.max(1, spotIds.length)) || 1));
   const out: TriviaQuestion[] = [];
-  for (let k = 0; k < Math.min(per, bank.length); k++) out.push(order[(idx * per + k) % bank.length]);
+  for (let k = 0; k < Math.min(per, pool.length); k++) out.push(order[(idx * per + k) % pool.length]);
   return out;
 }
 /** Fallback chance deck for games published before decks existed — mirrors the
@@ -176,11 +193,15 @@ const DEFAULT_CHANCE_DECK: ChanceCard[] = [
   { id: 'd-lose2', text: '💸 Parking ticket!', effect: 'lose', amount: 25 },
   { id: 'd-none1', text: '😐 The wind blows. Nothing happens.', effect: 'nothing', amount: 0 },
 ];
-/** Draw one card from the game's chance deck (rob cards need a robbable rival). */
-function drawChanceCard(board: Board, canRob: boolean): ChanceCard {
-  const deck = (board.chanceDeck?.length ? board.chanceDeck : DEFAULT_CHANCE_DECK).filter(
+/** Draw one card from the game's chance deck (rob cards need a robbable rival).
+ * A spot with hand-picked cardIds draws only those (falls back to the full deck
+ * if none of them survive the filters). */
+function drawChanceCard(board: Board, canRob: boolean, cardIds?: string[]): ChanceCard {
+  const full = (board.chanceDeck?.length ? board.chanceDeck : DEFAULT_CHANCE_DECK).filter(
     (c) => canRob || c.effect !== 'rob',
   );
+  const limited = cardIds?.length ? full.filter((c) => cardIds.includes(c.id)) : full;
+  const deck = limited.length ? limited : full;
   if (!deck.length) return { id: 'none', text: '😐 Nothing happens.', effect: 'nothing', amount: 0 };
   return deck[Math.floor(Math.random() * deck.length)];
 }
@@ -223,6 +244,30 @@ export default function App({
 
   const phase = board.phase;
   const bumpCage = () => setRecage((n) => n + 1);
+
+  // --- Shared content (trivia bank + chance deck) for the spot editor -------
+  // Admin-only: lets the Edit-space panel pick specific bank questions/cards.
+  const [bankRows, setBankRows] = useState<TriviaQuestion[]>([]);
+  const [deckRows, setDeckRows] = useState<ChanceCard[]>([]);
+  useEffect(() => {
+    if (variant !== 'admin' || !isConfigured) return;
+    let alive = true;
+    const load = () => {
+      Promise.all([listContent<TriviaQuestion>('trivia'), listContent<ChanceCard>('chance')])
+        .then(([t, c]) => {
+          if (!alive) return;
+          setBankRows(t.map((r) => ({ ...r.data, id: r.id })));
+          setDeckRows(c.map((r) => ({ ...r.data, id: r.id })));
+        })
+        .catch(() => {}); // content table not set up yet → pickers just hide
+    };
+    load();
+    const unsub = subscribeContent(load);
+    return () => {
+      alive = false;
+      unsub();
+    };
+  }, [variant]);
 
   useEffect(() => {
     saveBoard(board);
@@ -1321,7 +1366,7 @@ export default function App({
     const sq = onlineBoard.squares.find((s) => s.id === onlineChanceModal.spotId);
     if (!sq) return;
     const others = teams.filter((t) => t.id !== membership.teamId);
-    const card = drawChanceCard(onlineBoard, others.length > 0);
+    const card = drawChanceCard(onlineBoard, others.length > 0, sq.cardIds);
     setChanceBusy(true);
     setChanceDrawing(true);
     await new Promise((r) => setTimeout(r, 900)); // let the card flip
@@ -1452,7 +1497,7 @@ export default function App({
     if (!membership || !onlineBoard || !onlineBowserModal) return;
     const sq = onlineBoard.squares.find((s) => s.id === onlineBowserModal.spotId);
     if (!sq) return;
-    const qs = sq.questions ?? [];
+    const qs = resolvePinnedQuestions(sq, onlineBoard.triviaBank ?? []);
     const penalty = sq.reward > 0 ? sq.reward : 30;
     let loss: number;
     if (qs.length > 0 && !tier) {
@@ -2402,6 +2447,57 @@ export default function App({
                     <p className="hint">Select the radio next to the correct answer. Players auto-score in Play.</p>
                   </div>
                 )}
+                {(selected.type === 'challenge' || selected.type === 'bowser') && bankRows.length > 0 && !(selected.questions?.length) && (
+                  <div className="bank-pick">
+                    <span className="quiz-editor-label">📚 Pick bank questions for this spot</span>
+                    <p className="hint" style={{ marginTop: 2 }}>
+                      {selected.type === 'bowser'
+                        ? 'Checked = Bowser asks these. None checked = physical challenge (notes above).'
+                        : 'Checked = dealt here (and pulled out of the random shuffle). None checked = random deal.'}
+                    </p>
+                    <div className="bank-pick-list">
+                      {bankRows.map((q) => (
+                        <label key={q.id} className="bank-pick-row">
+                          <input
+                            type="checkbox"
+                            checked={(selected.questionIds ?? []).includes(q.id as string)}
+                            onChange={(e) => {
+                              const cur = selected.questionIds ?? [];
+                              const next = e.target.checked ? [...cur, q.id as string] : cur.filter((x) => x !== q.id);
+                              updateSquare(selected.id, { questionIds: next.length ? next : undefined });
+                            }}
+                          />
+                          <span>{q.q || '(blank question)'}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {selected.type === 'chance' && deckRows.length > 0 && (
+                  <div className="bank-pick">
+                    <span className="quiz-editor-label">🃏 Limit which cards this spot draws</span>
+                    <p className="hint" style={{ marginTop: 2 }}>
+                      None checked = draws from the whole deck. Check cards to make this spot special.
+                    </p>
+                    <div className="bank-pick-list">
+                      {deckRows.map((c) => (
+                        <label key={c.id} className="bank-pick-row">
+                          <input
+                            type="checkbox"
+                            checked={(selected.cardIds ?? []).includes(c.id)}
+                            onChange={(e) => {
+                              const cur = selected.cardIds ?? [];
+                              const next = e.target.checked ? [...cur, c.id] : cur.filter((x) => x !== c.id);
+                              updateSquare(selected.id, { cardIds: next.length ? next : undefined });
+                            }}
+                          />
+                          <span>{c.text || '(blank card)'}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                <p className="hint">📍 Drag the spot on the map to fine-tune where it sits — mid-block is fine for a bar or point of interest.</p>
                 <button className="btn btn--danger" onClick={() => removeSquare(selected.id)}>Delete space</button>
               </section>
             )}
@@ -3494,7 +3590,7 @@ export default function App({
         {onlineBowserModal &&
           (() => {
             const sq = onlineBoard?.squares.find((s) => s.id === onlineBowserModal.spotId);
-            const qs = sq?.questions ?? [];
+            const qs = resolvePinnedQuestions(sq, onlineBoard?.triviaBank ?? []);
             const answeredAll = qs.every((_, i) => quizPick[i] != null);
             return (
               <div

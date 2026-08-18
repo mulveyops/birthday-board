@@ -1781,7 +1781,7 @@ export default function BoardCanvas({
           <Marker
             key={`hs-${sq.id}`}
             position={[sq.lat, sq.lng]}
-            icon={hitIcon(30)}
+            icon={hitIcon(sq.id === selectedId ? 48 : 30)}
             opacity={0}
             draggable={mode === 'select'}
             interactive={mode === 'select' || mode === 'connect'}

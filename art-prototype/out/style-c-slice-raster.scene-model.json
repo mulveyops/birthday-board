@@ -1,0 +1,9843 @@
+{
+ "slice": {
+  "S": 43.0518,
+  "W": -87.8992,
+  "N": 43.0566,
+  "E": -87.8934,
+  "out": "style-c-slice"
+ },
+ "counts": {
+  "furniture.picnic_table": 1,
+  "ground.tennis": 2,
+  "ground.playground": 2,
+  "hero.st_hedwig": 1,
+  "hero.wolskis": 1,
+  "bldg.civ.school": 1,
+  "bldg.com.mixed_use": 17,
+  "bldg.com.corner_tavern": 6,
+  "bldg.res.apartment": 25,
+  "bldg.com.storefront_row": 7,
+  "bldg.com.storefront": 9,
+  "bldg.res.polish_flat": 73,
+  "bldg.res.bungalow": 20,
+  "bldg.res.garage": 4,
+  "bldg.res.shed": 1,
+  "tree.maple": 56,
+  "tree.flowering": 57,
+  "tree.ash": 49,
+  "tree.honeylocust": 16,
+  "tree.oak": 13,
+  "tree.linden": 28,
+  "tree.elm": 15,
+  "tree.conifer": 4,
+  "vehicle.parked_car": 16,
+  "prop.driveway": 55,
+  "prop.alley": 2,
+  "prop.fence": 42,
+  "prop.wall": 15,
+  "prop.retaining_wall": 20,
+  "prop.hedge": 1,
+  "prop.walk": 46,
+  "prop.parking": 7,
+  "furniture.bus_stop": 3,
+  "furniture.flagpole": 1,
+  "furniture.hydrant": 8,
+  "furniture.bench": 7,
+  "furniture.trash_can": 3,
+  "furniture.bike_rack": 9,
+  "infra.dumpster": 1
+ },
+ "scene": [
+  {
+   "assetId": "furniture.picnic_table",
+   "variant": 0,
+   "x": 242.6,
+   "y": 155.9,
+   "scale": 1,
+   "rotation": 28,
+   "layer": "ground",
+   "priority": 8,
+   "src": "osm:picnic_table"
+  },
+  {
+   "assetId": "ground.tennis",
+   "variant": 0,
+   "x": 262.8,
+   "y": 149,
+   "scale": 1,
+   "rotation": -89.1,
+   "layer": "ground",
+   "priority": 2,
+   "src": "osm:pitch:tennis"
+  },
+  {
+   "assetId": "ground.playground",
+   "structure": 1,
+   "variant": 0,
+   "x": 234.1,
+   "y": 133.7,
+   "scale": 1.6,
+   "rotation": 0,
+   "layer": "ground",
+   "priority": 3,
+   "src": "osm:playground"
+  },
+  {
+   "assetId": "ground.playground",
+   "structure": 0,
+   "variant": 0,
+   "x": 190.1,
+   "y": 395.1,
+   "scale": 1.6,
+   "rotation": 0,
+   "layer": "ground",
+   "priority": 3,
+   "src": "osm:playground"
+  },
+  {
+   "assetId": "ground.tennis",
+   "variant": 0,
+   "x": 279.2,
+   "y": 141.6,
+   "scale": 1,
+   "rotation": 91.1,
+   "layer": "ground",
+   "priority": 2,
+   "src": "osm:pitch:tennis"
+  },
+  {
+   "assetId": "hero.st_hedwig",
+   "variant": 29,
+   "structure": 0,
+   "x": 152.6,
+   "y": 401.8,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 0,
+   "name": "Saint Hedwig Catholic Church",
+   "src": "osm:building"
+  },
+  {
+   "assetId": "hero.wolskis",
+   "variant": 7,
+   "structure": 0,
+   "x": 245.9,
+   "y": 173.6,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 0,
+   "name": "Wolski's Tavern",
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.civ.school",
+   "variant": 23,
+   "structure": 1,
+   "x": 190.1,
+   "y": 400.9,
+   "scale": 1.2,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 1,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.com.mixed_use",
+   "variant": 91,
+   "structure": 0,
+   "facing": -90,
+   "x": 142.4,
+   "y": 451.7,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 2,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.com.mixed_use",
+   "variant": 15,
+   "structure": 0,
+   "facing": -179,
+   "x": 390.9,
+   "y": 402.2,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 2,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.com.mixed_use",
+   "variant": 34,
+   "structure": 0,
+   "facing": 90,
+   "x": 414.1,
+   "y": 411.8,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 2,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.com.mixed_use",
+   "variant": 62,
+   "structure": 2,
+   "facing": 39,
+   "x": 90.5,
+   "y": 247.1,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 2,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.com.mixed_use",
+   "variant": 9,
+   "structure": 0,
+   "facing": -89,
+   "x": 386.1,
+   "y": 450.9,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 2,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.com.mixed_use",
+   "variant": 20,
+   "structure": 0,
+   "facing": 90,
+   "x": 49.9,
+   "y": 407.5,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 2,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.com.mixed_use",
+   "variant": 21,
+   "structure": 0,
+   "facing": 90,
+   "x": 263.2,
+   "y": 406.5,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 2,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.com.mixed_use",
+   "variant": 91,
+   "structure": 0,
+   "facing": 90,
+   "x": 277.1,
+   "y": 406.1,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 2,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.com.mixed_use",
+   "variant": 22,
+   "structure": 0,
+   "facing": -179,
+   "x": 135.1,
+   "y": 378.1,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 2,
+   "name": "Three Holy Women Parish Offices",
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.com.mixed_use",
+   "variant": 16,
+   "structure": 0,
+   "facing": 91,
+   "x": 298.7,
+   "y": 410.8,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 2,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.com.corner_tavern",
+   "variant": 49,
+   "structure": 0,
+   "facing": 77,
+   "x": 344.1,
+   "y": 410.3,
+   "scale": 1.15,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 2,
+   "name": "Hi Hat Garage",
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.com.mixed_use",
+   "variant": 33,
+   "structure": 2,
+   "facing": -132,
+   "x": 235.4,
+   "y": 449.6,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 2,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.com.mixed_use",
+   "variant": 41,
+   "structure": 0,
+   "facing": 158,
+   "x": 280.8,
+   "y": 276.5,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 2,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.com.mixed_use",
+   "variant": 74,
+   "structure": 0,
+   "facing": -90,
+   "x": 425.5,
+   "y": 451.2,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 2,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.com.mixed_use",
+   "variant": 34,
+   "structure": 2,
+   "facing": 59,
+   "x": 448.9,
+   "y": 409.7,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 2,
+   "name": "Qdoba",
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.com.corner_tavern",
+   "variant": 9,
+   "structure": 0,
+   "facing": 47,
+   "x": 97.4,
+   "y": 164.4,
+   "scale": 1.15,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 2,
+   "name": "Scaffidi’s Hideout",
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.com.mixed_use",
+   "variant": 84,
+   "structure": 0,
+   "facing": -90,
+   "x": 254.1,
+   "y": 449.8,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 2,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.com.corner_tavern",
+   "variant": 19,
+   "structure": 0,
+   "facing": -102,
+   "x": 243,
+   "y": 293.3,
+   "scale": 1.15,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 2,
+   "name": "The Standard Tavern",
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.com.mixed_use",
+   "variant": 6,
+   "structure": 1,
+   "facing": -90,
+   "x": 46.9,
+   "y": 448.5,
+   "scale": 1.05,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 2,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.com.corner_tavern",
+   "variant": 60,
+   "structure": 0,
+   "facing": 129,
+   "x": 387.4,
+   "y": 248.2,
+   "scale": 1.15,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 2,
+   "name": "Jamo's",
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.com.corner_tavern",
+   "variant": 32,
+   "structure": 0,
+   "facing": 39,
+   "x": 323.2,
+   "y": 410.1,
+   "scale": 1.15,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 2,
+   "name": "Pete's Pub",
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.com.corner_tavern",
+   "variant": 55,
+   "structure": 0,
+   "facing": -47,
+   "x": 98.3,
+   "y": 92.9,
+   "scale": 1.3,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 2,
+   "name": "Fink’s",
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.com.mixed_use",
+   "variant": 74,
+   "structure": 1,
+   "facing": -90,
+   "x": 160.3,
+   "y": 449.3,
+   "scale": 1.05,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 2,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.apartment",
+   "variant": 5,
+   "structure": 3,
+   "x": 29.4,
+   "y": 100.7,
+   "scale": 1.2,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 3,
+   "name": "1910 On Water",
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.apartment",
+   "variant": 71,
+   "structure": 3,
+   "x": 28,
+   "y": 46,
+   "scale": 1.09,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 3,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.apartment",
+   "variant": 71,
+   "structure": 3,
+   "x": 294.5,
+   "y": 523,
+   "scale": 1.2,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 3,
+   "name": "Arlington Court",
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.apartment",
+   "variant": 71,
+   "structure": 3,
+   "x": 89.6,
+   "y": 400.9,
+   "scale": 1.09,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 3,
+   "name": "Keystone on Brady",
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.apartment",
+   "variant": 58,
+   "structure": 3,
+   "x": 144.8,
+   "y": 94.9,
+   "scale": 1.09,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 3,
+   "name": "Kane Place Lofts",
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.com.storefront_row",
+   "variant": 47,
+   "structure": 1,
+   "facing": -90,
+   "x": 367,
+   "y": 453.4,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 3,
+   "cat": "food",
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.com.storefront_row",
+   "variant": 1,
+   "structure": 1,
+   "facing": -89,
+   "x": 303.7,
+   "y": 452.9,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 3,
+   "cat": "food",
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.apartment",
+   "variant": 88,
+   "structure": 1,
+   "x": 135.6,
+   "y": 552.2,
+   "scale": 0.97,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 3,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.com.storefront_row",
+   "variant": 22,
+   "structure": 1,
+   "facing": -123,
+   "x": 474.3,
+   "y": 450.3,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 3,
+   "cat": "shop",
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.com.storefront_row",
+   "variant": 21,
+   "structure": 0,
+   "facing": 90,
+   "x": 241.9,
+   "y": 407.7,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 3,
+   "cat": "cafe",
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.com.storefront_row",
+   "variant": 24,
+   "structure": 0,
+   "facing": -90,
+   "x": 81.5,
+   "y": 451.3,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 3,
+   "cat": "shop",
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.com.storefront_row",
+   "variant": 2,
+   "structure": 0,
+   "facing": -90,
+   "x": 282.8,
+   "y": 452.7,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 3,
+   "cat": "salon",
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.apartment",
+   "variant": 80,
+   "structure": 1,
+   "x": 491.8,
+   "y": 236.9,
+   "scale": 1.03,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 3,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.apartment",
+   "variant": 61,
+   "structure": 2,
+   "facing": -126,
+   "x": 136.6,
+   "y": 213,
+   "scale": 0.97,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 3,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.com.storefront_row",
+   "variant": 3,
+   "structure": 0,
+   "facing": -79,
+   "x": 348.5,
+   "y": 361.2,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 3,
+   "cat": "bar",
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.apartment",
+   "variant": 20,
+   "structure": 2,
+   "facing": -8,
+   "x": 347.6,
+   "y": 272.1,
+   "scale": 1.03,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 3,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.apartment",
+   "variant": 47,
+   "structure": 2,
+   "facing": -35,
+   "x": 187.9,
+   "y": 450.5,
+   "scale": 1.03,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 3,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.apartment",
+   "variant": 15,
+   "structure": 2,
+   "facing": -7,
+   "x": 184.1,
+   "y": 524.6,
+   "scale": 0.97,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 3,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.apartment",
+   "variant": 72,
+   "structure": 2,
+   "facing": -141,
+   "x": 396.7,
+   "y": 289.4,
+   "scale": 0.97,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 3,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.apartment",
+   "variant": 61,
+   "structure": 0,
+   "x": 65.1,
+   "y": 324.7,
+   "scale": 0.97,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 3,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.apartment",
+   "variant": 83,
+   "structure": 2,
+   "facing": -130,
+   "x": 391.6,
+   "y": 103.8,
+   "scale": 0.97,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 3,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.apartment",
+   "variant": 7,
+   "structure": 0,
+   "x": 439.3,
+   "y": 329.8,
+   "scale": 0.97,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 3,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.apartment",
+   "variant": 60,
+   "structure": 2,
+   "facing": 128,
+   "x": 301,
+   "y": 308.2,
+   "scale": 0.97,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 3,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.apartment",
+   "variant": 43,
+   "structure": 0,
+   "x": 90.6,
+   "y": 483.5,
+   "scale": 0.97,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 3,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.apartment",
+   "variant": 71,
+   "structure": 0,
+   "x": 348.3,
+   "y": 214.9,
+   "scale": 0.97,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 3,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.apartment",
+   "variant": 28,
+   "structure": 0,
+   "x": 70.6,
+   "y": 485,
+   "scale": 1.03,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 3,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.apartment",
+   "variant": 78,
+   "structure": 0,
+   "x": 393.4,
+   "y": 216.4,
+   "scale": 0.91,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 3,
+   "name": "Arlington Place",
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.apartment",
+   "variant": 14,
+   "structure": 0,
+   "x": 433.8,
+   "y": 500.9,
+   "scale": 0.97,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 3,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.apartment",
+   "variant": 5,
+   "structure": 2,
+   "facing": 41,
+   "x": 247.5,
+   "y": 61.2,
+   "scale": 0.97,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 3,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.apartment",
+   "variant": 60,
+   "structure": 0,
+   "x": 94.5,
+   "y": 132.8,
+   "scale": 0.97,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 3,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.apartment",
+   "variant": 70,
+   "structure": 0,
+   "x": 69.5,
+   "y": 133.2,
+   "scale": 0.91,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 3,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.apartment",
+   "variant": 53,
+   "structure": 0,
+   "x": 50.3,
+   "y": 134.7,
+   "scale": 0.91,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 3,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.com.storefront",
+   "variant": 5,
+   "structure": 0,
+   "facing": 91,
+   "x": 30.3,
+   "y": 405,
+   "scale": 1.15,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 4,
+   "name": "Emperor of China",
+   "cat": "food",
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.com.storefront",
+   "variant": 95,
+   "structure": 0,
+   "facing": -179,
+   "x": 238.2,
+   "y": 351,
+   "scale": 1.06,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 4,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.com.storefront",
+   "variant": 61,
+   "structure": 0,
+   "facing": 90,
+   "x": 62.3,
+   "y": 409.3,
+   "scale": 1.03,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 4,
+   "cat": "cafe",
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.com.storefront",
+   "variant": 75,
+   "structure": 0,
+   "facing": -21,
+   "x": 204.9,
+   "y": 190.4,
+   "scale": 1.02,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 4,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.com.storefront",
+   "variant": 0,
+   "structure": 0,
+   "facing": -90,
+   "x": 453.6,
+   "y": 288.6,
+   "scale": 1.02,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 4,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.com.storefront",
+   "variant": 94,
+   "structure": 0,
+   "facing": -31,
+   "x": 191.9,
+   "y": 165.8,
+   "scale": 1.01,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 4,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.com.storefront",
+   "variant": 81,
+   "structure": 0,
+   "facing": -90,
+   "x": 410.4,
+   "y": 450.8,
+   "scale": 0.99,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 4,
+   "cat": "bar",
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.com.storefront",
+   "variant": 93,
+   "structure": 0,
+   "facing": -179,
+   "x": 134.6,
+   "y": 251.2,
+   "scale": 0.99,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 4,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.com.storefront",
+   "variant": 0,
+   "structure": 0,
+   "facing": -179,
+   "x": 136.1,
+   "y": 334.3,
+   "scale": 0.98,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 4,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.polish_flat",
+   "variant": 74,
+   "structure": 2,
+   "x": 244.1,
+   "y": 486.4,
+   "scale": 1.45,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.polish_flat",
+   "variant": 53,
+   "structure": 2,
+   "x": 491.1,
+   "y": 292.6,
+   "scale": 1.45,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.polish_flat",
+   "variant": 0,
+   "structure": 2,
+   "x": 495.8,
+   "y": 194.7,
+   "scale": 1.45,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.polish_flat",
+   "variant": 77,
+   "structure": 2,
+   "x": 194.4,
+   "y": 53.4,
+   "scale": 1.45,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.polish_flat",
+   "variant": 5,
+   "structure": 2,
+   "x": 446.9,
+   "y": 117.6,
+   "scale": 1.45,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.polish_flat",
+   "variant": 63,
+   "structure": 2,
+   "x": 154.1,
+   "y": 240.9,
+   "scale": 1.45,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.polish_flat",
+   "variant": 63,
+   "structure": 2,
+   "x": 167.9,
+   "y": 129.9,
+   "scale": 1.45,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.polish_flat",
+   "variant": 71,
+   "structure": 2,
+   "x": 140.2,
+   "y": 140.1,
+   "scale": 1.45,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.bungalow",
+   "variant": 2,
+   "structure": 2,
+   "x": 207.1,
+   "y": 212.4,
+   "scale": 1.45,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.polish_flat",
+   "variant": 12,
+   "structure": 2,
+   "x": 305.4,
+   "y": 477.1,
+   "scale": 1.45,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.polish_flat",
+   "variant": 77,
+   "structure": 2,
+   "x": 393.3,
+   "y": 190.5,
+   "scale": 1.45,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.polish_flat",
+   "variant": 12,
+   "structure": 2,
+   "x": 37.1,
+   "y": 324.1,
+   "scale": 1.38,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.polish_flat",
+   "variant": 22,
+   "structure": 2,
+   "x": 84.4,
+   "y": 531,
+   "scale": 1.38,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.polish_flat",
+   "variant": 11,
+   "structure": 2,
+   "x": 255.1,
+   "y": 102.9,
+   "scale": 1.38,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.polish_flat",
+   "variant": 63,
+   "structure": 2,
+   "x": 132.9,
+   "y": 512.2,
+   "scale": 1.36,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.polish_flat",
+   "variant": 69,
+   "structure": 3,
+   "x": 493.8,
+   "y": 120.7,
+   "scale": 1.35,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.polish_flat",
+   "variant": 65,
+   "structure": 0,
+   "x": 446.7,
+   "y": 248.4,
+   "scale": 1.35,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.polish_flat",
+   "variant": 52,
+   "structure": 0,
+   "x": 349.4,
+   "y": 303,
+   "scale": 1.35,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.polish_flat",
+   "variant": 4,
+   "structure": 1,
+   "x": 417.1,
+   "y": 530.5,
+   "scale": 1.34,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.polish_flat",
+   "variant": 78,
+   "structure": 0,
+   "x": 138.3,
+   "y": 117.1,
+   "scale": 1.34,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.polish_flat",
+   "variant": 68,
+   "structure": 1,
+   "x": 188.4,
+   "y": 476.8,
+   "scale": 1.33,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.polish_flat",
+   "variant": 36,
+   "structure": 1,
+   "x": 196.5,
+   "y": 288.1,
+   "scale": 1.33,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "name": "East Village Condos",
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.polish_flat",
+   "variant": 92,
+   "structure": 0,
+   "x": 319.6,
+   "y": 103.1,
+   "scale": 1.32,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.polish_flat",
+   "variant": 11,
+   "structure": 0,
+   "x": 194.5,
+   "y": 495.7,
+   "scale": 1.32,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.bungalow",
+   "variant": 44,
+   "structure": 1,
+   "x": 448.5,
+   "y": 154.8,
+   "scale": 1.32,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.polish_flat",
+   "variant": 53,
+   "structure": 0,
+   "x": 239.7,
+   "y": 316.3,
+   "scale": 1.31,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.polish_flat",
+   "variant": 84,
+   "structure": 3,
+   "x": 195.9,
+   "y": 316.7,
+   "scale": 1.3,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.polish_flat",
+   "variant": 34,
+   "structure": 0,
+   "x": 304.8,
+   "y": 61.1,
+   "scale": 1.3,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.polish_flat",
+   "variant": 51,
+   "structure": 0,
+   "x": 197.1,
+   "y": 339.6,
+   "scale": 1.29,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.polish_flat",
+   "variant": 6,
+   "structure": 3,
+   "x": 265.8,
+   "y": 236.4,
+   "scale": 1.29,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.polish_flat",
+   "variant": 30,
+   "structure": 0,
+   "x": 86,
+   "y": 511.1,
+   "scale": 1.29,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.polish_flat",
+   "variant": 88,
+   "structure": 0,
+   "x": 426,
+   "y": 248.6,
+   "scale": 1.28,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.polish_flat",
+   "variant": 88,
+   "structure": 3,
+   "x": 94.6,
+   "y": 214.6,
+   "scale": 1.27,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.polish_flat",
+   "variant": 95,
+   "structure": 0,
+   "x": 397.3,
+   "y": 555.2,
+   "scale": 1.27,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.bungalow",
+   "variant": 75,
+   "structure": 1,
+   "x": 394,
+   "y": 136.5,
+   "scale": 1.26,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.polish_flat",
+   "variant": 90,
+   "structure": 0,
+   "x": 66.2,
+   "y": 93.7,
+   "scale": 1.26,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.polish_flat",
+   "variant": 57,
+   "structure": 3,
+   "x": 256,
+   "y": 211.9,
+   "scale": 1.26,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.bungalow",
+   "variant": 44,
+   "structure": 0,
+   "x": 137.5,
+   "y": 164.8,
+   "scale": 1.25,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.polish_flat",
+   "variant": 49,
+   "structure": 3,
+   "x": 390.7,
+   "y": 317.2,
+   "scale": 1.25,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.polish_flat",
+   "variant": 58,
+   "structure": 3,
+   "x": 351,
+   "y": 237,
+   "scale": 1.25,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.polish_flat",
+   "variant": 61,
+   "structure": 0,
+   "x": 46.4,
+   "y": 164.3,
+   "scale": 1.24,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.bungalow",
+   "variant": 81,
+   "structure": 2,
+   "x": 384.4,
+   "y": 496.5,
+   "scale": 1.24,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.polish_flat",
+   "variant": 27,
+   "structure": 1,
+   "x": 353.2,
+   "y": 118.9,
+   "scale": 1.24,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.polish_flat",
+   "variant": 81,
+   "structure": 3,
+   "x": 134.9,
+   "y": 292,
+   "scale": 1.24,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.polish_flat",
+   "variant": 64,
+   "structure": 1,
+   "x": 213.8,
+   "y": 247.3,
+   "scale": 1.23,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.bungalow",
+   "variant": 12,
+   "structure": 2,
+   "x": 389.5,
+   "y": 360.5,
+   "scale": 1.23,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.polish_flat",
+   "variant": 85,
+   "structure": 0,
+   "x": 98.8,
+   "y": 325.3,
+   "scale": 1.23,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.polish_flat",
+   "variant": 42,
+   "structure": 0,
+   "x": 131.4,
+   "y": 485.6,
+   "scale": 1.23,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.polish_flat",
+   "variant": 78,
+   "structure": 1,
+   "x": 350.5,
+   "y": 488.1,
+   "scale": 1.22,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.polish_flat",
+   "variant": 55,
+   "structure": 0,
+   "x": 446.8,
+   "y": 366.1,
+   "scale": 1.22,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.polish_flat",
+   "variant": 93,
+   "structure": 3,
+   "x": 70.1,
+   "y": 287.5,
+   "scale": 1.22,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.polish_flat",
+   "variant": 87,
+   "structure": 3,
+   "x": 94.3,
+   "y": 301.2,
+   "scale": 1.22,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.polish_flat",
+   "variant": 15,
+   "structure": 3,
+   "x": 76.9,
+   "y": 164.7,
+   "scale": 1.2,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.polish_flat",
+   "variant": 88,
+   "structure": 1,
+   "x": 171.4,
+   "y": 287.6,
+   "scale": 1.2,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.polish_flat",
+   "variant": 77,
+   "structure": 1,
+   "x": 449.9,
+   "y": 475.5,
+   "scale": 1.2,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.polish_flat",
+   "variant": 57,
+   "structure": 3,
+   "x": 95.7,
+   "y": 365.6,
+   "scale": 1.19,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.polish_flat",
+   "variant": 3,
+   "structure": 1,
+   "x": 78.6,
+   "y": 369.3,
+   "scale": 1.18,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.bungalow",
+   "variant": 75,
+   "structure": 0,
+   "x": 492.8,
+   "y": 155.5,
+   "scale": 1.18,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.polish_flat",
+   "variant": 23,
+   "structure": 0,
+   "x": 195.8,
+   "y": 247.5,
+   "scale": 1.17,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.bungalow",
+   "variant": 25,
+   "structure": 1,
+   "x": 40.3,
+   "y": 204.9,
+   "scale": 1.16,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.polish_flat",
+   "variant": 36,
+   "structure": 3,
+   "x": 272.5,
+   "y": 259,
+   "scale": 1.16,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.polish_flat",
+   "variant": 1,
+   "structure": 1,
+   "x": 350,
+   "y": 515.7,
+   "scale": 1.16,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.polish_flat",
+   "variant": 83,
+   "structure": 3,
+   "x": 40.6,
+   "y": 286.1,
+   "scale": 1.15,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.bungalow",
+   "variant": 25,
+   "structure": 0,
+   "x": 366.5,
+   "y": 522.4,
+   "scale": 1.13,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.polish_flat",
+   "variant": 63,
+   "structure": 3,
+   "x": 228.3,
+   "y": 61.8,
+   "scale": 1.13,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.polish_flat",
+   "variant": 19,
+   "structure": 3,
+   "x": 79.2,
+   "y": 204.7,
+   "scale": 1.11,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.polish_flat",
+   "variant": 76,
+   "structure": 3,
+   "x": 59.7,
+   "y": 364.9,
+   "scale": 1.1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.polish_flat",
+   "variant": 93,
+   "structure": 0,
+   "x": 29.5,
+   "y": 366.9,
+   "scale": 1.1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.bungalow",
+   "variant": 50,
+   "structure": 1,
+   "x": 398.6,
+   "y": 477.4,
+   "scale": 1.1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.polish_flat",
+   "variant": 50,
+   "structure": 0,
+   "x": 354.6,
+   "y": 539.3,
+   "scale": 1.1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.bungalow",
+   "variant": 56,
+   "structure": 0,
+   "x": 285.6,
+   "y": 62.1,
+   "scale": 1.1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.polish_flat",
+   "variant": 10,
+   "structure": 3,
+   "x": 237.8,
+   "y": 385.8,
+   "scale": 1.09,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.polish_flat",
+   "variant": 57,
+   "structure": 1,
+   "x": 392.7,
+   "y": 165.8,
+   "scale": 1.09,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.polish_flat",
+   "variant": 65,
+   "structure": 0,
+   "x": 285.1,
+   "y": 101.8,
+   "scale": 1.09,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.polish_flat",
+   "variant": 52,
+   "structure": 3,
+   "x": 55.9,
+   "y": 246.7,
+   "scale": 1.08,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.bungalow",
+   "variant": 62,
+   "structure": 2,
+   "x": 489.7,
+   "y": 312.7,
+   "scale": 1.08,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.polish_flat",
+   "variant": 35,
+   "structure": 3,
+   "x": 136.2,
+   "y": 313.4,
+   "scale": 1.06,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.polish_flat",
+   "variant": 61,
+   "structure": 0,
+   "x": 493,
+   "y": 101.2,
+   "scale": 1.05,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.bungalow",
+   "variant": 9,
+   "structure": 1,
+   "x": 419,
+   "y": 103.3,
+   "scale": 1.05,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.polish_flat",
+   "variant": 62,
+   "structure": 0,
+   "x": 131.4,
+   "y": 465.5,
+   "scale": 1.05,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.bungalow",
+   "variant": 70,
+   "structure": 2,
+   "x": 337.8,
+   "y": 102.5,
+   "scale": 1.05,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.polish_flat",
+   "variant": 50,
+   "structure": 3,
+   "x": 452,
+   "y": 200.9,
+   "scale": 1.05,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.bungalow",
+   "variant": 27,
+   "structure": 2,
+   "x": 196.5,
+   "y": 98.2,
+   "scale": 1.05,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.polish_flat",
+   "variant": 71,
+   "structure": 0,
+   "x": 179,
+   "y": 247.1,
+   "scale": 1.05,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.polish_flat",
+   "variant": 67,
+   "structure": 3,
+   "x": 197.3,
+   "y": 360.9,
+   "scale": 1.05,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.polish_flat",
+   "variant": 78,
+   "structure": 0,
+   "x": 225.4,
+   "y": 101.1,
+   "scale": 1.05,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.bungalow",
+   "variant": 63,
+   "structure": 1,
+   "x": 423,
+   "y": 288.8,
+   "scale": 1.05,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.polish_flat",
+   "variant": 80,
+   "structure": 3,
+   "x": 206,
+   "y": 114.3,
+   "scale": 1.05,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.bungalow",
+   "variant": 49,
+   "structure": 0,
+   "x": 442.9,
+   "y": 308.6,
+   "scale": 1.05,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.polish_flat",
+   "variant": 0,
+   "structure": 1,
+   "x": 321.4,
+   "y": 304.9,
+   "scale": 1.05,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.bungalow",
+   "variant": 1,
+   "structure": 2,
+   "x": 305,
+   "y": 350.2,
+   "scale": 1.05,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.bungalow",
+   "variant": 34,
+   "structure": 1,
+   "x": 451.4,
+   "y": 219,
+   "scale": 1.05,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.bungalow",
+   "variant": 83,
+   "structure": 0,
+   "x": 328.2,
+   "y": 368.6,
+   "scale": 1.05,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.garage",
+   "variant": 65,
+   "structure": 0,
+   "x": 175,
+   "y": 163,
+   "scale": 0.98,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 6,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.garage",
+   "variant": 20,
+   "structure": 0,
+   "x": 439.6,
+   "y": 287.1,
+   "scale": 0.93,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 6,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.garage",
+   "variant": 67,
+   "structure": 0,
+   "x": 149,
+   "y": 300.9,
+   "scale": 0.9,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 6,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.garage",
+   "variant": 71,
+   "structure": 0,
+   "x": 255.8,
+   "y": 315.1,
+   "scale": 0.85,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 6,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.shed",
+   "variant": 82,
+   "structure": 1,
+   "x": 217.9,
+   "y": 113.2,
+   "scale": 0.9,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 6,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "tree.maple",
+   "structure": 0,
+   "variant": 0,
+   "x": 345.3,
+   "y": 503.3,
+   "scale": 1.35,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Maple, Hedge 12\""
+  },
+  {
+   "assetId": "tree.maple",
+   "structure": 0,
+   "variant": 63,
+   "x": 456.2,
+   "y": 219.5,
+   "scale": 1.31,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Maple, Norway 11\""
+  },
+  {
+   "assetId": "tree.maple",
+   "structure": 0,
+   "variant": 28,
+   "x": 457.4,
+   "y": 157.1,
+   "scale": 1.6,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Maple, Norway 18\""
+  },
+  {
+   "assetId": "tree.maple",
+   "structure": 0,
+   "variant": 90,
+   "x": 457.7,
+   "y": 144.2,
+   "scale": 1.27,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Maple, Norway 10\""
+  },
+  {
+   "assetId": "tree.maple",
+   "structure": 0,
+   "variant": 81,
+   "x": 488,
+   "y": 124.8,
+   "scale": 1.52,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Maple, Norway 16\""
+  },
+  {
+   "assetId": "tree.maple",
+   "structure": 0,
+   "variant": 67,
+   "x": 483.2,
+   "y": 66,
+   "scale": 1.52,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Maple, Norway 16\""
+  },
+  {
+   "assetId": "tree.flowering",
+   "structure": 0,
+   "variant": 80,
+   "x": 413.2,
+   "y": 465.6,
+   "scale": 0.93,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Serviceberry, Apple 2\""
+  },
+  {
+   "assetId": "tree.flowering",
+   "structure": 1,
+   "variant": 74,
+   "x": 486.7,
+   "y": 196,
+   "scale": 0.93,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Serviceberry, Apple 2\""
+  },
+  {
+   "assetId": "tree.flowering",
+   "structure": 0,
+   "variant": 2,
+   "x": 100.5,
+   "y": 239.6,
+   "scale": 0.93,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Serviceberry, Shadblow 2\""
+  },
+  {
+   "assetId": "tree.maple",
+   "structure": 0,
+   "variant": 25,
+   "x": 95.8,
+   "y": 504.3,
+   "scale": 1.7,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Maple, Silver 38\""
+  },
+  {
+   "assetId": "tree.maple",
+   "structure": 0,
+   "variant": 48,
+   "x": 453.6,
+   "y": 398.1,
+   "scale": 0.93,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Maple, Tatar 2\""
+  },
+  {
+   "assetId": "tree.ash",
+   "structure": 0,
+   "variant": 4,
+   "x": 287.8,
+   "y": 97.2,
+   "scale": 1.7,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Ash, Green 30\""
+  },
+  {
+   "assetId": "tree.ash",
+   "structure": 0,
+   "variant": 6,
+   "x": 45.1,
+   "y": 89.4,
+   "scale": 1.35,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Ash, Green 12\""
+  },
+  {
+   "assetId": "tree.ash",
+   "structure": 0,
+   "variant": 20,
+   "x": 99.9,
+   "y": 86.6,
+   "scale": 1.18,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Ash, Green 8\""
+  },
+  {
+   "assetId": "tree.ash",
+   "structure": 0,
+   "variant": 75,
+   "x": 422.9,
+   "y": 68.5,
+   "scale": 1.27,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Ash, Green 10\""
+  },
+  {
+   "assetId": "tree.ash",
+   "structure": 0,
+   "variant": 80,
+   "x": 244,
+   "y": 96.8,
+   "scale": 1.56,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Ash, Green 17\""
+  },
+  {
+   "assetId": "tree.ash",
+   "structure": 0,
+   "variant": 65,
+   "x": 212,
+   "y": 66.3,
+   "scale": 1.7,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Ash, Green 31\""
+  },
+  {
+   "assetId": "tree.ash",
+   "structure": 0,
+   "variant": 70,
+   "x": 357.9,
+   "y": 156.9,
+   "scale": 1.56,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Ash, Green 17\""
+  },
+  {
+   "assetId": "tree.ash",
+   "structure": 0,
+   "variant": 93,
+   "x": 204.4,
+   "y": 300.1,
+   "scale": 1.7,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Ash, Green 22\""
+  },
+  {
+   "assetId": "tree.ash",
+   "structure": 0,
+   "variant": 93,
+   "x": 167.6,
+   "y": 252.4,
+   "scale": 1.68,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Ash, Green 20\""
+  },
+  {
+   "assetId": "tree.ash",
+   "structure": 0,
+   "variant": 68,
+   "x": 409.8,
+   "y": 253.9,
+   "scale": 1.7,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Ash, Green 21\""
+  },
+  {
+   "assetId": "tree.flowering",
+   "structure": 0,
+   "variant": 93,
+   "x": 28.6,
+   "y": 413.5,
+   "scale": 0.93,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Apple 2\""
+  },
+  {
+   "assetId": "tree.honeylocust",
+   "structure": 0,
+   "variant": 1,
+   "x": 130.4,
+   "y": 249.4,
+   "scale": 1.6,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Honeylocust 18\""
+  },
+  {
+   "assetId": "tree.honeylocust",
+   "structure": 0,
+   "variant": 41,
+   "x": 132,
+   "y": 153.4,
+   "scale": 1.64,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Honeylocust 19\""
+  },
+  {
+   "assetId": "tree.flowering",
+   "structure": 0,
+   "variant": 21,
+   "x": 387.8,
+   "y": 163.5,
+   "scale": 1.1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Apple 6\""
+  },
+  {
+   "assetId": "tree.oak",
+   "structure": 0,
+   "variant": 46,
+   "x": 197.9,
+   "y": 414.7,
+   "scale": 0.97,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Oak, English and Swamp White 3\""
+  },
+  {
+   "assetId": "tree.oak",
+   "structure": 0,
+   "variant": 9,
+   "x": 448.3,
+   "y": 284.1,
+   "scale": 0.97,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Oak, English and Swamp White 3\""
+  },
+  {
+   "assetId": "tree.oak",
+   "structure": 0,
+   "variant": 12,
+   "x": 41.3,
+   "y": 59.5,
+   "scale": 0.93,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Oak, English 2\""
+  },
+  {
+   "assetId": "tree.linden",
+   "structure": 0,
+   "variant": 54,
+   "x": 79.4,
+   "y": 556.8,
+   "scale": 1.7,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Linden, Littleleaf 22\""
+  },
+  {
+   "assetId": "tree.flowering",
+   "structure": 1,
+   "variant": 38,
+   "x": 401,
+   "y": 534.7,
+   "scale": 1.06,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Lilac, Japanese tree 5\""
+  },
+  {
+   "assetId": "tree.linden",
+   "structure": 0,
+   "variant": 86,
+   "x": 35.9,
+   "y": 555.7,
+   "scale": 1.35,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Linden, Littleleaf 12\""
+  },
+  {
+   "assetId": "tree.flowering",
+   "structure": 1,
+   "variant": 87,
+   "x": 233.2,
+   "y": 66.7,
+   "scale": 0.97,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Lilac, Japanese tree 3\""
+  },
+  {
+   "assetId": "tree.elm",
+   "structure": 0,
+   "variant": 26,
+   "x": 143.5,
+   "y": 444.4,
+   "scale": 1.48,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Elm, Smooth-leaf 15\""
+  },
+  {
+   "assetId": "tree.elm",
+   "structure": 0,
+   "variant": 15,
+   "x": 102.6,
+   "y": 120.6,
+   "scale": 2.05,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Elm, American 33\""
+  },
+  {
+   "assetId": "tree.elm",
+   "structure": 0,
+   "variant": 48,
+   "x": 270.8,
+   "y": 445.3,
+   "scale": 1.48,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Elm, Smooth-leaf 15\""
+  },
+  {
+   "assetId": "tree.elm",
+   "structure": 0,
+   "variant": 92,
+   "x": 291.5,
+   "y": 445.4,
+   "scale": 1.31,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Elm, Smooth-leaf 11\""
+  },
+  {
+   "assetId": "tree.flowering",
+   "structure": 1,
+   "variant": 79,
+   "x": 340.9,
+   "y": 67.7,
+   "scale": 0.97,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Lilac, Japanese tree 3\""
+  },
+  {
+   "assetId": "tree.linden",
+   "structure": 0,
+   "variant": 87,
+   "x": 59,
+   "y": 199.8,
+   "scale": 1.31,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Linden spp 11\""
+  },
+  {
+   "assetId": "tree.elm",
+   "structure": 0,
+   "variant": 76,
+   "x": 457.9,
+   "y": 130.2,
+   "scale": 1.27,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Elm, Hybrid 10\""
+  },
+  {
+   "assetId": "tree.linden",
+   "structure": 0,
+   "variant": 6,
+   "x": 80.7,
+   "y": 360.4,
+   "scale": 1.52,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Linden, Littleleaf 16\""
+  },
+  {
+   "assetId": "tree.flowering",
+   "structure": 0,
+   "variant": 10,
+   "x": 386.2,
+   "y": 503.7,
+   "scale": 0.97,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Lilac, Japanese tree 3\""
+  },
+  {
+   "assetId": "tree.flowering",
+   "structure": 0,
+   "variant": 62,
+   "x": 484.9,
+   "y": 298.8,
+   "scale": 1.1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Lilac, Japanese tree 6\""
+  },
+  {
+   "assetId": "tree.flowering",
+   "structure": 1,
+   "variant": 17,
+   "x": 132.4,
+   "y": 132.1,
+   "scale": 1.02,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Lilac, Japanese tree 4\""
+  },
+  {
+   "assetId": "tree.flowering",
+   "structure": 1,
+   "variant": 58,
+   "x": 405.8,
+   "y": 98.3,
+   "scale": 1.06,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Lilac, Japanese tree 5\""
+  },
+  {
+   "assetId": "tree.linden",
+   "structure": 0,
+   "variant": 4,
+   "x": 26.9,
+   "y": 169.5,
+   "scale": 1.48,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Linden spp 15\""
+  },
+  {
+   "assetId": "tree.elm",
+   "structure": 0,
+   "variant": 38,
+   "x": 204.5,
+   "y": 252.5,
+   "scale": 1.35,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Elm, Hybrid 12\""
+  },
+  {
+   "assetId": "tree.linden",
+   "structure": 0,
+   "variant": 79,
+   "x": 56.2,
+   "y": 556.6,
+   "scale": 1.7,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Linden, Littleleaf 21\""
+  },
+  {
+   "assetId": "tree.maple",
+   "structure": 0,
+   "variant": 59,
+   "x": 345.3,
+   "y": 486.1,
+   "scale": 1.14,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Maple, Hedge 7\""
+  },
+  {
+   "assetId": "tree.maple",
+   "structure": 0,
+   "variant": 71,
+   "x": 244.5,
+   "y": 415.1,
+   "scale": 0.97,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Maple, Miyabe's 3\""
+  },
+  {
+   "assetId": "tree.maple",
+   "structure": 0,
+   "variant": 32,
+   "x": 200.7,
+   "y": 538.8,
+   "scale": 1.52,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Maple, Norway 16\""
+  },
+  {
+   "assetId": "tree.maple",
+   "structure": 0,
+   "variant": 70,
+   "x": 230.5,
+   "y": 552,
+   "scale": 1.14,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Maple, Norway 7\""
+  },
+  {
+   "assetId": "tree.maple",
+   "structure": 0,
+   "variant": 83,
+   "x": 131,
+   "y": 211.4,
+   "scale": 0.97,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Maple, Freeman 3\""
+  },
+  {
+   "assetId": "tree.maple",
+   "structure": 0,
+   "variant": 47,
+   "x": 131.2,
+   "y": 201.8,
+   "scale": 0.97,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Maple, Freeman 3\""
+  },
+  {
+   "assetId": "tree.maple",
+   "structure": 0,
+   "variant": 58,
+   "x": 483.5,
+   "y": 27.1,
+   "scale": 1.06,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Maple, Amur 5\""
+  },
+  {
+   "assetId": "tree.maple",
+   "structure": 0,
+   "variant": 59,
+   "x": 128,
+   "y": 383,
+   "scale": 0.93,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Maple, Miyabe's 2\""
+  },
+  {
+   "assetId": "tree.maple",
+   "structure": 0,
+   "variant": 75,
+   "x": 59.3,
+   "y": 251.4,
+   "scale": 0.93,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Maple, Miyabe's 2\""
+  },
+  {
+   "assetId": "tree.maple",
+   "structure": 0,
+   "variant": 38,
+   "x": 101.9,
+   "y": 159.2,
+   "scale": 0.89,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Maple, Amur 1\""
+  },
+  {
+   "assetId": "tree.maple",
+   "structure": 0,
+   "variant": 89,
+   "x": 488.5,
+   "y": 88.8,
+   "scale": 1.35,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Maple, Norway 12\""
+  },
+  {
+   "assetId": "tree.maple",
+   "structure": 0,
+   "variant": 10,
+   "x": 95.3,
+   "y": 537.2,
+   "scale": 1.18,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Maple, Norway 8\""
+  },
+  {
+   "assetId": "tree.maple",
+   "structure": 0,
+   "variant": 83,
+   "x": 483.9,
+   "y": 37.6,
+   "scale": 1.7,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Maple, Silver 30\""
+  },
+  {
+   "assetId": "tree.ash",
+   "structure": 0,
+   "variant": 34,
+   "x": 431.8,
+   "y": 98.6,
+   "scale": 1.7,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Ash, White 22\""
+  },
+  {
+   "assetId": "tree.maple",
+   "structure": 0,
+   "variant": 3,
+   "x": 401.2,
+   "y": 482.5,
+   "scale": 0.89,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Maple, Shantung 1\""
+  },
+  {
+   "assetId": "tree.ash",
+   "structure": 0,
+   "variant": 67,
+   "x": 429,
+   "y": 254,
+   "scale": 1.64,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Ash, White 19\""
+  },
+  {
+   "assetId": "tree.flowering",
+   "structure": 0,
+   "variant": 35,
+   "x": 312.9,
+   "y": 67.4,
+   "scale": 0.93,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Serviceberry, Apple 2\""
+  },
+  {
+   "assetId": "tree.maple",
+   "structure": 0,
+   "variant": 89,
+   "x": 315.1,
+   "y": 469.9,
+   "scale": 0.93,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Maple, Sugar 2\""
+  },
+  {
+   "assetId": "tree.maple",
+   "structure": 0,
+   "variant": 93,
+   "x": 99.7,
+   "y": 289.2,
+   "scale": 1.43,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Maple, Norway 14\""
+  },
+  {
+   "assetId": "tree.maple",
+   "structure": 0,
+   "variant": 64,
+   "x": 233.9,
+   "y": 329.5,
+   "scale": 1.06,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Ginkgo 5\""
+  },
+  {
+   "assetId": "tree.ash",
+   "structure": 0,
+   "variant": 70,
+   "x": 83.6,
+   "y": 87.4,
+   "scale": 1.18,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Ash, Green 8\""
+  },
+  {
+   "assetId": "tree.ash",
+   "structure": 0,
+   "variant": 37,
+   "x": 40.6,
+   "y": 281.2,
+   "scale": 1.23,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Ash, Green 9\""
+  },
+  {
+   "assetId": "tree.ash",
+   "structure": 0,
+   "variant": 13,
+   "x": 354.8,
+   "y": 316.7,
+   "scale": 1.7,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Ash, Green 22\""
+  },
+  {
+   "assetId": "tree.ash",
+   "structure": 0,
+   "variant": 11,
+   "x": 386.3,
+   "y": 238.5,
+   "scale": 1.68,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Ash, Green 20\""
+  },
+  {
+   "assetId": "tree.ash",
+   "structure": 0,
+   "variant": 55,
+   "x": 203.8,
+   "y": 337.9,
+   "scale": 1.68,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Ash, Green 20\""
+  },
+  {
+   "assetId": "tree.ash",
+   "structure": 0,
+   "variant": 22,
+   "x": 148.1,
+   "y": 282.4,
+   "scale": 1.7,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Ash, Green 26\""
+  },
+  {
+   "assetId": "tree.ash",
+   "structure": 0,
+   "variant": 90,
+   "x": 157.6,
+   "y": 282.4,
+   "scale": 1.7,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Ash, Green 22\""
+  },
+  {
+   "assetId": "tree.ash",
+   "structure": 0,
+   "variant": 50,
+   "x": 185.8,
+   "y": 252.5,
+   "scale": 1.56,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Ash, Green 17\""
+  },
+  {
+   "assetId": "tree.ash",
+   "structure": 0,
+   "variant": 66,
+   "x": 387.4,
+   "y": 283.8,
+   "scale": 1.39,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Ash, Green 13\""
+  },
+  {
+   "assetId": "tree.ash",
+   "structure": 0,
+   "variant": 86,
+   "x": 71.1,
+   "y": 281.5,
+   "scale": 1.7,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Ash, Green 24\""
+  },
+  {
+   "assetId": "tree.ash",
+   "structure": 0,
+   "variant": 24,
+   "x": 355.1,
+   "y": 302.8,
+   "scale": 1.64,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Ash, Green 19\""
+  },
+  {
+   "assetId": "tree.honeylocust",
+   "structure": 0,
+   "variant": 89,
+   "x": 129.4,
+   "y": 304.5,
+   "scale": 1.56,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Honeylocust 17\""
+  },
+  {
+   "assetId": "tree.maple",
+   "structure": 0,
+   "variant": 52,
+   "x": 231.4,
+   "y": 493.9,
+   "scale": 1.23,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Sweetgum, American 9\""
+  },
+  {
+   "assetId": "tree.flowering",
+   "structure": 1,
+   "variant": 94,
+   "x": 386.8,
+   "y": 215.9,
+   "scale": 1.14,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Apple 7\""
+  },
+  {
+   "assetId": "tree.flowering",
+   "structure": 1,
+   "variant": 69,
+   "x": 356.3,
+   "y": 238.1,
+   "scale": 0.97,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Apple 3\""
+  },
+  {
+   "assetId": "tree.flowering",
+   "structure": 1,
+   "variant": 4,
+   "x": 345,
+   "y": 523.2,
+   "scale": 1.02,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Apple 4\""
+  },
+  {
+   "assetId": "tree.flowering",
+   "structure": 0,
+   "variant": 51,
+   "x": 383,
+   "y": 410.2,
+   "scale": 0.97,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Pear, Callery 3\""
+  },
+  {
+   "assetId": "tree.flowering",
+   "structure": 0,
+   "variant": 7,
+   "x": 455.4,
+   "y": 68.8,
+   "scale": 0.93,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Pear, Callery 2\""
+  },
+  {
+   "assetId": "tree.flowering",
+   "structure": 1,
+   "variant": 6,
+   "x": 65.2,
+   "y": 443.8,
+   "scale": 1.06,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Pear, Callery 5\""
+  },
+  {
+   "assetId": "tree.flowering",
+   "structure": 0,
+   "variant": 88,
+   "x": 387.1,
+   "y": 202,
+   "scale": 0.93,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Pear, Callery 2\""
+  },
+  {
+   "assetId": "tree.oak",
+   "structure": 0,
+   "variant": 20,
+   "x": 36.4,
+   "y": 443.6,
+   "scale": 0.93,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Oak, English and Swamp White 2\""
+  },
+  {
+   "assetId": "tree.oak",
+   "structure": 0,
+   "variant": 51,
+   "x": 390.6,
+   "y": 549.1,
+   "scale": 0.97,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Oak, English 3\""
+  },
+  {
+   "assetId": "tree.oak",
+   "structure": 0,
+   "variant": 43,
+   "x": 27.2,
+   "y": 443.5,
+   "scale": 0.93,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Oak, English and Swamp White 2\""
+  },
+  {
+   "assetId": "tree.linden",
+   "structure": 0,
+   "variant": 54,
+   "x": 91.7,
+   "y": 557.1,
+   "scale": 1.7,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Linden, Littleleaf 23\""
+  },
+  {
+   "assetId": "tree.linden",
+   "structure": 0,
+   "variant": 26,
+   "x": 70.7,
+   "y": 199.8,
+   "scale": 1.64,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Linden spp 19\""
+  },
+  {
+   "assetId": "tree.linden",
+   "structure": 0,
+   "variant": 78,
+   "x": 84.7,
+   "y": 199.9,
+   "scale": 1.43,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Linden spp 14\""
+  },
+  {
+   "assetId": "tree.elm",
+   "structure": 0,
+   "variant": 35,
+   "x": 167.6,
+   "y": 444.5,
+   "scale": 1.39,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Elm, Smooth-leaf 13\""
+  },
+  {
+   "assetId": "tree.elm",
+   "structure": 0,
+   "variant": 4,
+   "x": 192.3,
+   "y": 444.7,
+   "scale": 1.31,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Elm, Smooth-leaf 11\""
+  },
+  {
+   "assetId": "tree.flowering",
+   "structure": 0,
+   "variant": 40,
+   "x": 327.3,
+   "y": 67.6,
+   "scale": 0.93,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Lilac, Japanese tree 2\""
+  },
+  {
+   "assetId": "tree.flowering",
+   "structure": 1,
+   "variant": 86,
+   "x": 383.8,
+   "y": 368.9,
+   "scale": 1.18,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Lilac, Japanese tree 8\""
+  },
+  {
+   "assetId": "tree.flowering",
+   "structure": 0,
+   "variant": 54,
+   "x": 345.4,
+   "y": 496.2,
+   "scale": 0.93,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Lilac, Japanese tree 2\""
+  },
+  {
+   "assetId": "tree.linden",
+   "structure": 0,
+   "variant": 11,
+   "x": 98,
+   "y": 200,
+   "scale": 1.39,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Linden spp 13\""
+  },
+  {
+   "assetId": "tree.elm",
+   "structure": 0,
+   "variant": 16,
+   "x": 483.6,
+   "y": 402,
+   "scale": 0.93,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Elm, Hybrid 2\""
+  },
+  {
+   "assetId": "tree.flowering",
+   "structure": 0,
+   "variant": 18,
+   "x": 420.7,
+   "y": 98.5,
+   "scale": 1.06,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Lilac, Japanese tree 5\""
+  },
+  {
+   "assetId": "tree.flowering",
+   "structure": 1,
+   "variant": 72,
+   "x": 440.8,
+   "y": 98.7,
+   "scale": 1.1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Lilac, Japanese tree 6\""
+  },
+  {
+   "assetId": "tree.linden",
+   "structure": 0,
+   "variant": 21,
+   "x": 231.6,
+   "y": 480,
+   "scale": 1.39,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Linden, Crimean 13\""
+  },
+  {
+   "assetId": "tree.elm",
+   "structure": 0,
+   "variant": 23,
+   "x": 56.4,
+   "y": 443.7,
+   "scale": 1.14,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Elm, Hybrid 7\""
+  },
+  {
+   "assetId": "tree.flowering",
+   "structure": 1,
+   "variant": 73,
+   "x": 126.2,
+   "y": 482.5,
+   "scale": 0.93,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Lilac, Japanese tree 2\""
+  },
+  {
+   "assetId": "tree.maple",
+   "structure": 0,
+   "variant": 82,
+   "x": 483.7,
+   "y": 393.2,
+   "scale": 0.93,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Maple, Amur 2\""
+  },
+  {
+   "assetId": "tree.maple",
+   "structure": 0,
+   "variant": 30,
+   "x": 437.2,
+   "y": 68.6,
+   "scale": 0.97,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Maple, Freeman 3\""
+  },
+  {
+   "assetId": "tree.maple",
+   "structure": 0,
+   "variant": 22,
+   "x": 97.9,
+   "y": 386.4,
+   "scale": 0.97,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Maple, Freeman 3\""
+  },
+  {
+   "assetId": "tree.maple",
+   "structure": 0,
+   "variant": 48,
+   "x": 458.3,
+   "y": 108.2,
+   "scale": 1.18,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Maple, Freeman 8\""
+  },
+  {
+   "assetId": "tree.maple",
+   "structure": 0,
+   "variant": 84,
+   "x": 99.2,
+   "y": 315.4,
+   "scale": 1.02,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Maple, Amur 4\""
+  },
+  {
+   "assetId": "tree.maple",
+   "structure": 0,
+   "variant": 57,
+   "x": 488.3,
+   "y": 112.3,
+   "scale": 1.52,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Maple, Norway 16\""
+  },
+  {
+   "assetId": "tree.maple",
+   "structure": 0,
+   "variant": 77,
+   "x": 125.5,
+   "y": 522,
+   "scale": 1.7,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Maple, Norway 25\""
+  },
+  {
+   "assetId": "tree.maple",
+   "structure": 0,
+   "variant": 57,
+   "x": 454.6,
+   "y": 319.2,
+   "scale": 0.93,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Maple, Amur 2\""
+  },
+  {
+   "assetId": "tree.maple",
+   "structure": 0,
+   "variant": 86,
+   "x": 466,
+   "y": 61.4,
+   "scale": 1.14,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Maple, Miyabe's 7\""
+  },
+  {
+   "assetId": "tree.maple",
+   "structure": 0,
+   "variant": 37,
+   "x": 483.5,
+   "y": 51.2,
+   "scale": 1.31,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Maple, Norway 11\""
+  },
+  {
+   "assetId": "tree.maple",
+   "structure": 0,
+   "variant": 27,
+   "x": 454.9,
+   "y": 302.5,
+   "scale": 1.52,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Maple, Norway 16\""
+  },
+  {
+   "assetId": "tree.elm",
+   "structure": 0,
+   "variant": 84,
+   "x": 203.6,
+   "y": 352.1,
+   "scale": 1.68,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Hackberry, Common 20\""
+  },
+  {
+   "assetId": "tree.flowering",
+   "structure": 0,
+   "variant": 67,
+   "x": 243.5,
+   "y": 66.8,
+   "scale": 0.93,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Serviceberry, Apple 2\""
+  },
+  {
+   "assetId": "tree.maple",
+   "structure": 0,
+   "variant": 22,
+   "x": 126.1,
+   "y": 492.4,
+   "scale": 0.93,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Maple, Shantung 2\""
+  },
+  {
+   "assetId": "tree.flowering",
+   "structure": 0,
+   "variant": 92,
+   "x": 484.7,
+   "y": 314.8,
+   "scale": 0.93,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Serviceberry, Apple 2\""
+  },
+  {
+   "assetId": "tree.flowering",
+   "structure": 0,
+   "variant": 60,
+   "x": 100.9,
+   "y": 216,
+   "scale": 0.93,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Serviceberry, Shadblow 2\""
+  },
+  {
+   "assetId": "tree.maple",
+   "structure": 0,
+   "variant": 77,
+   "x": 453.5,
+   "y": 411.3,
+   "scale": 0.93,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Maple, Tatar 2\""
+  },
+  {
+   "assetId": "tree.elm",
+   "structure": 0,
+   "variant": 16,
+   "x": 234.1,
+   "y": 316.9,
+   "scale": 1.81,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Hackberry, Common 23\""
+  },
+  {
+   "assetId": "tree.ash",
+   "structure": 0,
+   "variant": 29,
+   "x": 353.9,
+   "y": 363.9,
+   "scale": 1.7,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Ash, Green 24\""
+  },
+  {
+   "assetId": "tree.ash",
+   "structure": 0,
+   "variant": 51,
+   "x": 386.6,
+   "y": 227,
+   "scale": 1.7,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Ash, Green 22\""
+  },
+  {
+   "assetId": "tree.ash",
+   "structure": 0,
+   "variant": 24,
+   "x": 203.4,
+   "y": 362,
+   "scale": 1.52,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Ash, Green 16\""
+  },
+  {
+   "assetId": "tree.ash",
+   "structure": 0,
+   "variant": 57,
+   "x": 173.2,
+   "y": 282.5,
+   "scale": 1.7,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Ash, Green 22\""
+  },
+  {
+   "assetId": "tree.ash",
+   "structure": 0,
+   "variant": 28,
+   "x": 204.6,
+   "y": 285.3,
+   "scale": 1.7,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Ash, Green 25\""
+  },
+  {
+   "assetId": "tree.honeylocust",
+   "structure": 0,
+   "variant": 20,
+   "x": 96.7,
+   "y": 456.8,
+   "scale": 1.23,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Honeylocust 9\""
+  },
+  {
+   "assetId": "tree.honeylocust",
+   "structure": 0,
+   "variant": 59,
+   "x": 96.4,
+   "y": 471.3,
+   "scale": 1.7,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Honeylocust 25\""
+  },
+  {
+   "assetId": "tree.honeylocust",
+   "structure": 0,
+   "variant": 56,
+   "x": 129.8,
+   "y": 284.5,
+   "scale": 1.7,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Honeylocust 22\""
+  },
+  {
+   "assetId": "tree.honeylocust",
+   "structure": 0,
+   "variant": 42,
+   "x": 125.8,
+   "y": 508.3,
+   "scale": 1.06,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Honeylocust 5\""
+  },
+  {
+   "assetId": "tree.honeylocust",
+   "structure": 0,
+   "variant": 35,
+   "x": 96,
+   "y": 493.4,
+   "scale": 1.56,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Honeylocust 17\""
+  },
+  {
+   "assetId": "tree.honeylocust",
+   "structure": 0,
+   "variant": 95,
+   "x": 125.3,
+   "y": 537.5,
+   "scale": 1.31,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Honeylocust 11\""
+  },
+  {
+   "assetId": "tree.maple",
+   "structure": 0,
+   "variant": 49,
+   "x": 51.5,
+   "y": 169.7,
+   "scale": 0.89,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:N/A 1\""
+  },
+  {
+   "assetId": "tree.flowering",
+   "structure": 1,
+   "variant": 80,
+   "x": 98.2,
+   "y": 370.8,
+   "scale": 1.06,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Pear, Callery 5\""
+  },
+  {
+   "assetId": "tree.oak",
+   "structure": 0,
+   "variant": 53,
+   "x": 27.2,
+   "y": 60.3,
+   "scale": 0.93,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Oak, English 2\""
+  },
+  {
+   "assetId": "tree.oak",
+   "structure": 0,
+   "variant": 32,
+   "x": 68.7,
+   "y": 58.1,
+   "scale": 0.93,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Oak, English 2\""
+  },
+  {
+   "assetId": "tree.linden",
+   "structure": 0,
+   "variant": 6,
+   "x": 66.6,
+   "y": 556.9,
+   "scale": 1.68,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Linden, Littleleaf 20\""
+  },
+  {
+   "assetId": "tree.linden",
+   "structure": 0,
+   "variant": 89,
+   "x": 201.6,
+   "y": 480.4,
+   "scale": 1.43,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Linden, Crimean 14\""
+  },
+  {
+   "assetId": "tree.flowering",
+   "structure": 0,
+   "variant": 14,
+   "x": 149,
+   "y": 89.2,
+   "scale": 0.97,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Lilac, Japanese tree 3\""
+  },
+  {
+   "assetId": "tree.flowering",
+   "structure": 0,
+   "variant": 1,
+   "x": 388.2,
+   "y": 416.2,
+   "scale": 0.93,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Lilac, Japanese tree 2\""
+  },
+  {
+   "assetId": "tree.flowering",
+   "structure": 0,
+   "variant": 70,
+   "x": 407.2,
+   "y": 416.4,
+   "scale": 0.93,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Lilac, Japanese tree 2\""
+  },
+  {
+   "assetId": "tree.elm",
+   "structure": 0,
+   "variant": 50,
+   "x": 184.3,
+   "y": 414.6,
+   "scale": 0.97,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Elm, Hybrid 3\""
+  },
+  {
+   "assetId": "tree.linden",
+   "structure": 0,
+   "variant": 56,
+   "x": 69.6,
+   "y": 360.3,
+   "scale": 1.43,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Linden, Littleleaf 14\""
+  },
+  {
+   "assetId": "tree.linden",
+   "structure": 0,
+   "variant": 52,
+   "x": 93.2,
+   "y": 360.5,
+   "scale": 1.31,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Linden, Littleleaf 11\""
+  },
+  {
+   "assetId": "tree.flowering",
+   "structure": 1,
+   "variant": 55,
+   "x": 381.9,
+   "y": 560.8,
+   "scale": 0.93,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Lilac, Japanese tree 2\""
+  },
+  {
+   "assetId": "tree.flowering",
+   "structure": 0,
+   "variant": 81,
+   "x": 486.3,
+   "y": 218.1,
+   "scale": 0.93,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Lilac, Japanese tree 2\""
+  },
+  {
+   "assetId": "tree.flowering",
+   "structure": 0,
+   "variant": 52,
+   "x": 487.5,
+   "y": 155.1,
+   "scale": 0.93,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Lilac, Japanese tree 2\""
+  },
+  {
+   "assetId": "tree.flowering",
+   "structure": 0,
+   "variant": 94,
+   "x": 387.3,
+   "y": 188.9,
+   "scale": 0.93,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Lilac, Japanese tree 2\""
+  },
+  {
+   "assetId": "tree.linden",
+   "structure": 0,
+   "variant": 49,
+   "x": 30,
+   "y": 329.9,
+   "scale": 1.35,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Linden spp 12\""
+  },
+  {
+   "assetId": "tree.linden",
+   "structure": 0,
+   "variant": 36,
+   "x": 82.4,
+   "y": 169.9,
+   "scale": 1.56,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Linden spp 17\""
+  },
+  {
+   "assetId": "tree.maple",
+   "structure": 0,
+   "variant": 3,
+   "x": 69,
+   "y": 88.2,
+   "scale": 0.93,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Maple, Hedge 2\""
+  },
+  {
+   "assetId": "tree.maple",
+   "structure": 0,
+   "variant": 40,
+   "x": 485.9,
+   "y": 238.9,
+   "scale": 0.93,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Maple, Miyabe's 2\""
+  },
+  {
+   "assetId": "tree.maple",
+   "structure": 0,
+   "variant": 58,
+   "x": 418.5,
+   "y": 510.1,
+   "scale": 1.02,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Maple, Norway 4\""
+  },
+  {
+   "assetId": "tree.maple",
+   "structure": 0,
+   "variant": 32,
+   "x": 486.6,
+   "y": 78,
+   "scale": 1.27,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Maple, Norway 10\""
+  },
+  {
+   "assetId": "tree.maple",
+   "structure": 0,
+   "variant": 53,
+   "x": 99.5,
+   "y": 300.4,
+   "scale": 0.89,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Maple, Amur 1\""
+  },
+  {
+   "assetId": "tree.maple",
+   "structure": 0,
+   "variant": 78,
+   "x": 345.1,
+   "y": 469.1,
+   "scale": 1.23,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Maple, Norway 9\""
+  },
+  {
+   "assetId": "tree.maple",
+   "structure": 0,
+   "variant": 37,
+   "x": 455,
+   "y": 294.6,
+   "scale": 1.43,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Maple, Norway 14\""
+  },
+  {
+   "assetId": "tree.maple",
+   "structure": 0,
+   "variant": 95,
+   "x": 55.9,
+   "y": 281.4,
+   "scale": 0.93,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Maple, Norway 2\""
+  },
+  {
+   "assetId": "tree.maple",
+   "structure": 0,
+   "variant": 49,
+   "x": 405.4,
+   "y": 68.3,
+   "scale": 0.93,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Maple, Norway 2\""
+  },
+  {
+   "assetId": "tree.maple",
+   "structure": 0,
+   "variant": 45,
+   "x": 132.6,
+   "y": 118.6,
+   "scale": 1.1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Maple, Shantung 6\""
+  },
+  {
+   "assetId": "tree.elm",
+   "structure": 0,
+   "variant": 86,
+   "x": 203.9,
+   "y": 330,
+   "scale": 1.77,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Hackberry, Common 22\""
+  },
+  {
+   "assetId": "tree.flowering",
+   "structure": 0,
+   "variant": 34,
+   "x": 484.5,
+   "y": 331.6,
+   "scale": 0.93,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Serviceberry, Apple 2\""
+  },
+  {
+   "assetId": "tree.elm",
+   "structure": 0,
+   "variant": 36,
+   "x": 234.3,
+   "y": 301.7,
+   "scale": 1.81,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Hackberry, Common 23\""
+  },
+  {
+   "assetId": "tree.flowering",
+   "structure": 0,
+   "variant": 85,
+   "x": 455.6,
+   "y": 251.7,
+   "scale": 0.93,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Serviceberry, Apple 2\""
+  },
+  {
+   "assetId": "tree.ash",
+   "structure": 0,
+   "variant": 52,
+   "x": 444.3,
+   "y": 254.1,
+   "scale": 1.7,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Ash, White 21\""
+  },
+  {
+   "assetId": "tree.ash",
+   "structure": 0,
+   "variant": 79,
+   "x": 233.4,
+   "y": 365.2,
+   "scale": 1.7,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Ash, White 21\""
+  },
+  {
+   "assetId": "tree.flowering",
+   "structure": 0,
+   "variant": 11,
+   "x": 100.7,
+   "y": 227.4,
+   "scale": 0.93,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Serviceberry, Shadblow 2\""
+  },
+  {
+   "assetId": "tree.ash",
+   "structure": 0,
+   "variant": 11,
+   "x": 433.8,
+   "y": 284.1,
+   "scale": 1.7,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Ash, White 21\""
+  },
+  {
+   "assetId": "tree.flowering",
+   "structure": 0,
+   "variant": 58,
+   "x": 41.2,
+   "y": 330,
+   "scale": 0.93,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Serviceberry, Apple 2\""
+  },
+  {
+   "assetId": "tree.maple",
+   "structure": 0,
+   "variant": 77,
+   "x": 455.9,
+   "y": 237,
+   "scale": 1.7,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Maple, Silver 25\""
+  },
+  {
+   "assetId": "tree.ash",
+   "structure": 0,
+   "variant": 7,
+   "x": 296,
+   "y": 97.3,
+   "scale": 1.6,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Ash, Green 18\""
+  },
+  {
+   "assetId": "tree.ash",
+   "structure": 0,
+   "variant": 68,
+   "x": 32,
+   "y": 281.1,
+   "scale": 1.18,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Ash, Green 8\""
+  },
+  {
+   "assetId": "tree.ash",
+   "structure": 0,
+   "variant": 30,
+   "x": 87.1,
+   "y": 281.7,
+   "scale": 1.64,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Ash, Green 19\""
+  },
+  {
+   "assetId": "tree.ash",
+   "structure": 0,
+   "variant": 63,
+   "x": 385.1,
+   "y": 302.1,
+   "scale": 1.52,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Ash, Green 16\""
+  },
+  {
+   "assetId": "tree.ash",
+   "structure": 0,
+   "variant": 23,
+   "x": 204.1,
+   "y": 314.9,
+   "scale": 1.6,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Ash, Green 18\""
+  },
+  {
+   "assetId": "tree.ash",
+   "structure": 0,
+   "variant": 77,
+   "x": 233.6,
+   "y": 353.1,
+   "scale": 1.35,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Ash, Green 12\""
+  },
+  {
+   "assetId": "tree.ash",
+   "structure": 0,
+   "variant": 80,
+   "x": 156.8,
+   "y": 252.4,
+   "scale": 1.56,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Ash, Green 17\""
+  },
+  {
+   "assetId": "tree.honeylocust",
+   "structure": 0,
+   "variant": 0,
+   "x": 125.1,
+   "y": 548.1,
+   "scale": 1.7,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Honeylocust 23\""
+  },
+  {
+   "assetId": "tree.honeylocust",
+   "structure": 0,
+   "variant": 14,
+   "x": 129.2,
+   "y": 318.4,
+   "scale": 1.68,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Honeylocust 20\""
+  },
+  {
+   "assetId": "tree.honeylocust",
+   "structure": 0,
+   "variant": 10,
+   "x": 95.1,
+   "y": 549.4,
+   "scale": 1.68,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Honeylocust 20\""
+  },
+  {
+   "assetId": "tree.honeylocust",
+   "structure": 0,
+   "variant": 19,
+   "x": 486.1,
+   "y": 441.4,
+   "scale": 1.31,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Honeylocust 11\""
+  },
+  {
+   "assetId": "tree.honeylocust",
+   "structure": 0,
+   "variant": 15,
+   "x": 404.3,
+   "y": 283.9,
+   "scale": 0.97,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Honeylocust 3\""
+  },
+  {
+   "assetId": "tree.honeylocust",
+   "structure": 0,
+   "variant": 49,
+   "x": 95.5,
+   "y": 521.9,
+   "scale": 1.7,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Honeylocust 27\""
+  },
+  {
+   "assetId": "tree.oak",
+   "structure": 0,
+   "variant": 48,
+   "x": 315.3,
+   "y": 481.2,
+   "scale": 0.97,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Oak, Swamp white 3\""
+  },
+  {
+   "assetId": "tree.flowering",
+   "structure": 1,
+   "variant": 90,
+   "x": 43.1,
+   "y": 169.6,
+   "scale": 0.93,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Pear, Callery 2\""
+  },
+  {
+   "assetId": "tree.flowering",
+   "structure": 1,
+   "variant": 18,
+   "x": 420.4,
+   "y": 446.5,
+   "scale": 0.93,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Pear, Callery 2\""
+  },
+  {
+   "assetId": "tree.flowering",
+   "structure": 0,
+   "variant": 93,
+   "x": 409.5,
+   "y": 522.7,
+   "scale": 0.93,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Pear, Callery 2\""
+  },
+  {
+   "assetId": "tree.flowering",
+   "structure": 1,
+   "variant": 31,
+   "x": 358.3,
+   "y": 136.7,
+   "scale": 0.93,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Pear, Callery 2\""
+  },
+  {
+   "assetId": "tree.flowering",
+   "structure": 1,
+   "variant": 17,
+   "x": 130.6,
+   "y": 238,
+   "scale": 0.97,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Pear, Callery 3\""
+  },
+  {
+   "assetId": "tree.flowering",
+   "structure": 1,
+   "variant": 82,
+   "x": 379.1,
+   "y": 513.7,
+   "scale": 0.93,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Pear, Callery 2\""
+  },
+  {
+   "assetId": "tree.oak",
+   "structure": 0,
+   "variant": 87,
+   "x": 56.1,
+   "y": 58.8,
+   "scale": 0.93,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Oak, English 2\""
+  },
+  {
+   "assetId": "tree.linden",
+   "structure": 0,
+   "variant": 6,
+   "x": 102.8,
+   "y": 104.9,
+   "scale": 1.43,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Linden spp 14\""
+  },
+  {
+   "assetId": "tree.linden",
+   "structure": 0,
+   "variant": 23,
+   "x": 102.1,
+   "y": 148.4,
+   "scale": 1.39,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Linden spp 13\""
+  },
+  {
+   "assetId": "tree.linden",
+   "structure": 0,
+   "variant": 88,
+   "x": 46.6,
+   "y": 360,
+   "scale": 1.31,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Linden, Littleleaf 11\""
+  },
+  {
+   "assetId": "tree.linden",
+   "structure": 0,
+   "variant": 87,
+   "x": 61.4,
+   "y": 360.2,
+   "scale": 1.52,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Linden, Littleleaf 16\""
+  },
+  {
+   "assetId": "tree.linden",
+   "structure": 0,
+   "variant": 71,
+   "x": 96.7,
+   "y": 330.5,
+   "scale": 1.31,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Linden, Littleleaf 11\""
+  },
+  {
+   "assetId": "tree.linden",
+   "structure": 0,
+   "variant": 41,
+   "x": 71.8,
+   "y": 330.3,
+   "scale": 1.18,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Linden, Littleleaf 8\""
+  },
+  {
+   "assetId": "tree.flowering",
+   "structure": 1,
+   "variant": 36,
+   "x": 369.4,
+   "y": 527.2,
+   "scale": 0.93,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Lilac, Japanese tree 2\""
+  },
+  {
+   "assetId": "tree.flowering",
+   "structure": 0,
+   "variant": 89,
+   "x": 466.9,
+   "y": 41.2,
+   "scale": 0.97,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Lilac, Japanese tree 3\""
+  },
+  {
+   "assetId": "tree.flowering",
+   "structure": 0,
+   "variant": 89,
+   "x": 418,
+   "y": 254,
+   "scale": 0.93,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Lilac, Japanese tree 2\""
+  },
+  {
+   "assetId": "tree.linden",
+   "structure": 0,
+   "variant": 4,
+   "x": 47.5,
+   "y": 199.7,
+   "scale": 1.39,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Linden spp 13\""
+  },
+  {
+   "assetId": "tree.maple",
+   "structure": 0,
+   "variant": 26,
+   "x": 97.5,
+   "y": 411,
+   "scale": 0.97,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Maple, Freeman 3\""
+  },
+  {
+   "assetId": "tree.maple",
+   "structure": 0,
+   "variant": 58,
+   "x": 443.2,
+   "y": 475.1,
+   "scale": 1.23,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Maple, Norway 9\""
+  },
+  {
+   "assetId": "tree.maple",
+   "structure": 0,
+   "variant": 73,
+   "x": 39.2,
+   "y": 251.2,
+   "scale": 0.93,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Maple, Hedge 2\""
+  },
+  {
+   "assetId": "tree.ash",
+   "structure": 0,
+   "variant": 89,
+   "x": 233.8,
+   "y": 339.9,
+   "scale": 1.7,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Ash, White 23\""
+  },
+  {
+   "assetId": "tree.maple",
+   "structure": 0,
+   "variant": 5,
+   "x": 201.8,
+   "y": 466.9,
+   "scale": 1.7,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Catalpa, Northern 29\""
+  },
+  {
+   "assetId": "tree.ash",
+   "structure": 0,
+   "variant": 44,
+   "x": 393.2,
+   "y": 253.8,
+   "scale": 1.68,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Ash, White 20\""
+  },
+  {
+   "assetId": "tree.ash",
+   "structure": 0,
+   "variant": 19,
+   "x": 358.7,
+   "y": 115.8,
+   "scale": 1.43,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Ash, Green 14\""
+  },
+  {
+   "assetId": "tree.ash",
+   "structure": 0,
+   "variant": 91,
+   "x": 357,
+   "y": 203.5,
+   "scale": 1.64,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Ash, Green 19\""
+  },
+  {
+   "assetId": "tree.ash",
+   "structure": 0,
+   "variant": 37,
+   "x": 388.4,
+   "y": 135.3,
+   "scale": 1.52,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Ash, Green 16\""
+  },
+  {
+   "assetId": "tree.ash",
+   "structure": 0,
+   "variant": 92,
+   "x": 388.5,
+   "y": 127,
+   "scale": 1.6,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Ash, Green 18\""
+  },
+  {
+   "assetId": "tree.ash",
+   "structure": 0,
+   "variant": 30,
+   "x": 232.8,
+   "y": 400.8,
+   "scale": 1.7,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Ash, Green 26\""
+  },
+  {
+   "assetId": "tree.ash",
+   "structure": 0,
+   "variant": 89,
+   "x": 233,
+   "y": 386.3,
+   "scale": 1.68,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Ash, Green 20\""
+  },
+  {
+   "assetId": "tree.honeylocust",
+   "structure": 0,
+   "variant": 15,
+   "x": 130.8,
+   "y": 222,
+   "scale": 1.48,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Honeylocust 15\""
+  },
+  {
+   "assetId": "tree.flowering",
+   "structure": 1,
+   "variant": 89,
+   "x": 388.8,
+   "y": 114.7,
+   "scale": 1.27,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Pear, Callery 10\""
+  },
+  {
+   "assetId": "tree.flowering",
+   "structure": 0,
+   "variant": 5,
+   "x": 72.8,
+   "y": 413.8,
+   "scale": 1.14,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Pear, Callery 7\""
+  },
+  {
+   "assetId": "tree.flowering",
+   "structure": 1,
+   "variant": 29,
+   "x": 361.1,
+   "y": 538.5,
+   "scale": 0.93,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Pear, Callery 2\""
+  },
+  {
+   "assetId": "tree.flowering",
+   "structure": 1,
+   "variant": 88,
+   "x": 137.7,
+   "y": 88,
+   "scale": 1.06,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Lilac, Japanese tree 5\""
+  },
+  {
+   "assetId": "tree.flowering",
+   "structure": 1,
+   "variant": 68,
+   "x": 339.9,
+   "y": 97.7,
+   "scale": 0.97,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Lilac, Japanese tree 3\""
+  },
+  {
+   "assetId": "tree.flowering",
+   "structure": 1,
+   "variant": 41,
+   "x": 227.7,
+   "y": 96.6,
+   "scale": 1.18,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Lilac, Japanese tree 8\""
+  },
+  {
+   "assetId": "tree.linden",
+   "structure": 0,
+   "variant": 32,
+   "x": 85.8,
+   "y": 330.4,
+   "scale": 1.14,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Linden, Littleleaf 7\""
+  },
+  {
+   "assetId": "tree.flowering",
+   "structure": 1,
+   "variant": 52,
+   "x": 356.8,
+   "y": 544.3,
+   "scale": 1.14,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Lilac, Japanese tree 7\""
+  },
+  {
+   "assetId": "tree.linden",
+   "structure": 0,
+   "variant": 38,
+   "x": 32.6,
+   "y": 199.6,
+   "scale": 1.14,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Linden spp 7\""
+  },
+  {
+   "assetId": "tree.linden",
+   "structure": 0,
+   "variant": 73,
+   "x": 61.7,
+   "y": 169.8,
+   "scale": 1.27,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "city:Linden spp 10\""
+  },
+  {
+   "assetId": "tree.linden",
+   "structure": 0,
+   "variant": 40,
+   "x": 310.4,
+   "y": 128.9,
+   "scale": 1.07,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "osm:tree"
+  },
+  {
+   "assetId": "tree.ash",
+   "structure": 0,
+   "variant": 59,
+   "x": 325.3,
+   "y": 126.3,
+   "scale": 1.15,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "osm:tree"
+  },
+  {
+   "assetId": "tree.ash",
+   "structure": 0,
+   "variant": 48,
+   "x": 343.6,
+   "y": 127.4,
+   "scale": 1.1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "osm:tree"
+  },
+  {
+   "assetId": "tree.ash",
+   "structure": 0,
+   "variant": 55,
+   "x": 289,
+   "y": 153.6,
+   "scale": 1.13,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "osm:tree"
+  },
+  {
+   "assetId": "tree.oak",
+   "structure": 0,
+   "variant": 89,
+   "x": 279.5,
+   "y": 160.4,
+   "scale": 1.27,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "osm:tree"
+  },
+  {
+   "assetId": "tree.oak",
+   "structure": 0,
+   "variant": 76,
+   "x": 229.1,
+   "y": 155.2,
+   "scale": 1.22,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "osm:tree"
+  },
+  {
+   "assetId": "tree.oak",
+   "structure": 0,
+   "variant": 83,
+   "x": 218.5,
+   "y": 137.8,
+   "scale": 1.25,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "osm:tree"
+  },
+  {
+   "assetId": "tree.maple",
+   "structure": 0,
+   "variant": 14,
+   "x": 249.7,
+   "y": 137.2,
+   "scale": 0.96,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "osm:tree"
+  },
+  {
+   "assetId": "tree.conifer",
+   "structure": 2,
+   "variant": 0,
+   "x": 194.1,
+   "y": 63.6,
+   "scale": 0.97,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "procedural:yard_conifer"
+  },
+  {
+   "assetId": "tree.conifer",
+   "structure": 1,
+   "variant": 0,
+   "x": 452.6,
+   "y": 117.1,
+   "scale": 0.98,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "procedural:yard_conifer"
+  },
+  {
+   "assetId": "tree.conifer",
+   "structure": 2,
+   "variant": 0,
+   "x": 214.2,
+   "y": 213.2,
+   "scale": 1.14,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "procedural:yard_conifer"
+  },
+  {
+   "assetId": "tree.conifer",
+   "structure": 1,
+   "variant": 0,
+   "x": 195.7,
+   "y": 474.6,
+   "scale": 1.23,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 7,
+   "src": "procedural:yard_conifer"
+  },
+  {
+   "assetId": "vehicle.parked_car",
+   "structure": 0,
+   "variant": 48,
+   "x": 76.1,
+   "y": 62.8,
+   "scale": 2.1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "procedural:parked_car"
+  },
+  {
+   "assetId": "vehicle.parked_car",
+   "structure": 0,
+   "variant": 65,
+   "x": 94.6,
+   "y": 81.8,
+   "scale": 2.1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "procedural:parked_car"
+  },
+  {
+   "assetId": "vehicle.parked_car",
+   "structure": 1,
+   "variant": 83,
+   "x": 187,
+   "y": 419.7,
+   "scale": 2.1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "procedural:parked_car"
+  },
+  {
+   "assetId": "vehicle.parked_car",
+   "structure": 0,
+   "variant": 13,
+   "x": 61.3,
+   "y": 355.2,
+   "scale": 2.1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "procedural:parked_car"
+  },
+  {
+   "assetId": "vehicle.parked_car",
+   "structure": 0,
+   "variant": 56,
+   "x": 440.5,
+   "y": 73.7,
+   "scale": 2.1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "procedural:parked_car"
+  },
+  {
+   "assetId": "vehicle.parked_car",
+   "structure": 0,
+   "variant": 51,
+   "x": 94.5,
+   "y": 256.8,
+   "scale": 2.1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "procedural:parked_car"
+  },
+  {
+   "assetId": "vehicle.parked_car",
+   "structure": 0,
+   "variant": 76,
+   "x": 37,
+   "y": 174.6,
+   "scale": 2.1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "procedural:parked_car"
+  },
+  {
+   "assetId": "vehicle.parked_car",
+   "structure": 1,
+   "variant": 49,
+   "x": 285.8,
+   "y": 440.4,
+   "scale": 2.1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "procedural:parked_car"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     174.3,
+     381.9
+    ],
+    [
+     174.4,
+     375.2
+    ],
+    [
+     204,
+     375.4
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.alley",
+   "layer": "property",
+   "pts": [
+    [
+     60.1,
+     565.3
+    ],
+    [
+     60.2,
+     556.2
+    ],
+    [
+     60.5,
+     526.6
+    ],
+    [
+     60.6,
+     521.1
+    ],
+    [
+     60.6,
+     517.4
+    ],
+    [
+     60.8,
+     502.5
+    ],
+    [
+     60.8,
+     499.4
+    ],
+    [
+     60.9,
+     496.5
+    ],
+    [
+     60.9,
+     493.6
+    ],
+    [
+     61,
+     487.9
+    ],
+    [
+     61,
+     482
+    ],
+    [
+     61.1,
+     478.4
+    ],
+    [
+     61.2,
+     465.1
+    ],
+    [
+     61.4,
+     451.8
+    ],
+    [
+     61.4,
+     450.4
+    ],
+    [
+     61.5,
+     442.4
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.alley",
+   "layer": "property",
+   "pts": [
+    [
+     41.8,
+     442.4
+    ],
+    [
+     41.6,
+     460.7
+    ],
+    [
+     41.6,
+     465.1
+    ],
+    [
+     41.5,
+     470.7
+    ],
+    [
+     41.5,
+     473.8
+    ],
+    [
+     41.5,
+     475.5
+    ],
+    [
+     41.5,
+     477.2
+    ],
+    [
+     41.4,
+     480.1
+    ],
+    [
+     41.4,
+     482.7
+    ],
+    [
+     41.3,
+     488.4
+    ],
+    [
+     41.3,
+     492
+    ],
+    [
+     41.3,
+     496.3
+    ],
+    [
+     41.2,
+     506.5
+    ],
+    [
+     41,
+     520.5
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     452.3,
+     492.1
+    ],
+    [
+     462.5,
+     498.9
+    ],
+    [
+     470.3,
+     487
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     424.7,
+     540.1
+    ],
+    [
+     421.5,
+     545.1
+    ],
+    [
+     425.4,
+     547.6
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     472,
+     479.8
+    ],
+    [
+     463.9,
+     477
+    ],
+    [
+     459.7,
+     475.1
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     404.8,
+     569.4
+    ],
+    [
+     403.1,
+     571.7
+    ],
+    [
+     401.3,
+     574.3
+    ],
+    [
+     399.5,
+     576.9
+    ],
+    [
+     404.5,
+     580.3
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     267.5,
+     458.9
+    ],
+    [
+     263.6,
+     458.9
+    ],
+    [
+     257.9,
+     458.8
+    ],
+    [
+     257.8,
+     462.8
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     267.5,
+     456.3
+    ],
+    [
+     263.6,
+     456.3
+    ],
+    [
+     263.6,
+     458.9
+    ],
+    [
+     263.6,
+     461.6
+    ],
+    [
+     267.5,
+     461.6
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     254.9,
+     508.3
+    ],
+    [
+     271.5,
+     508.3
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     172.5,
+     492.6
+    ],
+    [
+     179.1,
+     492.7
+    ],
+    [
+     179.1,
+     496.8
+    ],
+    [
+     180.2,
+     497.6
+    ],
+    [
+     183,
+     498.5
+    ],
+    [
+     185.4,
+     499
+    ],
+    [
+     187.3,
+     499.5
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     166.3,
+     508.5
+    ],
+    [
+     173.6,
+     508.5
+    ],
+    [
+     175.9,
+     513.9
+    ],
+    [
+     176.5,
+     514.6
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     130.7,
+     529.1
+    ],
+    [
+     150.8,
+     529
+    ],
+    [
+     153,
+     527.9
+    ],
+    [
+     155.6,
+     526.1
+    ],
+    [
+     157.9,
+     526.1
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     144.8,
+     470.6
+    ],
+    [
+     147.3,
+     470.6
+    ],
+    [
+     152.9,
+     467.2
+    ],
+    [
+     155.6,
+     467.2
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     155.7,
+     495.1
+    ],
+    [
+     151.1,
+     495.2
+    ],
+    [
+     148.7,
+     495.7
+    ],
+    [
+     143.8,
+     497.7
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     56.3,
+     484.7
+    ],
+    [
+     56.1,
+     496.5
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     8.7,
+     475.3
+    ],
+    [
+     41.5,
+     475.5
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     51.4,
+     517.3
+    ],
+    [
+     60.6,
+     517.4
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     61.2,
+     465.1
+    ],
+    [
+     70.7,
+     464.6
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     51.4,
+     521.1
+    ],
+    [
+     60.6,
+     521.1
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     65.9,
+     531.7
+    ],
+    [
+     65.9,
+     526.6
+    ],
+    [
+     63.5,
+     526.6
+    ],
+    [
+     63.1,
+     526.6
+    ],
+    [
+     60.5,
+     526.6
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     280.6,
+     385.5
+    ],
+    [
+     280.6,
+     387.9
+    ],
+    [
+     267.4,
+     388
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     173.2,
+     365.2
+    ],
+    [
+     173.1,
+     369.2
+    ],
+    [
+     173.1,
+     373.6
+    ],
+    [
+     174.4,
+     375.2
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     442.2,
+     320.1
+    ],
+    [
+     438.2,
+     319.2
+    ],
+    [
+     432.2,
+     316.3
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     437.1,
+     346.2
+    ],
+    [
+     434.8,
+     344.9
+    ],
+    [
+     430.9,
+     342.2
+    ],
+    [
+     422.6,
+     342.1
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     394.9,
+     332.2
+    ],
+    [
+     397.5,
+     331.8
+    ],
+    [
+     407,
+     330.2
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     388.2,
+     293.5
+    ],
+    [
+     396.5,
+     294
+    ],
+    [
+     402.3,
+     294.6
+    ],
+    [
+     414.4,
+     295.3
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     442.6,
+     123.8
+    ],
+    [
+     441,
+     124.5
+    ],
+    [
+     435.7,
+     129.9
+    ],
+    [
+     427.1,
+     129.9
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     428.5,
+     147.2
+    ],
+    [
+     429.7,
+     147.2
+    ],
+    [
+     431.3,
+     147
+    ],
+    [
+     433.5,
+     146.4
+    ],
+    [
+     440.5,
+     146.4
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     428.5,
+     144.2
+    ],
+    [
+     438.4,
+     144.2
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     428.5,
+     141.5
+    ],
+    [
+     436.3,
+     141.4
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     428.5,
+     138.4
+    ],
+    [
+     433,
+     138.4
+    ],
+    [
+     434.5,
+     139.1
+    ],
+    [
+     436.3,
+     141.4
+    ],
+    [
+     436.6,
+     141.9
+    ],
+    [
+     438.4,
+     144.2
+    ],
+    [
+     439.4,
+     145.5
+    ],
+    [
+     440.5,
+     146.4
+    ],
+    [
+     441.3,
+     147.1
+    ],
+    [
+     443.3,
+     147.6
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     429.8,
+     176.1
+    ],
+    [
+     439.1,
+     177.2
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     434.5,
+     255.7
+    ],
+    [
+     434.6,
+     247.9
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     403.5,
+     211.9
+    ],
+    [
+     412.7,
+     212.5
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     403.5,
+     170.6
+    ],
+    [
+     405.8,
+     170.9
+    ],
+    [
+     408.2,
+     171.4
+    ],
+    [
+     417.9,
+     171.5
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     401.2,
+     244
+    ],
+    [
+     404.8,
+     243.7
+    ],
+    [
+     408.6,
+     243.1
+    ],
+    [
+     411.3,
+     242.5
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     235,
+     56.1
+    ],
+    [
+     235.2,
+     54.7
+    ],
+    [
+     236,
+     53.7
+    ],
+    [
+     239.4,
+     50.1
+    ],
+    [
+     241.1,
+     48.4
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     347.9,
+     256.7
+    ],
+    [
+     333.7,
+     255.6
+    ],
+    [
+     330.9,
+     255.5
+    ],
+    [
+     327.7,
+     255.5
+    ],
+    [
+     327.7,
+     252.3
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     331.8,
+     242.9
+    ],
+    [
+     340.3,
+     242.9
+    ],
+    [
+     342.3,
+     243.6
+    ],
+    [
+     343.9,
+     244.1
+    ],
+    [
+     345,
+     244.3
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     342.9,
+     219.8
+    ],
+    [
+     333.3,
+     217.6
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     150.8,
+     312.7
+    ],
+    [
+     146.9,
+     312.7
+    ],
+    [
+     146.9,
+     315.9
+    ],
+    [
+     147,
+     319.1
+    ],
+    [
+     150.8,
+     319
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     141.6,
+     307.2
+    ],
+    [
+     149.9,
+     306.7
+    ],
+    [
+     149.9,
+     303.7
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     154.4,
+     117.9
+    ],
+    [
+     154.4,
+     120.3
+    ],
+    [
+     161.2,
+     120.3
+    ],
+    [
+     164.8,
+     121.3
+    ],
+    [
+     169,
+     121.3
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     182.2,
+     170.4
+    ],
+    [
+     182.2,
+     168.5
+    ],
+    [
+     182.2,
+     164.2
+    ],
+    [
+     182.2,
+     161.1
+    ],
+    [
+     176.9,
+     161.1
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     152.8,
+     169.7
+    ],
+    [
+     152.8,
+     167.9
+    ],
+    [
+     152.8,
+     160.6
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     161.4,
+     156.9
+    ],
+    [
+     158.5,
+     156.9
+    ],
+    [
+     158.5,
+     156.5
+    ],
+    [
+     158.6,
+     153.6
+    ],
+    [
+     161.4,
+     153.7
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     93.2,
+     155.8
+    ],
+    [
+     101.2,
+     155.8
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     147.1,
+     156.5
+    ],
+    [
+     158.5,
+     156.5
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     170.7,
+     145.1
+    ],
+    [
+     170.7,
+     137
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     162.3,
+     204.8
+    ],
+    [
+     167.9,
+     204.8
+    ],
+    [
+     167.7,
+     217.1
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     74.2,
+     380.6
+    ],
+    [
+     74.2,
+     378.2
+    ],
+    [
+     77.4,
+     378.2
+    ],
+    [
+     82.2,
+     378.2
+    ],
+    [
+     85.8,
+     378.2
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     71.1,
+     232.7
+    ],
+    [
+     69.5,
+     227.6
+    ],
+    [
+     69.5,
+     220.3
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     22.4,
+     140.2
+    ],
+    [
+     13.4,
+     140.1
+    ],
+    [
+     5.4,
+     140.1
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     53.9,
+     507.2
+    ],
+    [
+     53.9,
+     496.5
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     47.7,
+     507.2
+    ],
+    [
+     47.7,
+     496.4
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.driveway",
+   "layer": "property",
+   "pts": [
+    [
+     473.4,
+     439.9
+    ],
+    [
+     473.4,
+     440.9
+    ],
+    [
+     465.4,
+     452.6
+    ],
+    [
+     472.2,
+     457.5
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     404.7,
+     66.3
+    ],
+    [
+     404.3,
+     50.6
+    ],
+    [
+     390.6,
+     46
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     461.6,
+     51.1
+    ],
+    [
+     461,
+     51.1
+    ],
+    [
+     460.7,
+     61.3
+    ],
+    [
+     417.8,
+     66.2
+    ],
+    [
+     416.8,
+     66.3
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     467,
+     469.7
+    ],
+    [
+     470,
+     465.5
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     467.4,
+     503.8
+    ],
+    [
+     485.4,
+     515.9
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     490.3,
+     509
+    ],
+    [
+     472.4,
+     496.7
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     480.5,
+     524.1
+    ],
+    [
+     462,
+     511.8
+    ],
+    [
+     467.4,
+     503.8
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     466.8,
+     578.7
+    ],
+    [
+     468.5,
+     579.9
+    ],
+    [
+     469.1,
+     579
+    ],
+    [
+     469.9,
+     577.8
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.wall",
+   "layer": "property",
+   "pts": [
+    [
+     454.2,
+     522.1
+    ],
+    [
+     447.2,
+     532.4
+    ],
+    [
+     446.7,
+     533.2
+    ],
+    [
+     435.2,
+     550.1
+    ],
+    [
+     432.3,
+     554.4
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.wall",
+   "layer": "property",
+   "pts": [
+    [
+     489.3,
+     549.4
+    ],
+    [
+     490.9,
+     546.9
+    ],
+    [
+     471.1,
+     533.6
+    ],
+    [
+     454.2,
+     522.1
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     376.2,
+     491.8
+    ],
+    [
+     376.1,
+     482.6
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     359.6,
+     483.1
+    ],
+    [
+     360.2,
+     482.5
+    ],
+    [
+     376.1,
+     482.6
+    ],
+    [
+     381.2,
+     482.4
+    ],
+    [
+     382.8,
+     482.4
+    ],
+    [
+     382.3,
+     471.5
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     249.2,
+     473
+    ],
+    [
+     249.2,
+     482.1
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.wall",
+   "layer": "property",
+   "pts": [
+    [
+     279.6,
+     541.6
+    ],
+    [
+     279.6,
+     536
+    ],
+    [
+     282.3,
+     533.9
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     274.5,
+     537.2
+    ],
+    [
+     274.6,
+     528
+    ],
+    [
+     276,
+     528
+    ],
+    [
+     276,
+     537.2
+    ],
+    [
+     274.5,
+     537.2
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     313.1,
+     505.9
+    ],
+    [
+     309.8,
+     503.7
+    ],
+    [
+     310.6,
+     502.7
+    ],
+    [
+     313.8,
+     505
+    ],
+    [
+     313.1,
+     505.9
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     244.7,
+     464
+    ],
+    [
+     252.7,
+     464
+    ],
+    [
+     252.6,
+     473
+    ],
+    [
+     249.2,
+     473
+    ],
+    [
+     244.3,
+     472.9
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.wall",
+   "layer": "property",
+   "pts": [
+    [
+     281.4,
+     549
+    ],
+    [
+     288.1,
+     549
+    ],
+    [
+     289,
+     545.3
+    ],
+    [
+     289,
+     543.2
+    ],
+    [
+     289.1,
+     540.8
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     308.5,
+     505.5
+    ],
+    [
+     313.8,
+     509
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     313.2,
+     510.3
+    ],
+    [
+     307.7,
+     506.5
+    ],
+    [
+     308.5,
+     505.5
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     230.3,
+     518.6
+    ],
+    [
+     242.5,
+     518.6
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     245.3,
+     491
+    ],
+    [
+     253.4,
+     491
+    ],
+    [
+     254.3,
+     491
+    ],
+    [
+     272.9,
+     491.1
+    ],
+    [
+     272.9,
+     492.1
+    ],
+    [
+     272.9,
+     500.7
+    ],
+    [
+     254.9,
+     500.5
+    ],
+    [
+     253.9,
+     500.5
+    ],
+    [
+     245.1,
+     500.5
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.wall",
+   "layer": "property",
+   "pts": [
+    [
+     164.1,
+     525.3
+    ],
+    [
+     164.1,
+     530.4
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.wall",
+   "layer": "property",
+   "pts": [
+    [
+     172.3,
+     490.7
+    ],
+    [
+     172.3,
+     490.3
+    ],
+    [
+     186.8,
+     490.4
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.wall",
+   "layer": "property",
+   "pts": [
+    [
+     173.3,
+     525.3
+    ],
+    [
+     164.1,
+     525.3
+    ],
+    [
+     164,
+     518.2
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     146,
+     571.9
+    ],
+    [
+     146.1,
+     562.7
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     40,
+     465.1
+    ],
+    [
+     25.6,
+     465
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     51.2,
+     469.1
+    ],
+    [
+     51.2,
+     467.9
+    ],
+    [
+     51.2,
+     461.4
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     39,
+     495.1
+    ],
+    [
+     31.3,
+     495
+    ],
+    [
+     31.3,
+     499.4
+    ],
+    [
+     31.2,
+     503.7
+    ],
+    [
+     31.2,
+     504.5
+    ],
+    [
+     39.1,
+     504.6
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.retaining_wall",
+   "layer": "property",
+   "pts": [
+    [
+     7.4,
+     528
+    ],
+    [
+     1.2,
+     528
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.retaining_wall",
+   "layer": "property",
+   "pts": [
+    [
+     1.2,
+     523.2
+    ],
+    [
+     8.1,
+     523.3
+    ],
+    [
+     8.6,
+     523
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.hedge",
+   "layer": "property",
+   "pts": [
+    [
+     41.5,
+     554.8
+    ],
+    [
+     39.4,
+     554.8
+    ],
+    [
+     39.3,
+     537.4
+    ],
+    [
+     41.4,
+     537.4
+    ],
+    [
+     41.5,
+     554.8
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     27.7,
+     508.2
+    ],
+    [
+     33.4,
+     508.2
+    ],
+    [
+     33.4,
+     514
+    ],
+    [
+     30.5,
+     514
+    ],
+    [
+     23.4,
+     514
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     76.4,
+     580.1
+    ],
+    [
+     76.4,
+     577.7
+    ],
+    [
+     78.8,
+     577.7
+    ],
+    [
+     79.3,
+     577.7
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     425.1,
+     399.8
+    ],
+    [
+     425.1,
+     393.3
+    ],
+    [
+     434.5,
+     393.4
+    ],
+    [
+     447.4,
+     393.5
+    ],
+    [
+     447.4,
+     395.3
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     288.1,
+     389.8
+    ],
+    [
+     282.4,
+     389.7
+    ],
+    [
+     282.4,
+     401.7
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     337.7,
+     384.3
+    ],
+    [
+     337.7,
+     384.6
+    ],
+    [
+     337.7,
+     396.1
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.wall",
+   "layer": "property",
+   "pts": [
+    [
+     482.6,
+     372.8
+    ],
+    [
+     492.9,
+     372.8
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.wall",
+   "layer": "property",
+   "pts": [
+    [
+     429.4,
+     329.6
+    ],
+    [
+     424.6,
+     329.6
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     453.9,
+     372.7
+    ],
+    [
+     425.2,
+     372.5
+    ],
+    [
+     418.3,
+     372.5
+    ],
+    [
+     418.3,
+     365.6
+    ],
+    [
+     418.3,
+     364.9
+    ],
+    [
+     415.5,
+     365.6
+    ],
+    [
+     382.6,
+     365.5
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.retaining_wall",
+   "layer": "property",
+   "pts": [
+    [
+     419.4,
+     285.3
+    ],
+    [
+     400.1,
+     285.4
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     457.1,
+     185.4
+    ],
+    [
+     457,
+     179.8
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     283.9,
+     172.3
+    ],
+    [
+     283.8,
+     165.2
+    ],
+    [
+     277.1,
+     165.2
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     274.8,
+     165.2
+    ],
+    [
+     272.6,
+     165.1
+    ],
+    [
+     271.6,
+     164.8
+    ],
+    [
+     270.1,
+     164.3
+    ],
+    [
+     268.8,
+     163.9
+    ],
+    [
+     259.4,
+     163.9
+    ],
+    [
+     259.4,
+     172.1
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     254.8,
+     123.5
+    ],
+    [
+     254.3,
+     154.1
+    ],
+    [
+     255.8,
+     155.5
+    ],
+    [
+     256.4,
+     156.1
+    ],
+    [
+     257,
+     156.6
+    ],
+    [
+     257.3,
+     156.9
+    ],
+    [
+     285.8,
+     157.4
+    ],
+    [
+     286.3,
+     123.7
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     359.2,
+     133.4
+    ],
+    [
+     359.2,
+     132.3
+    ],
+    [
+     359.6,
+     124.2
+    ],
+    [
+     286.3,
+     123.7
+    ],
+    [
+     254.8,
+     123.5
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     359.2,
+     135.1
+    ],
+    [
+     359.1,
+     149.7
+    ],
+    [
+     358.2,
+     194.4
+    ],
+    [
+     358.2,
+     195.3
+    ],
+    [
+     357.7,
+     208.7
+    ],
+    [
+     345.6,
+     208.8
+    ],
+    [
+     337.8,
+     208.1
+    ],
+    [
+     297,
+     207.8
+    ],
+    [
+     297.1,
+     172.4
+    ],
+    [
+     283.9,
+     172.3
+    ],
+    [
+     259.4,
+     172.1
+    ],
+    [
+     245.5,
+     172
+    ],
+    [
+     234.5,
+     172
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     357.3,
+     139.3
+    ],
+    [
+     357.4,
+     136.9
+    ],
+    [
+     354,
+     133.3
+    ],
+    [
+     350.3,
+     133.2
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     349.8,
+     134.8
+    ],
+    [
+     343.7,
+     134.8
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     356.2,
+     146
+    ],
+    [
+     356.2,
+     140.4
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.retaining_wall",
+   "layer": "property",
+   "pts": [
+    [
+     355.4,
+     270.3
+    ],
+    [
+     355.9,
+     270.3
+    ],
+    [
+     356,
+     266.5
+    ],
+    [
+     354.4,
+     266.4
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.retaining_wall",
+   "layer": "property",
+   "pts": [
+    [
+     354.2,
+     277
+    ],
+    [
+     355.8,
+     277.1
+    ],
+    [
+     355.9,
+     273.1
+    ],
+    [
+     355.4,
+     273
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.retaining_wall",
+   "layer": "property",
+   "pts": [
+    [
+     324.9,
+     257
+    ],
+    [
+     295.9,
+     256.8
+    ],
+    [
+     295.7,
+     285.2
+    ],
+    [
+     326.6,
+     285.4
+    ],
+    [
+     341,
+     285.5
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.retaining_wall",
+   "layer": "property",
+   "pts": [
+    [
+     253,
+     183.6
+    ],
+    [
+     248.5,
+     183.6
+    ],
+    [
+     248.3,
+     183.8
+    ],
+    [
+     248.1,
+     184.2
+    ],
+    [
+     248,
+     192.9
+    ],
+    [
+     245.5,
+     192.9
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.wall",
+   "layer": "property",
+   "pts": [
+    [
+     243.4,
+     189.8
+    ],
+    [
+     243.5,
+     184.7
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     318.1,
+     351.4
+    ],
+    [
+     324.5,
+     352.3
+    ],
+    [
+     324.5,
+     352.7
+    ],
+    [
+     327.5,
+     352.6
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     337.7,
+     384.3
+    ],
+    [
+     337.7,
+     384.6
+    ],
+    [
+     331.7,
+     384.6
+    ],
+    [
+     304.2,
+     384.5
+    ],
+    [
+     295.6,
+     384.5
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.retaining_wall",
+   "layer": "property",
+   "pts": [
+    [
+     202.5,
+     385.5
+    ],
+    [
+     202.5,
+     383.3
+    ],
+    [
+     204.4,
+     383.3
+    ],
+    [
+     204.4,
+     381
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.wall",
+   "layer": "property",
+   "pts": [
+    [
+     141.2,
+     104.7
+    ],
+    [
+     141.2,
+     99.7
+    ],
+    [
+     138.7,
+     99.7
+    ],
+    [
+     138.6,
+     97.6
+    ],
+    [
+     132.6,
+     97.7
+    ],
+    [
+     132.6,
+     95.9
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.wall",
+   "layer": "property",
+   "pts": [
+    [
+     135.2,
+     88.9
+    ],
+    [
+     135.1,
+     90.3
+    ],
+    [
+     144.6,
+     90.3
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.wall",
+   "layer": "property",
+   "pts": [
+    [
+     151.7,
+     94.5
+    ],
+    [
+     151.7,
+     98.3
+    ],
+    [
+     144.2,
+     98.3
+    ],
+    [
+     144.2,
+     94.5
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.retaining_wall",
+   "layer": "property",
+   "pts": [
+    [
+     159.4,
+     134.6
+    ],
+    [
+     159.1,
+     134.6
+    ],
+    [
+     159.2,
+     124.8
+    ],
+    [
+     159.2,
+     122.5
+    ],
+    [
+     149.9,
+     122.5
+    ],
+    [
+     150,
+     110.4
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.wall",
+   "layer": "property",
+   "pts": [
+    [
+     152.3,
+     172.2
+    ],
+    [
+     146.7,
+     172.2
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.retaining_wall",
+   "layer": "property",
+   "pts": [
+    [
+     196.3,
+     192.8
+    ],
+    [
+     195.8,
+     192.2
+    ],
+    [
+     195.6,
+     191.2
+    ],
+    [
+     195.6,
+     190.9
+    ],
+    [
+     192.6,
+     191
+    ],
+    [
+     192.6,
+     189.6
+    ],
+    [
+     195.6,
+     189.6
+    ],
+    [
+     195.6,
+     183.7
+    ],
+    [
+     195.6,
+     183.4
+    ],
+    [
+     184.9,
+     183.6
+    ],
+    [
+     184.9,
+     186.5
+    ],
+    [
+     183.6,
+     186.6
+    ],
+    [
+     183.6,
+     183.6
+    ],
+    [
+     178.7,
+     183.6
+    ],
+    [
+     168.5,
+     183.6
+    ],
+    [
+     168.3,
+     183.6
+    ],
+    [
+     168.3,
+     171.8
+    ],
+    [
+     168.8,
+     171.8
+    ],
+    [
+     168.8,
+     171.5
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.retaining_wall",
+   "layer": "property",
+   "pts": [
+    [
+     161.4,
+     158.6
+    ],
+    [
+     158,
+     158.6
+    ],
+    [
+     148.3,
+     158.6
+    ],
+    [
+     147.1,
+     158.6
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.wall",
+   "layer": "property",
+   "pts": [
+    [
+     144.6,
+     148.1
+    ],
+    [
+     144.6,
+     147.1
+    ],
+    [
+     147.1,
+     147.1
+    ],
+    [
+     151.5,
+     147.1
+    ],
+    [
+     159.4,
+     147.1
+    ],
+    [
+     167.5,
+     147.2
+    ],
+    [
+     176.7,
+     147.2
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.retaining_wall",
+   "layer": "property",
+   "pts": [
+    [
+     173.2,
+     134.7
+    ],
+    [
+     166.5,
+     134.6
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     139.4,
+     244.3
+    ],
+    [
+     139.5,
+     235.5
+    ],
+    [
+     133.3,
+     235.4
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.retaining_wall",
+   "layer": "property",
+   "pts": [
+    [
+     34.5,
+     251.6
+    ],
+    [
+     40.9,
+     251.7
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.retaining_wall",
+   "layer": "property",
+   "pts": [
+    [
+     9.5,
+     88.5
+    ],
+    [
+     0.9,
+     88.6
+    ],
+    [
+     0.9,
+     90.1
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.retaining_wall",
+   "layer": "property",
+   "pts": [
+    [
+     9.8,
+     92.6
+    ],
+    [
+     8.4,
+     92.6
+    ],
+    [
+     8.4,
+     91.9
+    ],
+    [
+     4,
+     91.9
+    ],
+    [
+     4,
+     94.3
+    ],
+    [
+     0.9,
+     94.4
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     49.1,
+     38
+    ],
+    [
+     47.6,
+     38.1
+    ],
+    [
+     46.7,
+     23.2
+    ],
+    [
+     9,
+     25.4
+    ],
+    [
+     8.6,
+     26.2
+    ],
+    [
+     8,
+     26.9
+    ],
+    [
+     7.5,
+     27.5
+    ],
+    [
+     6.7,
+     27.9
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     -3.7,
+     66
+    ],
+    [
+     -3.7,
+     67.1
+    ],
+    [
+     4.1,
+     66.7
+    ],
+    [
+     3.9,
+     63.9
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.retaining_wall",
+   "layer": "property",
+   "pts": [
+    [
+     11.1,
+     90.2
+    ],
+    [
+     2.3,
+     90.3
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.retaining_wall",
+   "layer": "property",
+   "pts": [
+    [
+     91.9,
+     89.9
+    ],
+    [
+     90.5,
+     89.9
+    ],
+    [
+     83.4,
+     89.9
+    ],
+    [
+     76.4,
+     89.8
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.retaining_wall",
+   "layer": "property",
+   "pts": [
+    [
+     61.7,
+     95.5
+    ],
+    [
+     54.8,
+     95.8
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.retaining_wall",
+   "layer": "property",
+   "pts": [
+    [
+     96.9,
+     159.7
+    ],
+    [
+     95.9,
+     159.9
+    ],
+    [
+     92.5,
+     159.9
+    ],
+    [
+     91.1,
+     160
+    ],
+    [
+     87.6,
+     160
+    ],
+    [
+     83.8,
+     159.9
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.fence",
+   "layer": "property",
+   "pts": [
+    [
+     14.3,
+     144
+    ],
+    [
+     39.4,
+     144.3
+    ],
+    [
+     39.3,
+     152.5
+    ],
+    [
+     24,
+     152.3
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.retaining_wall",
+   "layer": "property",
+   "pts": [
+    [
+     14.9,
+     128.6
+    ],
+    [
+     60.8,
+     128.9
+    ],
+    [
+     60.9,
+     112.9
+    ]
+   ],
+   "src": "osm"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     244.1,
+     487
+    ],
+    [
+     230.1,
+     486.2
+    ]
+   ],
+   "src": "procedural:entry_walk"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     154.1,
+     241.5
+    ],
+    [
+     154.1,
+     253.8
+    ]
+   ],
+   "src": "procedural:entry_walk"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     167.9,
+     130.5
+    ],
+    [
+     174.3,
+     126
+    ]
+   ],
+   "src": "procedural:entry_walk"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     140.2,
+     140.7
+    ],
+    [
+     130.8,
+     139.9
+    ]
+   ],
+   "src": "procedural:entry_walk"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     393.3,
+     191.1
+    ],
+    [
+     385.9,
+     190.4
+    ]
+   ],
+   "src": "procedural:entry_walk"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     37.1,
+     324.7
+    ],
+    [
+     37,
+     331.3
+    ]
+   ],
+   "src": "procedural:entry_walk"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     84.4,
+     531.6
+    ],
+    [
+     96.8,
+     531.2
+    ]
+   ],
+   "src": "procedural:entry_walk"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     255.1,
+     103.5
+    ],
+    [
+     255.2,
+     95.5
+    ]
+   ],
+   "src": "procedural:entry_walk"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     493.8,
+     121.3
+    ],
+    [
+     486.7,
+     120.6
+    ]
+   ],
+   "src": "procedural:entry_walk"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     349.4,
+     303.6
+    ],
+    [
+     356.5,
+     303.1
+    ]
+   ],
+   "src": "procedural:entry_walk"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     417.1,
+     531.1
+    ],
+    [
+     407.2,
+     523.5
+    ]
+   ],
+   "src": "procedural:entry_walk"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     138.3,
+     117.7
+    ],
+    [
+     131.2,
+     117
+    ]
+   ],
+   "src": "procedural:entry_walk"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     196.5,
+     288.7
+    ],
+    [
+     196.5,
+     281.1
+    ]
+   ],
+   "src": "procedural:entry_walk"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     319.6,
+     103.7
+    ],
+    [
+     319.7,
+     96.1
+    ]
+   ],
+   "src": "procedural:entry_walk"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     448.5,
+     155.4
+    ],
+    [
+     458.9,
+     155
+    ]
+   ],
+   "src": "procedural:entry_walk"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     239.7,
+     316.9
+    ],
+    [
+     232.7,
+     316.2
+    ]
+   ],
+   "src": "procedural:entry_walk"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     195.9,
+     317.3
+    ],
+    [
+     205.5,
+     316.8
+    ]
+   ],
+   "src": "procedural:entry_walk"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     265.8,
+     237
+    ],
+    [
+     259.5,
+     238.9
+    ]
+   ],
+   "src": "procedural:entry_walk"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     94.6,
+     215.2
+    ],
+    [
+     102.4,
+     214.7
+    ]
+   ],
+   "src": "procedural:entry_walk"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     394,
+     137.1
+    ],
+    [
+     386.9,
+     136.4
+    ]
+   ],
+   "src": "procedural:entry_walk"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     66.2,
+     94.3
+    ],
+    [
+     65.8,
+     86.9
+    ]
+   ],
+   "src": "procedural:entry_walk"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     390.7,
+     317.8
+    ],
+    [
+     383.4,
+     317.1
+    ]
+   ],
+   "src": "procedural:entry_walk"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     384.4,
+     497.1
+    ],
+    [
+     390.1,
+     500.6
+    ]
+   ],
+   "src": "procedural:entry_walk"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     353.2,
+     119.5
+    ],
+    [
+     360.1,
+     119
+    ]
+   ],
+   "src": "procedural:entry_walk"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     134.9,
+     292.6
+    ],
+    [
+     128.2,
+     291.9
+    ]
+   ],
+   "src": "procedural:entry_walk"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     98.8,
+     325.9
+    ],
+    [
+     100.5,
+     325.3
+    ]
+   ],
+   "src": "procedural:entry_walk"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     350.5,
+     488.7
+    ],
+    [
+     343.9,
+     488.2
+    ]
+   ],
+   "src": "procedural:entry_walk"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     94.3,
+     301.8
+    ],
+    [
+     100.9,
+     301.3
+    ]
+   ],
+   "src": "procedural:entry_walk"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     171.4,
+     288.2
+    ],
+    [
+     171.4,
+     281
+    ]
+   ],
+   "src": "procedural:entry_walk"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     449.9,
+     476.1
+    ],
+    [
+     444.1,
+     471.4
+    ]
+   ],
+   "src": "procedural:entry_walk"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     95.7,
+     366.2
+    ],
+    [
+     99.7,
+     365.7
+    ]
+   ],
+   "src": "procedural:entry_walk"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     78.6,
+     369.9
+    ],
+    [
+     78.7,
+     359
+    ]
+   ],
+   "src": "procedural:entry_walk"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     492.8,
+     156.1
+    ],
+    [
+     486.1,
+     155.4
+    ]
+   ],
+   "src": "procedural:entry_walk"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     40.3,
+     205.5
+    ],
+    [
+     40.3,
+     198.2
+    ]
+   ],
+   "src": "procedural:entry_walk"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     40.6,
+     286.7
+    ],
+    [
+     40.7,
+     279.8
+    ]
+   ],
+   "src": "procedural:entry_walk"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     366.5,
+     523
+    ],
+    [
+     371.8,
+     526.3
+    ]
+   ],
+   "src": "procedural:entry_walk"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     79.2,
+     205.3
+    ],
+    [
+     79.2,
+     198.5
+    ]
+   ],
+   "src": "procedural:entry_walk"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     392.7,
+     166.4
+    ],
+    [
+     386.4,
+     165.7
+    ]
+   ],
+   "src": "procedural:entry_walk"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     285.1,
+     102.4
+    ],
+    [
+     285.2,
+     95.8
+    ]
+   ],
+   "src": "procedural:entry_walk"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     55.9,
+     247.3
+    ],
+    [
+     55.8,
+     252.8
+    ]
+   ],
+   "src": "procedural:entry_walk"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     489.7,
+     313.3
+    ],
+    [
+     483.3,
+     312.6
+    ]
+   ],
+   "src": "procedural:entry_walk"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     131.4,
+     466.1
+    ],
+    [
+     125.1,
+     465.4
+    ]
+   ],
+   "src": "procedural:entry_walk"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     179,
+     247.7
+    ],
+    [
+     179,
+     253.9
+    ]
+   ],
+   "src": "procedural:entry_walk"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     423,
+     289.4
+    ],
+    [
+     423,
+     282.6
+    ]
+   ],
+   "src": "procedural:entry_walk"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     206,
+     114.9
+    ],
+    [
+     200.9,
+     117.4
+    ]
+   ],
+   "src": "procedural:entry_walk"
+  },
+  {
+   "assetId": "prop.walk",
+   "layer": "property",
+   "pts": [
+    [
+     451.4,
+     219.6
+    ],
+    [
+     457.6,
+     219.1
+    ]
+   ],
+   "src": "procedural:entry_walk"
+  },
+  {
+   "assetId": "prop.parking",
+   "layer": "property",
+   "pts": [
+    [
+     410.8,
+     384.2
+    ],
+    [
+     380.3,
+     384
+    ],
+    [
+     380.3,
+     378.8
+    ],
+    [
+     378.7,
+     378.8
+    ],
+    [
+     378.7,
+     371.9
+    ],
+    [
+     382.5,
+     371.9
+    ],
+    [
+     382.6,
+     366.4
+    ],
+    [
+     416.9,
+     366.7
+    ],
+    [
+     416.9,
+     373.8
+    ],
+    [
+     453.9,
+     374.2
+    ],
+    [
+     453.9,
+     379.1
+    ],
+    [
+     456.3,
+     379.1
+    ],
+    [
+     456.3,
+     386.5
+    ],
+    [
+     454.5,
+     386.5
+    ],
+    [
+     454.5,
+     392
+    ],
+    [
+     411.5,
+     391.6
+    ],
+    [
+     411.5,
+     385.2
+    ],
+    [
+     410.8,
+     384.2
+    ]
+   ],
+   "src": "osm:parking"
+  },
+  {
+   "assetId": "vehicle.parked_car",
+   "structure": 1,
+   "variant": 20,
+   "x": 428.2,
+   "y": 379.8,
+   "scale": 1.9,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "procedural:parking_cluster"
+  },
+  {
+   "assetId": "vehicle.parked_car",
+   "structure": 0,
+   "variant": 21,
+   "x": 422.2,
+   "y": 379.8,
+   "scale": 1.9,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "procedural:parking_cluster"
+  },
+  {
+   "assetId": "vehicle.parked_car",
+   "structure": 2,
+   "variant": 39,
+   "x": 416.2,
+   "y": 379.7,
+   "scale": 1.9,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "procedural:parking_cluster"
+  },
+  {
+   "assetId": "vehicle.parked_car",
+   "structure": 0,
+   "variant": 8,
+   "x": 410.2,
+   "y": 379.7,
+   "scale": 1.9,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "procedural:parking_cluster"
+  },
+  {
+   "assetId": "vehicle.parked_car",
+   "structure": 0,
+   "variant": 69,
+   "x": 404.2,
+   "y": 379.6,
+   "scale": 1.9,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "procedural:parking_cluster"
+  },
+  {
+   "assetId": "prop.parking",
+   "layer": "property",
+   "pts": [
+    [
+     315.2,
+     543.3
+    ],
+    [
+     290.5,
+     543.2
+    ],
+    [
+     289,
+     543.2
+    ],
+    [
+     289,
+     545.3
+    ],
+    [
+     288.1,
+     549
+    ],
+    [
+     281.4,
+     549
+    ],
+    [
+     276,
+     549
+    ],
+    [
+     275.9,
+     543.1
+    ],
+    [
+     263.7,
+     543.1
+    ],
+    [
+     263.7,
+     546.9
+    ],
+    [
+     262.7,
+     546.9
+    ],
+    [
+     259.1,
+     546.8
+    ],
+    [
+     256,
+     546.8
+    ],
+    [
+     254.7,
+     546.8
+    ],
+    [
+     254.7,
+     541.4
+    ],
+    [
+     229.6,
+     541.2
+    ],
+    [
+     229.6,
+     542.9
+    ],
+    [
+     229.6,
+     547
+    ],
+    [
+     229.5,
+     547.5
+    ],
+    [
+     229,
+     547.8
+    ],
+    [
+     226.6,
+     547.8
+    ],
+    [
+     226.6,
+     553.7
+    ],
+    [
+     228.3,
+     553.7
+    ],
+    [
+     229,
+     554
+    ],
+    [
+     229.5,
+     554.5
+    ],
+    [
+     229.5,
+     560.2
+    ],
+    [
+     267.4,
+     560.2
+    ],
+    [
+     315.1,
+     561.2
+    ],
+    [
+     315.1,
+     555.6
+    ],
+    [
+     315.1,
+     552.2
+    ],
+    [
+     315.2,
+     548.9
+    ],
+    [
+     315.3,
+     545.2
+    ],
+    [
+     315.2,
+     543.3
+    ]
+   ],
+   "src": "osm:parking"
+  },
+  {
+   "assetId": "vehicle.parked_car",
+   "structure": 1,
+   "variant": 22,
+   "x": 260.5,
+   "y": 548.4,
+   "scale": 1.9,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "procedural:parking_cluster"
+  },
+  {
+   "assetId": "vehicle.parked_car",
+   "structure": 0,
+   "variant": 87,
+   "x": 266.5,
+   "y": 548.5,
+   "scale": 1.9,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "procedural:parking_cluster"
+  },
+  {
+   "assetId": "vehicle.parked_car",
+   "structure": 0,
+   "variant": 43,
+   "x": 272.5,
+   "y": 548.6,
+   "scale": 1.9,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "procedural:parking_cluster"
+  },
+  {
+   "assetId": "prop.parking",
+   "layer": "property",
+   "pts": [
+    [
+     455.6,
+     519.7
+    ],
+    [
+     466.4,
+     504.5
+    ],
+    [
+     455.9,
+     497.1
+    ],
+    [
+     445.1,
+     512.3
+    ],
+    [
+     455.6,
+     519.7
+    ]
+   ],
+   "src": "osm:parking"
+  },
+  {
+   "assetId": "prop.parking",
+   "layer": "property",
+   "pts": [
+    [
+     428.6,
+     538.1
+    ],
+    [
+     432,
+     533.1
+    ],
+    [
+     437.1,
+     525.5
+    ],
+    [
+     447.2,
+     532.4
+    ],
+    [
+     446.7,
+     533.2
+    ],
+    [
+     435.2,
+     550.1
+    ],
+    [
+     425.1,
+     543.2
+    ],
+    [
+     427.5,
+     539.6
+    ],
+    [
+     428.6,
+     538.1
+    ]
+   ],
+   "src": "osm:parking"
+  },
+  {
+   "assetId": "prop.parking",
+   "layer": "property",
+   "pts": [
+    [
+     454.2,
+     522.1
+    ],
+    [
+     455.2,
+     520.6
+    ],
+    [
+     461.6,
+     511.7
+    ],
+    [
+     478.3,
+     523
+    ],
+    [
+     477.6,
+     524
+    ],
+    [
+     473.8,
+     529.7
+    ],
+    [
+     471.1,
+     533.6
+    ],
+    [
+     454.2,
+     522.1
+    ]
+   ],
+   "src": "osm:parking"
+  },
+  {
+   "assetId": "prop.parking",
+   "layer": "property",
+   "pts": [
+    [
+     341.2,
+     474.1
+    ],
+    [
+     348.8,
+     474.2
+    ],
+    [
+     350.6,
+     474.2
+    ],
+    [
+     358,
+     474.2
+    ],
+    [
+     359.8,
+     474.2
+    ],
+    [
+     362.1,
+     474.2
+    ],
+    [
+     381.1,
+     474.7
+    ],
+    [
+     381.2,
+     482.4
+    ],
+    [
+     360.2,
+     482.5
+    ],
+    [
+     341,
+     482.1
+    ],
+    [
+     341.2,
+     474.1
+    ]
+   ],
+   "src": "osm:parking"
+  },
+  {
+   "assetId": "prop.parking",
+   "layer": "property",
+   "pts": [
+    [
+     254.9,
+     500.5
+    ],
+    [
+     254.9,
+     508.3
+    ],
+    [
+     254.8,
+     512.1
+    ],
+    [
+     247.8,
+     512
+    ],
+    [
+     247.7,
+     518.6
+    ],
+    [
+     272.8,
+     518.8
+    ],
+    [
+     272.9,
+     500.7
+    ],
+    [
+     254.9,
+     500.5
+    ]
+   ],
+   "src": "osm:parking"
+  },
+  {
+   "assetId": "furniture.bus_stop",
+   "structure": 0,
+   "variant": 0,
+   "x": 320.6,
+   "y": 444.5,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "osm:bus_stop"
+  },
+  {
+   "assetId": "furniture.flagpole",
+   "structure": 0,
+   "variant": 0,
+   "x": 314.6,
+   "y": 504.7,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "osm:flagpole"
+  },
+  {
+   "assetId": "furniture.hydrant",
+   "structure": 0,
+   "variant": 0,
+   "x": 378.1,
+   "y": 417.3,
+   "scale": 1.15,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "osm:fire_hydrant"
+  },
+  {
+   "assetId": "furniture.hydrant",
+   "structure": 0,
+   "variant": 0,
+   "x": 482,
+   "y": 425.5,
+   "scale": 1.15,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "osm:fire_hydrant"
+  },
+  {
+   "assetId": "furniture.hydrant",
+   "structure": 0,
+   "variant": 0,
+   "x": 484.3,
+   "y": 255.9,
+   "scale": 1.15,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "osm:fire_hydrant"
+  },
+  {
+   "assetId": "furniture.hydrant",
+   "structure": 0,
+   "variant": 0,
+   "x": 479.1,
+   "y": 71.7,
+   "scale": 1.15,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "osm:fire_hydrant"
+  },
+  {
+   "assetId": "furniture.hydrant",
+   "structure": 0,
+   "variant": 0,
+   "x": 360.4,
+   "y": 326.7,
+   "scale": 1.15,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "osm:fire_hydrant"
+  },
+  {
+   "assetId": "furniture.hydrant",
+   "structure": 0,
+   "variant": 0,
+   "x": 261.7,
+   "y": 319.2,
+   "scale": 1.15,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "osm:fire_hydrant"
+  },
+  {
+   "assetId": "furniture.hydrant",
+   "structure": 0,
+   "variant": 0,
+   "x": 201,
+   "y": 169.8,
+   "scale": 1.15,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "osm:fire_hydrant"
+  },
+  {
+   "assetId": "furniture.hydrant",
+   "structure": 0,
+   "variant": 0,
+   "x": 459.4,
+   "y": 449.5,
+   "scale": 1.15,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "osm:fire_hydrant"
+  },
+  {
+   "assetId": "furniture.bus_stop",
+   "structure": 0,
+   "variant": 0,
+   "x": 125,
+   "y": 415.4,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "osm:bus_stop"
+  },
+  {
+   "assetId": "furniture.bus_stop",
+   "structure": 0,
+   "variant": 0,
+   "x": 98.6,
+   "y": 416.8,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "osm:bus_stop"
+  },
+  {
+   "assetId": "furniture.bench",
+   "structure": 0,
+   "variant": 0,
+   "x": 316,
+   "y": 530.5,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "osm:bench"
+  },
+  {
+   "assetId": "furniture.bench",
+   "structure": 0,
+   "variant": 0,
+   "x": 316.3,
+   "y": 517.9,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "osm:bench"
+  },
+  {
+   "assetId": "furniture.bench",
+   "structure": 0,
+   "variant": 0,
+   "x": 296.5,
+   "y": 501.4,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "osm:bench"
+  },
+  {
+   "assetId": "furniture.trash_can",
+   "structure": 0,
+   "variant": 0,
+   "x": 232.5,
+   "y": 416.2,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "osm:waste_basket"
+  },
+  {
+   "assetId": "furniture.bike_rack",
+   "structure": 0,
+   "variant": 0,
+   "x": 204,
+   "y": 404.2,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "osm:bicycle_parking"
+  },
+  {
+   "assetId": "furniture.bench",
+   "structure": 0,
+   "variant": 0,
+   "x": 229.7,
+   "y": 152.3,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "osm:bench"
+  },
+  {
+   "assetId": "furniture.trash_can",
+   "structure": 0,
+   "variant": 0,
+   "x": 350.5,
+   "y": 132.8,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "osm:waste_basket"
+  },
+  {
+   "assetId": "furniture.bench",
+   "structure": 0,
+   "variant": 0,
+   "x": 357,
+   "y": 144.9,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "osm:bench"
+  },
+  {
+   "assetId": "furniture.bench",
+   "structure": 0,
+   "variant": 0,
+   "x": 233.3,
+   "y": 291.8,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "osm:bench"
+  },
+  {
+   "assetId": "furniture.trash_can",
+   "structure": 0,
+   "variant": 0,
+   "x": 52.8,
+   "y": 87.8,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "osm:waste_basket"
+  },
+  {
+   "assetId": "furniture.bench",
+   "structure": 0,
+   "variant": 0,
+   "x": 104,
+   "y": 171.2,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "osm:bench"
+  },
+  {
+   "assetId": "furniture.bike_rack",
+   "structure": 0,
+   "variant": 0,
+   "x": 429.8,
+   "y": 417.8,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "osm:bicycle_parking"
+  },
+  {
+   "assetId": "furniture.bike_rack",
+   "structure": 0,
+   "variant": 0,
+   "x": 98,
+   "y": 452,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "osm:bicycle_parking"
+  },
+  {
+   "assetId": "furniture.bike_rack",
+   "structure": 0,
+   "variant": 0,
+   "x": 204.9,
+   "y": 443.6,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "osm:bicycle_parking"
+  },
+  {
+   "assetId": "furniture.bike_rack",
+   "structure": 0,
+   "variant": 0,
+   "x": 157.2,
+   "y": 443.2,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "osm:bicycle_parking"
+  },
+  {
+   "assetId": "furniture.bike_rack",
+   "structure": 0,
+   "variant": 0,
+   "x": 378.4,
+   "y": 444.9,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "osm:bicycle_parking"
+  },
+  {
+   "assetId": "furniture.bike_rack",
+   "structure": 0,
+   "variant": 0,
+   "x": 433.6,
+   "y": 445.4,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "osm:bicycle_parking"
+  },
+  {
+   "assetId": "furniture.bike_rack",
+   "structure": 0,
+   "variant": 0,
+   "x": 320.6,
+   "y": 416.9,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "osm:bicycle_parking"
+  },
+  {
+   "assetId": "furniture.bike_rack",
+   "structure": 0,
+   "variant": 0,
+   "x": 99,
+   "y": 390.1,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "osm:bicycle_parking"
+  },
+  {
+   "assetId": "infra.dumpster",
+   "structure": 0,
+   "variant": 0,
+   "x": 41.9,
+   "y": 483.1,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 8,
+   "src": "procedural:dumpster"
+  }
+ ]
+}

@@ -26,6 +26,10 @@ const SLICES = {
 };
 const SLICE = SLICES[process.argv[2] ?? 'pulaski'];
 if (!SLICE) throw new Error(`unknown slice: ${process.argv[2]}`);
+// compositing experiment: `node generate.mjs <slice> raster` swaps SVG fabric
+// for the batch-1 raster sprites (separate output files; normal mode untouched)
+const RASTER_FABRIC = process.argv[3] === 'raster';
+const OUTNAME = SLICE.out + (RASTER_FABRIC ? '-raster' : '');
 const MARGIN = 25; // world meters of grass beyond the slice
 
 const board = JSON.parse(readFileSync(join(ROOT, 'birthday-board.json'), 'utf8'));
@@ -628,7 +632,16 @@ const HERO_RASTER = {
                            // 48m footprint), letting the nave stretch back east
     evict: 30,
   },
-  'hero.wolskis': {
+  'hero.wolskis': RASTER_FABRIC ? {
+    // test mode: the new top-down brick redesign, judged in context
+    file: join(HERE, 'raster-assets', 'production', 'hero_wolskis_topdown_brick.png'),
+    widthM: 30,
+    aspect: 1254 / 1254,
+    anchorX: 0.5,
+    anchorY: 0.9,
+    dxM: -2, dyM: 4,
+    evict: 20,
+  } : {
     file: join(HERE, 'heroes', 'wolskis-v2.png'),
     widthM: 38,            // modest per packet — sign + character carry it
     aspect: 1086 / 1448,
@@ -748,6 +761,38 @@ const heroData = {};
 for (const [id, cfg] of Object.entries(HERO_RASTER)) {
   try { heroData[id] = 'data:image/png;base64,' + readFileSync(cfg.file).toString('base64'); } catch { /* missing file: hero renders nothing */ }
 }
+
+// ---- raster fabric experiment: assetId.sN -> production sprite ----
+const PROD = (f) => join(HERE, 'raster-assets', 'production', f);
+const PORTRAIT = 1448 / 1086, LANDSCAPE = 1086 / 1448;
+const FABRIC_RASTER = RASTER_FABRIC ? {
+  'bldg.res.polish_flat.s0': { file: PROD('polish_flat_stacked_1.png'), widthM: 13, aspect: PORTRAIT, ax: 0.5, ay: 0.92 },
+  'bldg.res.polish_flat.s1': { file: PROD('polish_flat_gable_bay_1.png'), widthM: 13, aspect: PORTRAIT, ax: 0.5, ay: 0.92 },
+  'bldg.res.polish_flat.s2': { file: PROD('duplex_wide_brick_1.png'), widthM: 19, aspect: LANDSCAPE, ax: 0.5, ay: 0.93 },
+  'bldg.res.polish_flat.s3': { file: PROD('polish_flat_gable_bay_1.png'), widthM: 13, aspect: PORTRAIT, ax: 0.5, ay: 0.92 },
+  'bldg.res.bungalow.s0': { file: PROD('bungalow_craftsman_1.png'), widthM: 13, aspect: PORTRAIT, ax: 0.5, ay: 0.92 },
+  'bldg.res.bungalow.s1': { file: PROD('bungalow_hipped_dormer_1.png'), widthM: 13, aspect: PORTRAIT, ax: 0.5, ay: 0.92 },
+  'bldg.res.bungalow.s2': { file: PROD('bungalow_hipped_dormer_1.png'), widthM: 12.5, aspect: PORTRAIT, ax: 0.5, ay: 0.92 },
+  'bldg.res.apartment.s0': { file: PROD('apartment_3story_walkup_1.png'), widthM: 16, aspect: PORTRAIT, ax: 0.5, ay: 0.93 },
+  'bldg.com.storefront_row.s1': { file: PROD('storefront_row_3bay_1.png'), widthM: 22, aspect: LANDSCAPE, ax: 0.5, ay: 0.9 },
+} : {};
+// each sprite is embedded ONCE in <defs> and referenced per instance — an
+// inline data URI per instance made a 260MB svg, never again
+const fabricDefId = {};
+let fabricDefs = '';
+{
+  let n = 0;
+  for (const cfg of Object.values(FABRIC_RASTER)) {
+    if (fabricDefId[cfg.file]) continue;
+    try {
+      const uri = 'data:image/png;base64,' + readFileSync(cfg.file).toString('base64');
+      const id = `fab${n++}`;
+      fabricDefId[cfg.file] = id;
+      // natural size = widthM at scale 1 (aspect preserved); instances scale it
+      fabricDefs += `<image id="${id}" href="${uri}" width="${cfg.widthM}" height="${(cfg.widthM * cfg.aspect).toFixed(2)}"/>`;
+    } catch { /* skip */ }
+  }
+}
 const shadowFor = (e) => {
   const m = ASSET_META[e.assetId];
   if (!m || m.cls === 'ground') return '';
@@ -758,7 +803,7 @@ const shadowFor = (e) => {
 const nodeColor = { blank: '#f7f1e0', coin: '#f2c94c', chance: '#b06ef7', challenge: '#5b8fd9', bar: '#e8a33d', poi: '#ec6fa9', start: '#6fbf73', finish: '#e8e4da', bowser: '#5b8fd9' };
 
 const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W.toFixed(0)} ${H.toFixed(0)}" font-family="Georgia, serif">
-<defs>${allSymbols()}
+<defs>${allSymbols()}${fabricDefs}
   <filter id="lift" x="-5%" y="-5%" width="110%" height="110%">
     <feDropShadow dx="0" dy="1.6" stdDeviation="2" flood-color="#33291f" flood-opacity="0.3"/>
   </filter>
@@ -842,6 +887,13 @@ ${standingEls.map((e) => {
     return `<ellipse cx="${(hx + w2 * (0.5 - cfg.anchorX)).toFixed(1)}" cy="${(hy + 2).toFixed(1)}" rx="${(w2 * 0.38).toFixed(1)}" ry="3.4" fill="#2c2318" opacity="0.13"/>` +
       `<image href="${heroData[e.assetId]}" x="${(hx - w2 * cfg.anchorX).toFixed(1)}" y="${(hy - h2 * cfg.anchorY).toFixed(1)}" width="${w2}" height="${h2.toFixed(1)}"/>`;
   }
+  // raster-fabric experiment: swap mapped families to production sprites
+  const fr = FABRIC_RASTER[`${e.assetId}.s${e.structure ?? 0}`];
+  if (fr && fabricDefId[fr.file]) {
+    const sc = e.scale ?? 1;
+    const w2 = fr.widthM * sc, h2 = w2 * fr.aspect;
+    return `<use href="#${fabricDefId[fr.file]}" transform="translate(${(e.x - w2 * fr.ax).toFixed(1)} ${(e.y - h2 * fr.ay).toFixed(1)}) scale(${sc.toFixed(2)})"/>`;
+  }
   const st = variantStyle(e);
   // facing-aware mirror: flip the sprite when its frontage (street/corner)
   // lies clearly to the west, so doors/chamfers address what they belong to
@@ -856,9 +908,9 @@ ${standingEls.map((e) => {
 </svg>`;
 
 mkdirSync(join(HERE, 'out'), { recursive: true });
-writeFileSync(join(HERE, 'out', `${SLICE.out}.svg`), svg);
-writeFileSync(join(HERE, 'out', `${SLICE.out}.scene-model.json`), JSON.stringify({ slice: SLICE, counts: countScene(), scene }, null, 1));
-writeFileSync(join(HERE, 'out', `${SLICE.out}.html`),
+writeFileSync(join(HERE, 'out', `${OUTNAME}.svg`), svg);
+writeFileSync(join(HERE, 'out', `${OUTNAME}.scene-model.json`), JSON.stringify({ slice: SLICE, counts: countScene(), scene }, null, 1));
+writeFileSync(join(HERE, 'out', `${OUTNAME}.html`),
   `<!doctype html><meta charset="utf-8"><title>Style C slice</title><body style="margin:0;background:#7ec4e0">${svg.replace('<svg ', '<svg style="width:100vw;height:100vh;display:block" ')}</body>`);
 
 function countScene() {

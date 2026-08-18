@@ -625,12 +625,12 @@ const HERO_RASTER = {
     evict: 30,
   },
   'hero.wolskis': {
-    file: join(HERE, 'heroes', 'wolskis-v1.png'),
-    widthM: 42,            // modest per packet — sign + character carry it
-    aspect: 1024 / 1536,
-    anchorX: 0.45,         // tavern front door / sign corner
-    anchorY: 0.82,
-    dxM: -3, dyM: 5,       // hug the Pulaski frontage, clear of the courts
+    file: join(HERE, 'heroes', 'wolskis-v2.png'),
+    widthM: 38,            // modest per packet — sign + character carry it
+    aspect: 1086 / 1448,
+    anchorX: 0.33,         // tavern front door base
+    anchorY: 0.85,
+    dxM: -2, dyM: 4,       // hug the Pulaski frontage, clear of the courts
     evict: 20,
   },
 };

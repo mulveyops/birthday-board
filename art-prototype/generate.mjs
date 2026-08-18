@@ -925,6 +925,71 @@ ${standingEls.map((e) => {
 
 mkdirSync(join(HERE, 'out'), { recursive: true });
 writeFileSync(join(HERE, 'out', `${OUTNAME}.svg`), svg);
+
+// ---- app export: scene entries in lat/lng + symbol defs, for the live app's
+// SceneLayer (same SVG frame as the track -> perfect alignment, crisp zoom) ----
+if (process.argv.includes('export-app')) {
+  const toLat = (y) => SLICE.N - (y - MARGIN) / KY;
+  const toLng = (x) => SLICE.W + (x - MARGIN) / KX;
+  const LL = (x, y) => ({ lat: +toLat(y).toFixed(6), lng: +toLng(x).toFixed(6) });
+  // the app masks outside the board polygon with sky — clip the scene to it so
+  // no sprite floats in the clouds
+  const inBoard0 = (lat, lng) => {
+    const poly = board0.boundary;
+    let inside = false;
+    for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+      const yi = poly[i].lat, xi = poly[i].lng, yj = poly[j].lat, xj = poly[j].lng;
+      if (yi > lat !== yj > lat && lng < ((xj - xi) * (lat - yi)) / (yj - yi) + xi) inside = !inside;
+    }
+    return inside;
+  };
+  const entIn = (e) => inBoard0(toLat(e.y), toLng(e.x));
+  // ground layer (top-down, rotatable)
+  const ground = groundEls.filter(entIn).map((e) => ({ ref: symbolRef(e), ...LL(e.x, e.y), sc: e.scale, rot: e.rotation }));
+  // standing layer, pre-sorted north->south (painter order for the app)
+  const standing = [];
+  for (const e of standingEls.filter(entIn)) {
+    const heroCfg = HERO_RASTER[e.assetId];
+    if (heroCfg) {
+      const base = heroCfg.file.split(/[\\/]/).pop().replace('.png', '');
+      standing.push({ t: 'img', href: `/art/sprites/${base}.webp`, ...LL(e.x + (heroCfg.dxM ?? 0), e.y + (heroCfg.dyM ?? 0)), w: heroCfg.widthM, h: +(heroCfg.widthM * heroCfg.aspect).toFixed(2), ax: heroCfg.anchorX, ay: heroCfg.anchorY });
+      continue;
+    }
+    const fr = FABRIC_RASTER[`${e.assetId}.s${e.structure ?? 0}`];
+    if (fr) {
+      const sc = e.scale ?? 1;
+      standing.push({ t: 'use', ref: `fab_${fr.file.split(/[\\/]/).pop().replace('.png', '')}`, ...LL(e.x, e.y), sc, w: fr.widthM * sc, h: +(fr.widthM * fr.aspect * sc).toFixed(2), ax: fr.ax, ay: fr.ay });
+      continue;
+    }
+    const meta = ASSET_META[e.assetId];
+    const mirror = e.facing != null && Math.cos(e.facing * Math.PI / 180) < -0.45;
+    const ent = { t: 'use', ref: symbolRef(e), ...LL(e.x, e.y), sc: e.scale ?? 1, style: variantStyle(e) || undefined, mir: mirror || undefined };
+    if (meta && meta.cls !== 'furniture') ent.sh = [+(meta.halfW * 0.92 * (e.scale ?? 1)).toFixed(1), meta.cls === 'tree' ? 1.9 : 2.6];
+    if (e.assetId === 'bldg.com.corner_tavern') {
+      ent.label = (e.name ?? 'TAVERN').toUpperCase().split(/\s+/)[0].replace(/[^A-Z'’\-]/g, '').slice(0, 9) || 'TAVERN';
+      ent.labelDy = +(7.55 * (e.scale ?? 1)).toFixed(2);
+      ent.labelFs = +(1.7 * (e.scale ?? 1)).toFixed(2);
+    }
+    standing.push(ent);
+  }
+  const props = scene
+    .filter((e) => e.layer === 'property')
+    .filter((e) => e.pts.every(([x, y]) => inBoard0(toLat(y), toLng(x))))
+    .map((e) => ({ k: e.assetId.slice(5), pts: e.pts.map(([x, y]) => { const l = LL(x, y); return [l.lat, l.lng]; }) }));
+  const parks = parkPolys.map((pk) => pk.pts.map(([x, y]) => { const l = LL(x, y); return [l.lat, l.lng]; }));
+  writeFileSync(join(HERE, 'out', 'scene.json'), JSON.stringify({ ground, standing, props, parks }));
+  // defs: SVG symbols + raster <image> defs referencing /art/sprites/*.webp
+  let rasterDefs = '';
+  const seenDef = new Set();
+  for (const cfg of Object.values(FABRIC_RASTER)) {
+    const base = cfg.file.split(/[\\/]/).pop().replace('.png', '');
+    if (seenDef.has(base)) continue;
+    seenDef.add(base);
+    rasterDefs += `<image id="fab_${base}" href="/art/sprites/${base}.webp" width="${cfg.widthM}" height="${(cfg.widthM * cfg.aspect).toFixed(2)}"/>`;
+  }
+  writeFileSync(join(HERE, 'out', 'scene-defs.svg'), allSymbols() + rasterDefs);
+  console.error('app export:', ground.length, 'ground,', standing.length, 'standing,', props.length, 'props,', parks.length, 'parks');
+}
 // image bounds in lat/lng (slice + margin) for the app's ImageOverlay
 writeFileSync(join(HERE, 'out', `${OUTNAME}.bounds.json`), JSON.stringify({
   south: SLICE.S - MARGIN / KY, north: SLICE.N + MARGIN / KY,

@@ -1,0 +1,919 @@
+
+  <symbol id="bldg.res.polish_flat.s0" overflow="visible">
+    <path d="M4.5 0 L4.5 -11.5 L7.74 -16.45 L7.74 -4.95 Z" fill="var(--side,#d9c48e)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <path d="M-4.5 -11.5 L4.5 -11.5 L7.74 -16.45 L-1.2600000000000002 -16.45 Z" fill="var(--roof,#d95d43)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <rect x="-4.5" y="-11.5" width="9" height="11.5" fill="var(--body,#f6e7b8)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <rect x="-5.1" y="-12.4" width="10.2" height="1.5" rx="0.35" fill="var(--roof,#d95d43)" stroke="#33291f" stroke-width="0.8"/>
+    <!-- stacked double porch: full-height column bay on the left -->
+    <rect x="-5.7" y="-10.4" width="5" height="10.4" fill="var(--porch,#fbf4e2)" stroke="#33291f" stroke-width="0.85"/>
+    <path d="M-5.7 -5.4 h5" stroke="#33291f" stroke-width="0.7"/>
+    <path d="M-5 -10.4 V0 M1.1999999999999997 -10.4 V0" stroke="#33291f" stroke-width="0.7"/>
+    <path d="M-5.7 -7.6 h5 M-5.7 -2.6 h5" stroke="#33291f" stroke-width="0.5" opacity="0.6"/>
+    <rect x="-6.3" y="-10.8" width="6.2" height="1" rx="0.3" fill="var(--roof,#d95d43)" stroke="#33291f" stroke-width="0.6"/>
+    <!-- right-half windows + door -->
+    <rect x="0.9" y="-9.7" width="2.6" height="3" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.55"/>
+    <rect x="0.9" y="-4.4" width="2.5" height="4.4" rx="0.35" fill="var(--door,#7a4b32)" stroke="#33291f" stroke-width="0.65"/>
+    <circle cx="3" cy="-2.3" r="0.3" fill="#f2c94c"/>
+    <rect x="0.3" y="-0.7" width="3.9" height="1" fill="#cfc4ad" stroke="#33291f" stroke-width="0.5"/>
+  </symbol>
+
+  <symbol id="bldg.res.polish_flat.s1" overflow="visible">
+    <!-- subtle receding roof plane -->
+    <path d="M0 -16 L5.5 -10 L7.12 -12.475 L1.6199999999999999 -18.475 Z" fill="var(--roofdark,#b34a34)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <rect x="-4.5" y="-10" width="9" height="10" fill="var(--body,#f6e7b8)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <!-- steep front gable -->
+    <path d="M-5.6 -10 L0 -16 L5.6 -10 Z" fill="var(--roof,#d95d43)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <circle cx="0" cy="-13.4" r="1.15" fill="#fdf3c9" stroke="#33291f" stroke-width="0.55"/>
+    <rect x="-3.4" y="-9.2" width="2.5" height="2.9" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.55"/><rect x="1" y="-9.2" width="2.5" height="2.9" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.55"/>
+    <!-- ground-floor bay window -->
+    <path d="M-4 0 L-4 -5.3 L-3 -6.1 L-0.6 -6.1 L0.4 -5.3 L0.4 0 Z" fill="var(--body,#f6e7b8)" stroke="#33291f" stroke-width="0.8"/>
+    <rect x="-2.9" y="-5.2" width="2.2" height="3.4" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/>
+    <rect x="1.6" y="-4.5" width="2.5" height="4.5" rx="0.35" fill="var(--door,#7a4b32)" stroke="#33291f" stroke-width="0.65"/>
+    <rect x="1" y="-0.7" width="3.7" height="1" fill="#cfc4ad" stroke="#33291f" stroke-width="0.5"/>
+  </symbol>
+
+  <symbol id="bldg.res.polish_flat.s2" overflow="visible">
+    <!-- hipped roof: trapezoid front + receding plane -->
+    <path d="M-3.85 -14.1 L5.47 -16.575 L7.87 -12.975 L6.25 -10.5 Z" fill="var(--roofdark,#b34a34)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <path d="M-7.05 -10.5 L-3.85 -14.1 L3.85 -14.1 L7.05 -10.5 Z" fill="var(--roof,#d95d43)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <rect x="-6.25" y="-10.5" width="12.5" height="10.5" fill="var(--body,#f6e7b8)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <!-- mirrored halves: window over door, twice -->
+    <path d="M0 -10.5 V0" stroke="#33291f" stroke-width="0.5" opacity="0.45"/>
+    <rect x="-4.9" y="-9.4" width="2.6" height="3" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.55"/><rect x="2.3" y="-9.4" width="2.6" height="3" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.55"/>
+    <rect x="-4.9" y="-5" width="2.6" height="2.6" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.55"/><rect x="2.3" y="-5" width="2.6" height="2.6" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.55"/>
+    <rect x="-1.95" y="-4.5" width="1.75" height="4.5" rx="0.3" fill="var(--door,#7a4b32)" stroke="#33291f" stroke-width="0.6"/>
+    <rect x="0.2" y="-4.5" width="1.75" height="4.5" rx="0.3" fill="var(--door2,#5e5140)" stroke="#33291f" stroke-width="0.6"/>
+    <rect x="-2.5" y="-0.7" width="5" height="1" fill="#cfc4ad" stroke="#33291f" stroke-width="0.5"/>
+    <!-- twin brackets under the eave -->
+    <path d="M-4.4 -10.5 v-0.8 M4.4 -10.5 v-0.8" stroke="#33291f" stroke-width="0.6"/>
+  </symbol>
+
+  <symbol id="bldg.res.polish_flat.s3" overflow="visible">
+    <path d="M0 -15.5 L5.3 -9.5 L6.92 -11.975 L1.6199999999999999 -17.975 Z" fill="var(--roofdark,#2f6e5e)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <rect x="-4.3" y="-9.5" width="8.6" height="9.5" fill="var(--body,#bfe0c9)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <path d="M-5.4 -9.5 L0 -15.5 L5.4 -9.5 Z" fill="var(--roof,#3f8f7a)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <!-- attic pair -->
+    <rect x="-1.8" y="-12.9" width="1.5" height="2" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.45"/><rect x="0.3" y="-12.9" width="1.5" height="2" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.45"/>
+    <rect x="-3.2" y="-8.7" width="2.4" height="2.7" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.55"/><rect x="0.8" y="-8.7" width="2.4" height="2.7" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.55"/>
+    <!-- full-width front porch -->
+    <rect x="-5.3" y="-4.6" width="10.6" height="1" rx="0.3" fill="var(--roof,#3f8f7a)" stroke="#33291f" stroke-width="0.65"/>
+    <path d="M-4.6 -3.6 V0 M0 -3.6 V0 M4.6 -3.6 V0" stroke="#33291f" stroke-width="0.7"/>
+    <path d="M-5.3 -1.6 h10.6" stroke="#33291f" stroke-width="0.5" opacity="0.55"/>
+    <rect x="-1.25" y="-3.5" width="2.5" height="3.5" rx="0.3" fill="var(--door,#7a4b32)" stroke="#33291f" stroke-width="0.6"/>
+    <rect x="-2.4" y="-0.6" width="4.8" height="0.9" fill="#cfc4ad" stroke="#33291f" stroke-width="0.5"/>
+  </symbol>
+
+  <symbol id="bldg.res.bungalow.s0" overflow="visible">
+    <path d="M0 -8.8 L6.8 -5.2 L8.78 -8.225000000000001 L1.98 -11.825000000000001 Z" fill="var(--roof,#3f8f7a)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <rect x="-5.5" y="-5.2" width="11" height="5.2" fill="var(--body,#bfe0c9)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <path d="M-6.8 -5.2 L0 -8.8 L6.8 -5.2 Z" fill="var(--roof,#3f8f7a)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <rect x="-1.2" y="-7.3" width="2.4" height="1.6" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.45"/>
+    <!-- deep porch: roof slab + tapered columns -->
+    <rect x="-6.5" y="-4.4" width="13" height="1.05" rx="0.3" fill="var(--roofdark,#2f6e5e)" stroke="#33291f" stroke-width="0.7"/>
+    <path d="M-5.3 0 L-4.95 -3.35 L-4.05 -3.35 L-3.7 0 Z" fill="var(--porch,#fbf4e2)" stroke="#33291f" stroke-width="0.6"/>
+    <path d="M3.7 0 L4.05 -3.35 L4.95 -3.35 L5.3 0 Z" fill="var(--porch,#fbf4e2)" stroke="#33291f" stroke-width="0.6"/>
+    <rect x="-4.3" y="-3.3" width="2.7" height="2.5" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.55"/><rect x="1.6" y="-3.3" width="2.7" height="2.5" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.55"/>
+    <rect x="-1.35" y="-3.5" width="2.7" height="3.5" rx="0.3" fill="var(--door,#7a4b32)" stroke="#33291f" stroke-width="0.6"/>
+    <rect x="-3" y="-0.75" width="6" height="1.05" fill="#cfc4ad" stroke="#33291f" stroke-width="0.5"/>
+    <rect x="-3.6" y="-0.35" width="7.2" height="0.6" fill="#bcb098" stroke="#33291f" stroke-width="0.4"/>
+  </symbol>
+
+  <symbol id="bldg.res.bungalow.s1" overflow="visible">
+    <path d="M-3.05 -8.600000000000001 L4.67 -11.075000000000001 L6.87 -7.875 L5.25 -5.4 Z" fill="var(--roofdark,#4f6274)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <path d="M-6.15 -5.4 L-3.05 -8.600000000000001 L3.05 -8.600000000000001 L6.15 -5.4 Z" fill="var(--roof,#5f7285)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <!-- central dormer -->
+    <rect x="-1.5" y="-8" width="3" height="2" fill="var(--body,#a9d3e8)" stroke="#33291f" stroke-width="0.6"/>
+    <path d="M-1.9 -8 L0 -9.100000000000001 L1.9 -8 Z" fill="var(--roof,#5f7285)" stroke="#33291f" stroke-width="0.6"/>
+    <rect x="-0.85" y="-7.75" width="1.7" height="1.5" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.4"/>
+    <rect x="-5.25" y="-5.4" width="10.5" height="5.4" fill="var(--body,#a9d3e8)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <rect x="-4.2" y="-4.3" width="2.7" height="2.8" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.55"/><rect x="1.5" y="-4.3" width="2.7" height="2.8" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.55"/>
+    <rect x="-1.35" y="-3.7" width="2.7" height="3.7" rx="0.3" fill="var(--door,#7a4b32)" stroke="#33291f" stroke-width="0.6"/>
+    <rect x="-2.2" y="-0.65" width="4.4" height="0.95" fill="#cfc4ad" stroke="#33291f" stroke-width="0.5"/>
+  </symbol>
+
+  <symbol id="bldg.res.bungalow.s2" overflow="visible">
+    <!-- side-gable: roof face toward viewer -->
+    <path d="M-5.65 -5 L-3.35 -8 L3.35 -8 L5.65 -5 Z" fill="var(--roof,#8a6248)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <path d="M-3.35 -8 L3.35 -8 L4.97 -10.475 L-1.7300000000000002 -10.475 Z" fill="var(--roofdark,#6e4e39)" stroke="#33291f" stroke-width="0.9" stroke-linejoin="round"/>
+    <rect x="1.6" y="-10" width="1.6" height="2.6" fill="#b3552f" stroke="#33291f" stroke-width="0.55"/>
+    <rect x="-4.75" y="-5" width="9.5" height="5" fill="var(--body,#f0b39a)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <!-- shuttered windows -->
+    <rect x="-3.7" y="-4" width="2.3" height="2.5" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.55"/>
+    <rect x="-4.35" y="-4" width="0.65" height="2.5" fill="var(--roof,#8a6248)" stroke="#33291f" stroke-width="0.35"/>
+    <rect x="-1.4" y="-4" width="0.65" height="2.5" fill="var(--roof,#8a6248)" stroke="#33291f" stroke-width="0.35"/>
+    <rect x="1.6" y="-4" width="2.3" height="2.5" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.55"/>
+    <rect x="0.95" y="-4" width="0.65" height="2.5" fill="var(--roof,#8a6248)" stroke="#33291f" stroke-width="0.35"/>
+    <rect x="3.9" y="-4" width="0.65" height="2.5" fill="var(--roof,#8a6248)" stroke="#33291f" stroke-width="0.35"/>
+    <rect x="-0.5" y="-3.4" width="2.2" height="3.4" rx="0.3" fill="var(--door,#5e5140)" stroke="#33291f" stroke-width="0.6"/>
+    <rect x="-1.1" y="-0.6" width="3.4" height="0.9" fill="#cfc4ad" stroke="#33291f" stroke-width="0.5"/>
+  </symbol>
+
+  <symbol id="bldg.res.apartment.s0" overflow="visible">
+    <path d="M5.25 0 L5.25 -13 L8.85 -18.5 L8.85 -5.5 Z" fill="var(--side,#c9a884)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <path d="M-5.25 -13 L5.25 -13 L8.85 -18.5 L-1.6500000000000004 -18.5 Z" fill="var(--rooftop,#8d8577)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <rect x="-5.25" y="-13" width="10.5" height="13" fill="var(--body,#e0b48f)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <rect x="-5.85" y="-13.95" width="11.7" height="1.6" rx="0.35" fill="var(--trim,#b3552f)" stroke="#33291f" stroke-width="0.8"/>
+    <rect x="-1.55" y="-8" width="3.1" height="2.4" rx="0.3" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/>
+    <rect x="-1.55" y="-11.7" width="3.1" height="2.4" rx="0.3" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/>
+    <rect x="-4.05" y="-11.7" width="2.4" height="2.6" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="1.65" y="-11.7" width="2.4" height="2.6" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="-4.05" y="-7.999999999999999" width="2.4" height="2.6" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="1.65" y="-7.999999999999999" width="2.4" height="2.6" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="-4.05" y="-4.299999999999999" width="2.4" height="2.6" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="1.65" y="-4.299999999999999" width="2.4" height="2.6" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/>
+    <rect x="-1.55" y="-4.4" width="3.1" height="4.4" rx="0.35" fill="var(--door,#6b4530)" stroke="#33291f" stroke-width="0.65"/>
+    <path d="M-2.4 -4.6 L0 -5.9 L2.4 -4.6 Z" fill="var(--trim,#b3552f)" stroke="#33291f" stroke-width="0.6"/>
+    <rect x="-2.6" y="-0.8" width="5.2" height="1.1" fill="#cfc4ad" stroke="#33291f" stroke-width="0.5"/>
+  </symbol>
+
+  <symbol id="bldg.res.apartment.s1" overflow="visible">
+    <path d="M8.5 0 L8.5 -12.5 L12.46 -18.55 L12.46 -6.050000000000001 Z" fill="var(--side,#a8765a)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <path d="M-8.5 -12.5 L8.5 -12.5 L12.46 -18.55 L-4.54 -18.55 Z" fill="var(--rooftop,#8d8577)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <rect x="-8.5" y="-12.5" width="17" height="12.5" fill="var(--body,#c98a66)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <rect x="-9.2" y="-13.6" width="18.4" height="1.8" rx="0.4" fill="var(--trim,#8a5a44)" stroke="#33291f" stroke-width="0.85"/>
+    <path d="M-7.6 -4.1 h15.2" stroke="var(--trim,#8a5a44)" stroke-width="0.5" opacity="0.7"/>
+    <rect x="-7.699999999999999" y="-11.2" width="2.2" height="2.6" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="-3.3000000000000003" y="-11.2" width="2.2" height="2.6" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="1.1" y="-11.2" width="2.2" height="2.6" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="5.5" y="-11.2" width="2.2" height="2.6" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="-7.699999999999999" y="-7.6" width="2.2" height="2.6" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="-3.3000000000000003" y="-7.6" width="2.2" height="2.6" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="1.1" y="-7.6" width="2.2" height="2.6" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="5.5" y="-7.6" width="2.2" height="2.6" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="-7.699999999999999" y="-3.999999999999999" width="2.2" height="2.6" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="-3.3000000000000003" y="-3.999999999999999" width="2.2" height="2.6" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="1.1" y="-3.999999999999999" width="2.2" height="2.6" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="5.5" y="-3.999999999999999" width="2.2" height="2.6" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/>
+    <path d="M-1.9 0 L-1.9 -3.5 A1.9 2 0 0 1 1.9 -3.5 L1.9 0 Z" fill="var(--door,#5e4534)" stroke="#33291f" stroke-width="0.65"/>
+    <path d="M-2.5 -3.5 A2.5 2.5 0 0 1 2.5 -3.5" fill="none" stroke="var(--trim,#8a5a44)" stroke-width="0.8"/>
+    <rect x="-3" y="-0.75" width="6" height="1.05" fill="#cfc4ad" stroke="#33291f" stroke-width="0.5"/>
+  </symbol>
+
+  <symbol id="bldg.res.apartment.s2" overflow="visible">
+    <path d="M7 0 L7 -13 L10.96 -19.05 L10.96 -6.050000000000001 Z" fill="var(--side,#9a8a74)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <path d="M-7 -13 L7 -13 L10.96 -19.05 L-3.04 -19.05 Z" fill="var(--rooftop,#8d8577)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <path d="M-7 0 L-7 -13 L7 -13 L7 -4 L4.2 0 Z" fill="var(--body,#c9c09a)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <rect x="-7.6" y="-13.95" width="15.2" height="1.6" rx="0.35" fill="var(--trim,#7d6b52)" stroke="#33291f" stroke-width="0.8"/>
+    <!-- stone base band -->
+    <path d="M-7 0 L-7 -3.2 L5.4 -3.2 L4.2 0 Z" fill="var(--base,#b0a58c)" stroke="#33291f" stroke-width="0.7"/>
+    <rect x="-5.8" y="-11.6" width="2.3" height="2.5" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="-2.3" y="-11.6" width="2.3" height="2.5" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="-5.8" y="-8.1" width="2.3" height="2.5" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="-2.3" y="-8.1" width="2.3" height="2.5" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="2.3" y="-8.1" width="2.3" height="2.5" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="-5.8" y="-4.6" width="2.3" height="2.5" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="-2.3" y="-4.6" width="2.3" height="2.5" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="2.3" y="-4.6" width="2.3" height="2.5" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/>
+    <!-- chamfer corner door -->
+    <path d="M4.4 0 L6.5 -3 L6.5 -6.2 L3.2 -6.2 L3.2 0 Z" fill="var(--side,#9a8a74)" stroke="#33291f" stroke-width="0.7"/>
+    <rect x="3.6" y="-4.4" width="2.2" height="4.4" rx="0.3" fill="var(--door,#4f4234)" stroke="#33291f" stroke-width="0.55"/>
+    <circle cx="4.2" cy="-2.3" r="0.26" fill="#f2c94c"/>
+  </symbol>
+
+  <symbol id="bldg.res.apartment.s3" overflow="visible">
+    <path d="M6.5 0 L6.5 -16.5 L10.46 -22.55 L10.46 -6.050000000000001 Z" fill="var(--side,#8f7a8a)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <path d="M-6.5 -16.5 L6.5 -16.5 L10.46 -22.55 L-2.54 -22.55 Z" fill="var(--rooftop,#8d8577)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <rect x="-6.5" y="-16.5" width="13" height="16.5" fill="var(--body,#b3a0b8)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <!-- stepped parapet -->
+    <rect x="-7.1" y="-17.4" width="14.2" height="1.5" rx="0.35" fill="var(--trim,#6e5a74)" stroke="#33291f" stroke-width="0.8"/>
+    <rect x="-2.6" y="-18.5" width="5.2" height="1.4" rx="0.3" fill="var(--trim,#6e5a74)" stroke="#33291f" stroke-width="0.7"/>
+    <!-- center vertical bay in contrast tone -->
+    <rect x="-1.7" y="-16.5" width="3.4" height="16.5" fill="var(--bay,#a08aa8)" stroke="#33291f" stroke-width="0.6"/>
+    <rect x="-5.3" y="-15" width="2.3" height="2.6" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="3" y="-15" width="2.3" height="2.6" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="-5.3" y="-11.3" width="2.3" height="2.6" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="3" y="-11.3" width="2.3" height="2.6" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="-5.3" y="-7.6" width="2.3" height="2.6" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="3" y="-7.6" width="2.3" height="2.6" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="-5.3" y="-3.8999999999999986" width="2.3" height="2.6" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="3" y="-3.8999999999999986" width="2.3" height="2.6" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/>
+    <rect x="-1.2" y="-14.4" width="2.4" height="2.4" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="-1.2" y="-10.7" width="2.4" height="2.4" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="-1.2" y="-7" width="2.4" height="2.4" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/>
+    <rect x="-1.5" y="-4.3" width="3" height="4.3" rx="0.35" fill="var(--door,#4f4055)" stroke="#33291f" stroke-width="0.65"/>
+    <rect x="-2.4" y="-0.75" width="4.8" height="1.05" fill="#cfc4ad" stroke="#33291f" stroke-width="0.5"/>
+  </symbol>
+
+  <symbol id="bldg.res.garage.s0" overflow="visible">
+    <path d="M0 -5.3 L3.9 -3.5 L5.34 -5.7 L1.44 -7.5 Z" fill="var(--roof,#8a6248)" stroke="#33291f" stroke-width="1" stroke-linejoin="round"/>
+    <rect x="-3.3" y="-3.5" width="6.6" height="3.5" fill="var(--body,#e8ddc4)" stroke="#33291f" stroke-width="1" stroke-linejoin="round"/>
+    <path d="M-3.9 -3.5 L0 -5.3 L3.9 -3.5 Z" fill="var(--roof,#8a6248)" stroke="#33291f" stroke-width="1" stroke-linejoin="round"/>
+    <rect x="-2.3" y="-2.8" width="4.6" height="2.8" rx="0.3" fill="var(--door,#9a8265)" stroke="#33291f" stroke-width="0.6"/>
+    <path d="M-2.3 -1.9 h4.6" stroke="#33291f" stroke-width="0.35" opacity="0.5"/>
+  </symbol>
+
+  <symbol id="bldg.res.garage.s1" overflow="visible">
+    <path d="M3.4 0 L3.4 -3.1 L5.38 -6.125 L5.38 -3.0250000000000004 Z" fill="var(--side,#c2b394)" stroke="#33291f" stroke-width="0.9" stroke-linejoin="round"/>
+    <path d="M-3.4 -3.1 L3.4 -3.1 L5.38 -6.125 L-1.42 -6.125 Z" fill="var(--rooftop,#8d8577)" stroke="#33291f" stroke-width="0.9" stroke-linejoin="round"/>
+    <rect x="-3.4" y="-3.1" width="6.8" height="3.1" fill="var(--body,#d4c8a8)" stroke="#33291f" stroke-width="1" stroke-linejoin="round"/>
+    <rect x="-3.8" y="-3.7" width="7.6" height="1" rx="0.25" fill="var(--trim,#8a7a60)" stroke="#33291f" stroke-width="0.55"/>
+    <rect x="-2.5999999999999996" y="-2.5" width="3.8" height="2.5" rx="0.25" fill="var(--door,#9a8265)" stroke="#33291f" stroke-width="0.55"/>
+    <path d="M-2.5999999999999996 -1.7 h3.8 M-2.5999999999999996 -0.9 h3.8" stroke="#33291f" stroke-width="0.3" opacity="0.5"/>
+    <rect x="1.5" y="-2.4" width="1.3" height="2.4" rx="0.2" fill="#7a6a50" stroke="#33291f" stroke-width="0.45"/>
+  </symbol>
+
+  <symbol id="bldg.res.shed.s0" overflow="visible">
+    <rect x="-2" y="-2.4" width="4" height="2.4" fill="var(--body,#cbb896)" stroke="#33291f" stroke-width="0.9" stroke-linejoin="round"/>
+    <path d="M-2.5 -2.4 L0 -3.8 L2.5 -2.4 Z" fill="var(--roof,#7d6b5a)" stroke="#33291f" stroke-width="0.9" stroke-linejoin="round"/>
+    <rect x="-0.8" y="-1.9" width="1.6" height="1.9" rx="0.2" fill="var(--door,#8a7355)" stroke="#33291f" stroke-width="0.5"/>
+    <path d="M0 -1.9 V0" stroke="#33291f" stroke-width="0.3" opacity="0.6"/>
+  </symbol>
+
+  <symbol id="bldg.res.shed.s1" overflow="visible">
+    <rect x="-2.2" y="-2.2" width="4.4" height="2.2" fill="var(--body,#b9b09a)" stroke="#33291f" stroke-width="0.9" stroke-linejoin="round"/>
+    <path d="M-2.7 -2.2 L2.7 -3.3000000000000003 L2.7 -2.2 Z" fill="var(--roof,#6e6250)" stroke="#33291f" stroke-width="0.9" stroke-linejoin="round"/>
+    <rect x="-1.6" y="-1.7" width="1.4" height="1.7" rx="0.2" fill="var(--door,#8a7355)" stroke="#33291f" stroke-width="0.5"/>
+    <rect x="0.5000000000000002" y="-1.6" width="1.1" height="0.9" rx="0.15" fill="#fdf3c9" stroke="#33291f" stroke-width="0.4"/>
+  </symbol>
+
+  <symbol id="bldg.res.rowhouse.s0" overflow="visible">
+    <path d="M8.25 0 L8.25 -10.5 L11.85 -16 L11.85 -5.5 Z" fill="var(--side,#a8766a)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <path d="M-8.25 -10.5 L8.25 -10.5 L11.85 -16 L-4.65 -16 Z" fill="var(--rooftop,#8d8577)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    
+    <rect x="-8.25" y="-10.5" width="5.5" height="10.5" fill="var(--u0,#d9a8a0)" stroke="#33291f" stroke-width="0.9"/>
+    <rect x="-7.35" y="-9.3" width="2" height="2.5" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="-5.65" y="-9.3" width="2" height="2.5" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/>
+    <rect x="-7.35" y="-5.3" width="2" height="2.4" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/>
+    <rect x="-5.65" y="-4" width="2" height="4" rx="0.3" fill="var(--door,#6b4530)" stroke="#33291f" stroke-width="0.55"/>
+    <rect x="-6.05" y="-0.6" width="2.8" height="0.9" fill="#cfc4ad" stroke="#33291f" stroke-width="0.45"/>
+    <rect x="-2.75" y="-10.5" width="5.5" height="10.5" fill="var(--u1,#d9a8a0)" stroke="#33291f" stroke-width="0.9"/>
+    <rect x="-1.85" y="-9.3" width="2" height="2.5" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="-0.1499999999999999" y="-9.3" width="2" height="2.5" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/>
+    <rect x="-1.85" y="-5.3" width="2" height="2.4" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/>
+    <rect x="-0.1499999999999999" y="-4" width="2" height="4" rx="0.3" fill="var(--door,#6b4530)" stroke="#33291f" stroke-width="0.55"/>
+    <rect x="-0.5499999999999998" y="-0.6" width="2.8" height="0.9" fill="#cfc4ad" stroke="#33291f" stroke-width="0.45"/>
+    <rect x="2.75" y="-10.5" width="5.5" height="10.5" fill="var(--u2,#d9a8a0)" stroke="#33291f" stroke-width="0.9"/>
+    <rect x="3.65" y="-9.3" width="2" height="2.5" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="5.35" y="-9.3" width="2" height="2.5" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/>
+    <rect x="3.65" y="-5.3" width="2" height="2.4" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/>
+    <rect x="5.35" y="-4" width="2" height="4" rx="0.3" fill="var(--door,#6b4530)" stroke="#33291f" stroke-width="0.55"/>
+    <rect x="4.95" y="-0.6" width="2.8" height="0.9" fill="#cfc4ad" stroke="#33291f" stroke-width="0.45"/>
+    <rect x="-8.85" y="-11.4" width="17.7" height="1.5" rx="0.35" fill="var(--trim,#8a5a44)" stroke="#33291f" stroke-width="0.8"/>
+  </symbol>
+
+  <symbol id="bldg.com.storefront.t0" overflow="visible">
+    
+    <path d="M5.25 0 L5.25 -9.5 L8.85 -15 L8.85 -5.5 Z" fill="var(--side,#b0574b)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <path d="M-5.25 -9.5 L5.25 -9.5 L8.85 -15 L-1.6500000000000004 -15 Z" fill="var(--rooftop,#8d8577)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <rect x="-5.25" y="-9.5" width="10.5" height="9.5" fill="var(--body,#e0685a)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <rect x="-5.85" y="-10.4" width="11.7" height="1.5" rx="0.35" fill="var(--trim,#8a5a44)" stroke="#33291f" stroke-width="0.8"/>
+    <rect x="-4.05" y="-8.4" width="2.2" height="2.6" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="-1.1" y="-8.4" width="2.2" height="2.6" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="1.85" y="-8.4" width="2.2" height="2.6" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/>
+    <path d="M-5.75 -3 L5.75 -3 L5.25 -4.5 L-5.25 -4.5 Z" fill="var(--awn,#c93b3b)" stroke="#33291f" stroke-width="0.7"/><rect x="-5.05" y="-4.5" width="1.01" height="1.85" fill="#fdf6e3"/><rect x="-3.03" y="-4.5" width="1.01" height="1.85" fill="#fdf6e3"/><rect x="-1.0099999999999998" y="-4.5" width="1.01" height="1.85" fill="#fdf6e3"/><rect x="1.0099999999999998" y="-4.5" width="1.01" height="1.85" fill="#fdf6e3"/><rect x="3.0300000000000002" y="-4.5" width="1.01" height="1.85" fill="#fdf6e3"/><rect x="-4.45" y="-2.9" width="5.7" height="2.9" fill="#bfe4ea" stroke="#33291f" stroke-width="0.55"/>
+   <path d="M-3.85 -0.4 L-2.5500000000000003 -2.4" stroke="#ffffff" stroke-width="0.5" opacity="0.85"/>
+   <path d="M-4.45 -1.1 h5.7" stroke="#8fb5bd" stroke-width="0.35" opacity="0.8"/><rect x="2.15" y="-3.2" width="2.3" height="3.2" rx="0.3" fill="var(--door,#5b4632)" stroke="#33291f" stroke-width="0.55"/>
+  </symbol>
+
+  <symbol id="bldg.com.storefront.t1" overflow="visible">
+    
+    <path d="M5.25 0 L5.25 -9.5 L8.85 -15 L8.85 -5.5 Z" fill="var(--side,#b0574b)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <path d="M-5.25 -9.5 L5.25 -9.5 L8.85 -15 L-1.6500000000000004 -15 Z" fill="var(--rooftop,#8d8577)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <rect x="-5.25" y="-9.5" width="10.5" height="9.5" fill="var(--body,#e0685a)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <rect x="-5.85" y="-10.4" width="11.7" height="1.5" rx="0.35" fill="var(--trim,#8a5a44)" stroke="#33291f" stroke-width="0.8"/>
+    <rect x="-4.05" y="-8.4" width="2.2" height="2.6" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="-1.1" y="-8.4" width="2.2" height="2.6" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="1.85" y="-8.4" width="2.2" height="2.6" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/>
+    <path d="M-5.75 -3 L5.75 -3 L5.25 -4.5 L-5.25 -4.5 Z" fill="var(--awn,#2f7d5d)" stroke="#33291f" stroke-width="0.7"/>
+   <path d="M-4.85 -3.4 L4.85 -3.4" stroke="#00000022" stroke-width="0.45"/><rect x="-4.75" y="-5.5" width="9.5" height="1.6" rx="0.3" fill="var(--sign,#fdf6e3)" stroke="#33291f" stroke-width="0.5"/>
+   <path d="M-3.85 -4.7 h7.7" stroke="#00000033" stroke-width="0.55"/><rect x="-4.05" y="-3" width="1.7" height="3" fill="#bfe4ea" stroke="#33291f" stroke-width="0.5"/>
+   <rect x="-1.65" y="-3" width="1.7" height="3" fill="#bfe4ea" stroke="#33291f" stroke-width="0.5"/><rect x="2.15" y="-3.2" width="2.3" height="3.2" rx="0.3" fill="var(--door,#5b4632)" stroke="#33291f" stroke-width="0.55"/>
+  </symbol>
+
+  <symbol id="bldg.com.storefront.t2" overflow="visible">
+    
+    <path d="M5.25 0 L5.25 -9.5 L8.85 -15 L8.85 -5.5 Z" fill="var(--side,#b0574b)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <path d="M-5.25 -9.5 L5.25 -9.5 L8.85 -15 L-1.6500000000000004 -15 Z" fill="var(--rooftop,#8d8577)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <rect x="-5.25" y="-9.5" width="10.5" height="9.5" fill="var(--body,#e0685a)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <rect x="-5.85" y="-10.4" width="11.7" height="1.5" rx="0.35" fill="var(--trim,#8a5a44)" stroke="#33291f" stroke-width="0.8"/>
+    <rect x="-4.05" y="-8.4" width="2.2" height="2.6" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="-1.1" y="-8.4" width="2.2" height="2.6" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="1.85" y="-8.4" width="2.2" height="2.6" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/>
+    <rect x="-4.75" y="-5.5" width="9.5" height="1.6" rx="0.3" fill="var(--awn,#c93b3b)" stroke="#33291f" stroke-width="0.5"/>
+   <path d="M-3.85 -4.7 h7.7" stroke="#00000033" stroke-width="0.55"/><rect x="-4.45" y="-2.9" width="5.7" height="2.9" fill="#bfe4ea" stroke="#33291f" stroke-width="0.55"/>
+   <path d="M-3.85 -0.4 L-2.5500000000000003 -2.4" stroke="#ffffff" stroke-width="0.5" opacity="0.85"/>
+   <path d="M-4.45 -1.1 h5.7" stroke="#8fb5bd" stroke-width="0.35" opacity="0.8"/><rect x="2.15" y="-3.2" width="2.3" height="3.2" rx="0.3" fill="var(--door,#5b4632)" stroke="#33291f" stroke-width="0.55"/>
+  </symbol>
+
+  <symbol id="bldg.com.storefront.t3" overflow="visible">
+    
+    <path d="M5.25 0 L5.25 -9.5 L8.85 -15 L8.85 -5.5 Z" fill="var(--side,#b0574b)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <path d="M-5.25 -9.5 L5.25 -9.5 L8.85 -15 L-1.6500000000000004 -15 Z" fill="var(--rooftop,#8d8577)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <rect x="-5.25" y="-9.5" width="10.5" height="9.5" fill="var(--body,#e0685a)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <rect x="-5.85" y="-10.4" width="11.7" height="1.5" rx="0.35" fill="var(--trim,#8a5a44)" stroke="#33291f" stroke-width="0.8"/>
+    <rect x="-4.05" y="-8.4" width="2.2" height="2.6" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="-1.1" y="-8.4" width="2.2" height="2.6" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="1.85" y="-8.4" width="2.2" height="2.6" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/>
+    <path d="M-5.75 -3 L5.75 -3 L5.25 -4.5 L-5.25 -4.5 Z" fill="var(--awn,#c9702f)" stroke="#33291f" stroke-width="0.7"/>
+   <path d="M-4.85 -3.4 L4.85 -3.4" stroke="#00000022" stroke-width="0.45"/><rect x="-4.45" y="-2.9" width="4.9" height="2.9" fill="#bfe4ea" stroke="#33291f" stroke-width="0.55"/>
+   <path d="M-3.85 -0.4 L-2.5500000000000003 -2.4" stroke="#ffffff" stroke-width="0.5" opacity="0.85"/>
+   <path d="M-4.45 -1.1 h4.9" stroke="#8fb5bd" stroke-width="0.35" opacity="0.8"/><rect x="2.15" y="-3.2" width="2.3" height="3.2" rx="0.3" fill="var(--door,#5b4632)" stroke="#33291f" stroke-width="0.55"/>
+   <g transform="translate(-7.65 1.6)">
+     <circle r="1.15" fill="#e8dcc2" stroke="#33291f" stroke-width="0.45"/>
+     <path d="M0 -1.1 V-2.6 M-1.5 -2.6 A1.6 1 0 0 1 1.5 -2.6 Z" fill="#c9584a" stroke="#33291f" stroke-width="0.4"/>
+     <circle cx="3" cy="0.4" r="0.95" fill="#e8dcc2" stroke="#33291f" stroke-width="0.4"/>
+   </g>
+  </symbol>
+
+  <symbol id="bldg.com.storefront.t4" overflow="visible">
+    
+    <path d="M5.25 0 L5.25 -9.5 L8.85 -15 L8.85 -5.5 Z" fill="var(--side,#b0574b)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <path d="M-5.25 -9.5 L5.25 -9.5 L8.85 -15 L-1.6500000000000004 -15 Z" fill="var(--rooftop,#8d8577)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <rect x="-5.25" y="-9.5" width="10.5" height="9.5" fill="var(--body,#e0685a)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <rect x="-5.85" y="-10.4" width="11.7" height="1.5" rx="0.35" fill="var(--trim,#8a5a44)" stroke="#33291f" stroke-width="0.8"/>
+    <rect x="-4.05" y="-8.4" width="2.2" height="2.6" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="-1.1" y="-8.4" width="2.2" height="2.6" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="1.85" y="-8.4" width="2.2" height="2.6" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/>
+    <rect x="-4.75" y="-5.5" width="9.5" height="1.6" rx="0.3" fill="var(--sign,#fdf6e3)" stroke="#33291f" stroke-width="0.5"/>
+   <path d="M-3.85 -4.7 h7.7" stroke="#00000033" stroke-width="0.55"/><rect x="-4.45" y="-2.9" width="5.7" height="2.9" fill="#bfe4ea" stroke="#33291f" stroke-width="0.55"/>
+   <path d="M-3.85 -0.4 L-2.5500000000000003 -2.4" stroke="#ffffff" stroke-width="0.5" opacity="0.85"/>
+   <path d="M-4.45 -1.1 h5.7" stroke="#8fb5bd" stroke-width="0.35" opacity="0.8"/><rect x="2.15" y="-3.2" width="2.3" height="3.2" rx="0.3" fill="var(--door,#5b4632)" stroke="#33291f" stroke-width="0.55"/>
+   <rect x="-4.85" y="-1.2" width="1.6" height="1.2" rx="0.2" fill="#8a5a44" stroke="#33291f" stroke-width="0.4"/>
+   <circle cx="-4.3999999999999995" cy="-1.5" r="0.55" fill="#5da24b" stroke="#33291f" stroke-width="0.35"/>
+   <circle cx="-3.6999999999999997" cy="-1.6" r="0.5" fill="#79b25c" stroke="#33291f" stroke-width="0.35"/>
+   <rect x="4.65" y="-1.2" width="1.6" height="1.2" rx="0.2" fill="#8a5a44" stroke="#33291f" stroke-width="0.4"/>
+   <circle cx="5.1000000000000005" cy="-1.5" r="0.55" fill="#5da24b" stroke="#33291f" stroke-width="0.35"/>
+   <circle cx="5.800000000000001" cy="-1.6" r="0.5" fill="#79b25c" stroke="#33291f" stroke-width="0.35"/>
+  </symbol>
+
+  <symbol id="bldg.com.storefront.t5" overflow="visible">
+    
+    <path d="M5.25 0 L5.25 -9.5 L8.85 -15 L8.85 -5.5 Z" fill="var(--side,#b0574b)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <path d="M-5.25 -9.5 L5.25 -9.5 L8.85 -15 L-1.6500000000000004 -15 Z" fill="var(--rooftop,#8d8577)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <rect x="-5.25" y="-9.5" width="10.5" height="9.5" fill="var(--body,#e0685a)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <rect x="-5.85" y="-10.4" width="11.7" height="1.5" rx="0.35" fill="var(--trim,#8a5a44)" stroke="#33291f" stroke-width="0.8"/>
+    <rect x="-4.05" y="-8.4" width="2.2" height="2.6" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="-1.1" y="-8.4" width="2.2" height="2.6" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="1.85" y="-8.4" width="2.2" height="2.6" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/>
+    <rect x="-4.35" y="-3.1" width="5.6" height="3.1" fill="#f6c568" stroke="#33291f" stroke-width="0.55"/>
+   <path d="M-1.5499999999999998 -3.1 V0 M-4.35 -1.4 h5.6" stroke="#33291f" stroke-width="0.35" opacity="0.7"/><rect x="2.15" y="-3.2" width="2.3" height="3.2" rx="0.3" fill="var(--door,#5b4632)" stroke="#33291f" stroke-width="0.55"/><path d="M-5.25 -7.4 h-2.2" stroke="#33291f" stroke-width="0.55"/>
+   <rect x="-9.85" y="-7" width="2.4" height="1.7" rx="0.3" fill="var(--sign,#fdf6e3)" stroke="#33291f" stroke-width="0.5"/>
+  </symbol>
+
+  <symbol id="bldg.com.storefront_row.s0.t0" overflow="visible">
+    <path d="M7.2 0 L7.2 -10 L10.8 -15.5 L10.8 -5.5 Z" fill="var(--side,#b0574b)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <path d="M-7.2 -11.2 L7.2 -10 L10.8 -15.5 L-3.6000000000000005 -16.7 Z" fill="var(--rooftop,#8d8577)" stroke="#33291f" stroke-width="1" stroke-linejoin="round"/>
+    
+    <rect x="-7.2" y="-11.2" width="7.2" height="11.2" fill="var(--b0,#e0685a)" stroke="#33291f" stroke-width="1"/>
+    <rect x="-7.45" y="-12.049999999999999" width="7.7" height="1.35" rx="0.3" fill="var(--trim,#8a5a44)" stroke="#33291f" stroke-width="0.7"/>
+    <rect x="-6.3" y="-8.6" width="2" height="2.5" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="-2.9" y="-8.6" width="2" height="2.5" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/>
+    <path d="M-7.7 -3 L0.5 -3 L0 -4.5 L-7.2 -4.5 Z" fill="var(--a0,#c93b3b)" stroke="#33291f" stroke-width="0.7"/><rect x="-7" y="-4.5" width="0.6799999999999999" height="1.85" fill="#fdf6e3"/><rect x="-5.640000000000001" y="-4.5" width="0.6799999999999999" height="1.85" fill="#fdf6e3"/><rect x="-4.28" y="-4.5" width="0.6799999999999999" height="1.85" fill="#fdf6e3"/><rect x="-2.92" y="-4.5" width="0.6799999999999999" height="1.85" fill="#fdf6e3"/><rect x="-1.5600000000000005" y="-4.5" width="0.6799999999999999" height="1.85" fill="#fdf6e3"/><rect x="-6.5" y="-2.9" width="3.6" height="2.9" fill="#bfe4ea" stroke="#33291f" stroke-width="0.55"/>
+   <path d="M-5.9 -0.4 L-4.6 -2.4" stroke="#ffffff" stroke-width="0.5" opacity="0.85"/>
+   <path d="M-6.5 -1.1 h3.6" stroke="#8fb5bd" stroke-width="0.35" opacity="0.8"/>
+    <rect x="-2.5" y="-3.1" width="1.8" height="3.1" rx="0.3" fill="#5b4632" stroke="#33291f" stroke-width="0.5"/>
+    <rect x="0" y="-10" width="7.2" height="10" fill="var(--b1,#e0685a)" stroke="#33291f" stroke-width="1"/>
+    <rect x="-0.25" y="-10.85" width="7.7" height="1.35" rx="0.3" fill="var(--trim,#8a5a44)" stroke="#33291f" stroke-width="0.7"/>
+    <rect x="0.9" y="-8.6" width="2" height="2.5" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="4.300000000000001" y="-8.6" width="2" height="2.5" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/>
+    <rect x="0.5" y="-5.5" width="6.2" height="1.6" rx="0.3" fill="var(--a1,#fdf6e3)" stroke="#33291f" stroke-width="0.5"/>
+   <path d="M1.4 -4.7 h4.4" stroke="#00000033" stroke-width="0.55"/><rect x="0.7" y="-2.9" width="3.6" height="2.9" fill="#bfe4ea" stroke="#33291f" stroke-width="0.55"/>
+   <path d="M1.2999999999999998 -0.4 L2.5999999999999996 -2.4" stroke="#ffffff" stroke-width="0.5" opacity="0.85"/>
+   <path d="M0.7 -1.1 h3.6" stroke="#8fb5bd" stroke-width="0.35" opacity="0.8"/>
+    <rect x="4.7" y="-3.1" width="1.8" height="3.1" rx="0.3" fill="#5b4632" stroke="#33291f" stroke-width="0.5"/>
+  </symbol>
+
+  <symbol id="bldg.com.storefront_row.s0.t1" overflow="visible">
+    <path d="M7.2 0 L7.2 -10 L10.8 -15.5 L10.8 -5.5 Z" fill="var(--side,#b0574b)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <path d="M-7.2 -11.2 L7.2 -10 L10.8 -15.5 L-3.6000000000000005 -16.7 Z" fill="var(--rooftop,#8d8577)" stroke="#33291f" stroke-width="1" stroke-linejoin="round"/>
+    
+    <rect x="-7.2" y="-11.2" width="7.2" height="11.2" fill="var(--b0,#e0685a)" stroke="#33291f" stroke-width="1"/>
+    <rect x="-7.45" y="-12.049999999999999" width="7.7" height="1.35" rx="0.3" fill="var(--trim,#8a5a44)" stroke="#33291f" stroke-width="0.7"/>
+    <rect x="-6.3" y="-8.6" width="2" height="2.5" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="-2.9" y="-8.6" width="2" height="2.5" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/>
+    <rect x="-6.7" y="-5.5" width="6.2" height="1.6" rx="0.3" fill="var(--a0,#fdf6e3)" stroke="#33291f" stroke-width="0.5"/>
+   <path d="M-5.800000000000001 -4.7 h4.4" stroke="#00000033" stroke-width="0.55"/><rect x="-6.5" y="-2.9" width="3.6" height="2.9" fill="#bfe4ea" stroke="#33291f" stroke-width="0.55"/>
+   <path d="M-5.9 -0.4 L-4.6 -2.4" stroke="#ffffff" stroke-width="0.5" opacity="0.85"/>
+   <path d="M-6.5 -1.1 h3.6" stroke="#8fb5bd" stroke-width="0.35" opacity="0.8"/>
+    <rect x="-2.5" y="-3.1" width="1.8" height="3.1" rx="0.3" fill="#5b4632" stroke="#33291f" stroke-width="0.5"/>
+    <rect x="0" y="-10" width="7.2" height="10" fill="var(--b1,#e0685a)" stroke="#33291f" stroke-width="1"/>
+    <rect x="-0.25" y="-10.85" width="7.7" height="1.35" rx="0.3" fill="var(--trim,#8a5a44)" stroke="#33291f" stroke-width="0.7"/>
+    <rect x="0.9" y="-8.6" width="2" height="2.5" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="4.300000000000001" y="-8.6" width="2" height="2.5" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/>
+    <path d="M-0.5 -3 L7.7 -3 L7.2 -4.5 L0 -4.5 Z" fill="var(--a1,#2f7d5d)" stroke="#33291f" stroke-width="0.7"/>
+   <path d="M0.4 -3.4 L6.8 -3.4" stroke="#00000022" stroke-width="0.45"/><rect x="0.7" y="-2.9" width="3.6" height="2.9" fill="#bfe4ea" stroke="#33291f" stroke-width="0.55"/>
+   <path d="M1.2999999999999998 -0.4 L2.5999999999999996 -2.4" stroke="#ffffff" stroke-width="0.5" opacity="0.85"/>
+   <path d="M0.7 -1.1 h3.6" stroke="#8fb5bd" stroke-width="0.35" opacity="0.8"/>
+    <rect x="4.7" y="-3.1" width="1.8" height="3.1" rx="0.3" fill="#5b4632" stroke="#33291f" stroke-width="0.5"/>
+  </symbol>
+
+  <symbol id="bldg.com.storefront_row.s0.t2" overflow="visible">
+    <path d="M7.2 0 L7.2 -10 L10.8 -15.5 L10.8 -5.5 Z" fill="var(--side,#b0574b)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <path d="M-7.2 -11.2 L7.2 -10 L10.8 -15.5 L-3.6000000000000005 -16.7 Z" fill="var(--rooftop,#8d8577)" stroke="#33291f" stroke-width="1" stroke-linejoin="round"/>
+    
+    <rect x="-7.2" y="-11.2" width="7.2" height="11.2" fill="var(--b0,#e0685a)" stroke="#33291f" stroke-width="1"/>
+    <rect x="-7.45" y="-12.049999999999999" width="7.7" height="1.35" rx="0.3" fill="var(--trim,#8a5a44)" stroke="#33291f" stroke-width="0.7"/>
+    <rect x="-6.3" y="-8.6" width="2" height="2.5" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="-2.9" y="-8.6" width="2" height="2.5" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/>
+    <path d="M-7.7 -3 L0.5 -3 L0 -4.5 L-7.2 -4.5 Z" fill="var(--a0,#2f7d5d)" stroke="#33291f" stroke-width="0.7"/>
+   <path d="M-6.8 -3.4 L-0.4 -3.4" stroke="#00000022" stroke-width="0.45"/><rect x="-6.5" y="-2.9" width="3.6" height="2.9" fill="#bfe4ea" stroke="#33291f" stroke-width="0.55"/>
+   <path d="M-5.9 -0.4 L-4.6 -2.4" stroke="#ffffff" stroke-width="0.5" opacity="0.85"/>
+   <path d="M-6.5 -1.1 h3.6" stroke="#8fb5bd" stroke-width="0.35" opacity="0.8"/>
+    <rect x="-2.5" y="-3.1" width="1.8" height="3.1" rx="0.3" fill="#5b4632" stroke="#33291f" stroke-width="0.5"/>
+    <rect x="0" y="-10" width="7.2" height="10" fill="var(--b1,#e0685a)" stroke="#33291f" stroke-width="1"/>
+    <rect x="-0.25" y="-10.85" width="7.7" height="1.35" rx="0.3" fill="var(--trim,#8a5a44)" stroke="#33291f" stroke-width="0.7"/>
+    <rect x="0.9" y="-8.6" width="2" height="2.5" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="4.300000000000001" y="-8.6" width="2" height="2.5" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/>
+    <rect x="0.7" y="-3.1" width="3.8000000000000003" height="3.1" fill="#f6c568" stroke="#33291f" stroke-width="0.55"/>
+   <path d="M2.6 -3.1 V0 M0.7 -1.4 h3.8000000000000003" stroke="#33291f" stroke-width="0.35" opacity="0.7"/><rect x="0.5" y="-5.5" width="6.2" height="1.6" rx="0.3" fill="var(--sign,#fdf6e3)" stroke="#33291f" stroke-width="0.5"/>
+   <path d="M1.4 -4.7 h4.4" stroke="#00000033" stroke-width="0.55"/>
+    <rect x="4.7" y="-3.1" width="1.8" height="3.1" rx="0.3" fill="#5b4632" stroke="#33291f" stroke-width="0.5"/>
+  </symbol>
+
+  <symbol id="bldg.com.storefront_row.s1.t0" overflow="visible">
+    <path d="M10.8 0 L10.8 -10.8 L14.4 -16.3 L14.4 -5.5 Z" fill="var(--side,#b0574b)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <path d="M-10.8 -11.4 L10.8 -10.8 L14.4 -16.3 L-7.200000000000001 -16.9 Z" fill="var(--rooftop,#8d8577)" stroke="#33291f" stroke-width="1" stroke-linejoin="round"/>
+    
+    <rect x="-10.8" y="-11.4" width="7.2" height="11.4" fill="var(--b0,#e0685a)" stroke="#33291f" stroke-width="1"/>
+    <rect x="-11.05" y="-12.25" width="7.7" height="1.35" rx="0.3" fill="var(--trim,#8a5a44)" stroke="#33291f" stroke-width="0.7"/>
+    <rect x="-9.9" y="-8.6" width="2" height="2.5" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="-6.5" y="-8.6" width="2" height="2.5" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/>
+    <path d="M-11.3 -3 L-3.1000000000000005 -3 L-3.6000000000000005 -4.5 L-10.8 -4.5 Z" fill="var(--a0,#c93b3b)" stroke="#33291f" stroke-width="0.7"/><rect x="-10.600000000000001" y="-4.5" width="0.6799999999999999" height="1.85" fill="#fdf6e3"/><rect x="-9.240000000000002" y="-4.5" width="0.6799999999999999" height="1.85" fill="#fdf6e3"/><rect x="-7.880000000000002" y="-4.5" width="0.6799999999999999" height="1.85" fill="#fdf6e3"/><rect x="-6.520000000000001" y="-4.5" width="0.6799999999999999" height="1.85" fill="#fdf6e3"/><rect x="-5.160000000000002" y="-4.5" width="0.6799999999999999" height="1.85" fill="#fdf6e3"/><rect x="-10.100000000000001" y="-2.9" width="3.6" height="2.9" fill="#bfe4ea" stroke="#33291f" stroke-width="0.55"/>
+   <path d="M-9.500000000000002 -0.4 L-8.200000000000001 -2.4" stroke="#ffffff" stroke-width="0.5" opacity="0.85"/>
+   <path d="M-10.100000000000001 -1.1 h3.6" stroke="#8fb5bd" stroke-width="0.35" opacity="0.8"/>
+    <rect x="-6.1000000000000005" y="-3.1" width="1.8" height="3.1" rx="0.3" fill="#5b4632" stroke="#33291f" stroke-width="0.5"/>
+    <rect x="-3.6000000000000005" y="-10" width="7.2" height="10" fill="var(--b1,#e0685a)" stroke="#33291f" stroke-width="1"/>
+    <rect x="-3.8500000000000005" y="-10.85" width="7.7" height="1.35" rx="0.3" fill="var(--trim,#8a5a44)" stroke="#33291f" stroke-width="0.7"/>
+    <rect x="-2.7000000000000006" y="-8.6" width="2" height="2.5" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="0.6999999999999997" y="-8.6" width="2" height="2.5" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/>
+    <rect x="-3.1000000000000005" y="-5.5" width="6.2" height="1.6" rx="0.3" fill="var(--a1,#fdf6e3)" stroke="#33291f" stroke-width="0.5"/>
+   <path d="M-2.2000000000000006 -4.7 h4.4" stroke="#00000033" stroke-width="0.55"/><rect x="-2.9000000000000004" y="-2.9" width="3.6" height="2.9" fill="#bfe4ea" stroke="#33291f" stroke-width="0.55"/>
+   <path d="M-2.3000000000000003 -0.4 L-1.0000000000000004 -2.4" stroke="#ffffff" stroke-width="0.5" opacity="0.85"/>
+   <path d="M-2.9000000000000004 -1.1 h3.6" stroke="#8fb5bd" stroke-width="0.35" opacity="0.8"/>
+    <rect x="1.0999999999999996" y="-3.1" width="1.8" height="3.1" rx="0.3" fill="#5b4632" stroke="#33291f" stroke-width="0.5"/>
+    <rect x="3.5999999999999996" y="-10.8" width="7.2" height="10.8" fill="var(--b2,#e0685a)" stroke="#33291f" stroke-width="1"/>
+    <rect x="3.3499999999999996" y="-11.65" width="7.7" height="1.35" rx="0.3" fill="var(--trim,#8a5a44)" stroke="#33291f" stroke-width="0.7"/>
+    <rect x="4.5" y="-8.6" width="2" height="2.5" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="7.9" y="-8.6" width="2" height="2.5" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/>
+    <path d="M3.0999999999999996 -3 L11.3 -3 L10.8 -4.5 L3.5999999999999996 -4.5 Z" fill="var(--a2,#2f7d5d)" stroke="#33291f" stroke-width="0.7"/>
+   <path d="M3.9999999999999996 -3.4 L10.4 -3.4" stroke="#00000022" stroke-width="0.45"/><rect x="4.3" y="-2.9" width="3.6" height="2.9" fill="#bfe4ea" stroke="#33291f" stroke-width="0.55"/>
+   <path d="M4.8999999999999995 -0.4 L6.199999999999999 -2.4" stroke="#ffffff" stroke-width="0.5" opacity="0.85"/>
+   <path d="M4.3 -1.1 h3.6" stroke="#8fb5bd" stroke-width="0.35" opacity="0.8"/>
+    <rect x="8.3" y="-3.1" width="1.8" height="3.1" rx="0.3" fill="#5b4632" stroke="#33291f" stroke-width="0.5"/>
+  </symbol>
+
+  <symbol id="bldg.com.storefront_row.s1.t1" overflow="visible">
+    <path d="M10.8 0 L10.8 -10.8 L14.4 -16.3 L14.4 -5.5 Z" fill="var(--side,#b0574b)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <path d="M-10.8 -11.4 L10.8 -10.8 L14.4 -16.3 L-7.200000000000001 -16.9 Z" fill="var(--rooftop,#8d8577)" stroke="#33291f" stroke-width="1" stroke-linejoin="round"/>
+    
+    <rect x="-10.8" y="-11.4" width="7.2" height="11.4" fill="var(--b0,#e0685a)" stroke="#33291f" stroke-width="1"/>
+    <rect x="-11.05" y="-12.25" width="7.7" height="1.35" rx="0.3" fill="var(--trim,#8a5a44)" stroke="#33291f" stroke-width="0.7"/>
+    <rect x="-9.9" y="-8.6" width="2" height="2.5" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="-6.5" y="-8.6" width="2" height="2.5" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/>
+    <rect x="-10.3" y="-5.5" width="6.2" height="1.6" rx="0.3" fill="var(--a0,#fdf6e3)" stroke="#33291f" stroke-width="0.5"/>
+   <path d="M-9.4 -4.7 h4.4" stroke="#00000033" stroke-width="0.55"/><rect x="-10.100000000000001" y="-2.9" width="3.6" height="2.9" fill="#bfe4ea" stroke="#33291f" stroke-width="0.55"/>
+   <path d="M-9.500000000000002 -0.4 L-8.200000000000001 -2.4" stroke="#ffffff" stroke-width="0.5" opacity="0.85"/>
+   <path d="M-10.100000000000001 -1.1 h3.6" stroke="#8fb5bd" stroke-width="0.35" opacity="0.8"/>
+    <rect x="-6.1000000000000005" y="-3.1" width="1.8" height="3.1" rx="0.3" fill="#5b4632" stroke="#33291f" stroke-width="0.5"/>
+    <rect x="-3.6000000000000005" y="-10" width="7.2" height="10" fill="var(--b1,#e0685a)" stroke="#33291f" stroke-width="1"/>
+    <rect x="-3.8500000000000005" y="-10.85" width="7.7" height="1.35" rx="0.3" fill="var(--trim,#8a5a44)" stroke="#33291f" stroke-width="0.7"/>
+    <rect x="-2.7000000000000006" y="-8.6" width="2" height="2.5" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="0.6999999999999997" y="-8.6" width="2" height="2.5" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/>
+    <path d="M-4.1000000000000005 -3 L4.1 -3 L3.5999999999999996 -4.5 L-3.6000000000000005 -4.5 Z" fill="var(--a1,#c93b3b)" stroke="#33291f" stroke-width="0.7"/><rect x="-3.4000000000000004" y="-4.5" width="0.6799999999999999" height="1.85" fill="#fdf6e3"/><rect x="-2.0400000000000005" y="-4.5" width="0.6799999999999999" height="1.85" fill="#fdf6e3"/><rect x="-0.6800000000000006" y="-4.5" width="0.6799999999999999" height="1.85" fill="#fdf6e3"/><rect x="0.6799999999999997" y="-4.5" width="0.6799999999999999" height="1.85" fill="#fdf6e3"/><rect x="2.039999999999999" y="-4.5" width="0.6799999999999999" height="1.85" fill="#fdf6e3"/><rect x="-2.9000000000000004" y="-2.9" width="3.6" height="2.9" fill="#bfe4ea" stroke="#33291f" stroke-width="0.55"/>
+   <path d="M-2.3000000000000003 -0.4 L-1.0000000000000004 -2.4" stroke="#ffffff" stroke-width="0.5" opacity="0.85"/>
+   <path d="M-2.9000000000000004 -1.1 h3.6" stroke="#8fb5bd" stroke-width="0.35" opacity="0.8"/>
+    <rect x="1.0999999999999996" y="-3.1" width="1.8" height="3.1" rx="0.3" fill="#5b4632" stroke="#33291f" stroke-width="0.5"/>
+    <rect x="3.5999999999999996" y="-10.8" width="7.2" height="10.8" fill="var(--b2,#e0685a)" stroke="#33291f" stroke-width="1"/>
+    <rect x="3.3499999999999996" y="-11.65" width="7.7" height="1.35" rx="0.3" fill="var(--trim,#8a5a44)" stroke="#33291f" stroke-width="0.7"/>
+    <rect x="4.5" y="-8.6" width="2" height="2.5" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="7.9" y="-8.6" width="2" height="2.5" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/>
+    <rect x="4.1" y="-5.5" width="6.2" height="1.6" rx="0.3" fill="var(--sign,#fdf6e3)" stroke="#33291f" stroke-width="0.5"/>
+   <path d="M5 -4.7 h4.4" stroke="#00000033" stroke-width="0.55"/><rect x="4.3" y="-2.9" width="3.6" height="2.9" fill="#bfe4ea" stroke="#33291f" stroke-width="0.55"/>
+   <path d="M4.8999999999999995 -0.4 L6.199999999999999 -2.4" stroke="#ffffff" stroke-width="0.5" opacity="0.85"/>
+   <path d="M4.3 -1.1 h3.6" stroke="#8fb5bd" stroke-width="0.35" opacity="0.8"/>
+   <rect x="3.8999999999999995" y="-1.2" width="1.6" height="1.2" rx="0.2" fill="#8a5a44" stroke="#33291f" stroke-width="0.4"/>
+   <circle cx="4.35" cy="-1.5" r="0.55" fill="#5da24b" stroke="#33291f" stroke-width="0.35"/>
+   <circle cx="5.049999999999999" cy="-1.6" r="0.5" fill="#79b25c" stroke="#33291f" stroke-width="0.35"/>
+   <rect x="8.9" y="-1.2" width="1.6" height="1.2" rx="0.2" fill="#8a5a44" stroke="#33291f" stroke-width="0.4"/>
+   <circle cx="9.35" cy="-1.5" r="0.55" fill="#5da24b" stroke="#33291f" stroke-width="0.35"/>
+   <circle cx="10.05" cy="-1.6" r="0.5" fill="#79b25c" stroke="#33291f" stroke-width="0.35"/>
+    <rect x="8.3" y="-3.1" width="1.8" height="3.1" rx="0.3" fill="#5b4632" stroke="#33291f" stroke-width="0.5"/>
+  </symbol>
+
+  <symbol id="bldg.com.storefront_row.s1.t2" overflow="visible">
+    <path d="M10.8 0 L10.8 -10.8 L14.4 -16.3 L14.4 -5.5 Z" fill="var(--side,#b0574b)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <path d="M-10.8 -11.4 L10.8 -10.8 L14.4 -16.3 L-7.200000000000001 -16.9 Z" fill="var(--rooftop,#8d8577)" stroke="#33291f" stroke-width="1" stroke-linejoin="round"/>
+    
+    <rect x="-10.8" y="-11.4" width="7.2" height="11.4" fill="var(--b0,#e0685a)" stroke="#33291f" stroke-width="1"/>
+    <rect x="-11.05" y="-12.25" width="7.7" height="1.35" rx="0.3" fill="var(--trim,#8a5a44)" stroke="#33291f" stroke-width="0.7"/>
+    <rect x="-9.9" y="-8.6" width="2" height="2.5" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="-6.5" y="-8.6" width="2" height="2.5" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/>
+    <path d="M-11.3 -3 L-3.1000000000000005 -3 L-3.6000000000000005 -4.5 L-10.8 -4.5 Z" fill="var(--a0,#2f7d5d)" stroke="#33291f" stroke-width="0.7"/>
+   <path d="M-10.4 -3.4 L-4.000000000000001 -3.4" stroke="#00000022" stroke-width="0.45"/><rect x="-10.100000000000001" y="-2.9" width="3.6" height="2.9" fill="#bfe4ea" stroke="#33291f" stroke-width="0.55"/>
+   <path d="M-9.500000000000002 -0.4 L-8.200000000000001 -2.4" stroke="#ffffff" stroke-width="0.5" opacity="0.85"/>
+   <path d="M-10.100000000000001 -1.1 h3.6" stroke="#8fb5bd" stroke-width="0.35" opacity="0.8"/>
+    <rect x="-6.1000000000000005" y="-3.1" width="1.8" height="3.1" rx="0.3" fill="#5b4632" stroke="#33291f" stroke-width="0.5"/>
+    <rect x="-3.6000000000000005" y="-10" width="7.2" height="10" fill="var(--b1,#e0685a)" stroke="#33291f" stroke-width="1"/>
+    <rect x="-3.8500000000000005" y="-10.85" width="7.7" height="1.35" rx="0.3" fill="var(--trim,#8a5a44)" stroke="#33291f" stroke-width="0.7"/>
+    <rect x="-2.7000000000000006" y="-8.6" width="2" height="2.5" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="0.6999999999999997" y="-8.6" width="2" height="2.5" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/>
+    <rect x="-2.9000000000000004" y="-3.1" width="3.8000000000000003" height="3.1" fill="#f6c568" stroke="#33291f" stroke-width="0.55"/>
+   <path d="M-1.0000000000000002 -3.1 V0 M-2.9000000000000004 -1.4 h3.8000000000000003" stroke="#33291f" stroke-width="0.35" opacity="0.7"/><rect x="-3.1000000000000005" y="-5.5" width="6.2" height="1.6" rx="0.3" fill="var(--sign,#fdf6e3)" stroke="#33291f" stroke-width="0.5"/>
+   <path d="M-2.2000000000000006 -4.7 h4.4" stroke="#00000033" stroke-width="0.55"/>
+    <rect x="1.0999999999999996" y="-3.1" width="1.8" height="3.1" rx="0.3" fill="#5b4632" stroke="#33291f" stroke-width="0.5"/>
+    <rect x="3.5999999999999996" y="-10.8" width="7.2" height="10.8" fill="var(--b2,#e0685a)" stroke="#33291f" stroke-width="1"/>
+    <rect x="3.3499999999999996" y="-11.65" width="7.7" height="1.35" rx="0.3" fill="var(--trim,#8a5a44)" stroke="#33291f" stroke-width="0.7"/>
+    <rect x="4.5" y="-8.6" width="2" height="2.5" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="7.9" y="-8.6" width="2" height="2.5" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/>
+    <path d="M3.0999999999999996 -3 L11.3 -3 L10.8 -4.5 L3.5999999999999996 -4.5 Z" fill="var(--a2,#c93b3b)" stroke="#33291f" stroke-width="0.7"/><rect x="3.8" y="-4.5" width="0.6799999999999999" height="1.85" fill="#fdf6e3"/><rect x="5.16" y="-4.5" width="0.6799999999999999" height="1.85" fill="#fdf6e3"/><rect x="6.52" y="-4.5" width="0.6799999999999999" height="1.85" fill="#fdf6e3"/><rect x="7.88" y="-4.5" width="0.6799999999999999" height="1.85" fill="#fdf6e3"/><rect x="9.239999999999998" y="-4.5" width="0.6799999999999999" height="1.85" fill="#fdf6e3"/><rect x="4.3" y="-2.9" width="3.6" height="2.9" fill="#bfe4ea" stroke="#33291f" stroke-width="0.55"/>
+   <path d="M4.8999999999999995 -0.4 L6.199999999999999 -2.4" stroke="#ffffff" stroke-width="0.5" opacity="0.85"/>
+   <path d="M4.3 -1.1 h3.6" stroke="#8fb5bd" stroke-width="0.35" opacity="0.8"/>
+    <rect x="8.3" y="-3.1" width="1.8" height="3.1" rx="0.3" fill="#5b4632" stroke="#33291f" stroke-width="0.5"/>
+  </symbol>
+
+  <symbol id="bldg.com.mixed_use.s0" overflow="visible">
+    
+    <path d="M4.75 0 L4.75 -10 L8.35 -15.5 L8.35 -5.5 Z" fill="var(--side,#b0574b)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <path d="M-4.75 -10 L4.75 -10 L8.35 -15.5 L-1.1500000000000004 -15.5 Z" fill="var(--rooftop,#8d8577)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <rect x="-4.75" y="-10" width="9.5" height="10" fill="var(--body,#e0685a)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <rect x="-5.35" y="-10.9" width="10.7" height="1.5" rx="0.35" fill="var(--trim,#8a5a44)" stroke="#33291f" stroke-width="0.8"/>
+    
+    <rect x="-3.65" y="-8.8" width="2.3" height="2.8" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="1.35" y="-8.8" width="2.3" height="2.8" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/>
+    <path d="M-4.75 -5.7 h9.5" stroke="var(--trim,#8a5a44)" stroke-width="0.55"/>
+    <path d="M-5.25 -3 L5.25 -3 L4.75 -4.5 L-4.75 -4.5 Z" fill="var(--awn,#c93b3b)" stroke="#33291f" stroke-width="0.7"/><rect x="-4.55" y="-4.5" width="0.9099999999999999" height="1.85" fill="#fdf6e3"/><rect x="-2.73" y="-4.5" width="0.9099999999999999" height="1.85" fill="#fdf6e3"/><rect x="-0.9100000000000001" y="-4.5" width="0.9099999999999999" height="1.85" fill="#fdf6e3"/><rect x="0.9099999999999993" y="-4.5" width="0.9099999999999999" height="1.85" fill="#fdf6e3"/><rect x="2.7299999999999995" y="-4.5" width="0.9099999999999999" height="1.85" fill="#fdf6e3"/>
+    <rect x="-3.95" y="-2.9" width="4.9" height="2.9" fill="#bfe4ea" stroke="#33291f" stroke-width="0.55"/>
+   <path d="M-3.35 -0.4 L-2.0500000000000003 -2.4" stroke="#ffffff" stroke-width="0.5" opacity="0.85"/>
+   <path d="M-3.95 -1.1 h4.9" stroke="#8fb5bd" stroke-width="0.35" opacity="0.8"/>
+    <rect x="1.75" y="-3.2" width="2.2" height="3.2" rx="0.3" fill="var(--door,#5b4632)" stroke="#33291f" stroke-width="0.55"/>
+  </symbol>
+
+  <symbol id="bldg.com.mixed_use.s1" overflow="visible">
+    
+    <path d="M6 0 L6 -13.5 L9.96 -19.55 L9.96 -6.050000000000001 Z" fill="var(--side,#b0574b)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <path d="M-6 -13.5 L6 -13.5 L9.96 -19.55 L-2.04 -19.55 Z" fill="var(--rooftop,#8d8577)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <rect x="-6" y="-13.5" width="12" height="13.5" fill="var(--body,#e0685a)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <rect x="-6.6" y="-14.4" width="13.2" height="1.5" rx="0.35" fill="var(--trim,#8a5a44)" stroke="#33291f" stroke-width="0.8"/>
+    
+    <rect x="-4.9" y="-12.2" width="2.2" height="2.6" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="-1.1" y="-12.2" width="2.2" height="2.6" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="2.7" y="-12.2" width="2.2" height="2.6" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="-4.9" y="-8.6" width="2.2" height="2.6" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="-1.1" y="-8.6" width="2.2" height="2.6" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="2.7" y="-8.6" width="2.2" height="2.6" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/>
+    <path d="M-6 -5.6 h12" stroke="var(--trim,#8a5a44)" stroke-width="0.55"/>
+    <rect x="-5.5" y="-5.5" width="11" height="1.6" rx="0.3" fill="var(--awn,#fdf6e3)" stroke="#33291f" stroke-width="0.5"/>
+   <path d="M-4.6 -4.7 h9.2" stroke="#00000033" stroke-width="0.55"/>
+    <rect x="-5.2" y="-2.9" width="7" height="2.9" fill="#bfe4ea" stroke="#33291f" stroke-width="0.55"/>
+   <path d="M-4.6000000000000005 -0.4 L-3.3000000000000003 -2.4" stroke="#ffffff" stroke-width="0.5" opacity="0.85"/>
+   <path d="M-5.2 -1.1 h7" stroke="#8fb5bd" stroke-width="0.35" opacity="0.8"/>
+    <rect x="2.6" y="-3.2" width="2.4" height="3.2" rx="0.3" fill="var(--door,#5b4632)" stroke="#33291f" stroke-width="0.55"/>
+  </symbol>
+
+  <symbol id="bldg.com.mixed_use.s2" overflow="visible">
+    <path d="M6.5 0 L6.5 -13 L10.46 -19.05 L10.46 -6.050000000000001 Z" fill="var(--side,#8a4a40)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <path d="M-6.5 -13 L6.5 -13 L10.46 -19.05 L-2.54 -19.05 Z" fill="var(--rooftop,#8d8577)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <path d="M-6.5 0 L-6.5 -13 L6.5 -13 L6.5 -3.8 L3.8 0 Z" fill="var(--body,#c96a52)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <rect x="-7.1" y="-13.9" width="14.2" height="1.5" rx="0.35" fill="var(--trim,#8a5a44)" stroke="#33291f" stroke-width="0.8"/>
+    <rect x="-5.4" y="-11.8" width="2.2" height="2.5" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="-1.9000000000000004" y="-11.8" width="2.2" height="2.5" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="1.5999999999999996" y="-11.8" width="2.2" height="2.5" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="-5.4" y="-8.3" width="2.2" height="2.5" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="-1.9000000000000004" y="-8.3" width="2.2" height="2.5" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="1.5999999999999996" y="-8.3" width="2.2" height="2.5" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/>
+    <path d="M-6.5 -5.5 h13" stroke="var(--trim,#8a5a44)" stroke-width="0.55"/>
+    <path d="M-7 -3 L3.5999999999999996 -3 L3.0999999999999996 -4.5 L-6.5 -4.5 Z" fill="var(--awn,#2f7d5d)" stroke="#33291f" stroke-width="0.7"/>
+   <path d="M-6.1 -3.4 L2.6999999999999997 -3.4" stroke="#00000022" stroke-width="0.45"/>
+    <rect x="-5.7" y="-2.9" width="5" height="2.9" fill="#bfe4ea" stroke="#33291f" stroke-width="0.55"/>
+   <path d="M-5.1000000000000005 -0.4 L-3.8000000000000003 -2.4" stroke="#ffffff" stroke-width="0.5" opacity="0.85"/>
+   <path d="M-5.7 -1.1 h5" stroke="#8fb5bd" stroke-width="0.35" opacity="0.8"/>
+    <path d="M4 0 L6 -2.9 L6 -6 L2.9 -6 L2.9 0 Z" fill="var(--side,#8a4a40)" stroke="#33291f" stroke-width="0.7"/>
+    <rect x="3.3" y="-4.2" width="2.1" height="4.2" rx="0.3" fill="#4a3423" stroke="#33291f" stroke-width="0.55"/>
+    <path d="M-6.5 -7.4 h-2.2" stroke="#33291f" stroke-width="0.55"/>
+   <rect x="-11.1" y="-7" width="2.4" height="1.7" rx="0.3" fill="var(--sign,#fdf6e3)" stroke="#33291f" stroke-width="0.5"/>
+  </symbol>
+
+  <symbol id="bldg.com.corner_tavern" overflow="visible">
+    <path d="M6 0 L6 -10 L9.96 -16.05 L9.96 -6.050000000000001 Z" fill="var(--side,#6b4530)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <path d="M-6 -10 L6 -10 L9.96 -16.05 L-2.04 -16.05 Z" fill="var(--rooftop,#7d7466)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <path d="M-6 0 L-6 -10 L6 -10 L6 -3.4 L3.6 0 Z" fill="var(--body,#8a5138)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <rect x="-6.6" y="-10.9" width="13.2" height="1.5" rx="0.35" fill="var(--trim,#59392e)" stroke="#33291f" stroke-width="0.8"/>
+    <rect x="-5.1" y="-9.2" width="10.2" height="2.1" rx="0.4" fill="#2c2622" stroke="#33291f" stroke-width="0.55"/>
+    <rect x="-5" y="-6.2" width="3.4" height="3.4" rx="0.35" fill="#ffd977" stroke="#33291f" stroke-width="0.6"/>
+    <rect x="-0.5999999999999996" y="-6.2" width="3.4" height="3.4" rx="0.35" fill="#ffd977" stroke="#33291f" stroke-width="0.6"/>
+    <path d="M-5 -4.5 h3.4 M-0.5999999999999996 -4.5 h3.4" stroke="#33291f" stroke-width="0.35"/>
+    <path d="M3.8 0 L5.6 -2.7 L5.6 -5.6 L2.6 -5.6 L2.6 0 Z" fill="var(--doorwall,#6b4530)" stroke="#33291f" stroke-width="0.7"/>
+    <rect x="3" y="-3.9" width="2.1" height="3.9" rx="0.3" fill="#4a3423" stroke="#33291f" stroke-width="0.55"/>
+    <circle cx="3.55" cy="-2" r="0.25" fill="#f2c94c"/>
+    <path d="M-6 -8.6 h-2.6" stroke="#33291f" stroke-width="0.6"/>
+    <circle cx="-8.6" cy="-7" r="1.8" fill="#fdf6e3" stroke="#33291f" stroke-width="0.6"/>
+    <rect x="-9.3" y="-7.75" width="1.35" height="1.5" rx="0.2" fill="#e8a33d" stroke="#33291f" stroke-width="0.45"/>
+    <ellipse cx="-8.6" cy="-7.8" rx="0.8" ry="0.36" fill="#fffdf5" stroke="#33291f" stroke-width="0.3"/>
+  </symbol>
+
+  <symbol id="bldg.civ.church.s0" overflow="visible">
+    <!-- nave roof plane -->
+    <path d="M0 -18 L9.2 -13 L14.599999999999998 -21.25 L5.3999999999999995 -26.25 Z" fill="var(--roof,#6e5a4a)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <!-- nave -->
+    <rect x="-8" y="-13" width="16" height="13" fill="var(--body,#c9654a)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <path d="M-9.2 -13 L0 -18 L9.2 -13 Z" fill="var(--roof,#6e5a4a)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <!-- cream quoin strips -->
+    <rect x="-8" y="-13" width="1.1" height="13" fill="#eddfc0" stroke="#33291f" stroke-width="0.45"/>
+    <rect x="6.9" y="-13" width="1.1" height="13" fill="#eddfc0" stroke="#33291f" stroke-width="0.45"/>
+    <path d="M-6.3 -4.6 L-6.3 -9.2 A1.5 1.7999999999999998 0 0 1 -3.3 -9.2 L-3.3 -4.6 Z" fill="#a9c8e8" stroke="#33291f" stroke-width="0.55"/><path d="M3.3 -4.6 L3.3 -9.2 A1.5 1.7999999999999998 0 0 1 6.3 -9.2 L6.3 -4.6 Z" fill="#a9c8e8" stroke="#33291f" stroke-width="0.55"/>
+    <path d="M-8 -3.4 h16" stroke="#a04f38" stroke-width="0.45" opacity="0.7"/>
+    <!-- twin pinnacles at the nave shoulders -->
+    <rect x="-8.4" y="-15.6" width="1.6" height="2.6" fill="#eddfc0" stroke="#33291f" stroke-width="0.55"/>
+    <path d="M-8.7 -15.6 L-7.6 -18.2 L-6.5 -15.6 Z" fill="#5a8f7c" stroke="#33291f" stroke-width="0.55"/>
+    <rect x="6.8" y="-15.6" width="1.6" height="2.6" fill="#eddfc0" stroke="#33291f" stroke-width="0.55"/>
+    <path d="M6.5 -15.6 L7.6 -18.2 L8.7 -15.6 Z" fill="#5a8f7c" stroke="#33291f" stroke-width="0.55"/>
+    <!-- central tower -->
+    <rect x="-3.3" y="-27" width="6.6" height="27" fill="var(--body,#c9654a)" stroke="#33291f" stroke-width="1.25"/>
+    <rect x="-3.3" y="-27" width="0.9" height="27" fill="#eddfc0" stroke="#33291f" stroke-width="0.4"/>
+    <rect x="2.4" y="-27" width="0.9" height="27" fill="#eddfc0" stroke="#33291f" stroke-width="0.4"/>
+    <!-- rose window -->
+    <circle cx="0" cy="-21.5" r="2.1" fill="#a9c8e8" stroke="#33291f" stroke-width="0.6"/>
+    <circle cx="0" cy="-21.5" r="0.75" fill="#eddfc0" stroke="#33291f" stroke-width="0.35"/>
+    <path d="M0 -23.6 V-19.4 M-2.1 -21.5 H2.1 M-1.5 -23 L1.5 -20 M-1.5 -20 L1.5 -23" stroke="#33291f" stroke-width="0.3" opacity="0.75"/>
+    <!-- belfry -->
+    <rect x="-2.7" y="-31.8" width="5.4" height="4.8" fill="#eddfc0" stroke="#33291f" stroke-width="0.85"/>
+    <rect x="-1.7" y="-31" width="1.4" height="3.1" rx="0.7" fill="#5b4632" stroke="#33291f" stroke-width="0.45"/>
+    <rect x="0.3" y="-31" width="1.4" height="3.1" rx="0.7" fill="#5b4632" stroke="#33291f" stroke-width="0.45"/>
+    <!-- copper spire, two faces + cross -->
+    <path d="M-3.5 -31.8 L0 -47 L0 -31.8 Z" fill="#5a8f7c" stroke="#33291f" stroke-width="0.85"/>
+    <path d="M0 -31.8 L0 -47 L3.5 -31.8 Z" fill="#6fa78f" stroke="#33291f" stroke-width="0.85"/>
+    <path d="M0 -47 V-50 M-1.2 -48.9 H1.2" stroke="#33291f" stroke-width="0.65"/>
+    <!-- triple arched entry -->
+    <path d="M-3.4 0 L-3.4 -3.4 A1.15 1.3 0 0 1 -1.1 -3.4 L-1.1 0 Z" fill="#5b4632" stroke="#33291f" stroke-width="0.55"/>
+    <path d="M-1.15 0 L-1.15 -4 A1.2 1.4 0 0 1 1.25 -4 L1.25 0 Z" fill="#4a3a2c" stroke="#33291f" stroke-width="0.6"/>
+    <path d="M1.2 0 L1.2 -3.4 A1.15 1.3 0 0 1 3.5 -3.4 L3.5 0 Z" fill="#5b4632" stroke="#33291f" stroke-width="0.55"/>
+    <rect x="-4" y="-0.7" width="8" height="1" fill="#cfc4ad" stroke="#33291f" stroke-width="0.5"/>
+  </symbol>
+
+  <symbol id="bldg.civ.church.s1" overflow="visible">
+    <path d="M0 -16 L10 -12 L14.68 -19.15 L4.68 -23.15 Z" fill="var(--roof,#6e5a4a)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <rect x="-9" y="-12" width="18" height="12" fill="var(--body,#cdae8a)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <path d="M-10 -12 L0 -16 L10 -12 Z" fill="var(--roof,#6e5a4a)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <circle cx="0" cy="-8.6" r="1.9" fill="#a9c8e8" stroke="#33291f" stroke-width="0.55"/>
+    <path d="M0 -10.5 V-6.7 M-1.9 -8.6 H1.9" stroke="#33291f" stroke-width="0.3" opacity="0.75"/>
+    
+    <rect x="-9" y="-21" width="4.8" height="21" fill="var(--body,#cdae8a)" stroke="#33291f" stroke-width="1.25"/>
+    <rect x="-9" y="-21" width="0.8" height="21" fill="#eddfc0" stroke="#33291f" stroke-width="0.4"/>
+    <path d="M-7.8999999999999995 -16.5 L-7.8999999999999995 -19 A1.3 1.4 0 0 1 -5.3 -19 L-5.3 -16.5 Z" fill="#a9c8e8" stroke="#33291f" stroke-width="0.5"/>
+    <rect x="-8.6" y="-23.6" width="4" height="2.6" fill="#eddfc0" stroke="#33291f" stroke-width="0.7"/>
+    <path d="M-9.2 -23.6 L-6.6 -28.4 L-3.9999999999999996 -23.6 Z" fill="#5a8f7c" stroke="#33291f" stroke-width="0.75"/>
+    <path d="M-6.6 -28.4 V-30.2 M-7.5 -29.6 H-5.699999999999999" stroke="#33291f" stroke-width="0.5"/>
+    <rect x="4.199999999999999" y="-21" width="4.8" height="21" fill="var(--body,#cdae8a)" stroke="#33291f" stroke-width="1.25"/>
+    <rect x="4.199999999999999" y="-21" width="0.8" height="21" fill="#eddfc0" stroke="#33291f" stroke-width="0.4"/>
+    <path d="M5.3 -16.5 L5.3 -19 A1.3 1.4 0 0 1 7.8999999999999995 -19 L7.8999999999999995 -16.5 Z" fill="#a9c8e8" stroke="#33291f" stroke-width="0.5"/>
+    <rect x="4.6" y="-23.6" width="4" height="2.6" fill="#eddfc0" stroke="#33291f" stroke-width="0.7"/>
+    <path d="M3.9999999999999996 -23.6 L6.6 -28.4 L9.2 -23.6 Z" fill="#5a8f7c" stroke="#33291f" stroke-width="0.75"/>
+    <path d="M6.6 -28.4 V-30.2 M5.699999999999999 -29.6 H7.5" stroke="#33291f" stroke-width="0.5"/>
+    <path d="M-1.7 0 L-1.7 -3.8 A1.7 1.9 0 0 1 1.7 -3.8 L1.7 0 Z" fill="#5b4632" stroke="#33291f" stroke-width="0.6"/>
+    <rect x="-2.6" y="-0.7" width="5.2" height="1" fill="#cfc4ad" stroke="#33291f" stroke-width="0.5"/>
+  </symbol>
+
+  <symbol id="bldg.civ.church.s2" overflow="visible">
+    <path d="M0 -11.4 L5.9 -8 L9.14 -12.95 L3.2399999999999998 -16.35 Z" fill="var(--roof,#7d6b5a)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <rect x="-5" y="-8" width="10" height="8" fill="var(--body,#e8e0cf)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <path d="M-5.9 -8 L0 -11.4 L5.9 -8 Z" fill="var(--roof,#7d6b5a)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <rect x="-1.4" y="-14.6" width="2.8" height="4" fill="var(--body,#e8e0cf)" stroke="#33291f" stroke-width="0.7"/>
+    <path d="M-1.9 -14.6 L0 -18.6 L1.9 -14.6 Z" fill="#5a8f7c" stroke="#33291f" stroke-width="0.65"/>
+    <path d="M0 -18.6 V-20.2 M-0.8 -19.7 H0.8" stroke="#33291f" stroke-width="0.5"/>
+    <circle cx="0" cy="-6.4" r="1.15" fill="#a9c8e8" stroke="#33291f" stroke-width="0.5"/>
+    <path d="M-2.2 -3.8 h1.6 v3.8 h-1.6 Z M0.6 -3.8 h1.6 v3.8 h-1.6 Z" fill="#a9c8e8" stroke="#33291f" stroke-width="0.45"/>
+    <path d="M-1.5 0 L-1.5 -3 A1.5 1.7 0 0 1 1.5 -3 L1.5 0 Z" fill="#5b4632" stroke="#33291f" stroke-width="0.55"/>
+  </symbol>
+
+  <symbol id="bldg.civ.school.s0" overflow="visible">
+    <path d="M8 0 L8 -8.5 L12.32 -15.100000000000001 L12.32 -6.6000000000000005 Z" fill="var(--side,#b08968)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <path d="M-8 -8.5 L8 -8.5 L12.32 -15.100000000000001 L-3.6799999999999997 -15.100000000000001 Z" fill="var(--rooftop,#8d8577)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <rect x="-8" y="-8.5" width="16" height="8.5" fill="var(--body,#d9a06b)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <rect x="-8.6" y="-9.4" width="17.2" height="1.5" rx="0.35" fill="var(--trim,#8a5a44)" stroke="#33291f" stroke-width="0.8"/>
+    <rect x="-6.4" y="-7.2" width="2.4" height="2.8" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="-3.4" y="-7.2" width="2.4" height="2.8" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="0.6" y="-7.2" width="2.4" height="2.8" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="3.6" y="-7.2" width="2.4" height="2.8" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/>
+    <rect x="4.1" y="-5.4" width="3.2" height="5.4" rx="0.35" fill="var(--body,#d9a06b)" stroke="#33291f" stroke-width="0.7"/>
+    <rect x="4.7" y="-4.2" width="2" height="4.2" rx="0.3" fill="#5b4632" stroke="#33291f" stroke-width="0.55"/>
+    <path d="M-6.8 -8.5 V-12.9" stroke="#33291f" stroke-width="0.55"/>
+    <path d="M-6.8 -12.9 h3 l-0.7 1 l0.7 1 h-3 Z" fill="#e05252" stroke="#33291f" stroke-width="0.45"/>
+  </symbol>
+
+  <symbol id="bldg.civ.school.s1" overflow="visible">
+    <path d="M8.5 0 L8.5 -14 L13.18 -21.15 L13.18 -7.15 Z" fill="var(--side,#9a6a4e)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <path d="M-8.5 -14 L8.5 -14 L13.18 -21.15 L-3.8200000000000003 -21.15 Z" fill="var(--rooftop,#8d8577)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <rect x="-8.5" y="-14" width="17" height="14" fill="var(--body,#c98a5e)" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <rect x="-9.2" y="-15.1" width="18.4" height="1.8" rx="0.4" fill="var(--trim,#8a5a44)" stroke="#33291f" stroke-width="0.85"/>
+    <!-- center entry bay rises above the cornice -->
+    <rect x="-1.9" y="-16.3" width="3.8" height="16.3" fill="var(--bay,#b3754a)" stroke="#33291f" stroke-width="0.8"/>
+    <path d="M-2.5 -16.3 L0 -17.9 L2.5 -16.3 Z" fill="var(--trim,#8a5a44)" stroke="#33291f" stroke-width="0.7"/>
+    <rect x="-6.9" y="-12.6" width="2.4" height="2.9" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="-4" y="-12.6" width="2.4" height="2.9" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="1.6" y="-12.6" width="2.4" height="2.9" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="4.5" y="-12.6" width="2.4" height="2.9" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="-6.9" y="-8.7" width="2.4" height="2.9" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="-4" y="-8.7" width="2.4" height="2.9" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="1.6" y="-8.7" width="2.4" height="2.9" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="4.5" y="-8.7" width="2.4" height="2.9" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="-6.9" y="-4.8" width="2.4" height="2.9" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="-4" y="-4.8" width="2.4" height="2.9" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="1.6" y="-4.8" width="2.4" height="2.9" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="4.5" y="-4.8" width="2.4" height="2.9" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/>
+    <rect x="-1.2" y="-12.4" width="2.4" height="2.6" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/><rect x="-1.2" y="-8.5" width="2.4" height="2.6" rx="0.35" fill="#fdf3c9" stroke="#33291f" stroke-width="0.5"/>
+    <path d="M-1.6 0 L-1.6 -3.7 A1.6 1.8 0 0 1 1.6 -3.7 L1.6 0 Z" fill="#4a3a2c" stroke="#33291f" stroke-width="0.6"/>
+    <rect x="-2.8" y="-0.75" width="5.6" height="1.05" fill="#cfc4ad" stroke="#33291f" stroke-width="0.5"/>
+    <path d="M0 -17.9 V-21.3" stroke="#33291f" stroke-width="0.5"/>
+    <path d="M0 -21.3 h2.7 l-0.6 0.9 l0.6 0.9 h-2.7 Z" fill="#e05252" stroke="#33291f" stroke-width="0.4"/>
+  </symbol>
+
+  <symbol id="tree.linden" overflow="visible">
+    <path d="M-0.8 0 L-0.55 -2.4 H0.55 L0.8 0 Z" fill="#7a5236" stroke="#33291f" stroke-width="0.6"/>
+    <path d="M0 -12.2
+      a2.5 2.5 0 0 1 2.5 1.4 a2.4 2.4 0 0 1 2 2.6 a2.3 2.3 0 0 1 0.2 3.2 a2.4 2.4 0 0 1 -2.2 2.6
+      a2.6 2.6 0 0 1 -2.5 1.2 a2.6 2.6 0 0 1 -2.5 -1.2 a2.4 2.4 0 0 1 -2.2 -2.6 a2.3 2.3 0 0 1 0.2 -3.2
+      a2.4 2.4 0 0 1 2 -2.6 a2.5 2.5 0 0 1 2.5 -1.4 Z"
+      fill="#3f8f45" stroke="#33291f" stroke-width="1.2" stroke-linejoin="round"/>
+    <path d="M-2.9 -9.9 a2 2 0 0 1 2.5 -1.3 a2 2 0 0 1 2.4 0.5" fill="none" stroke="#67b45e" stroke-width="1.1" stroke-linecap="round"/>
+    <path d="M-3.3 -6.3 a1.8 1.8 0 0 1 2.1 -0.6 M1 -5.4 a1.8 1.8 0 0 1 2.2 -0.4" fill="none" stroke="#2f6e38" stroke-width="0.7" opacity="0.8"/>
+    <circle cx="-1.7" cy="-10.4" r="0.55" fill="#8fd07e"/>
+  </symbol>
+
+  <symbol id="tree.honeylocust" overflow="visible">
+    <path d="M-0.6 0 L-0.4 -4.4 H0.4 L0.6 0 Z" fill="#8a6248" stroke="#33291f" stroke-width="0.6"/>
+    <path d="M0 -3.6 C-1.8 -5.4 -3.6 -6.4 -5 -8.6 M0 -4.2 C0.2 -7 0.6 -8.8 0.3 -11.6 M0 -4 C1.8 -5.8 3.6 -6.4 5 -8.4 M0.4 -8.2 C1.7 -9.2 2.6 -9.9 3.6 -11.2 M-0.5 -8 C-1.7 -9 -2.6 -9.6 -3.4 -11" fill="none" stroke="#8a6248" stroke-width="0.55"/>
+    <circle cx="-5.4" cy="-9.4" r="1.2" fill="#b8cf6e" stroke="#33291f" stroke-width="0.7"/><circle cx="-2.9" cy="-7" r="0.9" fill="#a5c95e" stroke="#33291f" stroke-width="0.7"/>
+    <circle cx="0.2" cy="-12.4" r="1.3" fill="#b8cf6e" stroke="#33291f" stroke-width="0.7"/><circle cx="-1.6" cy="-10.6" r="0.85" fill="#cadf8a" stroke="#33291f" stroke-width="0.7"/>
+    <circle cx="5.3" cy="-9.1" r="1.15" fill="#a5c95e" stroke="#33291f" stroke-width="0.7"/><circle cx="3.9" cy="-12" r="1" fill="#cadf8a" stroke="#33291f" stroke-width="0.7"/>
+    <circle cx="2.1" cy="-9.4" r="0.75" fill="#b8cf6e" stroke="#33291f" stroke-width="0.7"/>
+    <circle cx="-3.9" cy="-11.6" r="0.55" fill="#cadf8a" stroke="#33291f" stroke-width="0.55"/>
+    <circle cx="-5.8" cy="-10" r="0.42" fill="#e2edad"/>
+    <circle cx="-0.1" cy="-13.1" r="0.45" fill="#e2edad"/>
+    <circle cx="2.9" cy="-7.4" r="0.4" fill="#e2edad"/>
+  </symbol>
+
+  <symbol id="tree.flowering.s0" overflow="visible">
+    <path d="M-0.55 0 L-0.4 -2.2 H0.4 L0.55 0 Z" fill="#6b4530" stroke="#33291f" stroke-width="0.5"/>
+    <path d="M0 -2 C-0.8 -2.8 -1.6 -3 -2.2 -3.8 M0 -2.2 C0.8 -2.9 1.5 -3.1 2.1 -3.9" fill="none" stroke="#6b4530" stroke-width="0.5"/>
+    <circle cx="-2.2" cy="-4.6" r="1.7" fill="#f2a8c8" stroke="#33291f" stroke-width="0.8"/><circle cx="2.1" cy="-4.7" r="1.6" fill="#ef9cc0" stroke="#33291f" stroke-width="0.8"/><circle cx="0" cy="-6.3" r="1.8" fill="#f2a8c8" stroke="#33291f" stroke-width="0.8"/>
+    <circle cx="-0.7" cy="-7" r="0.6" fill="#fde3f0"/>
+    <circle cx="-2.8" cy="-5.2" r="0.5" fill="#fde3f0"/>
+    <circle cx="1.6" cy="-3.9" r="0.45" fill="#fde3f0"/>
+    <circle cx="2.6" cy="-5.4" r="0.4" fill="#fde3f0"/>
+    <circle cx="0.9" cy="-6.9" r="0.35" fill="#ffffff"/>
+  </symbol>
+
+  <symbol id="tree.flowering.s1" overflow="visible">
+    <path d="M-0.5 0 L-0.35 -2 H0.35 L0.5 0 Z" fill="#6b4530" stroke="#33291f" stroke-width="0.5"/>
+    <path d="M0 -1.8 C-1.2 -2.6 -2.2 -2.8 -3 -4 M0 -2 C1.1 -2.8 2 -3 2.8 -4.2 M0 -2 C0.1 -3.2 0.2 -4 0.1 -5.2" fill="none" stroke="#6b4530" stroke-width="0.5"/>
+    <circle cx="-3.1" cy="-4.9" r="1.3" fill="#f2a8c8" stroke="#33291f" stroke-width="0.75"/><circle cx="2.9" cy="-5" r="1.25" fill="#f7c3da" stroke="#33291f" stroke-width="0.75"/><circle cx="0.1" cy="-6.2" r="1.45" fill="#ef9cc0" stroke="#33291f" stroke-width="0.75"/><circle cx="-1.4" cy="-3.9" r="0.95" fill="#f7c3da" stroke="#33291f" stroke-width="0.75"/><circle cx="1.5" cy="-3.7" r="0.85" fill="#f2a8c8" stroke="#33291f" stroke-width="0.75"/>
+    <circle cx="-0.5" cy="-6.9" r="0.5" fill="#fde3f0"/>
+    <circle cx="-3.6" cy="-5.4" r="0.4" fill="#fde3f0"/>
+    <circle cx="2.4" cy="-4.4" r="0.35" fill="#ffffff"/>
+  </symbol>
+
+  <symbol id="tree.maple" overflow="visible">
+    <path d="M-0.8 0 L-0.55 -2.8 H0.55 L0.8 0 Z" fill="#7a5236" stroke="#33291f" stroke-width="0.6"/>
+    <path d="M0 -12.8
+      L1.7 -12.2 L2.9 -11.6 L3.4 -10.3 L4.7 -9.4 L4.6 -7.9 L5.2 -6.5 L4.1 -5.4 L3.7 -4.1 L2.2 -3.8
+      L1.1 -3.1 L0 -3.4 L-1.1 -3.1 L-2.2 -3.8 L-3.7 -4.1 L-4.1 -5.4 L-5.2 -6.5 L-4.6 -7.9 L-4.7 -9.4
+      L-3.4 -10.3 L-2.9 -11.6 L-1.7 -12.2 Z"
+      fill="#6ec24a" stroke="#33291f" stroke-width="1.2" stroke-linejoin="round"/>
+    <path d="M-3.2 -10.2 C-1.9 -11.5 1 -11.8 2.6 -10.8 C1.1 -11 -0.8 -10.8 -1.9 -10.2 Z" fill="#9ade72"/>
+    <path d="M-3.4 -6.4 L-2.2 -7.2 L-1 -6.5 M1.2 -5.2 L2.3 -6 L3.4 -5.3" fill="none" stroke="#4c9433" stroke-width="0.7" opacity="0.8"/>
+  </symbol>
+
+  <symbol id="tree.ash" overflow="visible">
+    <path d="M-0.7 0 L-0.5 -2.8 H0.5 L0.7 0 Z" fill="#7a5236" stroke="#33291f" stroke-width="0.6"/>
+    <path d="M0 -13.4 C1.9 -12.1 3.2 -9.8 3.2 -7.3 C3.2 -4.8 2 -3 0 -2.8 C-2 -3 -3.2 -4.8 -3.2 -7.3 C-3.2 -9.8 -1.9 -12.1 0 -13.4 Z"
+      fill="#5ea45e" stroke="#33291f" stroke-width="1.15" stroke-linejoin="round"/>
+    <path d="M-1 -10.8 C-1.2 -8.6 -1.2 -6.4 -0.9 -4.4 M1 -10.4 C1.2 -8.4 1.2 -6.6 1 -4.8" fill="none" stroke="#417c44" stroke-width="0.6" opacity="0.8"/>
+    <path d="M-1.6 -11 C-0.9 -12 0.5 -12.4 1.3 -11.7 C0.5 -11.8 -0.6 -11.5 -1.6 -11 Z" fill="#89c682"/>
+  </symbol>
+
+  <symbol id="tree.elm" overflow="visible">
+    <path d="M-1.1 0 H1.1 L0.75 -3 H-0.75 Z" fill="#7a5236" stroke="#33291f" stroke-width="0.65"/>
+    <path d="M-0.6 -2.8 C-2.2 -5.4 -5 -7.6 -6.2 -11 M0.6 -2.8 C2.2 -5.4 5 -7.6 6.2 -11 M0 -3 C0.1 -6 0.2 -8.4 0 -11.5 M-0.4 -6.5 C-2 -8.2 -3.4 -9.2 -4 -11.6 M0.4 -6.5 C2 -8.2 3.4 -9.2 4 -11.6" fill="none" stroke="#7a5236" stroke-width="0.85"/>
+    <path d="M0 -19.4
+      C3.4 -19.5 6.9 -18.4 8.1 -16.2 C9.2 -14.2 8.4 -12 6.3 -11.4
+      C5.2 -10.2 3.2 -9.9 2 -10.7 C1.2 -10.3 -1.2 -10.3 -2 -10.7
+      C-3.2 -9.9 -5.2 -10.2 -6.3 -11.4 C-8.4 -12 -9.2 -14.2 -8.1 -16.2 C-6.9 -18.4 -3.4 -19.5 0 -19.4 Z"
+      fill="#55984f" stroke="#33291f" stroke-width="1.25" stroke-linejoin="round"/>
+    <path d="M-5.6 -16.6 C-3.8 -18.3 0.8 -18.6 3 -17.3 C1 -17.5 -1.5 -17.2 -3.1 -16.4 Z" fill="#82bd74"/>
+    <path d="M-2.6 -12.6 a2.4 2.4 0 0 1 2.9 -0.5 M2.6 -14.2 a2.2 2.2 0 0 1 2.5 0" fill="none" stroke="#3d7440" stroke-width="0.7" opacity="0.8"/>
+  </symbol>
+
+  <symbol id="tree.oak" overflow="visible">
+    <path d="M-1.5 0 L-1.05 -3 H1.05 L1.5 0 Z" fill="#6b4a30" stroke="#33291f" stroke-width="0.7"/>
+    <path d="M-0.5 -2.8 C-2.6 -3.8 -4.6 -4 -6.6 -5.6 M0.5 -2.8 C2.4 -3.9 4.2 -3.9 6.2 -5.2" fill="none" stroke="#6b4a30" stroke-width="0.9"/>
+    <path d="M-1.2 -12.1
+      C0.3 -13.7 3.2 -13.4 4.2 -11.9 C6.6 -12.4 8.9 -10.6 8.3 -8.8 C10 -7.6 9.4 -5 7.2 -4.6
+      C6.7 -3.2 4.3 -2.7 3 -3.5 C1.7 -2.5 -1.3 -2.5 -2.5 -3.5 C-4.7 -2.8 -7.1 -3.6 -7.4 -5.4
+      C-9.4 -6 -9.7 -8.6 -8.1 -9.7 C-8 -11.7 -5.6 -13 -3.8 -12 C-3.1 -12.8 -2 -12.9 -1.2 -12.1 Z"
+      fill="#3a713a" stroke="#33291f" stroke-width="1.35" stroke-linejoin="round"/>
+    <path d="M-6.2 -9.9 C-4.7 -11.3 -1.5 -11.9 0.5 -11.2 C-1.3 -11.2 -3.5 -10.7 -4.7 -10 Z" fill="#699e5c"/>
+    <path d="M-5.5 -6 a2.2 2.2 0 0 1 2.6 -0.7 M1.8 -5 a2.2 2.2 0 0 1 2.8 -0.3 M3.6 -9.9 a2 2 0 0 1 2.3 0.2 M-2.4 -8.2 a2 2 0 0 1 2.3 -0.4" fill="none" stroke="#2c5a2e" stroke-width="0.75" opacity="0.85"/>
+  </symbol>
+
+  <symbol id="tree.conifer.s0" overflow="visible">
+    <rect x="-0.55" y="-1.9" width="1.1" height="1.9" rx="0.3" fill="#6e4f38" stroke="#33291f" stroke-width="0.5"/>
+    <path d="M-3.6 -1.8 L3.6 -1.8 L0 -6 Z" fill="#3d7261" stroke="#33291f" stroke-width="1.05" stroke-linejoin="round"/>
+    <path d="M-3 -4.8 L3 -4.8 L0 -8.6 Z" fill="#447e6a" stroke="#33291f" stroke-width="1.05" stroke-linejoin="round"/>
+    <path d="M-2.3 -7.6 L2.3 -7.6 L0 -11.4 Z" fill="#4f8f77" stroke="#33291f" stroke-width="1.05" stroke-linejoin="round"/>
+    <path d="M-2 -3.2 h1.4 M0.8 -6.1 h1.3 M-1.4 -8.8 h1.1" stroke="#2c5a4a" stroke-width="0.5" opacity="0.8"/>
+  </symbol>
+
+  <symbol id="tree.conifer.s1" overflow="visible">
+    <path d="M-0.6 0 C-0.4 -2.4 -0.5 -4.4 -0.2 -6.6 L0.6 -6.6 C0.5 -4.4 0.6 -2.4 0.8 0 Z" fill="#7a5a3c" stroke="#33291f" stroke-width="0.55"/>
+    <path d="M0 -6 C-1.4 -6.8 -2.6 -7 -3.6 -8.2 M0.2 -6.6 C1.2 -7.6 2.2 -7.8 3 -8.8" fill="none" stroke="#7a5a3c" stroke-width="0.6"/>
+    <ellipse cx="-3.6" cy="-8.9" rx="2.3" ry="1.3" fill="#527a4a" stroke="#33291f" stroke-width="0.85"/>
+    <ellipse cx="2.9" cy="-9.4" rx="2.1" ry="1.2" fill="#5a854f" stroke="#33291f" stroke-width="0.85"/>
+    <ellipse cx="-0.4" cy="-11.2" rx="2.6" ry="1.4" fill="#639158" stroke="#33291f" stroke-width="0.85"/>
+    <ellipse cx="-1.4" cy="-11.7" rx="0.9" ry="0.45" fill="#8fb97e"/>
+  </symbol>
+
+  <symbol id="tree.conifer.s2" overflow="visible">
+    <path d="M0 -7.6 C1.3 -7 1.7 -5.2 1.7 -3.4 C1.7 -1.4 1 -0.2 0 0 C-1 -0.2 -1.7 -1.4 -1.7 -3.4 C-1.7 -5.2 -1.3 -7 0 -7.6 Z"
+      fill="#4a7d52" stroke="#33291f" stroke-width="0.95" stroke-linejoin="round"/>
+    <path d="M-0.5 -6.2 C-0.7 -4.6 -0.7 -2.6 -0.5 -1 M0.5 -6 C0.7 -4.6 0.7 -2.8 0.5 -1.2" fill="none" stroke="#35603c" stroke-width="0.45" opacity="0.8"/>
+    <path d="M-0.9 -6.6 C-0.4 -7.3 0.4 -7.4 0.8 -6.9 C0.3 -7 -0.4 -6.9 -0.9 -6.6 Z" fill="#6ea470"/>
+  </symbol>
+
+  <symbol id="vehicle.parked_car.s0" overflow="visible">
+    <path d="M-2.4 -1.1 C-2.4 -2.2 -1.6 -2.9 -0.7 -2.9 L0.9 -2.9 C1.7 -2.9 2.1 -2.3 2.4 -1.6 L2.4 -0.4 L-2.4 -0.4 Z" fill="var(--body,#e05252)" stroke="#33291f" stroke-width="0.6" stroke-linejoin="round"/>
+    <path d="M-1.5 -1.7 L-1.2 -2.5 L0.7 -2.5 L1.1 -1.7 Z" fill="#bfe4ea" stroke="#33291f" stroke-width="0.4"/>
+    
+    <circle cx="-1.4" cy="-0.35" r="0.55" fill="#3a332b" stroke="#33291f" stroke-width="0.3"/>
+    <circle cx="1.4" cy="-0.35" r="0.55" fill="#3a332b" stroke="#33291f" stroke-width="0.3"/>
+    <circle cx="-1.4" cy="-0.35" r="0.22" fill="#cfc4ad"/>
+    <circle cx="1.4" cy="-0.35" r="0.22" fill="#cfc4ad"/>
+  </symbol>
+
+  <symbol id="vehicle.parked_car.s1" overflow="visible">
+    <path d="M-2.3 -1 C-2.3 -2.7 -1.9 -3.1 -1 -3.1 L1.5 -3.1 C2.1 -3.1 2.4 -2.5 2.4 -1.6 L2.4 -0.4 L-2.3 -0.4 Z" fill="var(--body,#4f8fd9)" stroke="#33291f" stroke-width="0.6" stroke-linejoin="round"/>
+    <path d="M-1.7 -1.9 L-1.6 -2.7 L0.4 -2.7 L0.7 -1.9 Z" fill="#bfe4ea" stroke="#33291f" stroke-width="0.4"/>
+    <path d="M1 -2.7 L1.5 -2.7 L1.7 -1.9 L1.1 -1.9 Z" fill="#bfe4ea" stroke="#33291f" stroke-width="0.35"/>
+    
+    <circle cx="-1.4" cy="-0.35" r="0.55" fill="#3a332b" stroke="#33291f" stroke-width="0.3"/>
+    <circle cx="1.4" cy="-0.35" r="0.55" fill="#3a332b" stroke="#33291f" stroke-width="0.3"/>
+    <circle cx="-1.4" cy="-0.35" r="0.22" fill="#cfc4ad"/>
+    <circle cx="1.4" cy="-0.35" r="0.22" fill="#cfc4ad"/>
+  </symbol>
+
+  <symbol id="vehicle.parked_car.s2" overflow="visible">
+    <path d="M-2.6 -1 L-2.6 -1.9 L-0.3 -1.9 L-0.3 -2.9 L1.3 -2.9 C1.9 -2.9 2.3 -2.4 2.5 -1.7 L2.5 -0.4 L-2.6 -0.4 Z" fill="var(--body,#6fbf73)" stroke="#33291f" stroke-width="0.6" stroke-linejoin="round"/>
+    <path d="M0.1 -1.95 L0.2 -2.55 L1.2 -2.55 L1.5 -1.95 Z" fill="#bfe4ea" stroke="#33291f" stroke-width="0.35"/>
+    <path d="M-2.6 -1.9 L-0.3 -1.9" stroke="#33291f" stroke-width="0.35"/>
+    
+    <circle cx="-1.4" cy="-0.35" r="0.55" fill="#3a332b" stroke="#33291f" stroke-width="0.3"/>
+    <circle cx="1.4" cy="-0.35" r="0.55" fill="#3a332b" stroke="#33291f" stroke-width="0.3"/>
+    <circle cx="-1.4" cy="-0.35" r="0.22" fill="#cfc4ad"/>
+    <circle cx="1.4" cy="-0.35" r="0.22" fill="#cfc4ad"/>
+  </symbol>
+
+  <symbol id="ground.tennis" overflow="visible">
+    <rect x="-15" y="-8.5" width="30" height="17" rx="1.2" fill="#3e7a5e" stroke="#2e5c47" stroke-width="0.7"/>
+    <rect x="-11.9" y="-5.5" width="23.8" height="11" fill="#5da270" stroke="#fdf6e3" stroke-width="0.55"/>
+    <path d="M-11.9 -4.1 H11.9 M-11.9 4.1 H11.9 M-6 -4.1 V4.1 M6 -4.1 V4.1 M-6 0 H6" stroke="#fdf6e3" stroke-width="0.45" fill="none"/>
+    <path d="M0 -5.9 V5.9" stroke="#3a332b" stroke-width="0.6"/>
+    <path d="M0 -5.9 V5.9" stroke="#e8e4da" stroke-width="0.3" stroke-dasharray="0.6 0.5"/>
+  </symbol>
+
+  <symbol id="ground.basketball" overflow="visible">
+    <rect x="-13" y="-7.5" width="26" height="15" rx="1" fill="#b0aa9c" stroke="#8f897c" stroke-width="0.7"/>
+    <rect x="-12.2" y="-6.7" width="24.4" height="13.4" fill="none" stroke="#fdf6e3" stroke-width="0.5"/>
+    <circle cx="0" cy="0" r="2.6" fill="none" stroke="#fdf6e3" stroke-width="0.5"/>
+    <path d="M0 -6.7 V6.7" stroke="#fdf6e3" stroke-width="0.5"/>
+    <path d="M-12.2 -2.6 h5 v5.2 h-5 Z M12.2 -2.6 h-5 v5.2 h5 Z" fill="#7d9e8a" stroke="#fdf6e3" stroke-width="0.5"/>
+    <path d="M-12.6 -1.6 V1.6 M12.6 -1.6 V1.6" stroke="#33291f" stroke-width="0.7"/>
+    <circle cx="-11.5" cy="0" r="0.55" fill="none" stroke="#e07a2f" stroke-width="0.45"/>
+    <circle cx="11.5" cy="0" r="0.55" fill="none" stroke="#e07a2f" stroke-width="0.45"/>
+  </symbol>
+
+  <symbol id="ground.baseball" overflow="visible">
+    <!-- outfield grass wedge -->
+    <path d="M0 8 L-15 -7 A19 19 0 0 1 15 -7 Z" fill="#8fc463" stroke="#79ab52" stroke-width="0.7" stroke-linejoin="round"/>
+    <!-- infield skin -->
+    <path d="M0 7 L-8.5 -1.5 L0 -10 L8.5 -1.5 Z" fill="#d9a869" stroke="#b3854e" stroke-width="0.7" stroke-linejoin="round"/>
+    <!-- infield grass -->
+    <path d="M0 4.6 L-6 -1.5 L0 -7.6 L6 -1.5 Z" fill="#a2d474" stroke="#84b95c" stroke-width="0.5"/>
+    <!-- base paths -->
+    <path d="M0 5.8 L-7.2 -1.5 L0 -8.8 L7.2 -1.5 Z" fill="none" stroke="#fdf6e3" stroke-width="0.65"/>
+    <rect x="-0.65" y="5.15" width="1.3" height="1.3" fill="#fbfbf7" stroke="#33291f" stroke-width="0.3" transform="rotate(45 0 5.8)"/>
+    <rect x="-7.85" y="-2.15" width="1.3" height="1.3" fill="#fbfbf7" stroke="#33291f" stroke-width="0.3" transform="rotate(45 -7.2 -1.5)"/>
+    <rect x="-0.65" y="-9.45" width="1.3" height="1.3" fill="#fbfbf7" stroke="#33291f" stroke-width="0.3" transform="rotate(45 0 -8.8)"/>
+    <rect x="6.55" y="-2.15" width="1.3" height="1.3" fill="#fbfbf7" stroke="#33291f" stroke-width="0.3" transform="rotate(45 7.2 -1.5)"/>
+    <!-- mound -->
+    <circle cx="0" cy="-1.5" r="1.05" fill="#d9a869" stroke="#b3854e" stroke-width="0.45"/>
+    <!-- backstop behind home -->
+    <path d="M-4.6 9.6 Q0 6.6 4.6 9.6" fill="none" stroke="#8a8f96" stroke-width="0.7"/>
+    <path d="M-3.2 9 V7.6 M0 8.1 V6.8 M3.2 9 V7.6" stroke="#8a8f96" stroke-width="0.35"/>
+  </symbol>
+<symbol id="ground.playground.s0" overflow="visible"><ellipse cx="0" cy="0" rx="10" ry="6.5" fill="#efd9a7" stroke="#d9bc82" stroke-width="0.7"/>
+  <g transform="translate(-4.6 0)">
+    <path d="M-2.6 1.5 L-1.3 -3 M0 1.5 L-1.3 -3 M-4 1.5 L-2.8 -3 M-2.8 -3 L-1.3 -3" stroke="#5f7285" stroke-width="0.55" fill="none"/>
+    <path d="M-2.4 -3 V-0.6 M-1.7 -3 V-0.6" stroke="#33291f" stroke-width="0.3"/>
+    <rect x="-2.65" y="-0.6" width="0.6" height="0.4" fill="#e07a2f" stroke="#33291f" stroke-width="0.2"/>
+    <rect x="-1.95" y="-0.6" width="0.6" height="0.4" fill="#3f8ecc" stroke="#33291f" stroke-width="0.2"/>
+  </g>
+  <g transform="translate(3.2 0)">
+    <path d="M0 1.2 L0 -2.4 L3.3 0.2 L3.3 1.2" fill="#f2c04c" stroke="#33291f" stroke-width="0.4" stroke-linejoin="round"/>
+    <rect x="-0.5" y="-3.2" width="1.1" height="1" fill="#e05252" stroke="#33291f" stroke-width="0.3"/>
+  </g>
+  <g transform="translate(-0.4 0.4)">
+    <rect x="-1.9" y="-1.4" width="3.8" height="2.4" rx="0.3" fill="#e8c987" stroke="#b3915a" stroke-width="0.45"/>
+    <circle cx="0.5" cy="-0.2" r="0.4" fill="#e05252" stroke="#33291f" stroke-width="0.25"/>
+  </g></symbol>
+<symbol id="ground.playground.s1" overflow="visible"><ellipse cx="0" cy="0" rx="9" ry="6" fill="#efd9a7" stroke="#d9bc82" stroke-width="0.7"/>
+  <g transform="translate(-2.8 0)">
+    <path d="M-2.2 0.8 A2.2 2.2 0 0 1 2.2 0.8" fill="none" stroke="#3f8ecc" stroke-width="0.5"/>
+    <path d="M-1.5 -0.9 A1.7 1.9 0 0 1 1.5 -0.9 M-0.7 -1.4 A0.9 1 0 0 1 0.7 -1.4 M0 0.8 V-1.6 M-1.9 0.8 V-0.5 M1.9 0.8 V-0.5" fill="none" stroke="#3f8ecc" stroke-width="0.4"/>
+  </g>
+  <g transform="translate(2.4 0)">
+    <path d="M0 1.2 L0 -2.4 L3.3 0.2 L3.3 1.2" fill="#f2c04c" stroke="#33291f" stroke-width="0.4" stroke-linejoin="round"/>
+    <rect x="-0.5" y="-3.2" width="1.1" height="1" fill="#e05252" stroke="#33291f" stroke-width="0.3"/>
+  </g>
+  <g transform="translate(6.2 0.6)">
+    <rect x="-1.3" y="-0.9" width="2.6" height="0.55" rx="0.15" fill="#8a6248" stroke="#33291f" stroke-width="0.3"/>
+    <path d="M-1 -0.35 V0.3 M1 -0.35 V0.3" stroke="#33291f" stroke-width="0.25"/>
+  </g></symbol>
+<symbol id="ground.playground.s2" overflow="visible"><ellipse cx="0" cy="0" rx="8.5" ry="5.5" fill="#efd9a7" stroke="#d9bc82" stroke-width="0.7"/>
+  <g transform="translate(-3.6 0)">
+    <path d="M-2.6 1.5 L-1.3 -3 M0 1.5 L-1.3 -3 M-4 1.5 L-2.8 -3 M-2.8 -3 L-1.3 -3" stroke="#5f7285" stroke-width="0.55" fill="none"/>
+    <path d="M-2.4 -3 V-0.6 M-1.7 -3 V-0.6" stroke="#33291f" stroke-width="0.3"/>
+    <rect x="-2.65" y="-0.6" width="0.6" height="0.4" fill="#e07a2f" stroke="#33291f" stroke-width="0.2"/>
+    <rect x="-1.95" y="-0.6" width="0.6" height="0.4" fill="#3f8ecc" stroke="#33291f" stroke-width="0.2"/>
+  </g>
+  <g transform="translate(2.6 0)">
+    <path d="M-2.4 -0.4 L2.4 -1.4" stroke="#e07a2f" stroke-width="0.5"/>
+    <path d="M0 -0.9 L0 0.4" stroke="#33291f" stroke-width="0.4"/>
+    <rect x="-2.8" y="-0.8" width="0.8" height="0.6" rx="0.15" fill="#3f8ecc" stroke="#33291f" stroke-width="0.2"/>
+    <rect x="2" y="-1.8" width="0.8" height="0.6" rx="0.15" fill="#e05252" stroke="#33291f" stroke-width="0.2"/>
+  </g>
+  <g transform="translate(5.6 0.4)">
+    <rect x="-1.9" y="-1.4" width="3.8" height="2.4" rx="0.3" fill="#e8c987" stroke="#b3915a" stroke-width="0.45"/>
+    <circle cx="0.5" cy="-0.2" r="0.4" fill="#e05252" stroke="#33291f" stroke-width="0.25"/>
+  </g></symbol>
+
+  <symbol id="furniture.picnic_table" overflow="visible">
+    <rect x="-1.5" y="-1" width="3" height="2" rx="0.25" fill="#a97c50" stroke="#33291f" stroke-width="0.4"/>
+    <rect x="-1.5" y="-1.8" width="3" height="0.55" rx="0.2" fill="#8a6248" stroke="#33291f" stroke-width="0.3"/>
+    <rect x="-1.5" y="1.25" width="3" height="0.55" rx="0.2" fill="#8a6248" stroke="#33291f" stroke-width="0.3"/>
+  </symbol>
+
+  <symbol id="furniture.hydrant" overflow="visible">
+    <rect x="-0.55" y="-1.5" width="1.1" height="1.5" rx="0.28" fill="#c62d2d" stroke="#33291f" stroke-width="0.35"/>
+    <path d="M-0.55 -1.55 A0.55 0.55 0 0 1 0.55 -1.55 Z" fill="#c62d2d" stroke="#33291f" stroke-width="0.35"/>
+    <rect x="-0.95" y="-1.15" width="0.42" height="0.45" rx="0.12" fill="#c62d2d" stroke="#33291f" stroke-width="0.25"/>
+    <rect x="0.53" y="-1.15" width="0.42" height="0.45" rx="0.12" fill="#c62d2d" stroke="#33291f" stroke-width="0.25"/>
+    <circle cx="0" cy="-1.95" r="0.24" fill="#e2a0a0" stroke="#33291f" stroke-width="0.2"/>
+  </symbol>
+
+  <symbol id="furniture.bench" overflow="visible">
+    <rect x="-1.4" y="-1.4" width="2.8" height="0.45" rx="0.15" fill="#a97c50" stroke="#33291f" stroke-width="0.3"/>
+    <rect x="-1.4" y="-0.75" width="2.8" height="0.4" rx="0.15" fill="#b98c5c" stroke="#33291f" stroke-width="0.3"/>
+    <path d="M-1.15 -0.35 V0.25 M1.15 -0.35 V0.25" stroke="#33291f" stroke-width="0.3"/>
+  </symbol>
+
+  <symbol id="furniture.bus_stop.s0" overflow="visible">
+    <path d="M0 0 V-3.6" stroke="#33291f" stroke-width="0.4"/>
+    <rect x="-0.95" y="-4.9" width="1.9" height="1.4" rx="0.25" fill="#3b5fc9" stroke="#33291f" stroke-width="0.35"/>
+    <rect x="-0.62" y="-4.6" width="1.24" height="0.62" rx="0.18" fill="#fdf6e3"/>
+    <circle cx="-0.35" cy="-4.05" r="0.14" fill="#fdf6e3"/>
+    <circle cx="0.35" cy="-4.05" r="0.14" fill="#fdf6e3"/>
+  </symbol>
+
+  <symbol id="furniture.bus_stop.s1" overflow="visible">
+    <rect x="-2.5" y="-3.3" width="5" height="0.55" rx="0.2" fill="#5f7285" stroke="#33291f" stroke-width="0.35"/>
+    <path d="M-2.1 -2.75 V0 M2.1 -2.75 V0" stroke="#33291f" stroke-width="0.35"/>
+    <rect x="-2.2" y="-2.75" width="4.4" height="2.1" fill="#bfe4ea" opacity="0.55" stroke="#33291f" stroke-width="0.25"/>
+    <rect x="-1.5" y="-1.15" width="3" height="0.4" rx="0.12" fill="#a97c50" stroke="#33291f" stroke-width="0.25"/>
+    <path d="M3 0 V-3.4" stroke="#33291f" stroke-width="0.35"/>
+    <rect x="2.25" y="-4.5" width="1.5" height="1.1" rx="0.2" fill="#3b5fc9" stroke="#33291f" stroke-width="0.3"/>
+  </symbol>
+
+  <symbol id="furniture.bike_rack" overflow="visible">
+    <path d="M-1.5 0 V-1 A0.55 0.55 0 0 1 -0.4 -1 V0 M-0.1 0 V-1 A0.55 0.55 0 0 1 1 -1 V0 M1.3 0 V-1 A0.55 0.55 0 0 1 2.4 -1 V0" fill="none" stroke="#5f6a74" stroke-width="0.38"/>
+  </symbol>
+
+  <symbol id="furniture.trash_can" overflow="visible">
+    <path d="M-0.6 -1.5 L-0.5 0 H0.5 L0.6 -1.5 Z" fill="#5e7a52" stroke="#33291f" stroke-width="0.3"/>
+    <rect x="-0.72" y="-1.75" width="1.44" height="0.35" rx="0.15" fill="#4a6142" stroke="#33291f" stroke-width="0.25"/>
+  </symbol>
+
+  <symbol id="furniture.flagpole" overflow="visible">
+    <path d="M0 0 V-8.5" stroke="#33291f" stroke-width="0.4"/>
+    <circle cx="0" cy="-8.7" r="0.22" fill="#f2c94c" stroke="#33291f" stroke-width="0.2"/>
+    <path d="M0 -8.4 h2.6 v1.6 h-2.6 Z" fill="#e8e4da" stroke="#33291f" stroke-width="0.3"/>
+    <rect x="0" y="-8.4" width="1.1" height="0.85" fill="#3b5fc9"/>
+    <path d="M0 -7.25 h2.6 M1.1 -7.8 h1.5" stroke="#c62d2d" stroke-width="0.32"/>
+  </symbol>
+
+  <symbol id="infra.dumpster" overflow="visible">
+    <path d="M-1.5 -1.6 L1.5 -1.6 L1.35 0 H-1.35 Z" fill="#3f6d5d" stroke="#33291f" stroke-width="0.4"/>
+    <path d="M-1.6 -1.6 L-1.2 -2.05 H1.2 L1.6 -1.6 Z" fill="#35594d" stroke="#33291f" stroke-width="0.35"/>
+    <path d="M-0.55 -0.8 h1.1" stroke="#33291f" stroke-width="0.3" opacity="0.6"/>
+  </symbol><image id="fab_polish_flat_stacked_1" href="/art/sprites/polish_flat_stacked_1.webp" width="13" height="17.33"/><image id="fab_polish_flat_gable_bay_1" href="/art/sprites/polish_flat_gable_bay_1.webp" width="13" height="17.33"/><image id="fab_duplex_wide_brick_1" href="/art/sprites/duplex_wide_brick_1.webp" width="19" height="14.25"/><image id="fab_bungalow_craftsman_1" href="/art/sprites/bungalow_craftsman_1.webp" width="13" height="17.33"/><image id="fab_bungalow_hipped_dormer_1" href="/art/sprites/bungalow_hipped_dormer_1.webp" width="13" height="17.33"/><image id="fab_apartment_3story_walkup_1" href="/art/sprites/apartment_3story_walkup_1.webp" width="16" height="21.33"/><image id="fab_storefront_row_3bay_1" href="/art/sprites/storefront_row_3bay_1.webp" width="22" height="16.50"/><image id="fab_tree_linden_1" href="/art/sprites/tree_linden_1.webp" width="11" height="11.00"/><image id="fab_tree_maple_1" href="/art/sprites/tree_maple_1.webp" width="12" height="12.00"/><image id="fab_tree_honeylocust_1" href="/art/sprites/tree_honeylocust_1.webp" width="12" height="12.00"/><image id="fab_tree_flowering_1" href="/art/sprites/tree_flowering_1.webp" width="7.5" height="7.50"/><image id="fab_tree_elm_mature_1" href="/art/sprites/tree_elm_mature_1.webp" width="13" height="13.00"/><image id="fab_tree_oak_1" href="/art/sprites/tree_oak_1.webp" width="15" height="15.00"/>

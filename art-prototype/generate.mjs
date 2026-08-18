@@ -11,6 +11,7 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 // raster heroes participate in normal placement/collision via ASSET_META
 ASSET_META['hero.st_hedwig'] = { halfW: 22, cls: 'standing', hero: true };
 ASSET_META['hero.wolskis'] = { halfW: 17, cls: 'standing', hero: true };
+ASSET_META['hero.gloriosos'] = { halfW: 22, cls: 'standing', hero: true };
 const ROOT = join(HERE, '..');
 const SCRATCH = 'C:/Users/Steven/AppData/Local/Temp/claude/C--Users-Steven-Documents-Birthday-2026/5d610d7c-43c1-4149-9704-c942971ebd14/scratchpad';
 
@@ -181,6 +182,9 @@ const classify = (el) => {
   }
   if (name && /wolski/i.test(name)) {
     return { assetId: 'hero.wolskis', priority: 0, s: 1, name, structure: 0 };
+  }
+  if (name && /glorioso/i.test(name)) {
+    return { assetId: 'hero.gloriosos', priority: 0, s: 1, name, structure: 0 };
   }
   if (b === 'church' || (t.amenity === 'place_of_worship' && b !== 'construction' && b)) {
     // real data picks the skyline: tall/large -> tower church, wide -> twin-tower
@@ -632,6 +636,15 @@ const HERO_RASTER = {
     anchorY: 0.85,
     dxM: -2, dyM: 4,       // hug the Pulaski frontage, clear of the courts
     evict: 20,
+  },
+  'hero.gloriosos': {
+    file: join(HERE, 'heroes', 'gloriosos-v1.png'),
+    widthM: 48,            // real 40m theatre block; modest 1.2x presence
+    aspect: 1086 / 1448,
+    anchorX: 0.60,         // main entrance (Est. 1946 door) on the Brady face
+    anchorY: 0.88,
+    dxM: 7, dyM: 4,        // clear the Brady/Astor gameplay node to its west
+    evict: 24,
   },
 };
 const heroes = scene.filter((e) => HERO_RASTER[e.assetId]);

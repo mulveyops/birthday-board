@@ -10,36 +10,38 @@
   "furniture.picnic_table": 1,
   "ground.tennis": 2,
   "ground.playground": 2,
-  "bldg.civ.church": 1,
+  "hero.st_hedwig": 1,
+  "hero.gloriosos": 1,
+  "hero.wolskis": 1,
   "bldg.civ.school": 1,
-  "bldg.com.mixed_use": 18,
-  "bldg.com.corner_tavern": 6,
+  "bldg.com.mixed_use": 17,
+  "bldg.com.corner_tavern": 5,
   "bldg.res.apartment": 22,
   "bldg.com.storefront_row": 7,
   "bldg.com.storefront": 11,
   "bldg.res.polish_flat": 79,
   "bldg.res.bungalow": 20,
   "bldg.res.garage": 6,
-  "tree.maple": 56,
-  "tree.flowering": 49,
+  "tree.maple": 55,
+  "tree.flowering": 48,
   "tree.ash": 41,
   "tree.honeylocust": 34,
-  "tree.oak": 11,
+  "tree.oak": 10,
   "tree.linden": 33,
   "tree.elm": 16,
   "tree.conifer": 2,
-  "vehicle.parked_car": 20,
-  "prop.driveway": 66,
+  "vehicle.parked_car": 19,
+  "prop.driveway": 64,
   "prop.alley": 2,
   "prop.fence": 41,
   "prop.wall": 16,
   "prop.retaining_wall": 21,
-  "prop.walk": 62,
-  "prop.parking": 8,
-  "furniture.bus_stop": 4,
-  "furniture.flagpole": 2,
+  "prop.walk": 61,
+  "prop.parking": 7,
+  "furniture.bus_stop": 3,
+  "furniture.flagpole": 1,
   "furniture.hydrant": 9,
-  "furniture.bench": 9,
+  "furniture.bench": 7,
   "furniture.trash_can": 2,
   "furniture.bike_rack": 11,
   "infra.dumpster": 1
@@ -103,16 +105,42 @@
    "src": "osm:pitch:tennis"
   },
   {
-   "assetId": "bldg.civ.church",
-   "variant": 74,
+   "assetId": "hero.st_hedwig",
+   "variant": 70,
    "structure": 0,
    "x": 201.4,
-   "y": 314.6,
-   "scale": 1.7,
+   "y": 312.8,
+   "scale": 1,
    "rotation": 0,
    "layer": "standing",
-   "priority": 1,
+   "priority": 0,
    "name": "Saint Hedwig Catholic Church",
+   "src": "osm:building"
+  },
+  {
+   "assetId": "hero.gloriosos",
+   "variant": 13,
+   "structure": 0,
+   "x": 61.3,
+   "y": 366.9,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 0,
+   "name": "Glorioso's Italian Market",
+   "src": "osm:building"
+  },
+  {
+   "assetId": "hero.wolskis",
+   "variant": 62,
+   "structure": 0,
+   "x": 294.7,
+   "y": 84.6,
+   "scale": 1,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 0,
+   "name": "Wolski's Tavern",
    "src": "osm:building"
   },
   {
@@ -125,20 +153,6 @@
    "rotation": 0,
    "layer": "standing",
    "priority": 1,
-   "src": "osm:building"
-  },
-  {
-   "assetId": "bldg.com.mixed_use",
-   "variant": 72,
-   "structure": 2,
-   "facing": -129,
-   "x": 61.4,
-   "y": 359,
-   "scale": 1,
-   "rotation": 0,
-   "layer": "standing",
-   "priority": 2,
-   "name": "Glorioso's Italian Market",
    "src": "osm:building"
   },
   {
@@ -351,20 +365,6 @@
    "layer": "standing",
    "priority": 2,
    "name": "Scaffidi’s Hideout",
-   "src": "osm:building"
-  },
-  {
-   "assetId": "bldg.com.corner_tavern",
-   "variant": 87,
-   "structure": 0,
-   "facing": 93,
-   "x": 291.4,
-   "y": 85.9,
-   "scale": 1.3,
-   "rotation": 0,
-   "layer": "standing",
-   "priority": 2,
-   "name": "Wolski's Tavern",
    "src": "osm:building"
   },
   {
@@ -1547,18 +1547,6 @@
   },
   {
    "assetId": "bldg.res.polish_flat",
-   "variant": 91,
-   "structure": 1,
-   "x": 63.6,
-   "y": 390.6,
-   "scale": 1.23,
-   "rotation": 0,
-   "layer": "standing",
-   "priority": 5,
-   "src": "osm:building"
-  },
-  {
-   "assetId": "bldg.res.polish_flat",
    "variant": 23,
    "structure": 1,
    "x": 28.3,
@@ -1719,6 +1707,18 @@
    "structure": 2,
    "x": 74.7,
    "y": 156.1,
+   "scale": 1.19,
+   "rotation": 0,
+   "layer": "standing",
+   "priority": 5,
+   "src": "osm:building"
+  },
+  {
+   "assetId": "bldg.res.polish_flat",
+   "variant": 88,
+   "structure": 0,
+   "x": 60,
+   "y": 400.7,
    "scale": 1.19,
    "rotation": 0,
    "layer": "standing",
@@ -3264,18 +3264,6 @@
   {
    "assetId": "tree.flowering",
    "structure": 0,
-   "variant": 47,
-   "x": 211.4,
-   "y": 325.4,
-   "scale": 0.93,
-   "rotation": 0,
-   "layer": "standing",
-   "priority": 7,
-   "src": "city:Pear, Callery 2\""
-  },
-  {
-   "assetId": "tree.flowering",
-   "structure": 0,
    "variant": 6,
    "x": 36.3,
    "y": 238.3,
@@ -3344,18 +3332,6 @@
    "layer": "standing",
    "priority": 7,
    "src": "city:Oak, English 3\""
-  },
-  {
-   "assetId": "tree.oak",
-   "structure": 0,
-   "variant": 37,
-   "x": 76,
-   "y": 354.5,
-   "scale": 0.93,
-   "rotation": 0,
-   "layer": "standing",
-   "priority": 7,
-   "src": "city:Oak, English and Swamp White 2\""
   },
   {
    "assetId": "tree.linden",
@@ -4740,18 +4716,6 @@
   {
    "assetId": "tree.maple",
    "structure": 0,
-   "variant": 24,
-   "x": 55.1,
-   "y": 381.1,
-   "scale": 1.31,
-   "rotation": 0,
-   "layer": "standing",
-   "priority": 7,
-   "src": "city:Maple, Norway 11\""
-  },
-  {
-   "assetId": "tree.maple",
-   "structure": 0,
    "variant": 36,
    "x": 88.1,
    "y": 162.1,
@@ -5736,21 +5700,6 @@
    "layer": "property",
    "pts": [
     [
-     57.5,
-     386.3
-    ],
-    [
-     90.3,
-     386.4
-    ]
-   ],
-   "src": "osm"
-  },
-  {
-   "assetId": "prop.driveway",
-   "layer": "property",
-   "pts": [
-    [
      76.5,
      417.4
     ],
@@ -5929,21 +5878,6 @@
     [
      316.2,
      298.9
-    ]
-   ],
-   "src": "osm"
-  },
-  {
-   "assetId": "prop.driveway",
-   "layer": "property",
-   "pts": [
-    [
-     209.6,
-     292.7
-    ],
-    [
-     223.1,
-     292.8
     ]
    ],
    "src": "osm"
@@ -9043,21 +8977,6 @@
    "layer": "property",
    "pts": [
     [
-     63.6,
-     391.2
-    ],
-    [
-     53.6,
-     390.5
-    ]
-   ],
-   "src": "procedural:entry_walk"
-  },
-  {
-   "assetId": "prop.walk",
-   "layer": "property",
-   "pts": [
-    [
      28.3,
      197.4
     ],
@@ -9828,145 +9747,6 @@
    "layer": "property",
    "pts": [
     [
-     256.8,
-     276.2
-    ],
-    [
-     256.7,
-     292
-    ],
-    [
-     253.2,
-     292
-    ],
-    [
-     253.2,
-     294.2
-    ],
-    [
-     251.3,
-     294.2
-    ],
-    [
-     251.3,
-     296.5
-    ],
-    [
-     239.3,
-     296.4
-    ],
-    [
-     233.2,
-     296.3
-    ],
-    [
-     233.1,
-     311.7
-    ],
-    [
-     226.9,
-     311.7
-    ],
-    [
-     217.1,
-     311.6
-    ],
-    [
-     217.1,
-     309
-    ],
-    [
-     217.1,
-     304.4
-    ],
-    [
-     202,
-     304.3
-    ],
-    [
-     202,
-     298.6
-    ],
-    [
-     202,
-     295.5
-    ],
-    [
-     209.6,
-     295.6
-    ],
-    [
-     209.6,
-     292.7
-    ],
-    [
-     209.6,
-     290.6
-    ],
-    [
-     214,
-     290.7
-    ],
-    [
-     214.1,
-     281
-    ],
-    [
-     214.1,
-     279.7
-    ],
-    [
-     214.1,
-     276.1
-    ],
-    [
-     216.4,
-     276.1
-    ],
-    [
-     219.1,
-     276.2
-    ],
-    [
-     222,
-     276.2
-    ],
-    [
-     223.3,
-     276.2
-    ],
-    [
-     223.7,
-     276.2
-    ],
-    [
-     223.7,
-     275.8
-    ],
-    [
-     256.8,
-     276.2
-    ]
-   ],
-   "src": "osm:parking"
-  },
-  {
-   "assetId": "vehicle.parked_car",
-   "structure": 0,
-   "variant": 11,
-   "x": 235.1,
-   "y": 290.9,
-   "scale": 1.9,
-   "rotation": 0,
-   "layer": "standing",
-   "priority": 8,
-   "src": "procedural:parking_cluster"
-  },
-  {
-   "assetId": "prop.parking",
-   "layer": "property",
-   "pts": [
-    [
      504.4,
      430.7
     ],
@@ -10234,18 +10014,6 @@
    "src": "osm:fire_hydrant"
   },
   {
-   "assetId": "furniture.flagpole",
-   "structure": 0,
-   "variant": 0,
-   "x": 218.7,
-   "y": 326.7,
-   "scale": 1,
-   "rotation": 0,
-   "layer": "standing",
-   "priority": 8,
-   "src": "osm:flagpole"
-  },
-  {
    "assetId": "furniture.hydrant",
    "structure": 0,
    "variant": 0,
@@ -10366,18 +10134,6 @@
    "src": "osm:bus_stop"
   },
   {
-   "assetId": "furniture.bus_stop",
-   "structure": 0,
-   "variant": 0,
-   "x": 175.3,
-   "y": 308.8,
-   "scale": 1,
-   "rotation": 0,
-   "layer": "standing",
-   "priority": 8,
-   "src": "osm:bus_stop"
-  },
-  {
    "assetId": "furniture.bench",
    "structure": 0,
    "variant": 0,
@@ -10467,30 +10223,6 @@
    "variant": 0,
    "x": 405.8,
    "y": 55.8,
-   "scale": 1,
-   "rotation": 0,
-   "layer": "standing",
-   "priority": 8,
-   "src": "osm:bench"
-  },
-  {
-   "assetId": "furniture.bench",
-   "structure": 0,
-   "variant": 0,
-   "x": 307.4,
-   "y": 73.2,
-   "scale": 1,
-   "rotation": 0,
-   "layer": "standing",
-   "priority": 8,
-   "src": "osm:bench"
-  },
-  {
-   "assetId": "furniture.bench",
-   "structure": 0,
-   "variant": 0,
-   "x": 283.4,
-   "y": 86,
    "scale": 1,
    "rotation": 0,
    "layer": "standing",

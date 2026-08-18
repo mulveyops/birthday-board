@@ -1447,9 +1447,16 @@ export default function BoardCanvas({
             );
           })}
 
+          </g>
+
+          {board.artUnderlay && <SceneStanding X={X} Y={Y} />}
+
           {/* the "spaces" are the intersections — a node where 3+ roads meet,
               drawn a touch wider than the street so it reads as a distinct pip.
-              In play mode a cleared node grays out; the active one glows. */}
+              In play mode a cleared node grays out; the active one glows.
+              These are GAME PIECES, so they render ABOVE the scene art —
+              a start flag must never hide behind a building sprite. */}
+          <g filter="url(#track-shadow)">
           {intersections.map((sq) => {
             if (sq.type === 'bar') return null; // bars render as custom SVG POIs below
             const done = clearedSet.has(sq.id);
@@ -1458,9 +1465,13 @@ export default function BoardCanvas({
             const t = sq.type !== 'blank' ? sq.type : playActive ? nodeType?.[sq.id] : undefined;
             const Icon = t ? SPOT_SPRITE[t] : undefined;
             if (Icon) {
+              // Start/finish are one-of-a-kind waypoints — give them a halo so
+              // they pop against any background art.
+              const halo = t === 'start' || t === 'finish';
               return (
                 <g key={`n${sq.id}`} opacity={done ? 0.4 : 1}>
-                  <Icon x={X(sq)} y={Y(sq)} s={1.15} />
+                  {halo && <circle cx={X(sq)} cy={Y(sq)} r={21} fill="#fffdf4" stroke="#3f3b36" strokeWidth={2.5} opacity={0.92} />}
+                  <Icon x={X(sq)} y={Y(sq)} s={halo ? 1.3 : 1.15} />
                 </g>
               );
             }
@@ -1477,10 +1488,7 @@ export default function BoardCanvas({
               />
             );
           })}
-
           </g>
-
-          {board.artUnderlay && <SceneStanding X={X} Y={Y} />}
 
           {/* ground shadows anchor every building/hero to the lawn */}
           {fabric.map((h, i) => (

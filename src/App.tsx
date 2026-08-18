@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import QRCode from 'qrcode';
 import BoardCanvas, { type Mode } from './BoardCanvas';
-import type { Board, Edge, LatLng, Phase, Square, SquareType, TriviaQuestion } from './types';
+import type { Board, ChanceCard, Edge, LatLng, Phase, Square, SquareType, TriviaQuestion } from './types';
 import { SQUARE_TYPES, TYPE_ORDER } from './squareTypes';
 import { loadBoard, saveBoard, makeSquare, defaultBoard } from './boardStore';
 import { metersBetween, simplify, snapToStreetsFollowing, routeAlongStreets } from './snap';
@@ -134,6 +134,55 @@ function deriveNodeType(spots: Square[]): Record<string, SpotType> {
     else m[sq.id] = strHash01(sq.id) < 0.35 ? 'chance' : 'coin';
   }
   return m;
+}
+/** Questions a challenge spot deals. Pinned questions (authored on the square)
+ * win; otherwise the spot gets its deterministic share of the shared bank —
+ * seeded by game id, so every phone deals the same questions at the same spot
+ * and spots don't repeat a question until the bank runs out. */
+function questionsForSpot(board: Board, seed: string, spotId: string): TriviaQuestion[] {
+  const sq = board.squares.find((s) => s.id === spotId);
+  if (sq?.questions?.length) return sq.questions;
+  const bank = board.triviaBank ?? [];
+  if (!bank.length) return [];
+  const spotIds = board.squares
+    .filter((s) => s.type === 'challenge' && !s.questions?.length)
+    .map((s) => s.id)
+    .sort();
+  const idx = Math.max(0, spotIds.indexOf(spotId));
+  const order = bank
+    .map((q, i) => ({ q, k: strHash01(`${seed}:${i}`) }))
+    .sort((a, b) => a.k - b.k)
+    .map((x) => x.q);
+  const per = Math.max(1, Math.min(4, Math.floor(bank.length / Math.max(1, spotIds.length)) || 1));
+  const out: TriviaQuestion[] = [];
+  for (let k = 0; k < Math.min(per, bank.length); k++) out.push(order[(idx * per + k) % bank.length]);
+  return out;
+}
+/** Fallback chance deck for games published before decks existed — mirrors the
+ * old hardcoded roll weights (35% rob / 20% claim / 23% gain / 15% lose / 7% dud). */
+const DEFAULT_CHANCE_DECK: ChanceCard[] = [
+  { id: 'd-rob1', text: '🦹 Stick-em-up! Rob a rival team.', effect: 'rob', amount: 0 },
+  { id: 'd-rob2', text: '🦹 Pickpocket! Rob a rival team.', effect: 'rob', amount: 0 },
+  { id: 'd-rob3', text: '🦹 Heist time! Rob a rival team.', effect: 'rob', amount: 0 },
+  { id: 'd-rob4', text: '🦹 Smash and grab! Rob a rival team.', effect: 'rob', amount: 0 },
+  { id: 'd-rob5', text: '🦹 The perfect crime! Rob a rival team.', effect: 'rob', amount: 0 },
+  { id: 'd-claim1', text: '🏴 Land grab!', effect: 'claim', amount: 0 },
+  { id: 'd-claim2', text: '🏴 Turf war!', effect: 'claim', amount: 0 },
+  { id: 'd-claim3', text: '🏴 Stake your claim!', effect: 'claim', amount: 0 },
+  { id: 'd-gain1', text: '🍀 Found coins on the sidewalk!', effect: 'gain', amount: 20 },
+  { id: 'd-gain2', text: '🍀 Bar dice champion!', effect: 'gain', amount: 30 },
+  { id: 'd-gain3', text: '🎰 Jackpot!', effect: 'gain', amount: 40 },
+  { id: 'd-lose1', text: '💸 You bought a round for strangers.', effect: 'lose', amount: 15 },
+  { id: 'd-lose2', text: '💸 Parking ticket!', effect: 'lose', amount: 25 },
+  { id: 'd-none1', text: '😐 The wind blows. Nothing happens.', effect: 'nothing', amount: 0 },
+];
+/** Draw one card from the game's chance deck (rob cards need a robbable rival). */
+function drawChanceCard(board: Board, canRob: boolean): ChanceCard {
+  const deck = (board.chanceDeck?.length ? board.chanceDeck : DEFAULT_CHANCE_DECK).filter(
+    (c) => canRob || c.effect !== 'rob',
+  );
+  if (!deck.length) return { id: 'none', text: '😐 Nothing happens.', effect: 'nothing', amount: 0 };
+  return deck[Math.floor(Math.random() * deck.length)];
 }
 
 export default function App({
@@ -906,12 +955,15 @@ export default function App({
     }
   }
   const [onlineBarModal, setOnlineBarModal] = useState<{ spotId: string; name: string } | null>(null);
-  const [onlineQuizModal, setOnlineQuizModal] = useState<{ spotId: string; name: string } | null>(null);
-  // Online chance square: roll → gain/lose/rob. 'rob' opens a team picker.
+  // The dealt questions ride in the modal state (pinned or drawn from the bank).
+  const [onlineQuizModal, setOnlineQuizModal] = useState<{ spotId: string; name: string; questions: TriviaQuestion[] } | null>(null);
+  // Online chance square: draw a card → gain/lose/rob/claim. 'rob' opens a team picker.
   const [onlineChanceModal, setOnlineChanceModal] = useState<{ spotId: string; name: string } | null>(null);
   const [chanceOutcome, setChanceOutcome] = useState<'rob' | 'claim' | 'gain' | 'lose' | 'nothing' | null>(null);
   const [chanceText, setChanceText] = useState('');
   const [chanceBusy, setChanceBusy] = useState(false);
+  const [chanceDrawing, setChanceDrawing] = useState(false); // card-flip animation running
+  const [chanceCardText, setChanceCardText] = useState(''); // drawn card's flavor text (rob/claim pickers)
   // spot_id → owning team_id (own-a-space toll). Rivals landing here pay a toll.
   const [onlineOwners, setOnlineOwners] = useState<Record<string, string>>({});
   // Ambushes: active rows + the arm/victim/showdown UI state.
@@ -1145,6 +1197,8 @@ export default function App({
         setChanceOutcome(null);
         setChanceText('');
         setChanceBusy(false);
+        setChanceDrawing(false);
+        setChanceCardText('');
         setOnlineChanceModal({ spotId, name: sq.title || 'Chance' });
         return;
       }
@@ -1152,12 +1206,15 @@ export default function App({
         openArmOnCleared(spotId, sq);
         return;
       }
-      // A challenge with authored trivia → answer to earn scaled coins.
-      if (type === 'challenge' && (sq.questions?.length ?? 0) > 0) {
-        setQuizPick({});
-        setQuizDone(false);
-        setOnlineQuizModal({ spotId, name: sq.title || 'Challenge' });
-        return;
+      // A challenge → deal trivia (pinned questions, else the shared bank).
+      if (type === 'challenge') {
+        const dealt = questionsForSpot(onlineBoard, membership.gameId, spotId);
+        if (dealt.length > 0) {
+          setQuizPick({});
+          setQuizDone(false);
+          setOnlineQuizModal({ spotId, name: sq.title || 'Challenge', questions: dealt });
+          return;
+        }
       }
       // Bowser: a forced gauntlet — do the challenge or lose coins.
       if (type === 'bowser') {
@@ -1258,38 +1315,42 @@ export default function App({
     setOnlineCleared((c) => (c.includes(sq.id) ? c : [...c, sq.id]));
     checkInSpot(membership.gameId, membership.teamId, sq.id, sq.lat, sq.lng, 0).catch(() => {});
   }
-  // Roll the chance outcome. 'rob' defers to a team picker; others resolve now.
+  // Draw a chance card. 'rob'/'claim' defer to a follow-up choice; others resolve now.
   async function rollOnlineChance() {
     if (!membership || !onlineBoard || !onlineChanceModal || chanceBusy) return;
     const sq = onlineBoard.squares.find((s) => s.id === onlineChanceModal.spotId);
     if (!sq) return;
     const others = teams.filter((t) => t.id !== membership.teamId);
-    const r = Math.random();
-    // Robbery (needs a victim) and claim-this-space defer to a follow-up choice.
-    if (r < 0.35 && others.length > 0) {
+    const card = drawChanceCard(onlineBoard, others.length > 0);
+    setChanceBusy(true);
+    setChanceDrawing(true);
+    await new Promise((r) => setTimeout(r, 900)); // let the card flip
+    setChanceDrawing(false);
+    setChanceCardText(card.text);
+    // Robbery and claim-this-space defer to a follow-up choice.
+    if (card.effect === 'rob') {
+      setChanceBusy(false);
       setChanceOutcome('rob');
       return;
     }
-    if (r < 0.55) {
+    if (card.effect === 'claim') {
+      setChanceBusy(false);
       setChanceOutcome('claim');
       return;
     }
-    setChanceBusy(true);
     try {
-      if (r < 0.78) {
-        const gain = 20 + Math.floor(Math.random() * 21);
-        await adjustCoins(membership.teamId, gain);
-        setChanceText(`🍀 Lucky! +${gain} 🪙`);
+      if (card.effect === 'gain') {
+        await adjustCoins(membership.teamId, card.amount);
+        setChanceText(`${card.text} +${card.amount} 🪙`);
         setChanceOutcome('gain');
-        await logEvent(membership.gameId, 'star', `🍀 ${myTeam?.name ?? 'A team'} hit a lucky chance (+${gain} 🪙)`);
-      } else if (r < 0.93) {
-        const loss = 10 + Math.floor(Math.random() * 16);
-        await adjustCoins(membership.teamId, -loss);
-        setChanceText(`💸 Unlucky! -${loss} 🪙`);
+        await logEvent(membership.gameId, 'star', `🍀 ${myTeam?.name ?? 'A team'} drew a lucky card (+${card.amount} 🪙)`);
+      } else if (card.effect === 'lose') {
+        await adjustCoins(membership.teamId, -card.amount);
+        setChanceText(`${card.text} −${card.amount} 🪙`);
         setChanceOutcome('lose');
-        await logEvent(membership.gameId, 'star', `💸 ${myTeam?.name ?? 'A team'} took an unlucky chance (-${loss} 🪙)`);
+        await logEvent(membership.gameId, 'star', `💸 ${myTeam?.name ?? 'A team'} drew an unlucky card (−${card.amount} 🪙)`);
       } else {
-        setChanceText('😐 Nothing happens.');
+        setChanceText(card.text || '😐 Nothing happens.');
         setChanceOutcome('nothing');
       }
       markChanceCleared(sq);
@@ -1375,7 +1436,7 @@ export default function App({
     if (!membership || !onlineBoard || !onlineQuizModal) return;
     const sq = onlineBoard.squares.find((s) => s.id === onlineQuizModal.spotId);
     if (!sq) return;
-    const qs = sq.questions ?? [];
+    const qs = onlineQuizModal.questions;
     const correct = qs.reduce((n, q, i) => n + (quizPick[i] === q.correct ? 1 : 0), 0);
     const base = sq.reward > 0 ? sq.reward : onlineConfig.coinReward;
     const award = qs.length ? Math.round((base * correct) / qs.length) : base;
@@ -1472,6 +1533,9 @@ export default function App({
     } else if (phase === 'squares' && mode === 'add') {
       const sq = makeSquare(addType, SQUARE_TYPES[addType].label, lat, lng);
       setBoard((b) => ({ ...b, squares: [...b.squares, sq] }));
+      // One-shot placement: drop back into select mode with the new spot
+      // selected, so its editor opens immediately instead of stacking icons.
+      setMode('select');
       setSelectedId(sq.id);
     }
   }
@@ -1481,6 +1545,8 @@ export default function App({
       void connectPick(id);
       return;
     }
+    // Clicking an existing spot always means "edit it" — even mid-placement.
+    if (mode === 'add') setMode('select');
     setSelectedId(id || null);
     setSelectedVertex(null);
     setSelectedEdgeId(null);
@@ -2079,8 +2145,8 @@ export default function App({
             <section className="panel">
               <p className="hint">
                 {mode === 'add'
-                  ? `Click the map to place a ${SQUARE_TYPES[addType].label}.`
-                  : 'Click a slab to retype / move / delete it · click a path to edit it.'}
+                  ? `Click the map to place a ${SQUARE_TYPES[addType].label} — it opens for editing right away.`
+                  : 'Click a spot to edit it (type, name, reward, trivia) · click a path to edit it.'}
               </p>
               <div className="palette">
                 {TYPE_ORDER.map((t) => (
@@ -2256,7 +2322,9 @@ export default function App({
                 {(selected.type === 'challenge' || selected.type === 'bowser') && (
                   <div className="quiz-editor">
                     <span className="quiz-editor-label">
-                      {selected.type === 'bowser' ? 'Trivia questions (optional — else physical)' : 'Trivia questions (multiple choice)'}
+                      {selected.type === 'bowser'
+                        ? 'Trivia questions (optional — else physical)'
+                        : 'Pinned questions (optional — this spot otherwise deals from the shared bank)'}
                     </span>
                     {(selected.questions ?? []).map((q, qi) => (
                       <div className="qedit" key={qi}>
@@ -3198,7 +3266,7 @@ export default function App({
         {onlineQuizModal &&
           (() => {
             const sq = onlineBoard?.squares.find((s) => s.id === onlineQuizModal.spotId);
-            const qs = sq?.questions ?? [];
+            const qs = onlineQuizModal.questions;
             const answeredAll = qs.every((_, i) => quizPick[i] != null);
             const correct = qs.reduce((n, q, i) => n + (quizPick[i] === q.correct ? 1 : 0), 0);
             const base = sq && sq.reward > 0 ? sq.reward : onlineConfig.coinReward;
@@ -3311,6 +3379,8 @@ export default function App({
               setChanceOutcome(null);
               setChanceText('');
               setChanceBusy(false);
+              setChanceDrawing(false);
+              setChanceCardText('');
             };
             return (
               <div
@@ -3340,7 +3410,7 @@ export default function App({
                   onClick={(e) => e.stopPropagation()}
                 >
                   <div style={{ background: '#a855f7', color: '#fff', padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <span style={{ fontSize: '1.9rem', lineHeight: 1 }}>🎲</span>
+                    <span style={{ fontSize: '1.9rem', lineHeight: 1 }}>❓</span>
                     <div style={{ minWidth: 0 }}>
                       <div style={{ fontWeight: 800, fontSize: '1.05rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {onlineChanceModal.name}
@@ -3349,17 +3419,23 @@ export default function App({
                     </div>
                   </div>
                   <div style={{ padding: '16px 18px' }}>
-                    {chanceText ? (
+                    {chanceDrawing ? (
                       <>
-                        <p style={{ fontSize: '1.25rem', fontWeight: 800, textAlign: 'center', margin: '10px 0 18px' }}>{chanceText}</p>
+                        <div className="chance-card">❓</div>
+                        <p className="hint" style={{ textAlign: 'center' }}>Drawing a card…</p>
+                      </>
+                    ) : chanceText ? (
+                      <>
+                        <p className="chance-card-text" style={{ fontSize: '1.25rem', fontWeight: 800, textAlign: 'center', margin: '10px 0 18px' }}>{chanceText}</p>
                         <button className="btn btn--go" style={{ width: '100%' }} onClick={close}>
                           Continue
                         </button>
                       </>
                     ) : chanceOutcome === 'rob' ? (
                       <>
-                        <p className="hint" style={{ marginTop: 0 }}>
-                          🦹 A robbery! Pick a team to steal {robAmt} 🪙 from:
+                        <p className="chance-card-text" style={{ fontWeight: 800, marginTop: 0 }}>{chanceCardText || '🦹 A robbery!'}</p>
+                        <p className="hint" style={{ marginTop: 4 }}>
+                          Pick a team to steal {robAmt} 🪙 from:
                         </p>
                         {others.map((t) => (
                           <button
@@ -3378,8 +3454,9 @@ export default function App({
                       </>
                     ) : chanceOutcome === 'claim' ? (
                       <>
-                        <p className="hint" style={{ marginTop: 0 }}>
-                          🏴 Buy this space for {claimCost} 🪙? Rivals who land here secretly pay you a {tollAmt} 🪙 toll.
+                        <p className="chance-card-text" style={{ fontWeight: 800, marginTop: 0 }}>{chanceCardText || '🏴 Land grab!'}</p>
+                        <p className="hint" style={{ marginTop: 4 }}>
+                          Buy this space for {claimCost} 🪙? Rivals who land here secretly pay you a {tollAmt} 🪙 toll.
                         </p>
                         <button
                           className="btn btn--go"
@@ -3392,18 +3469,18 @@ export default function App({
                       </>
                     ) : (
                       <>
-                        <p className="hint" style={{ marginTop: 0 }}>Roll your luck — coins, a robbery, a heist, or a bust.</p>
+                        <p className="hint" style={{ marginTop: 0 }}>Draw from the deck — coins, a robbery, turf, or a bust.</p>
                         <button
                           className="btn btn--go"
                           style={{ width: '100%', fontSize: '1.05rem' }}
                           disabled={chanceBusy}
                           onClick={() => void rollOnlineChance()}
                         >
-                          🎲 Roll the dice
+                          ❓ Draw a card
                         </button>
                       </>
                     )}
-                    {!chanceText && (
+                    {!chanceText && !chanceDrawing && (
                       <button className="btn btn--ghost" style={{ width: '100%', marginTop: 8 }} onClick={close}>
                         Close
                       </button>

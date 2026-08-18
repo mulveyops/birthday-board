@@ -1444,6 +1444,53 @@ body {
   animation: dice-tumble 0.42s ease-in-out infinite;
 }
 
+/* Chance-card draw: a face-down card spins while "drawing", then the result pops. */
+@keyframes card-flip {
+  0% { transform: rotateY(0deg) scale(0.96); }
+  100% { transform: rotateY(900deg) scale(1); }
+}
+.chance-card {
+  width: 92px;
+  height: 128px;
+  margin: 4px auto 16px;
+  border-radius: 12px;
+  background: #a855f7;
+  border: 3px solid #3f3b36;
+  box-shadow: inset 0 -5px 0 rgba(0, 0, 0, 0.14), 0 6px 14px rgba(0, 0, 0, 0.22);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.4rem;
+  color: #fff;
+  animation: card-flip 0.8s cubic-bezier(0.3, 0.1, 0.3, 1) infinite;
+}
+.chance-card-text {
+  animation: result-pop 0.3s ease-out;
+}
+
+/* Content editor (trivia bank + chance deck) — phone-first. */
+.content-page {
+  max-width: 620px;
+  margin: 0 auto;
+  padding: 12px 12px 60px;
+}
+.content-page .panel {
+  margin-bottom: 16px;
+}
+.content-page .qedit-q {
+  font-size: 1rem;
+}
+.content-savebar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  text-align: right;
+  font-size: 0.8rem;
+  color: #6b6459;
+  padding: 4px 2px;
+  min-height: 1.4em;
+}
+
 /* ===================================================================== */
 /* Game screens (play / online / player) — carry the party theme in.     */
 /* ===================================================================== */

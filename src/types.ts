@@ -18,7 +18,7 @@ export interface LatLng {
   lng: number;
 }
 
-/** One multiple-choice trivia question authored on a challenge square. */
+/** One multiple-choice trivia question — pinned on a square or in the shared bank. */
 export interface TriviaQuestion {
   q: string;
   /** 2–4 answer options. */
@@ -27,6 +27,17 @@ export interface TriviaQuestion {
   correct: number;
   /** Optional public URL of a photo shown above the question (photo trivia). */
   image?: string;
+}
+
+/** One card in the chance deck. Landing on an unowned chance space draws one. */
+export interface ChanceCard {
+  id: string;
+  /** Flavor text shown on the drawn card. */
+  text: string;
+  /** What the card does: coins in/out, rob a rival, claim the space, or nothing. */
+  effect: 'gain' | 'lose' | 'rob' | 'claim' | 'nothing';
+  /** Coin amount for gain/lose (rob/claim amounts come from game config). */
+  amount: number;
 }
 
 export interface Square extends LatLng {
@@ -109,4 +120,9 @@ export interface Board {
   scenery?: Scenery;
   /** Show the baked illustrated-city underlay (public/art/board-underlay.webp). */
   artUnderlay?: boolean;
+  /** Shared trivia bank, snapshotted from the content table at publish.
+   * Challenge spots without pinned questions deal from this. */
+  triviaBank?: TriviaQuestion[];
+  /** Chance card deck, snapshotted from the content table at publish. */
+  chanceDeck?: ChanceCard[];
 }

@@ -37,5 +37,6 @@ export default function Root() {
   if (p === '/rsvp') return <Rsvp />;
   if (p === '/play') return <App variant="player" initialCode={params.get('code') ?? undefined} />;
   if (p === '/admin') return <Admin />;
+  if (p === '/content') return <Admin initialTab="content" />;
   return <Home />;
 }

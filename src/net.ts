@@ -1,4 +1,4 @@
-import type { Board } from './types';
+import type { Board, ChanceCard, TriviaQuestion } from './types';
 import { supabase, assertConfigured } from './supabase';
 
 // ---------------------------------------------------------------------------
@@ -160,6 +160,68 @@ export function subscribeLayouts(onChange: (c: LayoutChange) => void) {
         old: (payload.old as { id?: string }) ?? null,
       });
     })
+    .subscribe();
+  return () => {
+    supabase.removeChannel(ch);
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Content: the shared trivia bank + chance deck (each entry its own row, so
+// two people can author at once). Snapshotted into the board at publish.
+// ---------------------------------------------------------------------------
+
+export type ContentKind = 'trivia' | 'chance';
+export interface ContentRow<T = TriviaQuestion | ChanceCard> {
+  id: string;
+  kind: ContentKind;
+  data: T;
+  pos: number;
+  updated_at: string;
+}
+
+export async function listContent<T = TriviaQuestion | ChanceCard>(kind: ContentKind): Promise<ContentRow<T>[]> {
+  assertConfigured();
+  const { data, error } = await supabase
+    .from('content')
+    .select('id, kind, data, pos, updated_at')
+    .eq('kind', kind)
+    .order('pos', { ascending: true });
+  if (error) throw error;
+  return (data ?? []) as ContentRow<T>[];
+}
+
+export async function addContent(kind: ContentKind, data: TriviaQuestion | ChanceCard, pos: number): Promise<ContentRow> {
+  assertConfigured();
+  const { data: row, error } = await supabase
+    .from('content')
+    .insert({ kind, data, pos })
+    .select('id, kind, data, pos, updated_at')
+    .single();
+  if (error) throw error;
+  return row as ContentRow;
+}
+
+export async function updateContent(id: string, data: TriviaQuestion | ChanceCard): Promise<void> {
+  assertConfigured();
+  const { error } = await supabase
+    .from('content')
+    .update({ data, updated_at: new Date().toISOString() })
+    .eq('id', id);
+  if (error) throw error;
+}
+
+export async function deleteContent(id: string): Promise<void> {
+  assertConfigured();
+  const { error } = await supabase.from('content').delete().eq('id', id);
+  if (error) throw error;
+}
+
+/** Realtime: content added/edited/removed on another device. */
+export function subscribeContent(onChange: () => void) {
+  const ch = supabase
+    .channel('content')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'content' }, onChange)
     .subscribe();
   return () => {
     supabase.removeChannel(ch);
@@ -655,6 +717,15 @@ export async function publishGame(name: string, board: Board, config: GameConfig
   assertConfigured();
   // strip runtime-only state; the game only needs the layout + scenery
   const payload = { ...board, phase: 'squares' as const };
+  // Freeze the shared trivia bank + chance deck into the game so mid-party
+  // content edits can't shift what's live. Tolerate a missing content table.
+  try {
+    const [bank, deck] = await Promise.all([listContent<TriviaQuestion>('trivia'), listContent<ChanceCard>('chance')]);
+    payload.triviaBank = bank.map((r) => r.data);
+    payload.chanceDeck = deck.map((r) => r.data);
+  } catch {
+    /* content table not set up yet → publish without a bank/deck */
+  }
   for (let attempt = 0; attempt < 6; attempt++) {
     const code = randomCode();
     const { data, error } = await supabase

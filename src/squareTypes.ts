@@ -34,7 +34,7 @@ export const SQUARE_TYPES: Record<SquareType, SquareTypeMeta> = {
   },
   chance: {
     label: 'Chance',
-    emoji: '🎲',
+    emoji: '❓',
     color: '#a855f7',
     hint: 'A random event, good or bad.',
   },

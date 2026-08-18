@@ -1760,20 +1760,15 @@ export default function App({
     }
   }
 
-  async function addSurroundings() {
+  function addSurroundings() {
     if (board.boundary.length < 3) {
       alert('Set the area first (Steps 1–2).');
       return;
     }
-    setSceneryLoading(true);
-    try {
-      const scenery = await buildScenery(board.boundary, board.edges);
-      setBoard((b) => ({ ...b, scenery }));
-    } catch (err) {
-      alert('Couldn’t load surroundings: ' + (err as Error).message + '\n(Overpass may be busy — try again.)');
-    } finally {
-      setSceneryLoading(false);
-    }
+    // The surroundings are pre-baked from real OSM + city tree data into one
+    // illustrated underlay image (see art-prototype/), so this is an instant
+    // toggle on the board itself — saved with the board, visible to players.
+    setBoard((b) => ({ ...b, artUnderlay: !b.artUnderlay }));
   }
 
   // --- file io ---------------------------------------------------------------
@@ -2063,16 +2058,13 @@ export default function App({
                   🔒 Lock layout (protects your hand edits from a redraw)
                 </label>
               )}
-              <button className="btn" onClick={addSurroundings} disabled={sceneryLoading}>
-                {sceneryLoading
-                  ? 'Loading surroundings…'
-                  : board.scenery
-                    ? '🎨 Refresh surroundings'
-                    : '🎨 Add surroundings'}
+              <button className="btn" onClick={addSurroundings}>
+                {board.artUnderlay ? '🎨 Remove surroundings' : '🎨 Add surroundings'}
               </button>
               <p className="hint">
-                Draws the track along the streets; “surroundings” paints the river,
-                parks, tree-lined streets, and real bars as stylized art.
+                Draws the track along the streets; “surroundings” paints the whole
+                illustrated neighborhood — houses, real street trees, parks, and
+                landmarks baked from real Milwaukee data.
               </p>
               <button className="btn btn--ghost" onClick={() => goToPhase('area')}>← Edit the area</button>
             </section>

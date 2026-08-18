@@ -107,4 +107,6 @@ export interface Board {
   locked: boolean;
   /** Stylized surroundings baked from OSM (optional until loaded). */
   scenery?: Scenery;
+  /** Show the baked illustrated-city underlay (public/art/board-underlay.webp). */
+  artUnderlay?: boolean;
 }

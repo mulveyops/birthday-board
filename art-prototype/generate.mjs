@@ -8,12 +8,15 @@ import { dirname, join } from 'path';
 import { allSymbols, ASSET_META, STRUCT_COUNT, TREATMENT_COUNT, INK, HOUSE_BODIES, HOUSE_ROOFS, SHOP_BODIES, AWNINGS, CAR_BODIES } from './assets.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
+const ROOT0 = join(HERE, '..');
+const board0 = JSON.parse(readFileSync(join(ROOT0, 'birthday-board.json'), 'utf8'));
+const bLats = board0.boundary.map((p) => p.lat), bLngs = board0.boundary.map((p) => p.lng);
 // raster heroes participate in normal placement/collision via ASSET_META
 ASSET_META['hero.st_hedwig'] = { halfW: 22, cls: 'standing', hero: true };
 ASSET_META['hero.wolskis'] = { halfW: 17, cls: 'standing', hero: true };
 ASSET_META['hero.gloriosos'] = { halfW: 22, cls: 'standing', hero: true };
 const ROOT = join(HERE, '..');
-const SCRATCH = 'C:/Users/Steven/AppData/Local/Temp/claude/C--Users-Steven-Documents-Birthday-2026/5d610d7c-43c1-4149-9704-c942971ebd14/scratchpad';
+// raw OSM data now lives IN the repo (data/osm_raw.json) for reproducibility
 
 // ---- slices: pass a key as argv[2]; default = the canonical test slice ----
 const SLICES = {
@@ -23,17 +26,21 @@ const SLICES = {
   cass: { S: 43.0493, W: -87.9035, N: 43.0541, E: -87.8975, out: 'style-c-slice-b' },
   // Phase B Test A: the Brady Street commercial spine + Wolski's + transitions
   brady: { S: 43.0517, W: -87.8998, N: 43.0558, E: -87.8933, out: 'style-c-brady' },
+  // the ENTIRE board polygon bbox — for the live-app underlay bake
+  full: { S: Math.min(...bLats), W: Math.min(...bLngs), N: Math.max(...bLats), E: Math.max(...bLngs), out: 'style-c-full' },
 };
 const SLICE = SLICES[process.argv[2] ?? 'pulaski'];
 if (!SLICE) throw new Error(`unknown slice: ${process.argv[2]}`);
 // compositing experiment: `node generate.mjs <slice> raster` swaps SVG fabric
 // for the batch-1 raster sprites (separate output files; normal mode untouched)
-const RASTER_FABRIC = process.argv[3] === 'raster';
-const OUTNAME = SLICE.out + (RASTER_FABRIC ? '-raster' : '');
+const RASTER_FABRIC = process.argv.includes('raster');
+// underlay mode: art only — NO track/nodes/garnish (the live app draws those)
+const UNDERLAY = process.argv.includes('underlay');
+const OUTNAME = SLICE.out + (RASTER_FABRIC ? '-raster' : '') + (UNDERLAY ? '-underlay' : '');
 const MARGIN = 25; // world meters of grass beyond the slice
 
 const board = JSON.parse(readFileSync(join(ROOT, 'birthday-board.json'), 'utf8'));
-const raw = JSON.parse(readFileSync(join(SCRATCH, 'osm_raw.json'), 'utf8'));
+const raw = JSON.parse(readFileSync(join(ROOT, 'data', 'osm_raw.json'), 'utf8'));
 const treeData = JSON.parse(readFileSync(join(ROOT, 'data', 'city_street_trees.json'), 'utf8')).trees;
 
 // ---- projection: local meters, y down, origin at slice NW ----
@@ -775,6 +782,15 @@ const FABRIC_RASTER = RASTER_FABRIC ? {
   'bldg.res.bungalow.s2': { file: PROD('bungalow_hipped_dormer_1.png'), widthM: 12.5, aspect: PORTRAIT, ax: 0.5, ay: 0.92 },
   'bldg.res.apartment.s0': { file: PROD('apartment_3story_walkup_1.png'), widthM: 16, aspect: PORTRAIT, ax: 0.5, ay: 0.93 },
   'bldg.com.storefront_row.s1': { file: PROD('storefront_row_3bay_1.png'), widthM: 22, aspect: LANDSCAPE, ax: 0.5, ay: 0.9 },
+  // trees: top-down canopies, anchored at the trunk base pot
+  'tree.linden.s0': { file: PROD('tree_linden_1.png'), widthM: 11, aspect: 1, ax: 0.5, ay: 0.93 },
+  'tree.maple.s0': { file: PROD('tree_maple_1.png'), widthM: 12, aspect: 1, ax: 0.5, ay: 0.93 },
+  'tree.honeylocust.s0': { file: PROD('tree_honeylocust_1.png'), widthM: 12, aspect: 1, ax: 0.5, ay: 0.93 },
+  'tree.flowering.s0': { file: PROD('tree_flowering_1.png'), widthM: 7.5, aspect: 1, ax: 0.5, ay: 0.93 },
+  'tree.flowering.s1': { file: PROD('tree_flowering_1.png'), widthM: 7.5, aspect: 1, ax: 0.5, ay: 0.93 },
+  'tree.elm.s0': { file: PROD('tree_elm_mature_1.png'), widthM: 13, aspect: 1, ax: 0.5, ay: 0.93 },
+  'tree.oak.s0': { file: PROD('tree_oak_1.png'), widthM: 15, aspect: 1, ax: 0.5, ay: 0.58 }, // pure plan view: trunk at center
+  'tree.ash.s0': { file: PROD('tree_maple_1.png'), widthM: 10, aspect: 1, ax: 0.5, ay: 0.93 }, // stand-in until an ash sprite exists
 } : {};
 // each sprite is embedded ONCE in <defs> and referenced per instance — an
 // inline data URI per instance made a 260MB svg, never again
@@ -856,7 +872,7 @@ ${(() => {
 ${groundEls.map((e) => `<use href="#${symbolRef(e)}" transform="translate(${e.x} ${e.y}) rotate(${e.rotation}) scale(${e.scale})"/>`).join('\n')}
 <!-- sidewalk apron -->
 ${edgeLines.map((pts) => `<polyline points="${pts}" fill="none" stroke="${SIDEWALK}" stroke-width="${CASING_M + 11}" stroke-linecap="round" stroke-linejoin="round"/>`).join('\n')}
-<!-- THE PATH: casing, fill, nodes -->
+${UNDERLAY ? '<!-- underlay mode: track/nodes drawn live by the app -->' : `<!-- THE PATH: casing, fill, nodes -->
 <g filter="url(#lift)">
 ${edgeLines.map((pts) => `<polyline points="${pts}" fill="none" stroke="${CASING}" stroke-width="${CASING_M}" stroke-linecap="round" stroke-linejoin="round"/>`).join('\n')}
 ${edgeLines.map((pts) => `<polyline points="${pts}" fill="none" stroke="${ROAD_FILL}" stroke-width="${FILL_M}" stroke-linecap="round" stroke-linejoin="round"/>`).join('\n')}
@@ -873,7 +889,7 @@ ${nodes.map((n) => {
     `<path d="M-3.2 -2 v5.6 M-0.6 -2 v6.4 M2 -2 v5.6" stroke="#c8901a" stroke-width="0.7" opacity="0.7"/></g>`;
   return `<circle cx="${cx}" cy="${cy}" r="15" fill="${nodeColor[n.type] ?? nodeColor.blank}" stroke="${CASING}" stroke-width="3.4"/>${inner}`;
 }).join('\n')}
-</g>
+</g>`}
 <!-- shadows -->
 ${standingEls.map(shadowFor).join('')}
 <!-- standing assets, painter-sorted -->
@@ -909,6 +925,12 @@ ${standingEls.map((e) => {
 
 mkdirSync(join(HERE, 'out'), { recursive: true });
 writeFileSync(join(HERE, 'out', `${OUTNAME}.svg`), svg);
+// image bounds in lat/lng (slice + margin) for the app's ImageOverlay
+writeFileSync(join(HERE, 'out', `${OUTNAME}.bounds.json`), JSON.stringify({
+  south: SLICE.S - MARGIN / KY, north: SLICE.N + MARGIN / KY,
+  west: SLICE.W - MARGIN / KX, east: SLICE.E + MARGIN / KX,
+  widthM: W, heightM: H,
+}, null, 1));
 writeFileSync(join(HERE, 'out', `${OUTNAME}.scene-model.json`), JSON.stringify({ slice: SLICE, counts: countScene(), scene }, null, 1));
 writeFileSync(join(HERE, 'out', `${OUTNAME}.html`),
   `<!doctype html><meta charset="utf-8"><title>Style C slice</title><body style="margin:0;background:#7ec4e0">${svg.replace('<svg ', '<svg style="width:100vw;height:100vh;display:block" ')}</body>`);

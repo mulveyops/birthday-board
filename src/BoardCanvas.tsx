@@ -1,5 +1,6 @@
 import { Fragment, useEffect, useMemo } from 'react';
 import {
+  ImageOverlay,
   MapContainer,
   TileLayer,
   Marker,
@@ -36,6 +37,17 @@ const SHOW_POIS = false;
 const SHOW_BLOCK_TINTS = false;
 const SHOW_GREENS = false; // parks/woods patches off — cleaner uniform grass
 const TREE_KEEP = 0; // no trees for now
+
+// Illustrated-city underlay (Vocabulary v1 bake): a single pre-rendered image
+// of the whole neighborhood under the vector track/nodes. Opt-in via ?art=1 so
+// the default board is untouched; flip the default after the party.
+const SHOW_ART_UNDERLAY =
+  typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('art');
+// bounds of the baked image (from art-prototype/out/style-c-full-raster-underlay.bounds.json)
+const ART_BOUNDS: [[number, number], [number, number]] = [
+  [43.049077397699506, -87.9037801166488],
+  [43.056460884389494, -87.89324663677681],
+];
 
 const vertexIcon = L.divIcon({ className: '', html: '<div class="vtx"></div>', iconSize: [14, 14], iconAnchor: [7, 7] });
 const vertexIconSel = L.divIcon({ className: '', html: '<div class="vtx vtx--sel"></div>', iconSize: [16, 16], iconAnchor: [8, 8] });
@@ -1287,6 +1299,11 @@ export default function BoardCanvas({
       {/* Land-use fills (grass/blocks/parks/water) now render inside the board
           SVG below, so they composite as one illustration with the sprites. */}
 
+      {/* Illustrated-city underlay — baked art beneath the vector game layer */}
+      {placingSquares && SHOW_ART_UNDERLAY && (
+        <ImageOverlay url="/art/board-underlay.webp" bounds={ART_BOUNDS} zIndex={1} />
+      )}
+
       {closed && (
         <Polygon
           positions={[WORLD_RING, placingSquares ? expandRing(ring, 30) : ring]}
@@ -1330,8 +1347,9 @@ export default function BoardCanvas({
           </defs>
 
           {/* GROUND PLANE — one continuous surface so nothing floats. Grass
-              base, then paved tints on non-residential blocks, then greens/water. */}
-          <polygon points={ptsOf(groundRing)} fill={GRASS} />
+              base, then paved tints on non-residential blocks, then greens/water.
+              With the art underlay on, the baked image IS the ground plane. */}
+          {!SHOW_ART_UNDERLAY && <polygon points={ptsOf(groundRing)} fill={GRASS} />}
           {SHOW_BLOCK_TINTS &&
             board.scenery?.blocks.map((b, i) => {
               const lawn = BLOCK_LAWN[b.kind];
@@ -1386,8 +1404,9 @@ export default function BoardCanvas({
           ))}
 
           {/* sidewalks — a pale curb strip flanking every street, so buildings
-              read as set back on their lots instead of clipped by the track */}
-          {board.edges.map((edge) => {
+              read as set back on their lots instead of clipped by the track
+              (baked into the art underlay when that's active) */}
+          {!SHOW_ART_UNDERLAY && board.edges.map((edge) => {
             const line = edgeLine(edge);
             if (!line) return null;
             return (

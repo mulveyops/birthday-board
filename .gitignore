@@ -4,3 +4,7 @@ dist-ssr
 *.local
 .DS_Store
 .vscode
+
+# full-board bakes are huge and regenerable (node art-prototype/generate.mjs full raster [underlay])
+art-prototype/out/style-c-full*
+art-prototype/out/board-underlay.webp

@@ -611,11 +611,13 @@ for (const e of scene.filter((s2) => s2.assetId === 'prop.alley')) {
 // trees; KEEP city-inventory street trees outside 20m, all ground assets, path
 const HERO_RASTER = {
   'hero.st_hedwig': {
-    file: join(HERE, 'heroes', 'st-hedwig-v1.png'),
+    file: join(HERE, 'heroes', 'st-hedwig-v2.png'),
     widthM: 60,            // display width in world meters (aspect preserved)
-    aspect: 1402 / 1122,   // h/w of the bitmap
-    anchorX: 0.42,         // tower-base door center in the bitmap
-    anchorY: 0.91,
+    aspect: 1448 / 1086,   // h/w of the bitmap
+    anchorX: 0.21,         // v2: tower-base entrance sits lower-LEFT (west facade)
+    anchorY: 0.88,
+    dxM: -20,              // anchor the tower over the real tower (west end of the
+                           // 48m footprint), letting the nave stretch back east
     evict: 30,
   },
 };
@@ -809,8 +811,9 @@ ${standingEls.map((e) => {
   if (HERO_RASTER[e.assetId] && heroData[e.assetId]) {
     const cfg = HERO_RASTER[e.assetId];
     const w2 = cfg.widthM, h2 = w2 * cfg.aspect;
-    return `<ellipse cx="${e.x}" cy="${e.y + 2}" rx="${(w2 * 0.38).toFixed(1)}" ry="3.4" fill="#2c2318" opacity="0.13"/>` +
-      `<image href="${heroData[e.assetId]}" x="${(e.x - w2 * cfg.anchorX).toFixed(1)}" y="${(e.y - h2 * cfg.anchorY).toFixed(1)}" width="${w2}" height="${h2.toFixed(1)}"/>`;
+    const hx = e.x + (cfg.dxM ?? 0);
+    return `<ellipse cx="${(hx + w2 * (0.5 - cfg.anchorX)).toFixed(1)}" cy="${(e.y + 2).toFixed(1)}" rx="${(w2 * 0.38).toFixed(1)}" ry="3.4" fill="#2c2318" opacity="0.13"/>` +
+      `<image href="${heroData[e.assetId]}" x="${(hx - w2 * cfg.anchorX).toFixed(1)}" y="${(e.y - h2 * cfg.anchorY).toFixed(1)}" width="${w2}" height="${h2.toFixed(1)}"/>`;
   }
   const st = variantStyle(e);
   // facing-aware mirror: flip the sprite when its frontage (street/corner)

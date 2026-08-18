@@ -10,6 +10,7 @@ import { allSymbols, ASSET_META, STRUCT_COUNT, TREATMENT_COUNT, INK, HOUSE_BODIE
 const HERE = dirname(fileURLToPath(import.meta.url));
 // raster heroes participate in normal placement/collision via ASSET_META
 ASSET_META['hero.st_hedwig'] = { halfW: 22, cls: 'standing', hero: true };
+ASSET_META['hero.wolskis'] = { halfW: 17, cls: 'standing', hero: true };
 const ROOT = join(HERE, '..');
 const SCRATCH = 'C:/Users/Steven/AppData/Local/Temp/claude/C--Users-Steven-Documents-Birthday-2026/5d610d7c-43c1-4149-9704-c942971ebd14/scratchpad';
 
@@ -174,9 +175,12 @@ const classify = (el) => {
   const lv = parseFloat(t['building:levels'] ?? '0');
   const area = areaOf(el.geometry);
   const name = t.name;
-  // Phase D2 raster hero test: St. Hedwig only, name-keyed
+  // Phase D2 raster heroes, name-keyed
   if (name && /hedwig catholic/i.test(name)) {
     return { assetId: 'hero.st_hedwig', priority: 0, s: 1, name, structure: 0 };
+  }
+  if (name && /wolski/i.test(name)) {
+    return { assetId: 'hero.wolskis', priority: 0, s: 1, name, structure: 0 };
   }
   if (b === 'church' || (t.amenity === 'place_of_worship' && b !== 'construction' && b)) {
     // real data picks the skyline: tall/large -> tower church, wide -> twin-tower
@@ -620,6 +624,15 @@ const HERO_RASTER = {
                            // 48m footprint), letting the nave stretch back east
     evict: 30,
   },
+  'hero.wolskis': {
+    file: join(HERE, 'heroes', 'wolskis-v1.png'),
+    widthM: 42,            // modest per packet — sign + character carry it
+    aspect: 1024 / 1536,
+    anchorX: 0.45,         // tavern front door / sign corner
+    anchorY: 0.82,
+    dxM: -3, dyM: 5,       // hug the Pulaski frontage, clear of the courts
+    evict: 20,
+  },
 };
 const heroes = scene.filter((e) => HERO_RASTER[e.assetId]);
 if (heroes.length) {
@@ -812,8 +825,9 @@ ${standingEls.map((e) => {
     const cfg = HERO_RASTER[e.assetId];
     const w2 = cfg.widthM, h2 = w2 * cfg.aspect;
     const hx = e.x + (cfg.dxM ?? 0);
-    return `<ellipse cx="${(hx + w2 * (0.5 - cfg.anchorX)).toFixed(1)}" cy="${(e.y + 2).toFixed(1)}" rx="${(w2 * 0.38).toFixed(1)}" ry="3.4" fill="#2c2318" opacity="0.13"/>` +
-      `<image href="${heroData[e.assetId]}" x="${(hx - w2 * cfg.anchorX).toFixed(1)}" y="${(e.y - h2 * cfg.anchorY).toFixed(1)}" width="${w2}" height="${h2.toFixed(1)}"/>`;
+    const hy = e.y + (cfg.dyM ?? 0);
+    return `<ellipse cx="${(hx + w2 * (0.5 - cfg.anchorX)).toFixed(1)}" cy="${(hy + 2).toFixed(1)}" rx="${(w2 * 0.38).toFixed(1)}" ry="3.4" fill="#2c2318" opacity="0.13"/>` +
+      `<image href="${heroData[e.assetId]}" x="${(hx - w2 * cfg.anchorX).toFixed(1)}" y="${(hy - h2 * cfg.anchorY).toFixed(1)}" width="${w2}" height="${h2.toFixed(1)}"/>`;
   }
   const st = variantStyle(e);
   // facing-aware mirror: flip the sprite when its frontage (street/corner)

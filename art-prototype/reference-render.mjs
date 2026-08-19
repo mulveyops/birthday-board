@@ -9,9 +9,11 @@
 //   node art-prototype/reference-render.mjs <board.json> [outBase]
 //     → <outBase>.png          clean base for the img2img repaint
 //       <outBase>-grid.png     same image + labeled A1/B2/… grid (the
-//                              "director's copy" for per-cell art direction)
-//       <outBase>-manifest.md  every spot listed by grid cell, with a
-//                              "what to paint here" column to fill in
+//                              "director's copy" for locating things)
+//       <outBase>-prompt.md    COMPLETE standalone prompt for a FRESH ChatGPT
+//                              chat: canvas contract, marker semantics,
+//                              relational landmark positions, block-by-block
+//                              fabric — paste whole, attach both images
 //       <outBase>.meta.json    true per-spot pixel coords for drift-check
 //     (default outBase: art-prototype/out/reference)
 //
@@ -145,6 +147,21 @@ const cellOf = (xM, yM) => `${colName(Math.min(cols - 1, Math.floor(xM / CELL_M)
   const cellOfLL = (p) => cellOf(X(p), Y(p));
   const inFrame = (p) => X(p) >= 0 && X(p) <= W && Y(p) >= 0 && Y(p) <= H;
 
+  // "35 m NE of the intersection marker in E5" — every intersection is a
+  // visible dot on the base image, so it's the perfect anchor language.
+  const COMPASS = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+  const whereIs = (p) => {
+    let best = null, bestD = Infinity;
+    for (const s of spots) {
+      const d = Math.hypot(X(s) - X(p), Y(s) - Y(p));
+      if (d < bestD) { bestD = d; best = s; }
+    }
+    if (!best || bestD < 12) return `exactly at the marker in ${cellOfLL(p)}`;
+    const ang = (Math.atan2(X(p) - X(best), -(Y(p) - Y(best))) * 180) / Math.PI; // 0=N, cw
+    const dir = COMPASS[Math.round(((ang + 360) % 360) / 45) % 8];
+    return `${Math.round(bestD)} m ${dir} of the intersection marker in ${cellOf(X(best), Y(best))}`;
+  };
+
   // Baked scene world (optional — sections just shrink if it's absent).
   let scene = null;
   try {
@@ -163,11 +180,11 @@ const cellOf = (xM, yM) => `${colName(Math.min(cols - 1, Math.floor(xM / CELL_M)
     .filter((e) => e.t === 'img' && inFrame(e))
     .map((e) => {
       const key = Object.keys(HERO_DESC).find((k) => (e.href || '').includes(k));
-      return { cell: cellOfLL(e), desc: HERO_DESC[key] ?? `**${e.href}**` };
+      return { cell: cellOfLL(e), desc: HERO_DESC[key] ?? `**${e.href}**`, loc: whereIs(e) };
     });
   const taverns = (scene?.standing ?? [])
     .filter((e) => e.label && inFrame(e))
-    .map((e) => ({ cell: cellOfLL(e), desc: `**${e.label}** — corner tavern with its name on the signboard` }));
+    .map((e) => ({ cell: cellOfLL(e), desc: `**${e.label}** — corner tavern with its name on the signboard`, loc: whereIs(e) }));
 
   // Block-by-block character: classify every baked sprite into a friendly name.
   const FAMILY = [
@@ -245,64 +262,72 @@ const cellOf = (xM, yM) => `${colName(Math.min(cols - 1, Math.floor(xM / CELL_M)
     .map(({ s, cell }) => `| ${cell} | ${s.type} | ${nameOf(s)} | ${SEED[s.type]?.(nameOf(s)) ?? ''} |`)
     .join('\n');
 
-  const manifest = `# Board painting manifest — full scene description
+  const prompt = `# Paint the Lower East Side game board (complete brief — fresh chat)
 
-Paint over \`${outBase}.png\`; use \`${outBase}-grid.png\` only to locate things
-(do NOT paint the grid). Grid: ${CELL_M}m cells, columns A–${colName(cols - 1)} west→east,
-rows 1–${rows} north→south.
+You are painting ONE image: Milwaukee's Lower East Side as a cohesive
+storybook board-game map. Two images are attached:
 
-## Overview
+1. **The base map** — you paint OVER this. It is the ground truth.
+2. **The gridded copy** — identical, plus a labeled grid (${CELL_M}m cells,
+   columns A–${colName(cols - 1)} west→east, rows 1–${rows} north→south). Use it ONLY to locate
+   the things described below. Never paint the grid lines or labels.
 
-This is Milwaukee's Lower East Side as one cohesive storybook board-game
-illustration: a leafy riverside neighborhood of wooden Polish flats, brick
-duplexes and bungalows, corner taverns, and big street trees. The island,
-Milwaukee River, banner, and compass are already painted — keep them. The
-sand-colored streets and every marker must stay EXACTLY where they are:
-white dots are landable plazas on the road, red dots are named landmark
-buildings. Blocks between streets get the buildings/trees described below.
+## Canvas contract (non-negotiable)
 
-Building glossary (Milwaukee vernacular, for every cell below):
-- **Polish flat** — a wooden cottage raised on a tall half-exposed brick
-  basement, with front stairs up to the raised first floor. The signature
-  house of this neighborhood.
-- **brick duplex** — a wide two-family brick house, two front doors.
-- **bungalow** — low 1.5-story house with a big hipped/dormered roof.
-- **3-story walk-up apartment** — flat-roofed brick block.
-- **storefront** — commercial ground floor with awning/sign band, on corners
-  and along the main streets.
+- Output the SAME canvas as the base map: **portrait, ${pxW}×${pxH} px
+  (aspect ${(pxW / pxH).toFixed(3)})**. Do not crop to landscape, rotate,
+  zoom, or letterbox.
+- The island's shape and size, the wide Milwaukee River along the northwest,
+  the water margin all around, the banner, and the compass stay EXACTLY as
+  painted in the base. The river must remain a broad band — do not thin it.
+- Every street stays exactly where it is: same position, same width, same
+  curves. Do not add, remove, merge, or move any street.
+- Every dot marker stays exactly where it is:
+  - **white dots** = landable plazas ON the road — keep each one a clear,
+    visible round plaza; never cover one with a building or tree.
+  - **red dots** = named landmark buildings — replace each dot with its
+    building (listed below) placed so its entrance faces that exact point.
 
-## Bespoke landmarks (paint these true to their real look)
+## Landmarks — exact locations (use the grid copy to find each)
 
-${[...heroes, ...taverns].map((h) => `- ${h.cell}: ${h.desc}`).join('\n') || '- (none in the baked scene — landmark bars come from the board spots below)'}
+${[...heroes, ...taverns].map((h) => `- **${h.cell}** — ${h.loc}: ${h.desc}`).join('\n') || '- (landmark bars come from the game-spot table below)'}
 
 ## Game spots (players land here — the art must match the role)
 
-| Cell | Type | Name | What to paint here |
-|------|------|------|--------------------|
+| Cell | Type | Name | What to paint at this marker |
+|------|------|------|------------------------------|
 ${spotRows}
 
-Plus ${blanks} plain intersections (white dots) — keep them clear and legible,
-no buildings on top of them.
+Plus ${blanks} plain intersections (white dots) — keep them clear and legible.
 
 ## Parks & recreation
 
 ${parkRows || '- (none baked)'}
 
-## Block-by-block character (what stands on each grid cell today)
+## Block-by-block fabric (what stands on each grid cell)
+
+Building glossary:
+- **Polish flat** — wooden cottage raised on a tall half-exposed brick
+  basement, front stairs up to the raised first floor. The signature house
+  of this neighborhood.
+- **brick duplex** — wide two-family brick house, two front doors.
+- **bungalow** — low 1.5-story house, big hipped/dormered roof.
+- **3-story walk-up apartment** — flat-roofed brick block.
+- **storefront** — commercial ground floor with awning/sign band.
 
 | Cell | Contents |
 |------|----------|
 ${charRows || '| — | (no baked scene data) |'}
 
-## Ground rules
+## Style
 
-- Do not move, add, or remove any street, intersection, or marker.
-- Do not paint the grid lines or cell labels into the image.
-- Tree species and building types above reflect the real neighborhood — vary
-  them naturally but keep each cell's mix and density.
-- One consistent painterly style throughout (match the island/banner art).
+One consistent painterly storybook style throughout, matching the island,
+water, banner, and compass already in the base. Thick friendly outlines,
+bright but natural palette, gentle top-down-oblique view (roofs dominant,
+walls slightly visible). No text anywhere except the banner, the river name,
+and the landmark signboards named above.
 `;
-  writeFileSync(`${outBase}-manifest.md`, manifest);
+  writeFileSync(`${outBase}-prompt.md`, prompt);
 }
 
 // --- sidecar meta: pixel coords for drift-check + future calibration --------

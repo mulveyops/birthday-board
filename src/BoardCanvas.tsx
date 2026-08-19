@@ -76,11 +76,34 @@ const SHADOW = '#2c2822';
 // ground and the map background into the art's palette.
 const BACKDROP_FIT: Record<
   'frame' | 'island' | 'cage',
-  { blob?: { x0: number; x1: number; y0: number; y1: number }; grass?: string; sky: string }
+  {
+    blob?: { x0: number; x1: number; y0: number; y1: number };
+    grass?: string;
+    sky: string;
+    /** Street palette pulled from the art (shore-sand family) so the track
+     * reads as painted into the illustration, not drawn over it. */
+    road?: string;
+    casing?: string;
+    sidewalk?: string;
+  }
 > = {
   frame: { sky: '#b5dff5' }, // pure surround, open center — full-bounds stretch
-  island: { blob: { x0: 0.085, x1: 0.943, y0: 0.154, y1: 0.91 }, grass: '#cad7a1', sky: '#b8dae3' },
-  cage: { blob: { x0: 0.141, x1: 0.876, y0: 0.172, y1: 0.863 }, grass: '#ccd882', sky: '#86c0e3' },
+  island: {
+    blob: { x0: 0.085, x1: 0.943, y0: 0.154, y1: 0.91 },
+    grass: '#cad7a1',
+    sky: '#b8dae3',
+    road: '#eeddab',
+    casing: '#8a7452',
+    sidewalk: '#d8c78f',
+  },
+  cage: {
+    blob: { x0: 0.141, x1: 0.876, y0: 0.172, y1: 0.863 },
+    grass: '#ccd882',
+    sky: '#86c0e3',
+    road: '#eeddab',
+    casing: '#8a7452',
+    sidewalk: '#d8c78f',
+  },
 };
 /** Grass margin (m) past the board bbox before the art's shoreline begins. */
 const SHORE_M = 60;
@@ -1483,7 +1506,7 @@ export default function BoardCanvas({
                 key={`sw${edge.id}`}
                 points={ptsOf(line)}
                 fill="none"
-                stroke={SIDEWALK}
+                stroke={backdropFit?.sidewalk ?? SIDEWALK}
                 strokeWidth={CASING_M + 12}
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -1504,7 +1527,7 @@ export default function BoardCanvas({
                 key={`c${edge.id}`}
                 points={ptsOf(line)}
                 fill="none"
-                stroke={edge.id === selectedEdgeId ? '#a16207' : '#3f3b36'}
+                stroke={edge.id === selectedEdgeId ? '#a16207' : backdropFit?.casing ?? '#3f3b36'}
                 strokeWidth={CASING_M}
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -1522,7 +1545,7 @@ export default function BoardCanvas({
                 key={`f${edge.id}`}
                 points={ptsOf(line)}
                 fill="none"
-                stroke={ROAD_FILL}
+                stroke={backdropFit?.road ?? ROAD_FILL}
                 strokeWidth={FILL_M}
                 strokeLinecap="round"
                 strokeLinejoin="round"

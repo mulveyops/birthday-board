@@ -1348,7 +1348,10 @@ export default function BoardCanvas({
       {/* Land-use fills (grass/blocks/parks/water) now render inside the board
           SVG below, so they composite as one illustration with the sprites. */}
 
-      {closed && (
+      {/* Outside-the-board mask: hides the real-world margin behind flat sky.
+          An illustrated backdrop is opaque and does that job itself — masking
+          over it would blank out the painted shores. */}
+      {closed && !(placingSquares && board.backdrop) && (
         <Polygon
           positions={[WORLD_RING, placingSquares ? expandRing(ring, 30) : ring]}
           pathOptions={{
@@ -1406,10 +1409,11 @@ export default function BoardCanvas({
           {/* GROUND PLANE — one continuous surface so nothing floats. Grass
               base, then paved tints on non-residential blocks, then greens/water.
               With the art underlay on, the baked image IS the ground plane. */}
-          <polygon
-            points={ptsOf(groundRing)}
-            fill={backdropFit?.grass ?? (board.artUnderlay ? '#a9d476' : GRASS)}
-          />
+          {/* With a landmass backdrop, the painting IS the ground — streets and
+              spots sit directly on it, no flat fill covering its texture. */}
+          {!backdropFit?.blob && (
+            <polygon points={ptsOf(groundRing)} fill={board.artUnderlay ? '#a9d476' : GRASS} />
+          )}
           {board.artUnderlay && <SceneGround X={X} Y={Y} />}
           {SHOW_BLOCK_TINTS &&
             board.scenery?.blocks.map((b, i) => {

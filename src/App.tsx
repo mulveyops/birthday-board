@@ -2331,6 +2331,15 @@ export default function App({
                     Delete path
                   </button>
                 </div>
+                {(selectedEdge.path?.length ?? 0) > 2 && (
+                  <button
+                    className="btn"
+                    onClick={() => updateEdge(selectedEdge.id, { path: undefined })}
+                    title="Drop the traced street geometry — draw this street as a straight line"
+                  >
+                    📏 Straighten street
+                  </button>
+                )}
               </section>
             )}
 

@@ -68,6 +68,37 @@ const WOOD_FILL = '#8bb463';
 const WATER_FILL = '#8fd8e8';
 const SIDEWALK = '#dad3c2';
 const SHADOW = '#2c2822';
+
+// Illustrated-backdrop metrics, MEASURED from the art (sharp pixel scans):
+// `blob` = where the landmass sits in the image (fractions of width/height) —
+// the SVG frame is shaped so the image maps full-frame with its landmass
+// hugging the board bbox plus a shore margin. `grass`/`sky` blend the board's
+// ground and the map background into the art's palette.
+const BACKDROP_FIT: Record<
+  'frame' | 'island' | 'cage',
+  { blob?: { x0: number; x1: number; y0: number; y1: number }; grass?: string; sky: string }
+> = {
+  frame: { sky: '#b5dff5' }, // pure surround, open center — full-bounds stretch
+  island: { blob: { x0: 0.085, x1: 0.943, y0: 0.154, y1: 0.91 }, grass: '#cad7a1', sky: '#b8dae3' },
+  cage: { blob: { x0: 0.141, x1: 0.876, y0: 0.172, y1: 0.863 }, grass: '#ccd882', sky: '#86c0e3' },
+};
+/** Grass margin (m) past the board bbox before the art's shoreline begins. */
+const SHORE_M = 60;
+/** Sky padding (m) around the board when no landmass backdrop shapes the frame. */
+const SKY_PAD_M = 620;
+
+/** Per-side frame padding in meters: plain sky is uniform; a landmass backdrop
+ * shapes the frame so its blob lands exactly on the board bbox + shore. */
+function framePads(board: Board, bWm: number, bHm: number) {
+  const fit = board.phase === 'squares' && board.backdrop ? BACKDROP_FIT[board.backdrop] : undefined;
+  if (!fit?.blob) return { l: SKY_PAD_M, r: SKY_PAD_M, t: SKY_PAD_M, b: SKY_PAD_M };
+  const { x0, x1, y0, y1 } = fit.blob;
+  const FW = (bWm + 2 * SHORE_M) / (x1 - x0);
+  const FH = (bHm + 2 * SHORE_M) / (y1 - y0);
+  const l = FW * x0 + SHORE_M;
+  const t = FH * y0 + SHORE_M;
+  return { l, r: FW - l - bWm, t, b: FH - t - bHm };
+}
 // POI-only board: the road is one clean path (single fill, no per-tile colors or
 // dividers). The "spaces" are the intersections, drawn as nodes on top.
 const ROAD_FILL = '#e9e4d7';
@@ -805,10 +836,27 @@ function MapController({ board, recage }: { board: Board; recage: number }) {
       map.options.maxBoundsViscosity = 0;
       return;
     }
-    const skyPad = board.phase === 'squares' ? 0.14 : 0; // extra blue sky around the board
-    const bounds = L.latLngBounds(
-      board.boundary.map((p) => [p.lat, p.lng] as [number, number]),
-    ).pad(board.padding + skyPad);
+    let bounds: L.LatLngBounds;
+    const fit = board.phase === 'squares' && board.backdrop ? BACKDROP_FIT[board.backdrop] : undefined;
+    if (fit?.blob) {
+      // Match the view to the art-shaped SVG frame so the whole backdrop
+      // (banner included) is what the fully-zoomed-out board shows.
+      const lats = board.boundary.map((p) => p.lat);
+      const lngs = board.boundary.map((p) => p.lng);
+      const midLat = (Math.min(...lats) + Math.max(...lats)) / 2;
+      const kx = Math.cos((midLat * Math.PI) / 180) * 111320;
+      const ky = 111320;
+      const pad = framePads(board, (Math.max(...lngs) - Math.min(...lngs)) * kx, (Math.max(...lats) - Math.min(...lats)) * ky);
+      bounds = L.latLngBounds([
+        [Math.min(...lats) - pad.b / ky, Math.min(...lngs) - pad.l / kx],
+        [Math.max(...lats) + pad.t / ky, Math.max(...lngs) + pad.r / kx],
+      ]);
+    } else {
+      const skyPad = board.phase === 'squares' ? 0.14 : 0; // extra blue sky around the board
+      bounds = L.latLngBounds(board.boundary.map((p) => [p.lat, p.lng] as [number, number])).pad(
+        board.padding + skyPad,
+      );
+    }
     const fitZoom = map.getBoundsZoom(bounds);
     map.setMinZoom(fitZoom);
     map.setMaxZoom(fitZoom + 3);
@@ -816,7 +864,7 @@ function MapController({ board, recage }: { board: Board; recage: number }) {
     map.options.maxBoundsViscosity = 1.0;
     map.fitBounds(bounds);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [map, board.phase, board.padding, recage]);
+  }, [map, board.phase, board.padding, board.backdrop, recage]);
   return null;
 }
 
@@ -930,6 +978,7 @@ export default function BoardCanvas({
   const closed = board.boundaryClosed && ring.length >= 3;
   const editingArea = board.phase === 'area';
   const placingSquares = board.phase === 'squares';
+  const backdropFit = board.backdrop ? BACKDROP_FIT[board.backdrop] : undefined;
   // Grass reaches the mask edge (junctions sit ~12m outside the drawn line).
   const groundRing = closed ? expandRing(ring, 30) : ring;
 
@@ -952,13 +1001,18 @@ export default function BoardCanvas({
     const midLat = (Math.min(...lats) + Math.max(...lats)) / 2;
     const kx = Math.cos((midLat * Math.PI) / 180) * 111320;
     const ky = 111320;
-    const padM = 620; // room for the sky + clouds around the board
-    const minLat = Math.min(...lats) - padM / ky;
-    const maxLat = Math.max(...lats) + padM / ky;
-    const minLng = Math.min(...lngs) - padM / kx;
-    const maxLng = Math.max(...lngs) + padM / kx;
+    // Frame padding: plain sky is a fixed margin; a landmass backdrop shapes
+    // the frame so the art's island lands right on the board (see framePads).
+    const bWm = (Math.max(...lngs) - Math.min(...lngs)) * kx;
+    const bHm = (Math.max(...lats) - Math.min(...lats)) * ky;
+    const pad = framePads(board, bWm, bHm);
+    const minLat = Math.min(...lats) - pad.b / ky;
+    const maxLat = Math.max(...lats) + pad.t / ky;
+    const minLng = Math.min(...lngs) - pad.l / kx;
+    const maxLng = Math.max(...lngs) + pad.r / kx;
     return { minLat, maxLat, minLng, maxLng, kx, ky, W: (maxLng - minLng) * kx, H: (maxLat - minLat) * ky };
-  }, [board.boundary]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [board.boundary, board.backdrop, board.phase]);
 
   // Bars and POIs become storefront art snapped to face the nearest street,
   // standing 17m off the centerline (clear of the 26m-wide track) on their
@@ -1270,7 +1324,12 @@ export default function BoardCanvas({
   const pfClear = parkFeatures.map((pf) => ({ x: X({ lat: pf.lat, lng: pf.lng }), y: Y({ lat: pf.lat, lng: pf.lng }), r: 24 * pf.sc }));
 
   return (
-    <MapContainer center={board.center} zoom={board.zoom} className="map">
+    <MapContainer
+      center={board.center}
+      zoom={board.zoom}
+      className="map"
+      style={placingSquares && backdropFit ? { background: backdropFit.sky } : undefined}
+    >
       {/* Real map tiles only during setup; the board itself is stylized art. */}
       {!placingSquares && (
         <TileLayer
@@ -1347,7 +1406,10 @@ export default function BoardCanvas({
           {/* GROUND PLANE — one continuous surface so nothing floats. Grass
               base, then paved tints on non-residential blocks, then greens/water.
               With the art underlay on, the baked image IS the ground plane. */}
-          <polygon points={ptsOf(groundRing)} fill={board.artUnderlay ? '#a9d476' : GRASS} />
+          <polygon
+            points={ptsOf(groundRing)}
+            fill={backdropFit?.grass ?? (board.artUnderlay ? '#a9d476' : GRASS)}
+          />
           {board.artUnderlay && <SceneGround X={X} Y={Y} />}
           {SHOW_BLOCK_TINTS &&
             board.scenery?.blocks.map((b, i) => {
@@ -1364,14 +1426,18 @@ export default function BoardCanvas({
             board.scenery?.parks.map((r, i) =>
               r.length >= 3 ? <polygon key={`pk${i}`} points={ptsOf(r)} fill={PARK_FILL} /> : null,
             )}
-          {board.scenery?.water.map((r, i) =>
-            r.length >= 3 ? (
-              <polygon key={`wt${i}`} points={ptsOf(r)} fill={WATER_FILL} stroke="#3a7b8c" strokeWidth={1.5} />
-            ) : null,
-          )}
+          {/* water + rivers: drawn only on the plain sky — an illustrated
+              backdrop paints its own river, so the SVG one would double it */}
+          {!board.backdrop &&
+            board.scenery?.water.map((r, i) =>
+              r.length >= 3 ? (
+                <polygon key={`wt${i}`} points={ptsOf(r)} fill={WATER_FILL} stroke="#3a7b8c" strokeWidth={1.5} />
+              ) : null,
+            )}
 
           {/* rivers: dark bank, bright water, dashed current */}
-          {board.scenery?.rivers.map((line, i) => (
+          {!board.backdrop &&
+          board.scenery?.rivers.map((line, i) => (
             <Fragment key={`rv${i}`}>
               <polyline
                 points={ptsOf(line)}

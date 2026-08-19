@@ -2172,6 +2172,20 @@ export default function App({
               <button className="btn" onClick={addSurroundings}>
                 {board.artUnderlay ? '🎨 Remove surroundings' : '🎨 Add surroundings'}
               </button>
+              <label className="field">
+                <span>🖼️ Backdrop (sky, river & banner art)</span>
+                <select
+                  value={board.backdrop ?? ''}
+                  onChange={(e) =>
+                    setBoard((b) => ({ ...b, backdrop: (e.target.value || undefined) as Board['backdrop'] }))
+                  }
+                >
+                  <option value="">Plain sky (drawn)</option>
+                  <option value="frame">Frame — river & bridge, open center</option>
+                  <option value="island">Island — shores all around</option>
+                  <option value="cage">Cage — green board on blue</option>
+                </select>
+              </label>
               <p className="hint">
                 Draws the track along the streets; “surroundings” paints the whole
                 illustrated neighborhood — houses, real street trees, parks, and

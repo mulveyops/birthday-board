@@ -1331,6 +1331,19 @@ export default function BoardCanvas({
             </filter>
           </defs>
 
+          {/* ILLUSTRATED BACKDROP — sky/river/banner art under everything.
+              Stretched to the padded bounds; the board draws on top. */}
+          {board.backdrop && (
+            <image
+              href={`/art/backdrops/${board.backdrop}.webp`}
+              x={0}
+              y={0}
+              width={geo.W}
+              height={geo.H}
+              preserveAspectRatio="none"
+            />
+          )}
+
           {/* GROUND PLANE — one continuous surface so nothing floats. Grass
               base, then paved tints on non-residential blocks, then greens/water.
               With the art underlay on, the baked image IS the ground plane. */}
@@ -1690,8 +1703,10 @@ export default function BoardCanvas({
             </g>
           ))}
 
-          {/* clouds scattered across the whole blue sky around the board */}
+          {/* clouds scattered across the whole blue sky around the board
+              (the illustrated backdrop paints its own sky, clouds and all) */}
           {closed &&
+            !board.backdrop &&
             (() => {
               const clouds: JSX.Element[] = [];
               const keepOut = expandRing(ring, 48).map(([lat, lng]) => ({ lat, lng }));
@@ -1716,9 +1731,10 @@ export default function BoardCanvas({
               return clouds;
             })()}
 
-          {/* board-game garnish: title ribbon + compass cartouche */}
-          <RibbonSprite x={geo.W / 2} y={100} text="Lower East Side" />
-          <CartoucheSprite x={geo.W - 165} y={geo.H - 175} s={1.5} />
+          {/* board-game garnish: title ribbon + compass cartouche (the
+              illustrated backdrop has its own banner + compass baked in) */}
+          {!board.backdrop && <RibbonSprite x={geo.W / 2} y={100} text="Lower East Side" />}
+          {!board.backdrop && <CartoucheSprite x={geo.W - 165} y={geo.H - 175} s={1.5} />}
         </SVGOverlay>
       )}
 

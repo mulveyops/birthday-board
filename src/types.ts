@@ -127,6 +127,9 @@ export interface Board {
   scenery?: Scenery;
   /** Show the baked illustrated-city underlay (public/art/board-underlay.webp). */
   artUnderlay?: boolean;
+  /** Illustrated backdrop behind the board (public/art/backdrops/*.webp).
+   * Replaces the procedural clouds/ribbon/compass — the art brings its own. */
+  backdrop?: 'frame' | 'island' | 'cage';
   /** Shared trivia bank, snapshotted from the content table at publish.
    * Challenge spots without pinned questions deal from this. */
   triviaBank?: TriviaQuestion[];

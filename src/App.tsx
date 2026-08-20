@@ -406,12 +406,26 @@ export default function App({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Create a fresh blank layout, or duplicate the current working board.
+  // Save the working board as a new layout (the safe default), or start a
+  // blank one — which REPLACES the board on screen, so it confirms first.
   async function newLayout(fromCurrent: boolean) {
+    if (
+      !fromCurrent &&
+      !confirm(
+        'Start a blank layout? The board on screen will be replaced by an empty one — anything not already saved to a layout or exported to a file will be lost.',
+      )
+    ) {
+      return;
+    }
     const suggested = fromCurrent
-      ? `${layouts.find((l) => l.id === currentLayoutId)?.name ?? 'Layout'} copy`
+      ? currentLayoutId
+        ? `${layouts.find((l) => l.id === currentLayoutId)?.name ?? 'Layout'} copy`
+        : 'Party board'
       : `Version ${String.fromCharCode(65 + layouts.length)}`;
-    const name = prompt(fromCurrent ? 'Name for the duplicate' : 'Name this new layout', suggested);
+    const name = prompt(
+      fromCurrent ? 'Save the board on screen as a layout named:' : 'Name this new blank layout',
+      suggested,
+    );
     if (!name?.trim()) return;
     await flushSave();
     setCloudStatus('saving');
@@ -2877,11 +2891,11 @@ export default function App({
                 <p className="hint">No shared layouts yet — create one to start editing together.</p>
               )}
               <div className="row">
-                <button className="btn" onClick={() => void newLayout(false)}>
-                  ＋ New
+                <button className="btn" onClick={() => void newLayout(true)}>
+                  ＋ Save board as new
                 </button>
-                <button className="btn" onClick={() => void newLayout(true)} disabled={!currentLayoutId}>
-                  ⧉ Duplicate
+                <button className="btn btn--ghost" onClick={() => void newLayout(false)}>
+                  Blank
                 </button>
               </div>
               <div className="row">

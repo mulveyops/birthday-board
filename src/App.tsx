@@ -2549,6 +2549,7 @@ export default function App({
             <button className="btn" onClick={runGpsTest}>
               📍 Test my GPS
             </button>
+            <p className="hint" style={{ opacity: 0.6, fontSize: '0.7rem' }}>build {__BUILD_SHA__}</p>
             {gpsTest && <p className="hint">{gpsTest}</p>}
             <button className="btn" onClick={bumpCage}>
               🎯 Recenter board

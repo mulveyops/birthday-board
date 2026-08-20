@@ -203,6 +203,68 @@ export function shiftPathEnd(
   });
 }
 
+/**
+ * Close street gaps: a dead-end space sitting a few metres from the junction
+ * that carries the street on is a generator artifact (the run got clipped
+ * before the jog-merge could weld them). Re-point the stub's street onto that
+ * junction — blending the path end so the corner curves in instead of kinking
+ * — and drop the stub. Same rule as the generator's MERGE_LEN jog collapse,
+ * applied to a finished (possibly hand-edited) board.
+ */
+export function closeStreetGaps(
+  squares: Square[],
+  edges: Edge[],
+  maxGap = MERGE_LEN,
+): { squares: Square[]; edges: Edge[]; closed: { at: LatLng; gap: number }[] } {
+  let sq = [...squares];
+  let ed: Edge[] = edges.map((e) => ({ ...e, path: e.path ? [...e.path] : undefined }));
+  const closed: { at: LatLng; gap: number }[] = [];
+
+  for (;;) {
+    const deg = new Map<string, number>();
+    for (const e of ed) {
+      deg.set(e.from, (deg.get(e.from) ?? 0) + 1);
+      deg.set(e.to, (deg.get(e.to) ?? 0) + 1);
+    }
+    // Pick the tightest unclosed gap first, so near-misses resolve predictably.
+    let best: { stub: Square; target: Square; gap: number } | null = null;
+    for (const stub of sq) {
+      if ((deg.get(stub.id) ?? 0) !== 1) continue;
+      const link = ed.find((e) => e.from === stub.id || e.to === stub.id)!;
+      const otherId = link.from === stub.id ? link.to : link.from;
+      for (const t of sq) {
+        if (t.id === stub.id || t.id === otherId) continue;
+        const gap = metersBetween(stub, t);
+        if (gap <= maxGap && (!best || gap < best.gap)) best = { stub, target: t, gap };
+      }
+    }
+    if (!best) break;
+
+    const { stub, target, gap } = best;
+    const link = ed.find((e) => e.from === stub.id || e.to === stub.id)!;
+    const otherId = link.from === stub.id ? link.to : link.from;
+    const already = ed.some(
+      (e) => e !== link && ((e.from === otherId && e.to === target.id) || (e.to === otherId && e.from === target.id)),
+    );
+    if (already) {
+      ed = ed.filter((e) => e !== link); // the street is already carried — just drop the stub
+    } else {
+      const atStart = link.from === stub.id;
+      const path = link.path?.length
+        ? shiftPathEnd(link.path, atStart ? 'start' : 'end', target.lat - stub.lat, target.lng - stub.lng)
+        : undefined;
+      const next: Edge = { ...link, path };
+      if (atStart) next.from = target.id;
+      else next.to = target.id;
+      ed = ed.map((e) => (e === link ? next : e));
+    }
+    sq = sq.filter((s) => s.id !== stub.id);
+    closed.push({ at: { lat: stub.lat, lng: stub.lng }, gap: Math.round(gap) });
+  }
+
+  return { squares: sq, edges: ed, closed };
+}
+
 /** Union-find over node/cluster ids. */
 class DSU {
   private parent = new Map<number, number>();

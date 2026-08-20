@@ -1,10 +1,13 @@
-node_modules
-dist
-dist-ssr
-*.local
-.DS_Store
-.vscode
 
 # full-board bakes are huge and regenerable (node art-prototype/generate.mjs full raster [underlay])
-art-prototype/out/style-c-full*
+*.local
+*.tsbuildinfo
+.DS_Store
+.vscode
 art-prototype/out/board-underlay.webp
+art-prototype/out/style-c-full*
+dist
+dist-ssr
+node_modules
+vite.config.d.ts
+vite.config.js

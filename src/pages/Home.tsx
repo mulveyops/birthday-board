@@ -1,15 +1,6 @@
-import { useEffect, useState } from 'react';
 import { navigate } from '../Root';
 
 export default function Home() {
-  const [wag, setWag] = useState(false);
-
-  useEffect(() => {
-    if (!wag) return;
-    const t = setTimeout(() => setWag(false), 3000);
-    return () => clearTimeout(t);
-  }, [wag]);
-
   return (
     <div className="site">
       <div className="site-card">
@@ -21,23 +12,13 @@ export default function Home() {
           <button className="site-btn site-btn--primary" onClick={() => navigate('/rsvp')}>
             RSVP
           </button>
-          <button className="site-btn" onClick={() => setWag(true)}>
+          {/* Straight to the join screen — it asks for the code the host hands
+              out at the party, so there's nothing to gate here. */}
+          <button className="site-btn" onClick={() => navigate('/play')}>
             Play
           </button>
         </div>
       </div>
-
-      {wag && (
-        <div className="wag-scrim" onClick={() => setWag(false)}>
-          <div className="wag-pop" onClick={(e) => e.stopPropagation()}>
-            <div className="wag-head">Nice try!</div>
-            <div className="wag-body">
-              <div className="wag-finger">☝️</div>
-              <p className="wag-text">This isn't available until the party!</p>
-            </div>
-          </div>
-        </div>
-      )}
 
       <button className="site-admin-link" onClick={() => navigate('/admin')}>
         admin

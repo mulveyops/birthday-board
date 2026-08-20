@@ -2086,14 +2086,39 @@ export default function App({
 
   // Weld dead-end stubs onto the junction they nearly touch, so a street
   // doesn't visibly break a few metres short of its corner.
-  function closeGaps() {
-    const { squares, edges, closed } = closeStreetGaps(board.squares, board.edges);
-    if (!closed.length) {
-      alert('No dangling street gaps found — every space already connects.');
+  const [closingGaps, setClosingGaps] = useState(false);
+  async function closeGaps() {
+    setClosingGaps(true);
+    let res;
+    try {
+      res = await closeStreetGaps(board.squares, board.edges);
+    } catch (e) {
+      alert('Gap check failed: ' + (e as Error).message);
+      return;
+    } finally {
+      setClosingGaps(false);
+    }
+    const { squares, edges, fixed, skipped } = res;
+    if (fixed.length) {
+      setBoard((b) => ({ ...b, squares, edges }));
+      const welds = fixed.filter((f) => f.kind === 'merged').length;
+      const links = fixed.length - welds;
+      const bits = [welds && `welded ${welds} split corner${welds > 1 ? 's' : ''}`, links && `drew ${links} missing block${links > 1 ? 's' : ''}`];
+      alert(`Closed ${fixed.length} gap${fixed.length > 1 ? 's' : ''} — ${bits.filter(Boolean).join(', ')} (${fixed.map((f) => f.gap + 'm').join(', ')}).`);
       return;
     }
-    setBoard((b) => ({ ...b, squares, edges }));
-    alert(`Closed ${closed.length} street gap${closed.length > 1 ? 's' : ''} (${closed.map((c) => c.gap + 'm').join(', ')}).`);
+    // Nothing qualified: say what IS nearby, so a gap you can see on screen
+    // isn't met with a bare "none found".
+    if (!skipped.length) {
+      alert('Every space already connects — no unconnected spaces are within 95m of each other.');
+      return;
+    }
+    const near = [...skipped].sort((a, b) => a.gap - b.gap).slice(0, 4);
+    alert(
+      `No gaps closed. Nearest unconnected spaces:\n\n` +
+        near.map((s) => `• ${s.gap}m apart — ${s.why}\n  (${s.at.lat.toFixed(5)}, ${s.at.lng.toFixed(5)})`).join('\n') +
+        `\n\nIf one of these is the gap you can see, use Connect spaces to join them by hand.`,
+    );
   }
 
   // Bake street-name labels from OSM into the board's scenery. Safe with a
@@ -2435,8 +2460,8 @@ export default function App({
               <button className="btn" onClick={addSurroundings}>
                 {board.artUnderlay ? '🎨 Remove surroundings' : '🎨 Add surroundings'}
               </button>
-              <button className="btn" onClick={closeGaps}>
-                🩹 Close street gaps
+              <button className="btn" onClick={() => void closeGaps()} disabled={closingGaps}>
+                {closingGaps ? '🩹 Checking streets…' : '🩹 Close street gaps'}
               </button>
               <button className="btn" onClick={() => void labelStreets()} disabled={labelingStreets}>
                 {labelingStreets

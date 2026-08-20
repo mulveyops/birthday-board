@@ -6,7 +6,7 @@
 
 import type { Edge, LatLng, Scenery, Square, SquareType, StreetLabel } from './types';
 import { makeSquare } from './boardStore';
-import { metersBetween, fetchStreetWays, fetchScenery, fetchNamedStreetWays, simplify } from './snap';
+import { metersBetween, fetchStreetWays, fetchScenery, fetchNamedStreetWays, routeAlongStreets, simplify } from './snap';
 
 const MERGE_LEN = 45; // junctions joined by a run shorter than this collapse into one
 const BOUNDARY_PAD = 25; // "inside" tolerance so boundary-snapped streets aren't coin-flipped out
@@ -211,58 +211,145 @@ export function shiftPathEnd(
  * — and drop the stub. Same rule as the generator's MERGE_LEN jog collapse,
  * applied to a finished (possibly hand-edited) board.
  */
-export function closeStreetGaps(
+const GAP_MERGE = 30; // closer than this: one junction drawn twice → weld into one
+const GAP_LINK = 95; // out to here: a genuinely missing block → draw the street in
+
+export interface GapFix {
+  kind: 'merged' | 'linked';
+  at: LatLng;
+  gap: number;
+}
+export interface GapSkip {
+  at: LatLng;
+  gap: number;
+  why: string;
+}
+
+/** Bearing A→B in degrees. */
+function brgTo(a: LatLng, b: LatLng): number {
+  const kx = Math.cos(toRad(a.lat)) * 111320;
+  return ((Math.atan2((b.lng - a.lng) * kx, (b.lat - a.lat) * 111320) * 180) / Math.PI + 360) % 360;
+}
+function angleGap(a: number, b: number): number {
+  return Math.abs(((a - b + 540) % 360) - 180);
+}
+
+export async function closeStreetGaps(
   squares: Square[],
   edges: Edge[],
-  maxGap = MERGE_LEN,
-): { squares: Square[]; edges: Edge[]; closed: { at: LatLng; gap: number }[] } {
+): Promise<{ squares: Square[]; edges: Edge[]; fixed: GapFix[]; skipped: GapSkip[] }> {
   let sq = [...squares];
   let ed: Edge[] = edges.map((e) => ({ ...e, path: e.path ? [...e.path] : undefined }));
-  const closed: { at: LatLng; gap: number }[] = [];
+  const fixed: GapFix[] = [];
+  let skipped: GapSkip[] = [];
+  const blocked = new Map<string, string>(); // pair → why we gave up on it
 
   for (;;) {
-    const deg = new Map<string, number>();
+    const byId = new Map(sq.map((s) => [s.id, s]));
+    const nbrs = new Map<string, Set<string>>();
     for (const e of ed) {
-      deg.set(e.from, (deg.get(e.from) ?? 0) + 1);
-      deg.set(e.to, (deg.get(e.to) ?? 0) + 1);
+      if (!nbrs.has(e.from)) nbrs.set(e.from, new Set());
+      if (!nbrs.has(e.to)) nbrs.set(e.to, new Set());
+      nbrs.get(e.from)!.add(e.to);
+      nbrs.get(e.to)!.add(e.from);
     }
-    // Pick the tightest unclosed gap first, so near-misses resolve predictably.
-    let best: { stub: Square; target: Square; gap: number } | null = null;
-    for (const stub of sq) {
-      if ((deg.get(stub.id) ?? 0) !== 1) continue;
-      const link = ed.find((e) => e.from === stub.id || e.to === stub.id)!;
-      const otherId = link.from === stub.id ? link.to : link.from;
-      for (const t of sq) {
-        if (t.id === stub.id || t.id === otherId) continue;
-        const gap = metersBetween(stub, t);
-        if (gap <= maxGap && (!best || gap < best.gap)) best = { stub, target: t, gap };
+    const degOf = (id: string) => nbrs.get(id)?.size ?? 0;
+    /** Does B continue a street that runs through A? (some neighbour of A sits
+     * on the far side, so A→B carries on in roughly the same direction) */
+    const continues = (a: Square, b: Square) => {
+      const want = brgTo(a, b);
+      for (const nId of nbrs.get(a.id) ?? []) {
+        const n = byId.get(nId);
+        if (n && angleGap(brgTo(a, n), want) > 130) return true;
+      }
+      return false;
+    };
+
+    // Rank every unconnected near pair; act on the tightest each pass.
+    let best: { a: Square; b: Square; gap: number; kind: 'merged' | 'linked' } | null = null;
+    skipped = [];
+    for (let i = 0; i < sq.length; i++) {
+      for (let j = i + 1; j < sq.length; j++) {
+        const A = sq[i];
+        const B = sq[j];
+        if (nbrs.get(A.id)?.has(B.id)) continue;
+        const gap = metersBetween(A, B);
+        if (gap > GAP_LINK) continue;
+        const at = { lat: (A.lat + B.lat) / 2, lng: (A.lng + B.lng) / 2 };
+        const why = blocked.get([A.id, B.id].sort().join('|'));
+        if (why) {
+          skipped.push({ at, gap: Math.round(gap), why });
+          continue;
+        }
+        // A real block already runs between them (shared corner) — not a gap.
+        const shared = [...(nbrs.get(A.id) ?? [])].some((n) => nbrs.get(B.id)?.has(n));
+        if (shared) {
+          skipped.push({ at, gap: Math.round(gap), why: 'a block already runs between these two' });
+          continue;
+        }
+        const stubby = degOf(A.id) <= 1 || degOf(B.id) <= 1;
+        const kind: 'merged' | 'linked' =
+          gap <= GAP_MERGE || (stubby && gap <= MERGE_LEN) ? 'merged' : 'linked';
+        if (kind === 'linked' && !(continues(A, B) && continues(B, A))) {
+          skipped.push({ at, gap: Math.round(gap), why: 'would cut across a block, not continue a street' });
+          continue;
+        }
+        if (!best || gap < best.gap) best = { a: A, b: B, gap, kind };
       }
     }
     if (!best) break;
 
-    const { stub, target, gap } = best;
-    const link = ed.find((e) => e.from === stub.id || e.to === stub.id)!;
-    const otherId = link.from === stub.id ? link.to : link.from;
-    const already = ed.some(
-      (e) => e !== link && ((e.from === otherId && e.to === target.id) || (e.to === otherId && e.from === target.id)),
-    );
-    if (already) {
-      ed = ed.filter((e) => e !== link); // the street is already carried — just drop the stub
+    const { a, b, gap, kind } = best;
+    const at = { lat: (a.lat + b.lat) / 2, lng: (a.lng + b.lng) / 2 };
+    if (kind === 'merged') {
+      // Keep the better-connected node; fold the other one into it.
+      const keep = degOf(a.id) >= degOf(b.id) ? a : b;
+      const drop = keep === a ? b : a;
+      const kept: Edge[] = [];
+      for (const e of ed) {
+        if (e.from !== drop.id && e.to !== drop.id) {
+          kept.push(e);
+          continue;
+        }
+        const atStart = e.from === drop.id;
+        const otherId = atStart ? e.to : e.from;
+        if (otherId === keep.id) continue; // collapses to nothing
+        const dup = kept.some(
+          (k) => (k.from === keep.id && k.to === otherId) || (k.to === keep.id && k.from === otherId),
+        );
+        if (dup) continue;
+        const path = e.path?.length
+          ? shiftPathEnd(e.path, atStart ? 'start' : 'end', keep.lat - drop.lat, keep.lng - drop.lng)
+          : undefined;
+        kept.push({ ...e, path, from: atStart ? keep.id : e.from, to: atStart ? e.to : keep.id });
+      }
+      ed = kept;
+      sq = sq.filter((s) => s.id !== drop.id);
     } else {
-      const atStart = link.from === stub.id;
-      const path = link.path?.length
-        ? shiftPathEnd(link.path, atStart ? 'start' : 'end', target.lat - stub.lat, target.lng - stub.lng)
-        : undefined;
-      const next: Edge = { ...link, path };
-      if (atStart) next.from = target.id;
-      else next.to = target.id;
-      ed = ed.map((e) => (e === link ? next : e));
+      // Draw the missing block along the REAL street, never a straight guess.
+      // routeAlongStreets falls back to a bare [a,b] when it can't find a road
+      // between them — treat that as "there is no street here" and leave it.
+      const route = await routeAlongStreets(a, b);
+      const routeLen = route.reduce((m, p, i) => (i ? m + metersBetween(route[i - 1], p) : 0), 0);
+      if (route.length <= 2 || routeLen > gap * 2.5) {
+        blocked.set([a.id, b.id].sort().join('|'), 'no real street runs between them');
+        continue;
+      }
+      // If the street between them already runs through another space, the
+      // board covers this stretch — a second edge would just double the road.
+      const throughSpace = route.some((p) =>
+        sq.some((s) => s.id !== a.id && s.id !== b.id && metersBetween(p, s) < 35),
+      );
+      if (throughSpace) {
+        blocked.set([a.id, b.id].sort().join('|'), 'the street already runs through another space');
+        continue;
+      }
+      ed = [...ed, { id: crypto.randomUUID(), from: a.id, to: b.id, directed: false, path: route }];
     }
-    sq = sq.filter((s) => s.id !== stub.id);
-    closed.push({ at: { lat: stub.lat, lng: stub.lng }, gap: Math.round(gap) });
+    fixed.push({ kind, at, gap: Math.round(gap) });
   }
 
-  return { squares: sq, edges: ed, closed };
+  return { squares: sq, edges: ed, fixed, skipped };
 }
 
 /** Union-find over node/cluster ids. */

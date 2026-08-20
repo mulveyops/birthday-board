@@ -1134,6 +1134,35 @@ export default function App({
   } | null>(null);
   const [nowTs, setNowTs] = useState(() => Date.now());
   const [gpsOn, setGpsOn] = useState(false);
+  // Temporary: report what the view actually resolved to on a real device,
+  // so a mis-centred board can be diagnosed instead of guessed at.
+  const [viewDebug, setViewDebug] = useState('');
+  useEffect(() => {
+    if (appMode !== 'online') return;
+    const sample = () => {
+      const m = (window as unknown as { __mkeMap?: L.Map }).__mkeMap;
+      const wrap = document.querySelector('.map-wrap') as HTMLElement | null;
+      const art = [...document.querySelectorAll('svg image')].find((i) =>
+        (i.getAttribute('href') || '').includes('backdrops'),
+      ) as SVGImageElement | undefined;
+      if (!m || !wrap) return;
+      const w = wrap.getBoundingClientRect();
+      const a2 = art?.getBoundingClientRect();
+      const vv = window.visualViewport;
+      setViewDebug(
+        [
+          `scr ${Math.round(window.innerWidth)}x${Math.round(window.innerHeight)} dpr${window.devicePixelRatio}`,
+          vv ? `vv ${Math.round(vv.width)}x${Math.round(vv.height)}@${vv.scale.toFixed(2)} off${Math.round(vv.offsetLeft)}` : 'vv -',
+          `map ${Math.round(w.width)}x${Math.round(w.height)}`,
+          `z ${m.getZoom().toFixed(2)}/${m.getMinZoom().toFixed(2)}`,
+          a2 ? `art L${Math.round(a2.left - w.left)} R${Math.round(w.right - a2.right)} w${Math.round(a2.width)}` : 'art -',
+        ].join(' · '),
+      );
+    };
+    const t = window.setInterval(sample, 1000);
+    sample();
+    return () => window.clearInterval(t);
+  }, [appMode, recage]);
   const lockTried = useRef<Set<string>>(new Set());
 
   // Timestamp-driven: a spawn is live once now is past spawn_at, before expires_at.
@@ -2430,6 +2459,12 @@ export default function App({
               <input type="checkbox" checked={gpsOn} onChange={(e) => setGpsOn(e.target.checked)} />
               Require GPS proximity (turn on at the party)
             </label>
+            <button className="btn" onClick={bumpCage}>
+              🎯 Recenter board
+            </button>
+            <p className="hint" style={{ fontFamily: 'monospace', fontSize: '0.68rem', opacity: 0.75 }}>
+              {viewDebug}
+            </p>
             <p className="hint" style={{ marginTop: 8 }}>Scoreboard</p>
             <div style={{ maxHeight: 128, overflowY: 'auto' }}>
               {[...teams]

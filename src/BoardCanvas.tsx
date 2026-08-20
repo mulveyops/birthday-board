@@ -849,47 +849,70 @@ function splitAtMid(line: [number, number][]) {
   };
 }
 
-function MapController({ board, recage }: { board: Board; recage: number }) {
+function MapController({ board, recage, playActive }: { board: Board; recage: number; playActive: boolean }) {
   const map = useMap();
   // Dev convenience: drive the map from the console (zoom tests etc).
   if (import.meta.env.DEV) (window as unknown as { __mkeMap?: L.Map }).__mkeMap = map;
   useEffect(() => {
-    if (board.phase === 'area' || board.boundary.length < 3) {
-      map.setMinZoom(13);
-      map.setMaxZoom(18);
-      map.setMaxBounds(null as unknown as L.LatLngBounds);
-      map.options.maxBoundsViscosity = 0;
-      return;
-    }
-    let bounds: L.LatLngBounds;
-    const fit = board.phase === 'squares' && board.backdrop ? BACKDROP_FIT[board.backdrop] : undefined;
-    if (fit?.blob) {
-      // Match the view to the art-shaped SVG frame so the whole backdrop
-      // (banner included) is what the fully-zoomed-out board shows.
-      const lats = board.boundary.map((p) => p.lat);
-      const lngs = board.boundary.map((p) => p.lng);
-      const midLat = (Math.min(...lats) + Math.max(...lats)) / 2;
-      const kx = Math.cos((midLat * Math.PI) / 180) * 111320;
-      const ky = 111320;
-      const pad = framePads(board, (Math.max(...lngs) - Math.min(...lngs)) * kx, (Math.max(...lats) - Math.min(...lats)) * ky);
-      bounds = L.latLngBounds([
-        [Math.min(...lats) - pad.b / ky, Math.min(...lngs) - pad.l / kx],
-        [Math.max(...lats) + pad.t / ky, Math.max(...lngs) + pad.r / kx],
-      ]);
-    } else {
-      const skyPad = board.phase === 'squares' ? 0.14 : 0; // extra blue sky around the board
-      bounds = L.latLngBounds(board.boundary.map((p) => [p.lat, p.lng] as [number, number])).pad(
-        board.padding + skyPad,
-      );
-    }
-    const fitZoom = map.getBoundsZoom(bounds);
-    map.setMinZoom(fitZoom);
-    map.setMaxZoom(fitZoom + 3);
-    map.setMaxBounds(bounds);
-    map.options.maxBoundsViscosity = 1.0;
-    map.fitBounds(bounds);
+    // Re-fit whenever the map's box changes: the first fit runs before the
+    // layout settles (the HUD sheet collapsing hands the map the whole
+    // screen), which otherwise strands the board small and off-centre.
+    let lastW = 0;
+    let lastH = 0;
+    const applyFit = () => {
+      map.invalidateSize({ animate: false });
+      if (board.phase === 'area' || board.boundary.length < 3) {
+        map.setMinZoom(13);
+        map.setMaxZoom(18);
+        map.setMaxBounds(null as unknown as L.LatLngBounds);
+        map.options.maxBoundsViscosity = 0;
+        return;
+      }
+      let bounds: L.LatLngBounds;
+      const fit = board.phase === 'squares' && board.backdrop ? BACKDROP_FIT[board.backdrop] : undefined;
+      if (playActive) {
+        // Playing: the board itself should fill the screen. Fitting the art
+        // frame instead leaves the board adrift in a sea of backdrop.
+        bounds = L.latLngBounds(board.boundary.map((pt) => [pt.lat, pt.lng] as [number, number])).pad(0.02);
+      } else if (fit?.blob) {
+        // Match the view to the art-shaped SVG frame so the whole backdrop
+        // (banner included) is what the fully-zoomed-out board shows.
+        const lats = board.boundary.map((pt) => pt.lat);
+        const lngs = board.boundary.map((pt) => pt.lng);
+        const midLat = (Math.min(...lats) + Math.max(...lats)) / 2;
+        const kx = Math.cos((midLat * Math.PI) / 180) * 111320;
+        const ky = 111320;
+        const pad = framePads(board, (Math.max(...lngs) - Math.min(...lngs)) * kx, (Math.max(...lats) - Math.min(...lats)) * ky);
+        bounds = L.latLngBounds([
+          [Math.min(...lats) - pad.b / ky, Math.min(...lngs) - pad.l / kx],
+          [Math.max(...lats) + pad.t / ky, Math.max(...lngs) + pad.r / kx],
+        ]);
+      } else {
+        const skyPad = board.phase === 'squares' ? 0.14 : 0; // extra blue sky around the board
+        bounds = L.latLngBounds(board.boundary.map((pt) => [pt.lat, pt.lng] as [number, number])).pad(
+          board.padding + skyPad,
+        );
+      }
+      const fitZoom = map.getBoundsZoom(bounds);
+      map.setMinZoom(fitZoom);
+      map.setMaxZoom(fitZoom + 3);
+      map.setMaxBounds(bounds);
+      map.options.maxBoundsViscosity = 1.0;
+      map.fitBounds(bounds, { animate: false });
+    };
+    applyFit();
+    const el = map.getContainer();
+    const ro = new ResizeObserver(() => {
+      const { width, height } = el.getBoundingClientRect();
+      if (Math.abs(width - lastW) < 2 && Math.abs(height - lastH) < 2) return;
+      lastW = width;
+      lastH = height;
+      applyFit();
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [map, board.phase, board.padding, board.backdrop, recage]);
+  }, [map, board.phase, board.padding, board.backdrop, recage, playActive]);
   return null;
 }
 
@@ -1365,10 +1388,14 @@ export default function BoardCanvas({
   // Clear a gap in the tree fill for each bespoke park scene so it isn't buried.
   const pfClear = parkFeatures.map((pf) => ({ x: X({ lat: pf.lat, lng: pf.lng }), y: Y({ lat: pf.lat, lng: pf.lng }), r: 24 * pf.sc }));
 
+  // zoomSnap 0: integer zoom steps make "fit the board" land a whole level
+  // short, leaving the board stranded small in the middle of the screen.
   return (
     <MapContainer
       center={board.center}
       zoom={board.zoom}
+      zoomControl={false}
+      zoomSnap={0}
       className="map"
       style={placingSquares && backdropFit ? { background: backdropFit.sky } : undefined}
     >
@@ -1381,7 +1408,7 @@ export default function BoardCanvas({
           maxZoom={20}
         />
       )}
-      <MapController board={board} recage={recage} />
+      <MapController board={board} recage={recage} playActive={playActive} />
       <ZoomWatcher onZoom={setRelZoom} />
       <ClickHandler
         enabled={(editingArea && mode === 'boundary') || (placingSquares && mode === 'add')}

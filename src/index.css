@@ -1596,27 +1596,42 @@ body {
 }
 
 /* ===================================================================== */
-/* Player shell: the map owns the screen; the HUD is a toggled overlay,   */
-/* not a half-height panel stacked above it.                             */
-/* ===================================================================== */
+/* Player shell: the map owns the screen; the HUD slides up over it as a
+   sheet — it never pushes the board out of the way.                      */
+.app--player {
+  position: relative;
+}
 .app--player .panel-toggle {
   display: inline-flex;
 }
 .app--player.app--panel-collapsed .sidebar {
   display: none;
 }
-@media (min-width: 769px) {
-  /* On a wide screen the open HUD floats over the map instead of squeezing it. */
-  .app--player .sidebar {
-    position: absolute;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    z-index: 500;
-    box-shadow: 0 0 30px rgba(0, 0, 0, 0.45);
+.app--player .sidebar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  top: auto;
+  width: auto;
+  min-width: 0;
+  height: auto;
+  max-height: 70vh;
+  max-height: 70dvh;
+  z-index: 500;
+  overflow-y: auto;
+  border-radius: 18px 18px 0 0;
+  box-shadow: 0 -10px 34px rgba(0, 0, 0, 0.5);
+  animation: sheet-up 0.22s cubic-bezier(0.2, 0.85, 0.35, 1);
+}
+@keyframes sheet-up {
+  from {
+    transform: translateY(14%);
+    opacity: 0.6;
   }
-  .app--player .map-wrap {
-    width: 100%;
+  to {
+    transform: translateY(0);
+    opacity: 1;
   }
 }
 

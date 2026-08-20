@@ -91,6 +91,15 @@ export interface SceneryPoi {
   name?: string;
 }
 
+/** A named street run inside the board — its label draws along the geometry.
+ * Major streets (Brady, Humboldt…) label big and always; minor ones appear
+ * once the player zooms in. */
+export interface StreetLabel {
+  name: string;
+  pts: LatLng[];
+  major: boolean;
+}
+
 /** Stylized surroundings pulled from OSM and baked into the board. */
 export interface Scenery {
   blocks: SceneryBlock[];
@@ -101,6 +110,8 @@ export interface Scenery {
   bars: SceneryBar[];
   pois: SceneryPoi[];
   trees: LatLng[];
+  /** Street-name labels baked from OSM ("🛣 Label the streets"). */
+  streetLabels?: StreetLabel[];
 }
 
 export interface Board {

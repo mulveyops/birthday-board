@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useMemo } from 'react';
+import { Fragment, useEffect, useMemo, useState } from 'react';
 import {
   MapContainer,
   TileLayer,
@@ -851,6 +851,8 @@ function splitAtMid(line: [number, number][]) {
 
 function MapController({ board, recage }: { board: Board; recage: number }) {
   const map = useMap();
+  // Dev convenience: drive the map from the console (zoom tests etc).
+  if (import.meta.env.DEV) (window as unknown as { __mkeMap?: L.Map }).__mkeMap = map;
   useEffect(() => {
     if (board.phase === 'area' || board.boundary.length < 3) {
       map.setMinZoom(13);
@@ -893,6 +895,16 @@ function MapController({ board, recage }: { board: Board; recage: number }) {
 
 function ClickHandler({ enabled, onClick }: { enabled: boolean; onClick: (lat: number, lng: number) => void }) {
   useMapEvents({ click: (e) => enabled && onClick(e.latlng.lat, e.latlng.lng) });
+  return null;
+}
+
+/** Reports zoom-above-minimum (0 = fully zoomed out) so the SVG can reveal
+ * detail layers — minor street names — as the player zooms in. */
+function ZoomWatcher({ onZoom }: { onZoom: (rel: number) => void }) {
+  const map = useMap();
+  const report = () => onZoom(map.getZoom() - map.getMinZoom());
+  useMapEvents({ zoomend: report, moveend: report });
+  useEffect(report);
   return null;
 }
 
@@ -1001,6 +1013,9 @@ export default function BoardCanvas({
 }: Props) {
   const clearedSet = useMemo(() => new Set(cleared ?? []), [cleared]);
   const starSet = useMemo(() => new Set(starBars ?? []), [starBars]);
+  // How far above minimum zoom the map sits (0 = whole board). Major street
+  // names always show; minor ones appear from one zoom step in.
+  const [relZoom, setRelZoom] = useState(0);
   const ring = board.boundary.map((p) => [p.lat, p.lng] as [number, number]);
   const closed = board.boundaryClosed && ring.length >= 3;
   const editingArea = board.phase === 'area';
@@ -1367,6 +1382,7 @@ export default function BoardCanvas({
         />
       )}
       <MapController board={board} recage={recage} />
+      <ZoomWatcher onZoom={setRelZoom} />
       <ClickHandler
         enabled={(editingArea && mode === 'boundary') || (placingSquares && mode === 'add')}
         onClick={onMapClick}
@@ -1560,6 +1576,40 @@ export default function BoardCanvas({
           </g>
 
           {board.artUnderlay && <SceneStanding X={X} Y={Y} />}
+
+          {/* STREET NAMES — curved along their street, classic-map style.
+              Major streets (Brady, Humboldt…) label big and always; minor
+              streets fade in one zoom step up. Sizes are meters, so labels
+              scale with the board like everything else. */}
+          {board.scenery?.streetLabels?.map((sl, i) => {
+            if (!sl.major && relZoom < 1) return null;
+            let pts = sl.pts.map((p) => [X(p), Y(p)] as [number, number]);
+            if (pts.length < 2) return null;
+            // Keep the text upright: the path must run left→right.
+            if (pts[pts.length - 1][0] < pts[0][0]) pts = [...pts].reverse();
+            const d = 'M ' + pts.map(([x, y]) => `${x.toFixed(1)} ${y.toFixed(1)}`).join(' L ');
+            const fs = sl.major ? 30 : 15;
+            return (
+              <g key={`slbl${i}`} pointerEvents="none">
+                <path id={`slbl-path-${i}`} d={d} fill="none" />
+                <text
+                  fontSize={fs}
+                  fontWeight={sl.major ? 800 : 700}
+                  fontFamily="'Trebuchet MS', Verdana, sans-serif"
+                  fill="#4a453c"
+                  letterSpacing={fs * 0.14}
+                  stroke="#f3eee1"
+                  strokeWidth={fs * 0.24}
+                  style={{ paintOrder: 'stroke' }}
+                  opacity={sl.major ? 0.95 : 0.88}
+                >
+                  <textPath href={`#slbl-path-${i}`} startOffset="50%" textAnchor="middle" dominantBaseline="central">
+                    {sl.name.toUpperCase()}
+                  </textPath>
+                </text>
+              </g>
+            );
+          })}
 
           {/* the "spaces" are the intersections — a node where 3+ roads meet,
               drawn a touch wider than the street so it reads as a distinct pip.

@@ -423,6 +423,42 @@ export async function fetchStreetWays(
   return { coords, ways };
 }
 
+/** A named OSM street way (nodes reference the returned coords map). */
+export interface NamedWay {
+  name: string;
+  highway: string;
+  nodes: number[];
+}
+
+/** All NAMED walkable streets in the boundary's bbox — for street labels. */
+export async function fetchNamedStreetWays(
+  boundary: LatLng[],
+): Promise<{ coords: Map<number, LatLng>; ways: NamedWay[] }> {
+  const lats = boundary.map((p) => p.lat);
+  const lngs = boundary.map((p) => p.lng);
+  const s = Math.min(...lats);
+  const n = Math.max(...lats);
+  const w = Math.min(...lngs);
+  const e = Math.max(...lngs);
+  const walkable = 'residential|living_street|tertiary|secondary|primary|unclassified|pedestrian';
+  const query =
+    `[out:json][timeout:25];` +
+    `way["highway"~"^(${walkable})$"]["name"](${s},${w},${n},${e});` +
+    `(._;>;);out;`;
+  const json = await overpass(query);
+  const coords = new Map<number, LatLng>();
+  for (const el of json.elements ?? []) {
+    if (el.type === 'node') coords.set(el.id, { lat: el.lat, lng: el.lon });
+  }
+  const ways: NamedWay[] = [];
+  for (const el of json.elements ?? []) {
+    if (el.type === 'way' && Array.isArray(el.nodes) && el.tags?.name) {
+      ways.push({ name: String(el.tags.name), highway: String(el.tags.highway ?? ''), nodes: el.nodes });
+    }
+  }
+  return { coords, ways };
+}
+
 function nearestGraphNode(g: StreetGraph, p: LatLng, intersectionsOnly: boolean): number {
   let best = -1;
   let bestD = Infinity;

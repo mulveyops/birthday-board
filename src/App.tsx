@@ -5,7 +5,7 @@ import type { Board, ChanceCard, Edge, LatLng, Phase, Square, SquareType, Trivia
 import { SQUARE_TYPES, TYPE_ORDER } from './squareTypes';
 import { loadBoard, saveBoard, makeSquare, defaultBoard } from './boardStore';
 import { metersBetween, simplify, snapToStreetsFollowing, routeAlongStreets } from './snap';
-import { generateStreetBoard, buildScenery, shiftPathEnd } from './generate';
+import { generateStreetBoard, buildScenery, buildStreetLabels, shiftPathEnd } from './generate';
 import { isConfigured } from './supabase';
 import {
   publishGame,
@@ -2084,6 +2084,35 @@ export default function App({
     setBoard((b) => ({ ...b, artUnderlay: !b.artUnderlay }));
   }
 
+  // Bake street-name labels from OSM into the board's scenery. Safe with a
+  // locked layout — it never touches squares/edges, only the label layer.
+  const [labelingStreets, setLabelingStreets] = useState(false);
+  async function labelStreets() {
+    if (board.boundary.length < 3) {
+      alert('Set the area first (Steps 1–2).');
+      return;
+    }
+    setLabelingStreets(true);
+    try {
+      const streetLabels = await buildStreetLabels(board.boundary);
+      if (!streetLabels.length) {
+        alert('No named streets found in this area.');
+        return;
+      }
+      setBoard((b) => ({
+        ...b,
+        scenery: {
+          ...(b.scenery ?? { blocks: [], parks: [], woods: [], water: [], rivers: [], bars: [], pois: [], trees: [] }),
+          streetLabels,
+        },
+      }));
+    } catch (e) {
+      alert('Street names failed: ' + (e as Error).message);
+    } finally {
+      setLabelingStreets(false);
+    }
+  }
+
   // --- file io ---------------------------------------------------------------
   function exportJson() {
     const blob = new Blob([JSON.stringify(board, null, 2)], { type: 'application/json' });
@@ -2391,6 +2420,13 @@ export default function App({
               )}
               <button className="btn" onClick={addSurroundings}>
                 {board.artUnderlay ? '🎨 Remove surroundings' : '🎨 Add surroundings'}
+              </button>
+              <button className="btn" onClick={() => void labelStreets()} disabled={labelingStreets}>
+                {labelingStreets
+                  ? '🛣 Fetching names…'
+                  : board.scenery?.streetLabels?.length
+                    ? '🛣 Refresh street names'
+                    : '🛣 Label the streets'}
               </button>
               <label className="field">
                 <span>🖼️ Backdrop (sky, river & banner art)</span>

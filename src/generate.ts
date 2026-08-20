@@ -4,9 +4,9 @@
 // dead-ends, drop floating islands — so the track reads as a tidy game board
 // rather than a faithful map. All spaces start generic; specials get sprinkled.
 
-import type { Edge, LatLng, Scenery, Square, SquareType } from './types';
+import type { Edge, LatLng, Scenery, Square, SquareType, StreetLabel } from './types';
 import { makeSquare } from './boardStore';
-import { metersBetween, fetchStreetWays, fetchScenery } from './snap';
+import { metersBetween, fetchStreetWays, fetchScenery, fetchNamedStreetWays, simplify } from './snap';
 
 const MERGE_LEN = 45; // junctions joined by a run shorter than this collapse into one
 const BOUNDARY_PAD = 25; // "inside" tolerance so boundary-snapped streets aren't coin-flipped out
@@ -956,6 +956,121 @@ export async function generateStreetBoard(
   }
 
   return { squares, edges };
+}
+
+// ---------------------------------------------------------------------------
+// Street labels: fetch NAMED streets, stitch each street's OSM ways into
+// continuous chains, clip to the board, and classify major vs minor.
+// Majors (Brady, Humboldt…) label big & always; minors appear on zoom-in.
+// ---------------------------------------------------------------------------
+
+/** "East Brady Street" → "Brady St" — map-label shorthand. */
+function shortStreetName(raw: string): string {
+  const suffix: Record<string, string> = {
+    street: 'St',
+    avenue: 'Ave',
+    boulevard: 'Blvd',
+    drive: 'Dr',
+    court: 'Ct',
+    place: 'Pl',
+    terrace: 'Ter',
+    lane: 'Ln',
+    road: 'Rd',
+    parkway: 'Pkwy',
+    circle: 'Cir',
+  };
+  let words = raw.trim().split(/\s+/);
+  if (words.length > 2 && /^(north|south|east|west|n\.?|s\.?|e\.?|w\.?)$/i.test(words[0])) words = words.slice(1);
+  return words.map((w) => suffix[w.toLowerCase()] ?? w).join(' ');
+}
+
+const MAJOR_HIGHWAYS = new Set(['primary', 'secondary', 'tertiary']);
+const LABEL_MIN_RUN = 140; // in-board runs shorter than this stay unlabeled
+const LABEL_SPLIT_LEN = 1000; // repeat the label on very long runs
+
+/** Build the street-name labels for a board area. */
+export async function buildStreetLabels(boundary: LatLng[]): Promise<StreetLabel[]> {
+  const { coords, ways } = await fetchNamedStreetWays(boundary);
+  if (!ways.length) return [];
+
+  // Group ways by street name; remember the "biggest" highway class seen.
+  const groups = new Map<string, { highway: Set<string>; segs: number[][] }>();
+  for (const w of ways) {
+    const g = groups.get(w.name) ?? { highway: new Set<string>(), segs: [] };
+    g.highway.add(w.highway);
+    g.segs.push(w.nodes);
+    groups.set(w.name, g);
+  }
+
+  const insideish = (p: LatLng) => pointInPoly(p, boundary) || distToPolyMeters(p, boundary) <= BOUNDARY_PAD;
+  const runLenM = (pts: LatLng[]) => {
+    let m = 0;
+    for (let i = 1; i < pts.length; i++) m += metersBetween(pts[i - 1], pts[i]);
+    return m;
+  };
+
+  const labels: StreetLabel[] = [];
+  for (const [name, g] of groups) {
+    // ---- Stitch this street's ways into continuous node chains ----
+    const unused = g.segs.map((s) => [...s]);
+    const chains: number[][] = [];
+    while (unused.length) {
+      let chain = unused.pop()!;
+      let grew = true;
+      while (grew) {
+        grew = false;
+        for (let i = 0; i < unused.length; i++) {
+          const s = unused[i];
+          const head = chain[0];
+          const tail = chain[chain.length - 1];
+          if (s[0] === tail) chain = [...chain, ...s.slice(1)];
+          else if (s[s.length - 1] === tail) chain = [...chain, ...[...s].reverse().slice(1)];
+          else if (s[s.length - 1] === head) chain = [...s, ...chain.slice(1)];
+          else if (s[0] === head) chain = [...[...s].reverse(), ...chain.slice(1)];
+          else continue;
+          unused.splice(i, 1);
+          grew = true;
+          break;
+        }
+      }
+      chains.push(chain);
+    }
+
+    // ---- Clip each chain to the (buffered) boundary → in-board runs ----
+    const runs: LatLng[][] = [];
+    for (const chain of chains) {
+      const pts = chain.map((id) => coords.get(id)).filter((p): p is LatLng => !!p);
+      let cur: LatLng[] = [];
+      for (const p of pts) {
+        if (insideish(p)) cur.push(p);
+        else {
+          if (cur.length >= 2) runs.push(cur);
+          cur = [];
+        }
+      }
+      if (cur.length >= 2) runs.push(cur);
+    }
+    const kept = runs.filter((r) => runLenM(r) >= LABEL_MIN_RUN);
+    if (!kept.length) continue;
+
+    // Major = a real corridor by OSM class (Brady, Humboldt, Water…). Length
+    // alone doesn't qualify — in a grid, every side street runs the full board.
+    const major = [...g.highway].some((h) => MAJOR_HIGHWAYS.has(h));
+    const short = shortStreetName(name);
+
+    for (const run of kept) {
+      // Long runs carry the name more than once, like a real map.
+      const len = runLenM(run);
+      const pieces = len >= LABEL_SPLIT_LEN ? 2 : 1;
+      const per = Math.ceil(run.length / pieces);
+      for (let k = 0; k < pieces; k++) {
+        const slice = run.slice(k * per, Math.min(run.length, (k + 1) * per + 1));
+        if (slice.length < 2 || runLenM(slice) < LABEL_MIN_RUN) continue;
+        labels.push({ name: short, pts: simplify(slice, 8), major });
+      }
+    }
+  }
+  return labels;
 }
 
 /** Fetch the surroundings and bake in tree positions (parks + street-lining). */

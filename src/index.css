@@ -1692,3 +1692,57 @@ body {
 .panzoom:active {
   cursor: grabbing;
 }
+
+/* ===== Player bottom bar: map on top, controls underneath ===== */
+.app--player {
+  flex-direction: column;
+}
+.app--player .map-wrap {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+.player-bar {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0px));
+  background: #0f172a;
+  color: #e2e8f0;
+  z-index: 700;
+  box-shadow: 0 -6px 18px rgba(0, 0, 0, 0.35);
+}
+.player-bar__stats {
+  flex: 1;
+  display: flex;
+  gap: 14px;
+  font-weight: 800;
+  font-size: 1.02rem;
+  white-space: nowrap;
+  overflow-x: auto;
+}
+.player-bar__btn {
+  position: relative;
+  border: 1px solid #334155;
+  background: #1e293b;
+  color: #e2e8f0;
+  border-radius: 12px;
+  padding: 9px 14px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.player-bar__btn--menu {
+  background: #f59e0b;
+  border-color: #b45309;
+  color: #1c1005;
+}
+/* The bar replaces the floating buttons in the player view… */
+.app--player .panel-toggle,
+.app--player .msg-fab {
+  display: none;
+}
+/* …and the menu sheet opens just above it. */
+.app--player .sidebar {
+  bottom: calc(58px + env(safe-area-inset-bottom, 0px));
+}

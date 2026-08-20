@@ -43,6 +43,7 @@ export default function PanZoom({
   children,
 }: Props) {
   const hostRef = useRef<HTMLDivElement>(null);
+  const innerRef = useRef<HTMLDivElement>(null);
   const [view, setView] = useState<View>({ s: 0, tx: 0, ty: 0, fit: 0 });
   const viewRef = useRef(view);
   viewRef.current = view;
@@ -50,6 +51,13 @@ export default function PanZoom({
   const drag = useRef<{ x0: number; y0: number; tx0: number; ty0: number } | null>(null);
   const pinch = useRef<{ d0: number; s0: number; wx: number; wy: number } | null>(null);
   const dragDist = useRef(0);
+
+  function paintView(v: View) {
+    if (innerRef.current) {
+      innerRef.current.style.transform = `translate(${v.tx}px, ${v.ty}px) scale(${v.s})`;
+    }
+    setView(v);
+  }
 
   /** Keep the art on screen: an axis smaller than the viewport centers; a
    * larger one clamps so no empty gap opens at the edges. */
@@ -111,7 +119,7 @@ export default function PanZoom({
       const s = Math.max(v.fit, Math.min(v.fit * maxZoomX, v.s * Math.exp(-e.deltaY * 0.0018)));
       const wx = (mx - v.tx) / v.s;
       const wy = (my - v.ty) / v.s;
-      setView(clampView({ ...v, s, tx: mx - wx * s, ty: my - wy * s }, rect.width, rect.height));
+      paintView(clampView({ ...v, s, tx: mx - wx * s, ty: my - wy * s }, rect.width, rect.height));
     };
     el.addEventListener('wheel', onWheel, { passive: false });
     return () => el.removeEventListener('wheel', onWheel);
@@ -162,14 +170,12 @@ export default function PanZoom({
       const my = (a.y + b.y) / 2;
       const d = Math.hypot(a.x - b.x, a.y - b.y) || 1;
       const s = Math.max(v.fit, Math.min(v.fit * maxZoomX, pinch.current.s0 * (d / pinch.current.d0)));
-      setView(
-        clampView({ ...v, s, tx: mx - pinch.current.wx * s, ty: my - pinch.current.wy * s }, p.cw, p.ch),
-      );
+      paintView(clampView({ ...v, s, tx: mx - pinch.current.wx * s, ty: my - pinch.current.wy * s }, p.cw, p.ch));
     } else if (drag.current) {
       const dx = p.x - drag.current.x0;
       const dy = p.y - drag.current.y0;
       dragDist.current = Math.max(dragDist.current, Math.hypot(dx, dy));
-      setView(clampView({ ...v, tx: drag.current.tx0 + dx, ty: drag.current.ty0 + dy }, p.cw, p.ch));
+      paintView(clampView({ ...v, tx: drag.current.tx0 + dx, ty: drag.current.ty0 + dy }, p.cw, p.ch));
     }
   }
 
@@ -197,6 +203,7 @@ export default function PanZoom({
       onPointerCancel={onPointerEnd}
     >
       <div
+        ref={innerRef}
         style={{
           transform: `translate(${view.tx}px, ${view.ty}px) scale(${view.s})`,
           transformOrigin: '0 0',

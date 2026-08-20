@@ -4674,6 +4674,25 @@ export default function App({
           </div>
         )}
       </main>
+
+      {/* Player bottom bar: the HUD essentials always in view, and Menu/Chat
+          where thumbs actually are — instead of buttons floating over the map. */}
+      {variant === 'player' && membership && (
+        <footer className="player-bar">
+          <div className="player-bar__stats">
+            <span>🪙 {myTeam?.coins ?? 0}</span>
+            <span>⭐ {myTeam?.stars ?? 0}</span>
+            <span>🔗 {myRun}</span>
+            {(myTeam?.reinforcements ?? 0) > 0 && <span>🧱 {myTeam?.reinforcements}</span>}
+          </div>
+          <button className="player-bar__btn" onClick={() => (msgOpen ? setMsgOpen(false) : openMsgPanel())}>
+            💬{msgUnread > 0 && <span className="msg-badge">{msgUnread}</span>}
+          </button>
+          <button className="player-bar__btn player-bar__btn--menu" onClick={() => setPanelOpen((o) => !o)}>
+            {panelOpen ? '✕ Close' : '☰ Menu'}
+          </button>
+        </footer>
+      )}
     </div>
   );
 }

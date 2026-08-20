@@ -1456,8 +1456,18 @@ export default function App({
   // "Test my GPS" (menu): grabs a fix and reports accuracy + the nearest spot,
   // so radius tuning on the walk uses real numbers instead of guesses.
   const [gpsTest, setGpsTest] = useState('');
-  function runGpsTest() {
+  async function runGpsTest() {
     setGpsTest('Getting a GPS fix…');
+    // The permission STATE disambiguates which layer is blocking: 'denied'
+    // here + system toggles on means the SITE permission; 'prompt' that
+    // errors without ever asking means the OS-level switch for the browser.
+    let perm = '?';
+    try {
+      perm = (await navigator.permissions.query({ name: 'geolocation' })).state;
+    } catch {
+      /* Permissions API missing (older Safari) — proceed without it */
+    }
+    setGpsTest(`Getting a GPS fix… (permission: ${perm})`);
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const here = { lat: pos.coords.latitude, lng: pos.coords.longitude };
@@ -1471,7 +1481,8 @@ export default function App({
           `✅ Fix ±${Math.round(pos.coords.accuracy)}m${best ? ` · nearest spot (${best.name}) is ${Math.round(best.d)}m away` : ''} · radius ${onlineConfig.radiusM}m`,
         );
       },
-      (err) => setGpsTest(geoErrorText(err)),
+      (err) =>
+        setGpsTest(`${geoErrorText(err)} [state: ${perm} · ${navigator.userAgent.includes('CriOS') ? 'Chrome iOS' : navigator.userAgent.includes('iPhone') ? 'Safari iOS' : 'other'}]`),
       { enableHighAccuracy: true, timeout: 12000 },
     );
   }

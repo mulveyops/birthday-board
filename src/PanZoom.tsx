@@ -97,9 +97,16 @@ export default function PanZoom({
   useEffect(() => {
     const el = hostRef.current;
     if (!el) return;
+    let retry = 0;
     const apply = () => {
       const { width: cw, height: ch } = el.getBoundingClientRect();
-      if (cw < 10 || ch < 10) return;
+      if (cw < 10 || ch < 10) {
+        // Container hasn't been laid out yet (or the environment throttles
+        // resize signals) - keep checking until it has a real size.
+        window.clearTimeout(retry);
+        retry = window.setTimeout(apply, 400);
+        return;
+      }
       box.current = { cw, ch };
       const fit = (Math.min(cw / worldW, ch / worldH) || 0) * (1 - margin);
       const v = live.current;
@@ -117,6 +124,7 @@ export default function PanZoom({
     window.addEventListener('resize', apply);
     window.visualViewport?.addEventListener('resize', apply);
     return () => {
+      window.clearTimeout(retry);
       ro.disconnect();
       window.removeEventListener('resize', apply);
       window.visualViewport?.removeEventListener('resize', apply);

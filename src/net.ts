@@ -801,6 +801,7 @@ export interface GameConfig {
   stealLockSec: number; // failed steal → can't hit that team again for this long
   reinforceForfeit: number; // coins a failed attacker forfeits at a 🧱 corner
   defendRadiusM: number; // defender's fresh check-in within this → home-turf defense
+  gpsRequired: boolean; // check-ins demand physical presence (HOST setting, not the player's)
 }
 
 /** Config value with a fallback (older published games lack newer fields). */
@@ -814,6 +815,8 @@ export const cfg = {
   stealLockSec: (c: Partial<GameConfig> | undefined) => c?.stealLockSec ?? 600,
   reinforceForfeit: (c: Partial<GameConfig> | undefined) => c?.reinforceForfeit ?? 50,
   defendRadiusM: (c: Partial<GameConfig> | undefined) => c?.defendRadiusM ?? 75,
+  // Default TRUE: an older published game must fail toward "you have to be there".
+  gpsRequired: (c: Partial<GameConfig> | undefined) => c?.gpsRequired ?? true,
 };
 
 export const PARTY_CONFIG: GameConfig = {
@@ -834,6 +837,7 @@ export const PARTY_CONFIG: GameConfig = {
   stealLockSec: 600,
   reinforceForfeit: 50,
   defendRadiusM: 75,
+  gpsRequired: true,
 };
 export const TEST_CONFIG: GameConfig = {
   starCost: 40,
@@ -853,6 +857,7 @@ export const TEST_CONFIG: GameConfig = {
   stealLockSec: 30,
   reinforceForfeit: 50,
   defendRadiusM: 75,
+  gpsRequired: false,
 };
 
 export interface GameFull {

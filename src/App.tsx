@@ -954,7 +954,7 @@ export default function App({
       setNetBusy(false);
     }
   }
-  const cfgField = (label: string, key: keyof GameConfig) => (
+  const cfgField = (label: string, key: Exclude<keyof GameConfig, 'gpsRequired'>) => (
     <label
       style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, margin: '3px 0', fontSize: '0.82rem' }}
     >
@@ -1215,36 +1215,7 @@ export default function App({
     round: string;
   } | null>(null);
   const [nowTs, setNowTs] = useState(() => Date.now());
-  const [gpsOn, setGpsOn] = useState(false);
-  // Temporary: report what the view actually resolved to on a real device,
-  // so a mis-centred board can be diagnosed instead of guessed at.
-  const [viewDebug, setViewDebug] = useState('');
-  useEffect(() => {
-    if (appMode !== 'online') return;
-    const sample = () => {
-      const m = (window as unknown as { __mkeMap?: L.Map }).__mkeMap;
-      const wrap = document.querySelector('.map-wrap') as HTMLElement | null;
-      const art = [...document.querySelectorAll('svg image')].find((i) =>
-        (i.getAttribute('href') || '').includes('backdrops'),
-      ) as SVGImageElement | undefined;
-      if (!wrap) return;
-      const w = wrap.getBoundingClientRect();
-      const a2 = art?.getBoundingClientRect();
-      const vv = window.visualViewport;
-      setViewDebug(
-        [
-          `scr ${Math.round(window.innerWidth)}x${Math.round(window.innerHeight)} dpr${window.devicePixelRatio}`,
-          vv ? `vv ${Math.round(vv.width)}x${Math.round(vv.height)}@${vv.scale.toFixed(2)} off${Math.round(vv.offsetLeft)}` : 'vv -',
-          `map ${Math.round(w.width)}x${Math.round(w.height)}`,
-          m ? `z ${m.getZoom().toFixed(2)}/${m.getMinZoom().toFixed(2)}` : 'z -',
-          a2 ? `art L${Math.round(a2.left - w.left)} R${Math.round(w.right - a2.right)} w${Math.round(a2.width)}` : 'art -',
-        ].join(' · '),
-      );
-    };
-    const t = window.setInterval(sample, 1000);
-    sample();
-    return () => window.clearInterval(t);
-  }, [appMode, recage]);
+
   const lockTried = useRef<Set<string>>(new Set());
 
   // Timestamp-driven: a spawn is live once now is past spawn_at, before expires_at.
@@ -1460,7 +1431,7 @@ export default function App({
 
   // GPS gate (party) — off for desk testing, on requires being within the radius.
   function withProximity(target: { lat: number; lng: number }, cb: () => void) {
-    if (!gpsOn) return cb();
+    if (!cfg.gpsRequired(onlineConfig)) return cb(); // host setting — no player opt-out
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const d = metersBetween({ lat: pos.coords.latitude, lng: pos.coords.longitude }, target);
@@ -2537,16 +2508,14 @@ export default function App({
                 </>
               )}
             </p>
-            <label className="toggle">
-              <input type="checkbox" checked={gpsOn} onChange={(e) => setGpsOn(e.target.checked)} />
-              Require GPS proximity (turn on at the party)
-            </label>
+            <p className="hint">
+              {cfg.gpsRequired(onlineConfig)
+                ? `📍 GPS check-ins on — be within ${onlineConfig.radiusM}m of a spot`
+                : '📍 GPS check-ins off (host setting) — desk-testing mode'}
+            </p>
             <button className="btn" onClick={bumpCage}>
               🎯 Recenter board
             </button>
-            <p className="hint" style={{ fontFamily: 'monospace', fontSize: '0.68rem', opacity: 0.75 }}>
-              {viewDebug}
-            </p>
             <p className="hint" style={{ marginTop: 8 }}>Scoreboard</p>
             <div style={{ maxHeight: 128, overflowY: 'auto' }}>
               {[...teams]
@@ -3418,6 +3387,17 @@ export default function App({
               {cfgField('Drop lasts (sec)', 'spawnTtlSec')}
               {cfgField('Coins / check-in', 'coinReward')}
               {cfgField('GPS radius (m)', 'radiusM')}
+              <label
+                style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, margin: '3px 0', fontSize: '0.82rem' }}
+              >
+                <span>📍 Require GPS presence</span>
+                <input
+                  type="checkbox"
+                  checked={hostConfig.gpsRequired}
+                  disabled={hostStatus === 'ended'}
+                  onChange={(e) => setHostConfig((c) => ({ ...c, gpsRequired: e.target.checked }))}
+                />
+              </label>
               {cfgField('Rob amount (🪙)', 'robAmount')}
               {cfgField('Ambush stake (🪙)', 'ambushStake')}
               {cfgField('Ambush reward (🪙)', 'ambushReward')}

@@ -1057,6 +1057,9 @@ export default function BoardCanvas({
   // The baked board: static art as bitmaps. Null until the bake (or its
   // IndexedDB cache) lands; the vector scene renders in the meantime.
   const [bake, setBake] = useState<BakeUrls | null>(null);
+  // 0..1 while a bake is running (drives the bottom progress pill); null when
+  // idle, done, or serving from cache — the pill never shows on a cache hit.
+  const [bakeProg, setBakeProg] = useState<number | null>(null);
   const bakeBusy = useRef(false);
   const alive = useRef(true);
   useEffect(() => () => void (alive.current = false), []);
@@ -1467,7 +1470,10 @@ export default function BoardCanvas({
           .filter((g): g is Element => !!g);
         if (!groups.length) return;
         const t0 = performance.now();
-        const baked = await rasterizeBoard(groups, geo.W, geo.H, key);
+        setBakeProg(0.02);
+        const baked = await rasterizeBoard(groups, geo.W, geo.H, key, (f) => {
+          if (alive.current) setBakeProg(f);
+        });
         console.info(`board baked in ${Math.round(performance.now() - t0)}ms — ${baked.tiles.length} tiles`);
         if (!alive.current) return;
         setBake(bakeUrls(baked));
@@ -1476,6 +1482,7 @@ export default function BoardCanvas({
         console.warn('board bake failed — staying on vector rendering', e);
       } finally {
         bakeBusy.current = false;
+        if (alive.current) setBakeProg(null);
       }
     })();
     }, 2500);
@@ -2077,6 +2084,7 @@ export default function BoardCanvas({
   if (flat) {
     if (!geo || !sceneSvg) return <div className="panzoom" style={{ background: '#8fc4e8' }} />;
     return (
+      <>
       <PanZoom
         worldW={geo.W}
         worldH={geo.H}
@@ -2116,6 +2124,43 @@ export default function BoardCanvas({
           </svg>
         )}
       </PanZoom>
+      {bakeProg != null && (
+        <div
+          style={{
+            position: 'absolute',
+            left: '50%',
+            bottom: 14,
+            transform: 'translateX(-50%)',
+            zIndex: 500,
+            background: 'rgba(28,24,18,0.82)',
+            color: '#fdfaf2',
+            borderRadius: 999,
+            padding: '8px 14px',
+            fontSize: '0.78rem',
+            fontWeight: 700,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10,
+            boxShadow: '0 4px 14px rgba(0,0,0,0.3)',
+            pointerEvents: 'none',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          <span>🎨 Painting your board…</span>
+          <span style={{ width: 90, height: 6, borderRadius: 999, background: 'rgba(255,255,255,0.25)', overflow: 'hidden', display: 'inline-block' }}>
+            <span
+              style={{
+                display: 'block',
+                height: '100%',
+                width: `${Math.round(bakeProg * 100)}%`,
+                background: '#f0c33c',
+                transition: 'width 0.4s ease',
+              }}
+            />
+          </span>
+        </div>
+      )}
+      </>
     );
   }
 

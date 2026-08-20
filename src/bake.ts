@@ -134,10 +134,17 @@ function canvasBlob(canvas: HTMLCanvasElement): Promise<Blob> {
  * base image + overlapping tiles. Heavy SVG rasterization happens once per
  * horizontal band, not once per tile.
  */
-export async function rasterizeBoard(groups: Element[], W: number, H: number, key: string): Promise<BakedBoard> {
+export async function rasterizeBoard(
+  groups: Element[],
+  W: number,
+  H: number,
+  key: string,
+  onProgress?: (frac: number) => void,
+): Promise<BakedBoard> {
   const holder = document.createElement('div');
   for (const g of groups) holder.appendChild(g.cloneNode(true));
   await inlineImages(holder);
+  onProgress?.(0.08);
   const inner = holder.innerHTML;
 
   let scale = 4;
@@ -153,6 +160,7 @@ export async function rasterizeBoard(groups: Element[], W: number, H: number, ke
   bc.getContext('2d')!.drawImage(baseImg, 0, 0, bc.width, bc.height);
   const base = await canvasBlob(bc);
   URL.revokeObjectURL(baseUrl);
+  onProgress?.(0.2);
 
   // Tile pyramid level for zoomed-in play.
   const url = svgUrl(inner, W, H, scale);
@@ -164,6 +172,8 @@ export async function rasterizeBoard(groups: Element[], W: number, H: number, ke
   band.height = TILE_PX;
   const bctx = band.getContext('2d')!;
   const tiles: BakedTile[] = [];
+  const nBands = Math.ceil(ph / TILE_STEP);
+  let bandNo = 0;
   for (let py = 0; py < ph; py += TILE_STEP) {
     const bh = Math.min(TILE_PX, ph - py);
     bctx.clearRect(0, 0, pw, TILE_PX);
@@ -176,6 +186,7 @@ export async function rasterizeBoard(groups: Element[], W: number, H: number, ke
       tc.getContext('2d')!.drawImage(band, px, 0, tw, bh, 0, 0, tw, bh);
       tiles.push({ x: px / scale, y: py / scale, w: tw / scale, h: bh / scale, blob: await canvasBlob(tc) });
     }
+    onProgress?.(0.2 + (0.8 * ++bandNo) / nBands);
   }
   URL.revokeObjectURL(url);
   return { key, scale, W, H, base, baseScale: BASE_SCALE, tiles };

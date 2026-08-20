@@ -1879,3 +1879,8 @@ body {
 .msg-threads--host .msg-thread {
   padding: 7px 10px;
 }
+
+/* GPS verdict popup rides above every game surface (bar is 700, modals 1000). */
+.wag-scrim--top {
+  z-index: 1200;
+}

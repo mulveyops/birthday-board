@@ -1446,9 +1446,14 @@ export default function App({
       (pos) => {
         const d = metersBetween({ lat: pos.coords.latitude, lng: pos.coords.longitude }, target);
         if (d <= onlineConfig.radiusM) cb();
-        else alert(`Too far — you're ${Math.round(d)}m away (need within ${onlineConfig.radiusM}m).`);
+        else
+          setGpsPopup({
+            emoji: '🏃',
+            title: 'Not close enough!',
+            body: `You're ${Math.round(d)}m away — get within ${onlineConfig.radiusM}m of the spot.`,
+          });
       },
-      (err) => alert(geoErrorText(err)),
+      (err) => setGpsPopup({ emoji: '🛰️', title: 'Location trouble', body: geoErrorText(err) }),
       // maximumAge: a fix from the last 20s is fine — walking speed, 35m radius.
       { enableHighAccuracy: true, timeout: 12000, maximumAge: 20000 },
     );
@@ -1456,6 +1461,14 @@ export default function App({
   // "Test my GPS" (menu): grabs a fix and reports accuracy + the nearest spot,
   // so radius tuning on the walk uses real numbers instead of guesses.
   const [gpsTest, setGpsTest] = useState('');
+  // GPS verdicts get the game's own popup, not a browser alert. Tapping
+  // anywhere dismisses; it also clears itself after a beat.
+  const [gpsPopup, setGpsPopup] = useState<{ emoji: string; title: string; body: string } | null>(null);
+  useEffect(() => {
+    if (!gpsPopup) return;
+    const t = setTimeout(() => setGpsPopup(null), 4500);
+    return () => clearTimeout(t);
+  }, [gpsPopup]);
   async function runGpsTest() {
     setGpsTest('Getting a GPS fix…');
     // The permission STATE disambiguates which layer is blocking: 'denied'
@@ -3532,6 +3545,17 @@ export default function App({
           <button className="msg-fab" onClick={() => (msgOpen ? setMsgOpen(false) : openMsgPanel())}>
             💬{msgUnread > 0 && <span className="msg-badge">{msgUnread}</span>}
           </button>
+        )}
+        {gpsPopup && (
+          <div className="wag-scrim wag-scrim--top" onClick={() => setGpsPopup(null)}>
+            <div className="wag-pop">
+              <div className="wag-head">{gpsPopup.title}</div>
+              <div className="wag-body">
+                <div className="wag-finger">{gpsPopup.emoji}</div>
+                <p className="wag-text">{gpsPopup.body}</p>
+              </div>
+            </div>
+          </div>
         )}
         {appMode === 'online' && myShowdown && !showdownOpen && (
           <button className="showdown-banner" onClick={() => setShowdownOpen(true)}>

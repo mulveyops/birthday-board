@@ -1446,12 +1446,16 @@ export default function App({
       (pos) => {
         const d = metersBetween({ lat: pos.coords.latitude, lng: pos.coords.longitude }, target);
         if (d <= onlineConfig.radiusM) cb();
-        else
+        else {
+          // Accuracy + fix age turn a rejection into a diagnosable data point:
+          // "42m away, ±35m, 18s old" is Wi-Fi cache; "42m away, ±6m, 0s old" is real.
+          const ageS = Math.max(0, Math.round((Date.now() - pos.timestamp) / 1000));
           setGpsPopup({
             emoji: '☝️',
             title: 'Not close enough!',
-            body: `You're ${Math.round(d)}m away — get within ${onlineConfig.radiusM}m of the spot.`,
+            body: `You're ${Math.round(d)}m away — get within ${onlineConfig.radiusM}m of the spot. (fix ±${Math.round(pos.coords.accuracy)}m, ${ageS}s old)`,
           });
+        }
       },
       (err) => setGpsPopup({ emoji: '🛰️', title: 'Location trouble', body: geoErrorText(err) }),
       // maximumAge: a fix from the last 20s is fine — walking speed, 35m radius.

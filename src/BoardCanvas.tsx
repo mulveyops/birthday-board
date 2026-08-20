@@ -13,6 +13,7 @@ import L from 'leaflet';
 import type { Board, LatLng } from './types';
 import { SQUARE_TYPES } from './squareTypes';
 import { SceneGround, SceneStanding } from './SceneLayer';
+import PanZoom from './PanZoom';
 import { metersBetween } from './snap';
 
 export type Mode = 'select' | 'boundary' | 'add' | 'connect';
@@ -966,6 +967,8 @@ interface Props {
   /** Turf: spot_id → owning team's paint (corner discs tinted per team;
    * reinforced corners get a 🧱 badge). */
   turf?: Record<string, { color: string; mine: boolean; reinforced?: boolean }>;
+  /** Player engine: render the board in the flat PanZoom viewport (no Leaflet). */
+  flat?: boolean;
 }
 
 const WORLD_RING: [number, number][] = [
@@ -1039,6 +1042,7 @@ export default function BoardCanvas({
   starClaims,
   tokens,
   turf,
+  flat = false,
 }: Props) {
   const clearedSet = useMemo(() => new Set(cleared ?? []), [cleared]);
   const starSet = useMemo(() => new Set(starBars ?? []), [starBars]);
@@ -1394,74 +1398,11 @@ export default function BoardCanvas({
   // Clear a gap in the tree fill for each bespoke park scene so it isn't buried.
   const pfClear = parkFeatures.map((pf) => ({ x: X({ lat: pf.lat, lng: pf.lng }), y: Y({ lat: pf.lat, lng: pf.lng }), r: 24 * pf.sc }));
 
-  // zoomSnap 0: integer zoom steps make "fit the board" land a whole level
-  // short, leaving the board stranded small in the middle of the screen.
-  return (
-    <MapContainer
-      center={board.center}
-      zoom={board.zoom}
-      zoomControl={false}
-      zoomSnap={0}
-      className="map"
-      style={placingSquares && backdropFit ? { background: backdropFit.sky } : undefined}
-    >
-      {/* Real map tiles only during setup; the board itself is stylized art. */}
-      {!placingSquares && (
-        <TileLayer
-          url={VOYAGER_URL}
-          subdomains={['a', 'b', 'c', 'd']}
-          attribution='&copy; OpenStreetMap contributors &copy; CARTO'
-          maxZoom={20}
-        />
-      )}
-      <MapController board={board} recage={recage} />
-      <ZoomWatcher onZoom={setRelZoom} />
-      <ClickHandler
-        enabled={(editingArea && mode === 'boundary') || (placingSquares && mode === 'add')}
-        onClick={onMapClick}
-      />
-
-      {/* Land-use fills (grass/blocks/parks/water) now render inside the board
-          SVG below, so they composite as one illustration with the sprites. */}
-
-      {/* Outside-the-board mask: hides the real-world margin behind flat sky.
-          An illustrated backdrop is opaque and does that job itself — masking
-          over it would blank out the painted shores. */}
-      {closed && !(placingSquares && board.backdrop) && (
-        <Polygon
-          positions={[WORLD_RING, placingSquares ? expandRing(ring, 30) : ring]}
-          pathOptions={{
-            stroke: false,
-            fillColor: placingSquares ? '#8fc4e8' : '#020617',
-            fillOpacity: placingSquares ? 0.95 : 0.5,
-          }}
-          interactive={false}
-        />
-      )}
-
-      {/* Boundary outline — setup phases only; the finished board has no map line. */}
-      {!placingSquares &&
-        ring.length > 0 &&
-        (closed ? (
-          <Polygon
-            positions={ring}
-            pathOptions={{ color: '#2563eb', weight: 2, fillColor: '#60a5fa', fillOpacity: 0.08 }}
-            interactive={false}
-          />
-        ) : (
-          <Polyline positions={ring} pathOptions={{ color: '#2563eb', weight: 2, dashArray: '6 4' }} interactive={false} />
-        ))}
-
-      {/* THE BOARD — one SVG in world coordinates. Leaflet scales it with zoom
-          like a static image: nothing re-renders or re-proportions. */}
-      {placingSquares && geo && (
-        <SVGOverlay
-          bounds={[
-            [geo.minLat, geo.minLng],
-            [geo.maxLat, geo.maxLng],
-          ]}
-          attributes={{ viewBox: `0 0 ${geo.W.toFixed(1)} ${geo.H.toFixed(1)}` }}
-        >
+  // The whole board picture, shared by both engines: the designer wraps it in
+  // Leaflet's SVGOverlay; the flat player viewport puts it in a plain <svg>.
+  const sceneSvg =
+    placingSquares && geo ? (
+      <>
           <defs>
             {/* subtle lift so the track floats above the scenery */}
             <filter id="track-shadow" x="-5%" y="-5%" width="110%" height="110%">
@@ -1945,6 +1886,124 @@ export default function BoardCanvas({
               illustrated backdrop has its own banner + compass baked in) */}
           {!board.backdrop && <RibbonSprite x={geo.W / 2} y={100} text="Lower East Side" />}
           {!board.backdrop && <CartoucheSprite x={geo.W - 165} y={geo.H - 175} s={1.5} />}
+      </>
+    ) : null;
+
+  // FLAT ENGINE (players): no Leaflet. PanZoom fits and centers the same SVG
+  // with plain arithmetic; tap targets are sized in screen pixels at any zoom.
+  if (flat) {
+    if (!geo || !sceneSvg) return <div className="panzoom" style={{ background: '#8fc4e8' }} />;
+    return (
+      <PanZoom
+        worldW={geo.W}
+        worldH={geo.H}
+        background={backdropFit?.sky ?? '#8fc4e8'}
+        onRelZoom={(r) => setRelZoom(Math.round(r * 2) / 2)}
+      >
+        {({ scale, wasDrag }) => (
+          <svg width={geo.W} height={geo.H} viewBox={`0 0 ${geo.W.toFixed(1)} ${geo.H.toFixed(1)}`}>
+            {sceneSvg}
+            {playActive && (
+              <g>
+                {intersections.map((sq) => (
+                  <circle
+                    key={`hit${sq.id}`}
+                    cx={X(sq)}
+                    cy={Y(sq)}
+                    r={Math.min(sq.type === 'bar' ? 60 : 45, (sq.type === 'bar' ? 30 : 22) / scale)}
+                    fill="transparent"
+                    style={{ pointerEvents: 'all', cursor: 'pointer' }}
+                    onClick={() => !wasDrag() && onCheckIn?.(sq.id)}
+                  />
+                ))}
+                {spawns?.map((sp) => (
+                  <circle
+                    key={`hitspawn${sp.id}`}
+                    cx={X(sp)}
+                    cy={Y(sp)}
+                    r={Math.min(50, 24 / scale)}
+                    fill="transparent"
+                    style={{ pointerEvents: 'all', cursor: 'pointer' }}
+                    onClick={() => !wasDrag() && onClaimSpawn?.(sp.id)}
+                  />
+                ))}
+              </g>
+            )}
+          </svg>
+        )}
+      </PanZoom>
+    );
+  }
+
+  // zoomSnap 0: integer zoom steps make "fit the board" land a whole level
+  // short, leaving the board stranded small in the middle of the screen.
+  return (
+    <MapContainer
+      center={board.center}
+      zoom={board.zoom}
+      zoomControl={false}
+      zoomSnap={0}
+      className="map"
+      style={placingSquares && backdropFit ? { background: backdropFit.sky } : undefined}
+    >
+      {/* Real map tiles only during setup; the board itself is stylized art. */}
+      {!placingSquares && (
+        <TileLayer
+          url={VOYAGER_URL}
+          subdomains={['a', 'b', 'c', 'd']}
+          attribution='&copy; OpenStreetMap contributors &copy; CARTO'
+          maxZoom={20}
+        />
+      )}
+      <MapController board={board} recage={recage} />
+      <ZoomWatcher onZoom={setRelZoom} />
+      <ClickHandler
+        enabled={(editingArea && mode === 'boundary') || (placingSquares && mode === 'add')}
+        onClick={onMapClick}
+      />
+
+      {/* Land-use fills (grass/blocks/parks/water) now render inside the board
+          SVG below, so they composite as one illustration with the sprites. */}
+
+      {/* Outside-the-board mask: hides the real-world margin behind flat sky.
+          An illustrated backdrop is opaque and does that job itself — masking
+          over it would blank out the painted shores. */}
+      {closed && !(placingSquares && board.backdrop) && (
+        <Polygon
+          positions={[WORLD_RING, placingSquares ? expandRing(ring, 30) : ring]}
+          pathOptions={{
+            stroke: false,
+            fillColor: placingSquares ? '#8fc4e8' : '#020617',
+            fillOpacity: placingSquares ? 0.95 : 0.5,
+          }}
+          interactive={false}
+        />
+      )}
+
+      {/* Boundary outline — setup phases only; the finished board has no map line. */}
+      {!placingSquares &&
+        ring.length > 0 &&
+        (closed ? (
+          <Polygon
+            positions={ring}
+            pathOptions={{ color: '#2563eb', weight: 2, fillColor: '#60a5fa', fillOpacity: 0.08 }}
+            interactive={false}
+          />
+        ) : (
+          <Polyline positions={ring} pathOptions={{ color: '#2563eb', weight: 2, dashArray: '6 4' }} interactive={false} />
+        ))}
+
+      {/* THE BOARD — one SVG in world coordinates. Leaflet scales it with zoom
+          like a static image: nothing re-renders or re-proportions. */}
+      {placingSquares && geo && (
+        <SVGOverlay
+          bounds={[
+            [geo.minLat, geo.minLng],
+            [geo.maxLat, geo.maxLng],
+          ]}
+          attributes={{ viewBox: `0 0 ${geo.W.toFixed(1)} ${geo.H.toFixed(1)}` }}
+        >
+          {sceneSvg}
         </SVGOverlay>
       )}
 

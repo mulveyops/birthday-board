@@ -35,7 +35,15 @@ export default function Root() {
   const p = pathRaw.replace(/\/+$/, '') || '/';
   const params = new URLSearchParams(queryRaw || '');
   if (p === '/rsvp') return <Rsvp />;
-  if (p === '/play') return <App variant="player" initialCode={params.get('code') ?? undefined} />;
+  if (p === '/play')
+    return (
+      <App
+        variant="player"
+        initialCode={params.get('code') ?? undefined}
+        // ?classic=1 falls back to the old Leaflet player view (escape hatch)
+        classicMap={params.get('classic') != null}
+      />
+    );
   if (p === '/admin') return <Admin />;
   if (p === '/content') return <Admin initialTab="content" />;
   return <Home />;

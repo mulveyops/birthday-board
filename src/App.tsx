@@ -227,9 +227,12 @@ function drawChanceCard(board: Board, canRob: boolean, cardIds?: string[]): Chan
 export default function App({
   variant = 'admin',
   initialCode,
+  classicMap = false,
 }: {
   variant?: 'admin' | 'player';
   initialCode?: string;
+  /** Old Leaflet player view (?classic=1) — kept as a same-day escape hatch. */
+  classicMap?: boolean;
 }) {
   const [board, setBoard] = useState<Board>(() => loadBoard());
   const [mode, setMode] = useState<Mode>('select');
@@ -3499,6 +3502,7 @@ export default function App({
                 : []
           }
           tokens={appMode === 'online' ? tokens : undefined}
+          flat={variant === 'player' && !classicMap}
           turf={appMode === 'online' ? turfPaint : undefined}
         />
         {((phase === 'area' && mode === 'boundary') || (phase === 'squares' && mode === 'add')) && (

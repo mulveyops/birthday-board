@@ -1678,3 +1678,17 @@ body {
 body {
   touch-action: manipulation;
 }
+
+/* Flat player viewport (PanZoom): the map fills its box; gestures are ours. */
+.panzoom {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: grab;
+}
+.panzoom:active {
+  cursor: grabbing;
+}

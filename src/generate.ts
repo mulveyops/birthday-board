@@ -1079,6 +1079,10 @@ export async function buildStreetLabels(boundary: LatLng[], spaces: LatLng[]): P
     const major = [...g.highway].some((h) => MAJOR_HIGHWAYS.has(h));
     const short = shortStreetName(name);
 
+    // Collect every between-spaces block across all of this street's runs,
+    // then name the street ONCE — in its roomiest block, where the text has
+    // the most room to be read.
+    let best: { pts: LatLng[]; len: number } | null = null;
     for (const run of kept) {
       // Cut the run at every board space near it → the gaps between spaces
       // are the label blocks; the name sits inside a block, clear of the pips.
@@ -1092,27 +1096,15 @@ export async function buildStreetLabels(boundary: LatLng[], spaces: LatLng[]): P
       }
       cuts.sort((x, y) => x - y);
       const bounds = [0, ...cuts, L];
-      const blocks: { a: number; b: number; len: number }[] = [];
       for (let i = 0; i < bounds.length - 1; i++) {
         const a = bounds[i] + (i === 0 ? 8 : LABEL_EDGE_M);
         const b = bounds[i + 1] - (i === bounds.length - 2 ? 8 : LABEL_EDGE_M);
-        if (b - a >= LABEL_MIN_BLOCK) blocks.push({ a, b, len: b - a });
-      }
-      if (!blocks.length) continue;
-      // Minors: one label in the roomiest block. Majors repeat along the
-      // street (every other roomy block, up to 4) like a real map — so
-      // wherever you're looking, Brady says Brady.
-      let picks: typeof blocks;
-      if (major) {
-        picks = blocks.filter((bl) => bl.len >= 60).filter((_, i) => i % 2 === 0).slice(0, 4);
-        if (!picks.length) picks = [[...blocks].sort((x, y) => y.len - x.len)[0]];
-      } else {
-        picks = [[...blocks].sort((x, y) => y.len - x.len)[0]];
-      }
-      for (const bl of picks) {
-        labels.push({ name: short, pts: simplify(subPolyline(run, cum, bl.a, bl.b), 8), major });
+        const len = b - a;
+        if (len < LABEL_MIN_BLOCK) continue;
+        if (!best || len > best.len) best = { pts: subPolyline(run, cum, a, b), len };
       }
     }
+    if (best) labels.push({ name: short, pts: simplify(best.pts, 8), major });
   }
   return labels;
 }

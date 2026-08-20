@@ -13,6 +13,17 @@
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      // If the app bundle never boots (stale CDN edge serving a dead asset,
+      // flaky network), the page must not stay a silent white screen.
+      setTimeout(function () {
+        var r = document.getElementById('root');
+        if (r && r.children.length === 0) {
+          r.innerHTML =
+            '<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0f172a;color:#e2e8f0;font-family:sans-serif;padding:24px;text-align:center"><div><div style="font-size:2rem">📶</div><h2>Still loading…</h2><p style="opacity:.8;font-size:.85rem">The game didn&#39;t start — usually a hiccup fetching the newest version.</p><button onclick="location.reload(true)" style="margin-top:12px;padding:12px 26px;border-radius:12px;border:none;background:#f59e0b;font-weight:800;font-size:1rem">↻ Reload</button></div></div>';
+        }
+      }, 6000);
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

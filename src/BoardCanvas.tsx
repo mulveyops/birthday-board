@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useMemo, useState } from 'react';
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import {
   MapContainer,
   TileLayer,
@@ -12,8 +12,9 @@ import {
 import L from 'leaflet';
 import type { Board, LatLng } from './types';
 import { SQUARE_TYPES } from './squareTypes';
-import { SceneGround, SceneStanding } from './SceneLayer';
+import { SceneGround, SceneStanding, loadScene } from './SceneLayer';
 import PanZoom, { type CullRect } from './PanZoom';
+import { bakeKey, loadBake, saveBake, rasterizeBoard, bakeUrls, type BakeUrls } from './bake';
 import { metersBetween } from './snap';
 
 export type Mode = 'select' | 'boundary' | 'add' | 'connect';
@@ -1053,6 +1054,15 @@ export default function BoardCanvas({
   // window worth rendering; everything outside it simply doesn't exist, so
   // the browser never rasterizes offscreen sprites at high device resolution.
   const [cullRect, setCullRect] = useState<CullRect | null>(null);
+  // The baked board: static art as bitmaps. Null until the bake (or its
+  // IndexedDB cache) lands; the vector scene renders in the meantime.
+  const [bake, setBake] = useState<BakeUrls | null>(null);
+  const bakeBusy = useRef(false);
+  const alive = useRef(true);
+  useEffect(() => () => void (alive.current = false), []);
+  const cullLive = useRef(cullRect);
+  cullLive.current = cullRect;
+  const playSvgRef = useRef<SVGSVGElement | null>(null);
   /** Point survives the cull? m = margin for the sprite's drawn extent. */
   const inCull = (x: number, y: number, m = 60) =>
     !cullRect || (x >= cullRect.x0 - m && x <= cullRect.x1 + m && y >= cullRect.y0 - m && y <= cullRect.y1 + m);
@@ -1417,14 +1427,71 @@ export default function BoardCanvas({
   // Clear a gap in the tree fill for each bespoke park scene so it isn't buried.
   const pfClear = parkFeatures.map((pf) => ({ x: X({ lat: pf.lat, lng: pf.lng }), y: Y({ lat: pf.lat, lng: pf.lng }), r: 24 * pf.sc }));
 
+  // Bake orchestration (flat player mode only): cache hit → instant tiles;
+  // miss → wait for the scene sprites to be in the DOM, clone the uncculled
+  // static groups, rasterize, cache. Any failure just leaves the vector path.
+  useEffect(() => {
+    if (!flat || !playActive || !geo || cullRect) return;
+    const key = bakeKey({ v: 1, board });
+    if (bake) {
+      if (bake.key !== key) setBake(null); // board edited — rebake next pass
+      return;
+    }
+    if (bakeBusy.current) return;
+    // Settle delay: on load the board prop flips from the local snapshot to
+    // the cloud document moments later. Baking the early one wasted a full
+    // bake AND permanently missed the cache (its key never matched). Only a
+    // board that has held still for a beat gets baked.
+    const settle = setTimeout(() => {
+    bakeBusy.current = true;
+    void (async () => {
+      try {
+        const cached = await loadBake(key);
+        if (!alive.current) return;
+        if (cached) {
+          setBake(bakeUrls(cached));
+          return;
+        }
+        if (board.artUnderlay) {
+          await loadScene();
+          // The scene layer flips its own state after loading — wait until
+          // its sprites are really in the DOM before cloning.
+          for (let i = 0; i < 50 && alive.current && !playSvgRef.current?.querySelector('#bake-ground use'); i++)
+            await new Promise((r) => setTimeout(r, 100));
+        }
+        if (!alive.current || cullLive.current) return; // zoomed in mid-wait — retry once back out
+        const svg = playSvgRef.current;
+        if (!svg) return;
+        const groups = ['bake-ground', 'bake-fabric', 'bake-sky']
+          .map((id) => svg.querySelector(`#${id}`))
+          .filter((g): g is Element => !!g);
+        if (!groups.length) return;
+        const t0 = performance.now();
+        const baked = await rasterizeBoard(groups, geo.W, geo.H, key);
+        console.info(`board baked in ${Math.round(performance.now() - t0)}ms — ${baked.tiles.length} tiles`);
+        if (!alive.current) return;
+        setBake(bakeUrls(baked));
+        void saveBake(baked);
+      } catch (e) {
+        console.warn('board bake failed — staying on vector rendering', e);
+      } finally {
+        bakeBusy.current = false;
+      }
+    })();
+    }, 2500);
+    return () => clearTimeout(settle);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [flat, playActive, geo, board, cullRect, bake]);
+
   // The board picture is assembled from memoized STATIC chunks (ground/roads/
   // labels, buildings/trees, sky garnish) interleaved with small DYNAMIC ones
   // (nodes, bars+claim rings, spawns, tokens). The per-second game tick and
   // zoom commits then reconcile dozens of elements, not ~1700 sprites.
   const sceneGround = useMemo(
     () =>
-      placingSquares && geo ? (
+      placingSquares && geo && !bake ? (
         <>
+        <g id="bake-ground">
           <defs>
             {/* subtle lift so the track floats above the scenery */}
             <filter id="track-shadow" x="-5%" y="-5%" width="110%" height="110%">
@@ -1578,11 +1645,19 @@ export default function BoardCanvas({
           </g>
 
           {board.artUnderlay && <SceneStanding X={X} Y={Y} cull={cullRect} />}
-
-          {/* STREET NAMES — curved along their street, classic-map style.
-              Major streets (Brady, Humboldt…) label big and always; minor
-              streets fade in one zoom step up. Sizes are meters, so labels
-              scale with the board like everything else. */}
+        </g>
+        </>
+      ) : null,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [placingSquares, geo, board, backdropFit, selectedEdgeId, cullRect, bake],
+  );
+  // STREET NAMES — curved along their street, classic-map style. Major
+  // streets label big and always; minor ones fade in one zoom step up.
+  // Kept LIVE (never baked): text stays razor-crisp at every zoom, and
+  // there are only a couple dozen of them.
+  const sceneLabels =
+    placingSquares && geo ? (
+      <>
           {board.scenery?.streetLabels?.map((sl, i) => {
             if (!sl.major && relZoom < 1) return null;
             let pts = sl.pts.map((p) => [X(p), Y(p)] as [number, number]);
@@ -1620,11 +1695,8 @@ export default function BoardCanvas({
               </g>
             );
           })}
-        </>
-      ) : null,
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [placingSquares, geo, board, backdropFit, relZoom, selectedEdgeId, cullRect],
-  );
+      </>
+    ) : null;
   const sceneNodes =
     placingSquares && geo ? (
       <>
@@ -1694,8 +1766,9 @@ export default function BoardCanvas({
     ) : null;
   const sceneFabric = useMemo(
     () =>
-      placingSquares && geo ? (
+      placingSquares && geo && !bake ? (
         <>
+        <g id="bake-fabric">
           {/* ground shadows anchor every building/hero to the lawn */}
           {fabric.filter((h) => inCull(h.x, h.y, 80)).map((h) => (
             <ellipse
@@ -1799,10 +1872,11 @@ export default function BoardCanvas({
               const P = p.Sprite;
               return <P key={`pf${i}`} x={X({ lat: p.lat, lng: p.lng })} y={Y({ lat: p.lat, lng: p.lng })} s={p.sc} />;
             })}
+        </g>
         </>
       ) : null,
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [placingSquares, geo, board, fabric, fronts, parkFeatures, cullRect],
+    [placingSquares, geo, board, fabric, fronts, parkFeatures, cullRect, bake],
   );
   const sceneBars =
     placingSquares && geo ? (
@@ -1914,8 +1988,9 @@ export default function BoardCanvas({
     ) : null;
   const sceneSky = useMemo(
     () =>
-      placingSquares && geo ? (
+      placingSquares && geo && !bake ? (
         <>
+        <g id="bake-sky">
           {/* clouds scattered across the whole blue sky around the board
               (the illustrated backdrop paints its own sky, clouds and all) */}
           {closed &&
@@ -1949,18 +2024,46 @@ export default function BoardCanvas({
               illustrated backdrop has its own banner + compass baked in) */}
           {!board.backdrop && <RibbonSprite x={geo.W / 2} y={100} text="Lower East Side" />}
           {!board.backdrop && <CartoucheSprite x={geo.W - 165} y={geo.H - 175} s={1.5} />}
+        </g>
         </>
       ) : null,
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [placingSquares, geo, board, closed, cullRect],
+    [placingSquares, geo, board, closed, cullRect, bake],
   );
+  // Once baked, the entire static scene is a handful of bitmaps: the base
+  // image zoomed out, the tiles intersecting the render window zoomed in.
+  const sceneBaked =
+    bake && geo ? (
+      cullRect === null ? (
+        <image href={bake.baseUrl} x={0} y={0} width={geo.W} height={geo.H} preserveAspectRatio="none" />
+      ) : (
+        <>
+          {bake.tiles
+            .filter((t) => t.x < cullRect.x1 && t.x + t.w > cullRect.x0 && t.y < cullRect.y1 && t.y + t.h > cullRect.y0)
+            .map((t) => (
+              <image
+                key={`bt${t.x.toFixed(0)}-${t.y.toFixed(0)}`}
+                href={t.url}
+                x={t.x}
+                y={t.y}
+                width={t.w}
+                height={t.h}
+                preserveAspectRatio="none"
+              />
+            ))}
+        </>
+      )
+    ) : null;
   // The whole board picture, shared by both engines: the designer wraps it in
   // Leaflet's SVGOverlay; the flat player viewport puts it in a plain <svg>.
-  // Static chunks + dynamic game pieces, composed in the original paint order.
+  // Static art (baked bitmaps once ready, vectors until then) + dynamic game
+  // pieces, composed in the original paint order.
   const sceneSvg =
     placingSquares && geo ? (
       <>
+        {sceneBaked}
         {sceneGround}
+        {sceneLabels}
         {sceneNodes}
         {sceneFabric}
         {sceneBars}
@@ -1982,7 +2085,7 @@ export default function BoardCanvas({
         onCull={setCullRect}
       >
         {({ scale, wasDrag }) => (
-          <svg width={geo.W} height={geo.H} viewBox={`0 0 ${geo.W.toFixed(1)} ${geo.H.toFixed(1)}`}>
+          <svg ref={playSvgRef} width={geo.W} height={geo.H} viewBox={`0 0 ${geo.W.toFixed(1)} ${geo.H.toFixed(1)}`}>
             {sceneSvg}
             {playActive && (
               <g>

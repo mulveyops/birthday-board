@@ -43,7 +43,7 @@ interface SceneData {
 type SceneCache = { defs: string; data: SceneData };
 let cache: SceneCache | null = null;
 let pending: Promise<SceneCache | null> | null = null;
-async function loadScene() {
+export async function loadScene() {
   if (cache) return cache;
   pending ??= Promise.all([
     fetch('/art/scene-defs.svg').then((r) => r.text()),

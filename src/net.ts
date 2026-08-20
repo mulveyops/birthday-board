@@ -19,6 +19,8 @@ export interface TeamRow {
   coins: number;
   stars: number;
   items: number;
+  /** 🧱 unspent reinforcement charges (reinforce.sql; absent pre-upgrade). */
+  reinforcements?: number;
 }
 /** What a phone remembers so it can rejoin its team after a refresh. */
 export interface Membership {
@@ -321,11 +323,11 @@ export async function hostCancelStarClaims(gameId: string, teamId: string): Prom
   return data?.length ?? 0;
 }
 
-/** Release every space a team owns (removes their tolls). */
-export async function hostReleaseSpaces(gameId: string, teamId: string): Promise<number> {
+/** Release every corner a team has painted (host fix-it: wipes their turf). */
+export async function hostReleaseTurf(gameId: string, teamId: string): Promise<number> {
   assertConfigured();
   const { data, error } = await supabase
-    .from('space_owners')
+    .from('territory')
     .delete()
     .eq('game_id', gameId)
     .eq('team_id', teamId)
@@ -535,49 +537,165 @@ export async function hostUnclearSpot(gameId: string, teamId: string, spotId: st
 }
 
 // ---------------------------------------------------------------------------
-// Space ownership (own-a-space toll) — space_owners.sql.
+// (The own-a-space toll mechanic retired 2026-08-19 — turf reinforcement
+// replaced it. space_owners.sql's table is dormant; nothing reads it.)
 // ---------------------------------------------------------------------------
 
-export interface SpaceOwner {
+// ---------------------------------------------------------------------------
+// Territory (turf) — territory.sql. Corners a team paints by clearing them;
+// runs of consecutive owned corners pay coins per tick; steals flip a row.
+// ---------------------------------------------------------------------------
+
+export interface TerritoryRow {
   spot_id: string;
   team_id: string;
+  /** 🧱 fortified — steals here are a gauntlet and a miss forfeits coins. */
+  reinforced?: boolean;
 }
 
-export async function listSpaceOwners(gameId: string): Promise<SpaceOwner[]> {
+export async function listTerritory(gameId: string): Promise<TerritoryRow[]> {
   assertConfigured();
-  const { data, error } = await supabase.from('space_owners').select('spot_id, team_id').eq('game_id', gameId);
-  if (error) throw error;
-  return (data ?? []) as SpaceOwner[];
+  // `reinforced` arrives with reinforce.sql; fall back for a pre-upgrade DB.
+  const { data, error } = await supabase
+    .from('territory')
+    .select('spot_id, team_id, reinforced')
+    .eq('game_id', gameId);
+  if (!error) return (data ?? []) as TerritoryRow[];
+  const { data: legacy, error: e2 } = await supabase.from('territory').select('spot_id, team_id').eq('game_id', gameId);
+  if (e2) throw e2;
+  return (legacy ?? []) as TerritoryRow[];
 }
 
-export function subscribeSpaceOwners(gameId: string, onChange: () => void) {
+export function subscribeTerritory(gameId: string, onChange: () => void) {
   const ch = supabase
-    .channel(`owners:${gameId}`)
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'space_owners', filter: `game_id=eq.${gameId}` }, onChange)
+    .channel(`territory:${gameId}`)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'territory', filter: `game_id=eq.${gameId}` }, onChange)
     .subscribe();
   return () => {
     supabase.removeChannel(ch);
   };
 }
 
-/** Claim (buy) a space. First claimer wins via the unique index; deducts the
- *  cost only on a successful, affordable claim. */
-export async function claimSpace(
+/** Paint an unowned corner. 'taken' when any team (maybe us) already owns it. */
+export async function claimTerritory(gameId: string, spotId: string, teamId: string): Promise<'ok' | 'taken'> {
+  assertConfigured();
+  const { error } = await supabase.from('territory').insert({ game_id: gameId, spot_id: spotId, team_id: teamId });
+  if (error) {
+    if (error.code === '23505') return 'taken';
+    throw error;
+  }
+  return 'ok';
+}
+
+/** Flip a rival's corner after a won steal play. Guarded on the expected old
+ * owner → exactly one simultaneous steal wins; false = it already changed hands. */
+export async function stealTerritory(
+  gameId: string,
+  spotId: string,
+  attackerId: string,
+  defenderId: string,
+): Promise<boolean> {
+  assertConfigured();
+  // A stolen corner loses its reinforcement (fall back pre-reinforce.sql).
+  const patch = { team_id: attackerId, claimed_at: new Date().toISOString() };
+  const flip = (extra: Record<string, unknown>) =>
+    supabase
+      .from('territory')
+      .update({ ...patch, ...extra })
+      .eq('game_id', gameId)
+      .eq('spot_id', spotId)
+      .eq('team_id', defenderId)
+      .select('id');
+  let { data, error } = await flip({ reinforced: false });
+  if (error) ({ data, error } = await flip({}));
+  if (error) throw error;
+  return (data?.length ?? 0) > 0;
+}
+
+/** Spend one 🧱 charge to fortify a corner you own. Read-modify-write on the
+ * charge count matches the existing lockStar pattern (atomic enough at party
+ * scale); the corner flag itself is a guarded update. */
+export async function reinforceCorner(
   gameId: string,
   spotId: string,
   teamId: string,
-  cost: number,
-): Promise<'ok' | 'taken' | 'nocoins'> {
+): Promise<'ok' | 'nocharge' | 'gone'> {
   assertConfigured();
-  const { data: team } = await supabase.from('teams').select('coins').eq('id', teamId).single();
-  if (((team as { coins: number } | null)?.coins ?? 0) < cost) return 'nocoins';
-  const { error } = await supabase.from('space_owners').insert({ game_id: gameId, spot_id: spotId, team_id: teamId });
+  const { data: team, error: e0 } = await supabase.from('teams').select('reinforcements').eq('id', teamId).single();
+  if (e0) throw e0;
+  const have = (team as { reinforcements?: number } | null)?.reinforcements ?? 0;
+  if (have < 1) return 'nocharge';
+  const { data, error } = await supabase
+    .from('territory')
+    .update({ reinforced: true })
+    .eq('game_id', gameId)
+    .eq('spot_id', spotId)
+    .eq('team_id', teamId)
+    .eq('reinforced', false)
+    .select('id');
+  if (error) throw error;
+  if (!(data?.length ?? 0)) return 'gone'; // already reinforced, or just stolen
+  await supabase.from('teams').update({ reinforcements: have - 1 }).eq('id', teamId);
+  return 'ok';
+}
+
+/** Award a 🧱 charge (chance-card prize). */
+export async function grantReinforcement(teamId: string): Promise<number> {
+  assertConfigured();
+  const { data: team, error: e0 } = await supabase.from('teams').select('reinforcements').eq('id', teamId).single();
+  if (e0) throw e0;
+  const next = ((team as { reinforcements?: number } | null)?.reinforcements ?? 0) + 1;
+  const { error } = await supabase.from('teams').update({ reinforcements: next }).eq('id', teamId);
+  if (error) throw error;
+  return next;
+}
+
+export interface RaidLockRow {
+  attacker: string;
+  defender: string;
+  until_ts: string;
+}
+
+export async function listRaidLocks(gameId: string): Promise<RaidLockRow[]> {
+  assertConfigured();
+  const { data, error } = await supabase.from('raid_locks').select('attacker, defender, until_ts').eq('game_id', gameId);
+  if (error) throw error;
+  return (data ?? []) as RaidLockRow[];
+}
+
+export function subscribeRaidLocks(gameId: string, onChange: () => void) {
+  const ch = supabase
+    .channel(`raids:${gameId}`)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'raid_locks', filter: `game_id=eq.${gameId}` }, onChange)
+    .subscribe();
+  return () => {
+    supabase.removeChannel(ch);
+  };
+}
+
+/** Record a failed steal: this attacker can't hit that defender until `until`. */
+export async function setRaidLock(gameId: string, attacker: string, defender: string, untilIso: string): Promise<void> {
+  assertConfigured();
+  const { error } = await supabase
+    .from('raid_locks')
+    .upsert(
+      { game_id: gameId, attacker, defender, until_ts: untilIso },
+      { onConflict: 'game_id,attacker,defender' },
+    );
+  if (error) throw error;
+}
+
+/** Win the right to pay out one income tick (guarded insert → exactly one payer). */
+export async function claimTerritoryTick(gameId: string, tickNo: number, teamId: string | null): Promise<boolean> {
+  assertConfigured();
+  const { error } = await supabase
+    .from('territory_ticks')
+    .insert({ game_id: gameId, tick_no: tickNo, paid_by: teamId });
   if (error) {
-    if (error.code === '23505') return 'taken'; // someone already owns it
+    if (error.code === '23505') return false; // someone else is paying this tick
     throw error;
   }
-  await adjustCoins(teamId, -cost);
-  return 'ok';
+  return true;
 }
 
 // ---------------------------------------------------------------------------
@@ -661,6 +779,10 @@ export interface GameConfig {
   tollAmount: number; // coins a visitor pays the owner of a space
   ambushStake: number; // coins each ambusher escrows to arm a trap
   ambushReward: number; // coins each ambusher steals from the victim on a win
+  territoryTickSec: number; // turf income interval; each tick pays longest-run coins
+  stealLockSec: number; // failed steal → can't hit that team again for this long
+  reinforceForfeit: number; // coins a failed attacker forfeits at a 🧱 corner
+  defendRadiusM: number; // defender's fresh check-in within this → home-turf defense
 }
 
 /** Config value with a fallback (older published games lack newer fields). */
@@ -670,6 +792,10 @@ export const cfg = {
   tollAmount: (c: Partial<GameConfig> | undefined) => c?.tollAmount ?? 10,
   ambushStake: (c: Partial<GameConfig> | undefined) => c?.ambushStake ?? 20,
   ambushReward: (c: Partial<GameConfig> | undefined) => c?.ambushReward ?? 25,
+  territoryTickSec: (c: Partial<GameConfig> | undefined) => c?.territoryTickSec ?? 600,
+  stealLockSec: (c: Partial<GameConfig> | undefined) => c?.stealLockSec ?? 600,
+  reinforceForfeit: (c: Partial<GameConfig> | undefined) => c?.reinforceForfeit ?? 50,
+  defendRadiusM: (c: Partial<GameConfig> | undefined) => c?.defendRadiusM ?? 75,
 };
 
 export const PARTY_CONFIG: GameConfig = {
@@ -686,6 +812,10 @@ export const PARTY_CONFIG: GameConfig = {
   tollAmount: 10,
   ambushStake: 20,
   ambushReward: 25,
+  territoryTickSec: 600,
+  stealLockSec: 600,
+  reinforceForfeit: 50,
+  defendRadiusM: 75,
 };
 export const TEST_CONFIG: GameConfig = {
   starCost: 40,
@@ -701,6 +831,10 @@ export const TEST_CONFIG: GameConfig = {
   tollAmount: 10,
   ambushStake: 20,
   ambushReward: 25,
+  territoryTickSec: 20,
+  stealLockSec: 30,
+  reinforceForfeit: 50,
+  defendRadiusM: 75,
 };
 
 export interface GameFull {
@@ -833,13 +967,20 @@ export async function joinGame(code: string, teamName: string, emoji: string): P
 
 export async function listTeams(gameId: string): Promise<TeamRow[]> {
   assertConfigured();
+  // `reinforcements` arrives with reinforce.sql; fall back for a pre-upgrade DB.
   const { data, error } = await supabase
+    .from('teams')
+    .select('id, game_id, name, emoji, coins, stars, items, reinforcements')
+    .eq('game_id', gameId)
+    .order('created_at');
+  if (!error) return (data as TeamRow[]) ?? [];
+  const { data: legacy, error: e2 } = await supabase
     .from('teams')
     .select('id, game_id, name, emoji, coins, stars, items')
     .eq('game_id', gameId)
     .order('created_at');
-  if (error) throw error;
-  return (data as TeamRow[]) ?? [];
+  if (e2) throw e2;
+  return (legacy as TeamRow[]) ?? [];
 }
 
 /** Subscribe to team changes in a game (join/leave/resource updates) → live lobby. */
@@ -862,6 +1003,8 @@ export interface Position {
   lat: number;
   lng: number;
   spot_id: string | null;
+  /** When this last check-in happened — home-turf defense needs freshness. */
+  updated_at?: string;
 }
 
 /** Spot ids this team has already cleared (grays out for them). */
@@ -904,7 +1047,7 @@ export async function checkInSpot(
 
 export async function listPositions(gameId: string): Promise<Position[]> {
   assertConfigured();
-  const { data, error } = await supabase.from('positions').select('team_id, lat, lng, spot_id').eq('game_id', gameId);
+  const { data, error } = await supabase.from('positions').select('team_id, lat, lng, spot_id, updated_at').eq('game_id', gameId);
   if (error) throw error;
   return (data ?? []) as Position[];
 }

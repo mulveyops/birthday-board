@@ -44,7 +44,7 @@ import {
   adjustStars,
   dropSpawnNow,
   hostCancelStarClaims,
-  hostReleaseSpaces,
+  hostReleaseTurf,
   hostUnclearSpot,
   savedHostGame,
   saveHostGame,
@@ -59,9 +59,18 @@ import {
   springAmbush,
   resolveAmbush,
   cfg,
-  listSpaceOwners,
-  subscribeSpaceOwners,
-  claimSpace,
+  listTerritory,
+  subscribeTerritory,
+  claimTerritory,
+  stealTerritory,
+  reinforceCorner,
+  grantReinforcement,
+  listRaidLocks,
+  subscribeRaidLocks,
+  setRaidLock,
+  claimTerritoryTick,
+  type RaidLockRow,
+  type TerritoryRow,
   uploadTriviaPhoto,
   listContent,
   subscribeContent,
@@ -85,6 +94,7 @@ import {
   type EventRow,
   type GameConfig,
 } from './net';
+import { territoryIds, territoryAdjacency, longestRun, computeRuns } from './territory';
 
 const PHASES: { key: Phase; label: string }[] = [
   { key: 'area', label: 'Area' },
@@ -108,6 +118,13 @@ const ONLINE_METER_MS = 15000;
 const ROUND_TYPES = ['Charades', 'Fishbowl', 'Couple Trivia', 'Speed Puzzle'];
 function pickRound() {
   return ROUND_TYPES[Math.floor(Math.random() * ROUND_TYPES.length)];
+}
+/** Turf paint per team — assigned by join order (listTeams sorts by created_at),
+ * so every phone derives the same colors without storing them. */
+const TEAM_COLORS = ['#e0533a', '#2f7fe0', '#2fa05a', '#e6a817', '#9a5fe0', '#e05fa0', '#17b0b8', '#8a6d3b'];
+function teamColorOf(teams: { id: string }[], teamId: string): string {
+  const i = teams.findIndex((t) => t.id === teamId);
+  return TEAM_COLORS[(i >= 0 ? i : 0) % TEAM_COLORS.length];
 }
 /** Deterministic 0..1 from a string id — stable spot typing, no persistence. */
 function strHash01(s: string): number {
@@ -183,9 +200,9 @@ const DEFAULT_CHANCE_DECK: ChanceCard[] = [
   { id: 'd-rob3', text: '🦹 Heist time! Rob a rival team.', effect: 'rob', amount: 0 },
   { id: 'd-rob4', text: '🦹 Smash and grab! Rob a rival team.', effect: 'rob', amount: 0 },
   { id: 'd-rob5', text: '🦹 The perfect crime! Rob a rival team.', effect: 'rob', amount: 0 },
-  { id: 'd-claim1', text: '🏴 Land grab!', effect: 'claim', amount: 0 },
-  { id: 'd-claim2', text: '🏴 Turf war!', effect: 'claim', amount: 0 },
-  { id: 'd-claim3', text: '🏴 Stake your claim!', effect: 'claim', amount: 0 },
+  { id: 'd-claim1', text: '🧱 Sandbags! Fortify your turf.', effect: 'claim', amount: 0 },
+  { id: 'd-claim2', text: '🧱 Brick delivery! Fortify your turf.', effect: 'claim', amount: 0 },
+  { id: 'd-claim3', text: '🧱 Construction crew! Fortify your turf.', effect: 'claim', amount: 0 },
   { id: 'd-gain1', text: '🍀 Found coins on the sidewalk!', effect: 'gain', amount: 20 },
   { id: 'd-gain2', text: '🍀 Bar dice champion!', effect: 'gain', amount: 30 },
   { id: 'd-gain3', text: '🎰 Jackpot!', effect: 'gain', amount: 40 },
@@ -853,8 +870,8 @@ export default function App({
   async function fixReleaseSpaces(teamId: string) {
     if (!hostGame) return;
     try {
-      const n = await hostReleaseSpaces(hostGame.id, teamId);
-      alert(n ? `Released ${n} owned space${n > 1 ? 's' : ''}.` : 'This team owns no spaces.');
+      const n = await hostReleaseTurf(hostGame.id, teamId);
+      alert(n ? `Released ${n} painted corner${n > 1 ? 's' : ''}.` : 'This team owns no turf.');
     } catch (e) {
       alert('Release failed: ' + (e as Error).message);
     }
@@ -1009,8 +1026,38 @@ export default function App({
   const [chanceBusy, setChanceBusy] = useState(false);
   const [chanceDrawing, setChanceDrawing] = useState(false); // card-flip animation running
   const [chanceCardText, setChanceCardText] = useState(''); // drawn card's flavor text (rob/claim pickers)
-  // spot_id → owning team_id (own-a-space toll). Rivals landing here pay a toll.
-  const [onlineOwners, setOnlineOwners] = useState<Record<string, string>>({});
+  // Turf: painted corners (owner + 🧱 flag; runs pay coins per tick).
+  const [territoryRows, setTerritoryRows] = useState<TerritoryRow[]>([]);
+  const territoryMap = useMemo(
+    () => Object.fromEntries(territoryRows.map((r) => [r.spot_id, r.team_id])),
+    [territoryRows],
+  );
+  const reinforcedSet = useMemo(
+    () => new Set(territoryRows.filter((r) => r.reinforced).map((r) => r.spot_id)),
+    [territoryRows],
+  );
+  // Failed-steal cooldowns (attacker→defender pairs, whole game — filtered to us).
+  const [raidLocks, setRaidLocks] = useState<RaidLockRow[]>([]);
+  // Steal play: 1 question normally; 2 (all right) vs a 🧱 or home-turf defense.
+  // Failing a 🧱 corner also forfeits coins to the defender.
+  const [stealModal, setStealModal] = useState<{
+    spotId: string;
+    name: string;
+    defenderId: string;
+    questions: TriviaQuestion[];
+    reinforced: boolean;
+    defenderNear: boolean;
+  } | null>(null);
+  const [stealPicks, setStealPicks] = useState<Record<number, number>>({});
+  const [stealResult, setStealResult] = useState<'won' | 'lost' | 'gone' | null>(null);
+  const [stealBusy, setStealBusy] = useState(false);
+  const [stealForfeited, setStealForfeited] = useState(0); // coins lost on a failed 🧱 hit
+  // Tapping a corner you own: reinforce it / set a trap.
+  const [myCornerModal, setMyCornerModal] = useState<{ spotId: string; name: string } | null>(null);
+  const [cornerBusy, setCornerBusy] = useState(false);
+  // Game start time — the turf-income tick counter is anchored to it.
+  const [onlineStartedAt, setOnlineStartedAt] = useState<string | null>(null);
+  const tickTried = useRef<Set<number>>(new Set());
   // Ambushes: active rows + the arm/victim/showdown UI state.
   const [ambushes, setAmbushes] = useState<AmbushRow[]>([]);
   const [ambushArmModal, setAmbushArmModal] = useState<{ spotId: string; name: string } | null>(null);
@@ -1078,6 +1125,30 @@ export default function App({
 
   const myTeam = useMemo(() => teams.find((t) => t.id === membership?.teamId) ?? null, [teams, membership]);
   const onlineNodeType = useMemo(() => (onlineBoard ? deriveNodeType(deriveSpots(onlineBoard)) : {}), [onlineBoard]);
+  // Turf graph: which corners are claimable + which are "consecutive" (runs can turn).
+  const turfIds = useMemo(() => (onlineBoard ? territoryIds(onlineBoard) : new Set<string>()), [onlineBoard]);
+  const turfAdj = useMemo(
+    () => (onlineBoard ? territoryAdjacency(onlineBoard) : new Map<string, string[]>()),
+    [onlineBoard],
+  );
+  const myRun = useMemo(() => {
+    if (!membership) return 0;
+    const mine = new Set(Object.entries(territoryMap).filter(([, t]) => t === membership.teamId).map(([s]) => s));
+    return longestRun(mine, turfAdj);
+  }, [territoryMap, turfAdj, membership]);
+  // Corner paint for the map: spot → team color (thicker ring for our own,
+  // 🧱 badge when reinforced).
+  const turfPaint = useMemo(() => {
+    const out: Record<string, { color: string; mine: boolean; reinforced?: boolean }> = {};
+    for (const r of territoryRows) {
+      out[r.spot_id] = {
+        color: teamColorOf(teams, r.team_id),
+        mine: r.team_id === membership?.teamId,
+        reinforced: !!r.reinforced,
+      };
+    }
+    return out;
+  }, [territoryRows, teams, membership]);
   const tokens = useMemo(
     () =>
       positions.map((p) => {
@@ -1107,18 +1178,20 @@ export default function App({
     const loadSpawns = () => listSpawns(gid).then((s) => alive && setAllSpawns(s)).catch(() => {});
     const loadStars = () => listStarClaims(gid).then((s) => alive && setStarClaimRows(s)).catch(() => {});
     const loadEvents = () => listEvents(gid).then((e) => alive && setEvents(e)).catch(() => {});
-    const loadOwners = () =>
-      listSpaceOwners(gid)
-        .then((o) => alive && setOnlineOwners(Object.fromEntries(o.map((r) => [r.spot_id, r.team_id]))))
-        .catch(() => {});
     const loadMsgs = () => listMessages(gid).then((m) => alive && setMessages(m)).catch(() => {});
     const loadAmbushes = () => listAmbushes(gid).then((a) => alive && setAmbushes(a)).catch(() => {});
+    const loadTurf = () =>
+      listTerritory(gid)
+        .then((rows) => alive && setTerritoryRows(rows))
+        .catch(() => {});
+    const loadRaids = () => listRaidLocks(gid).then((r) => alive && setRaidLocks(r)).catch(() => {});
     const loadGame = () =>
       getGameFull(gid)
         .then((g) => {
           if (!alive) return;
           if (g.config) setOnlineConfig(g.config);
           setOnlineStatus((g.status as 'lobby' | 'live' | 'paused' | 'ended') ?? 'live');
+          setOnlineStartedAt(g.started_at);
         })
         .catch(() => {});
     loadClaims();
@@ -1126,9 +1199,10 @@ export default function App({
     loadSpawns();
     loadStars();
     loadEvents();
-    loadOwners();
     loadMsgs();
     loadAmbushes();
+    loadTurf();
+    loadRaids();
     loadGame();
     const u1 = subscribeClaims(gid, loadClaims);
     const u2 = subscribePositions(gid, loadPos);
@@ -1136,9 +1210,10 @@ export default function App({
     const u4 = subscribeStars(gid, loadStars);
     const u5 = subscribeEvents(gid, loadEvents);
     const u6 = subscribeGame(gid, loadGame);
-    const u7 = subscribeSpaceOwners(gid, loadOwners);
     const u8 = subscribeMessages(gid, loadMsgs);
     const u9 = subscribeAmbushes(gid, loadAmbushes);
+    const u10 = subscribeTerritory(gid, loadTurf);
+    const u11 = subscribeRaidLocks(gid, loadRaids);
     return () => {
       alive = false;
       u1();
@@ -1147,9 +1222,10 @@ export default function App({
       u4();
       u5();
       u6();
-      u7();
       u8();
       u9();
+      u10();
+      u11();
     };
   }, [appMode, membership]);
 
@@ -1179,6 +1255,41 @@ export default function App({
     const iv = setInterval(() => setNowTs(Date.now()), 1000);
     return () => clearInterval(iv);
   }, [appMode]);
+
+  // Turf income: each tick pays every team coins equal to its longest run of
+  // painted corners. Timestamp-driven like star locks — whichever phone notices
+  // the tick tries a guarded insert; exactly one wins and pays everyone from a
+  // FRESH territory read (our cache could be seconds stale).
+  useEffect(() => {
+    if (appMode !== 'online' || !membership || !onlineBoard || onlineStatus !== 'live' || !onlineStartedAt) return;
+    const tickMs = cfg.territoryTickSec(onlineConfig) * 1000;
+    if (tickMs <= 0) return;
+    const tickNo = Math.floor((nowTs - Date.parse(onlineStartedAt)) / tickMs);
+    if (tickNo < 1 || tickTried.current.has(tickNo)) return;
+    tickTried.current.add(tickNo);
+    (async () => {
+      try {
+        const payer = await claimTerritoryTick(membership.gameId, tickNo, membership.teamId);
+        if (!payer) return;
+        const rows = await listTerritory(membership.gameId);
+        const ownership = Object.fromEntries(rows.map((r) => [r.spot_id, r.team_id]));
+        const runs = computeRuns(ownership, turfAdj);
+        const parts: string[] = [];
+        for (const t of teams) {
+          const n = runs[t.id] ?? 0;
+          if (n > 0) {
+            await adjustCoins(t.id, n);
+            parts.push(`${t.emoji} +${n}`);
+          }
+        }
+        if (parts.length) {
+          logEvent(membership.gameId, 'star', `🔗 Turf income paid: ${parts.join(' · ')} 🪙`).catch(() => {});
+        }
+      } catch {
+        /* another phone will cover the next tick */
+      }
+    })();
+  }, [appMode, nowTs, membership, onlineBoard, onlineStatus, onlineStartedAt, onlineConfig, teams, turfAdj]);
 
   function onlineClaimSpawn(spawnId: string) {
     if (!membership) return;
@@ -1226,15 +1337,15 @@ export default function App({
         setOnlineBarModal({ spotId, name: sq.title || 'Bar' });
         return;
       }
-      // A chance square. If it's OWNED, that overrides the roll: rivals pay a
-      // toll (recurring, so this bypasses the once-per-team cleared gate); the
-      // owner just gets a note. Otherwise roll it once.
+      // A painted corner (recurring; bypasses the cleared gate): a rival's →
+      // a steal play; your own → the corner menu (reinforce / set a trap).
+      const turfOwner = territoryMap[spotId];
+      if (turfOwner && turfIds.has(spotId)) {
+        if (turfOwner !== membership.teamId) openSteal(spotId, sq, turfOwner);
+        else setMyCornerModal({ spotId, name: sq.title || 'Your corner' });
+        return;
+      }
       if (type === 'chance') {
-        const owner = onlineOwners[spotId];
-        if (owner) {
-          void handleOwnedSpace(sq, owner);
-          return;
-        }
         if (onlineCleared.includes(spotId)) {
           openArmOnCleared(spotId, sq);
           return;
@@ -1273,8 +1384,127 @@ export default function App({
       checkInSpot(membership.gameId, membership.teamId, spotId, sq.lat, sq.lng, onlineConfig.coinReward).catch((e) =>
         alert('Check-in failed: ' + (e as Error).message),
       );
+      paintTurf(spotId);
     });
   }
+  // --- Turf steal handlers ---------------------------------------------------
+  /** Deal n distinct bank questions; no bank published → coin-flip calls. */
+  function dealStealQuestions(n: number): TriviaQuestion[] {
+    const bank = onlineBoard?.triviaBank ?? [];
+    if (bank.length) {
+      const shuffled = [...bank].sort(() => Math.random() - 0.5);
+      return shuffled.slice(0, Math.min(n, shuffled.length));
+    }
+    return Array.from({ length: n }, () => ({
+      q: '🪙 No trivia bank in this game — call the coin flip to make the play!',
+      choices: ['Heads', 'Tails'],
+      correct: Math.floor(Math.random() * 2),
+    }));
+  }
+  /** Home-turf defense: the defender's LAST check-in is fresh (≤10 min) and
+   * within defendRadiusM of this corner — they're standing right there. */
+  function defenderIsNear(defenderId: string, sq: Square): boolean {
+    const pos = positions.find((p) => p.team_id === defenderId);
+    if (!pos) return false;
+    const fresh = pos.updated_at ? Date.now() - Date.parse(pos.updated_at) <= 10 * 60 * 1000 : false;
+    return fresh && metersBetween({ lat: pos.lat, lng: pos.lng }, sq) <= cfg.defendRadiusM(onlineConfig);
+  }
+  /** Land on a rival corner: locked out → bounce; otherwise deal the play.
+   * 🧱 reinforced or defender-on-site → hard mode (2 questions, all right). */
+  function openSteal(spotId: string, sq: Square, defenderId: string) {
+    if (!membership || onlineStatus !== 'live') return;
+    const lock = raidLocks.find(
+      (r) => r.attacker === membership.teamId && r.defender === defenderId && Date.parse(r.until_ts) > Date.now(),
+    );
+    if (lock) {
+      const secs = Math.ceil((Date.parse(lock.until_ts) - Date.now()) / 1000);
+      const defName = teams.find((t) => t.id === defenderId)?.name ?? 'that team';
+      alert(`🚫 You blew your last shot at ${defName} — wait ${Math.ceil(secs / 60)} min before hitting them again.`);
+      return;
+    }
+    const reinforced = reinforcedSet.has(spotId);
+    const defenderNear = defenderIsNear(defenderId, sq);
+    setStealPicks({});
+    setStealResult(null);
+    setStealBusy(false);
+    setStealForfeited(0);
+    setStealModal({
+      spotId,
+      name: sq.title || 'this corner',
+      defenderId,
+      questions: dealStealQuestions(reinforced || defenderNear ? 2 : 1),
+      reinforced,
+      defenderNear,
+    });
+  }
+  /** Resolve the play: ALL right = flip the corner; any wrong = lockout vs
+   * that team, plus a coin forfeit to them if the corner was 🧱 reinforced. */
+  async function resolveSteal() {
+    if (!membership || !stealModal || stealBusy) return;
+    const { spotId, name, defenderId, questions, reinforced } = stealModal;
+    if (questions.some((_, i) => stealPicks[i] == null)) return;
+    const defName = teams.find((t) => t.id === defenderId)?.name ?? 'a team';
+    const allRight = questions.every((q, i) => stealPicks[i] === q.correct);
+    setStealBusy(true);
+    try {
+      if (allRight) {
+        const ok = await stealTerritory(membership.gameId, spotId, membership.teamId, defenderId);
+        if (ok) {
+          setStealResult('won');
+          const sq = onlineBoard?.squares.find((s) => s.id === spotId);
+          if (sq) checkInSpot(membership.gameId, membership.teamId, spotId, sq.lat, sq.lng, 0).catch(() => {});
+          logEvent(membership.gameId, 'battle', `🏴 ${myTeam?.name ?? 'A team'} stole ${name} from ${defName}!`).catch(() => {});
+          sendMessage(membership.gameId, null, defenderId, `🏴 ${myTeam?.name ?? 'A team'} took your corner at ${name} — your run may be cut!`).catch(() => {});
+        } else {
+          setStealResult('gone'); // ownership changed under us — map will refresh
+        }
+      } else {
+        setStealResult('lost');
+        const until = new Date(Date.now() + cfg.stealLockSec(onlineConfig) * 1000).toISOString();
+        setRaidLock(membership.gameId, membership.teamId, defenderId, until).catch(() => {});
+        let extra = '';
+        if (reinforced) {
+          const forfeit = cfg.reinforceForfeit(onlineConfig);
+          const moved = await transferCoins(membership.teamId, defenderId, forfeit).catch(() => 0);
+          setStealForfeited(moved);
+          extra = ` and forfeited ${moved} 🪙 to the wall`;
+        }
+        logEvent(membership.gameId, 'battle', `🛡 ${defName} held ${name} — ${myTeam?.name ?? 'a team'} fumbled the steal${extra}`).catch(() => {});
+        sendMessage(membership.gameId, null, defenderId, `🛡 ${myTeam?.name ?? 'A team'} tried to steal your corner at ${name} and blew it${extra}!`).catch(() => {});
+      }
+    } catch (e) {
+      alert('Steal failed: ' + (e as Error).message);
+      setStealModal(null);
+    } finally {
+      setStealBusy(false);
+    }
+  }
+  /** Spend a 🧱 charge on the corner you're standing on. */
+  async function doReinforce() {
+    if (!membership || !myCornerModal || cornerBusy) return;
+    setCornerBusy(true);
+    try {
+      const r = await reinforceCorner(membership.gameId, myCornerModal.spotId, membership.teamId);
+      if (r === 'ok') {
+        setTerritoryRows((rows) =>
+          rows.map((row) => (row.spot_id === myCornerModal.spotId ? { ...row, reinforced: true } : row)),
+        );
+        flash('🧱 Reinforced!');
+        logEvent(membership.gameId, 'battle', `🧱 ${myTeam?.name ?? 'A team'} reinforced a corner`).catch(() => {});
+        setMyCornerModal(null);
+      } else if (r === 'nocharge') {
+        alert('No 🧱 charges — win one from a chance card.');
+      } else {
+        alert('This corner just changed — refresh and try again.');
+        setMyCornerModal(null);
+      }
+    } catch (e) {
+      alert('Reinforce failed: ' + (e as Error).message);
+    } finally {
+      setCornerBusy(false);
+    }
+  }
+
   // --- Ambush handlers -------------------------------------------------------
   /** Re-tapping a spot you've cleared → set (or inspect) a trap there. */
   function openArmOnCleared(spotId: string, sq: Square) {
@@ -1359,6 +1589,14 @@ export default function App({
     if (!membership) return;
     setOnlineCleared((c) => (c.includes(sq.id) ? c : [...c, sq.id]));
     checkInSpot(membership.gameId, membership.teamId, sq.id, sq.lat, sq.lng, 0).catch(() => {});
+    paintTurf(sq.id);
+  }
+  // Clearing a claimable corner paints it your color (extends/starts a run).
+  // First-come insert; if a rival owns it the check-in already routed to steal.
+  function paintTurf(spotId: string) {
+    if (!membership || !turfIds.has(spotId) || territoryMap[spotId]) return;
+    setTerritoryRows((rows) => [...rows, { spot_id: spotId, team_id: membership.teamId }]); // optimistic
+    claimTerritory(membership.gameId, spotId, membership.teamId).catch(() => {});
   }
   // Draw a chance card. 'rob'/'claim' defer to a follow-up choice; others resolve now.
   async function rollOnlineChance() {
@@ -1378,12 +1616,23 @@ export default function App({
       setChanceOutcome('rob');
       return;
     }
-    if (card.effect === 'claim') {
-      setChanceBusy(false);
-      setChanceOutcome('claim');
-      return;
-    }
     try {
+      // 'claim' cards (the old land-grab) now award a 🧱 reinforcement charge.
+      if (card.effect === 'claim') {
+        try {
+          await grantReinforcement(membership.teamId);
+          setChanceText(`${card.text} +1 🧱 — check in at a corner you own to fortify it.`);
+          await logEvent(membership.gameId, 'star', `🧱 ${myTeam?.name ?? 'A team'} picked up a reinforcement`);
+        } catch {
+          // reinforce.sql not applied yet — degrade to a small coin prize.
+          await adjustCoins(membership.teamId, 20);
+          setChanceText(`${card.text} …the armory is closed — +20 🪙 instead.`);
+        }
+        setChanceOutcome('gain');
+        markChanceCleared(sq);
+        setChanceBusy(false);
+        return;
+      }
       if (card.effect === 'gain') {
         await adjustCoins(membership.teamId, card.amount);
         setChanceText(`${card.text} +${card.amount} 🪙`);
@@ -1428,54 +1677,6 @@ export default function App({
       setChanceBusy(false);
     }
   }
-  // Buy (own) the current chance space. First claimer wins; toll rolls in later.
-  async function claimThisSpace() {
-    if (!membership || !onlineBoard || !onlineChanceModal || chanceBusy) return;
-    const sq = onlineBoard.squares.find((s) => s.id === onlineChanceModal.spotId);
-    if (!sq) return;
-    const cost = cfg.claimCost(onlineConfig);
-    setChanceBusy(true);
-    try {
-      const res = await claimSpace(membership.gameId, sq.id, membership.teamId, cost);
-      if (res === 'nocoins') {
-        setChanceText(`Not enough 🪙 to claim (need ${cost}).`);
-        setChanceOutcome('nothing');
-      } else if (res === 'taken') {
-        setChanceText('Too late — another team already owns this space.');
-        setChanceOutcome('nothing');
-      } else {
-        setChanceText(`🏴 You secretly own ${sq.title || 'this space'}! Rivals who land here pay you a toll.`);
-        setChanceOutcome('gain');
-        await logEvent(membership.gameId, 'star', `🏴 A space was quietly claimed…`);
-      }
-      markChanceCleared(sq);
-    } catch (e) {
-      alert('Claim failed: ' + (e as Error).message);
-    } finally {
-      setChanceBusy(false);
-    }
-  }
-  // Landing on an OWNED chance space: your own turf → a note; a rival's → pay a toll.
-  async function handleOwnedSpace(sq: Square, ownerTeamId: string) {
-    if (!membership) return;
-    if (ownerTeamId === membership.teamId) {
-      setChanceOutcome('nothing');
-      setChanceText('🏴 Your turf — it quietly earns you tolls when rivals land here.');
-      setOnlineChanceModal({ spotId: sq.id, name: sq.title || 'Chance' });
-      return;
-    }
-    setChanceOutcome('lose');
-    setChanceText('Crossing someone’s turf…');
-    setOnlineChanceModal({ spotId: sq.id, name: sq.title || 'Chance' });
-    try {
-      const toll = cfg.tollAmount(onlineConfig);
-      const moved = await transferCoins(membership.teamId, ownerTeamId, toll);
-      setChanceText(`💰 You crossed someone’s turf and paid a ${moved} 🪙 toll.`);
-      await logEvent(membership.gameId, 'battle', `💰 A toll was collected at ${sq.title || 'a space'}`);
-    } catch (e) {
-      setChanceText('Toll failed: ' + (e as Error).message);
-    }
-  }
   // Score the online trivia, then clear the spot + award scaled coins via checkInSpot.
   function resolveOnlineQuiz() {
     if (!membership || !onlineBoard || !onlineQuizModal) return;
@@ -1489,6 +1690,7 @@ export default function App({
     checkInSpot(membership.gameId, membership.teamId, sq.id, sq.lat, sq.lng, award).catch((e) =>
       alert('Check-in failed: ' + (e as Error).message),
     );
+    paintTurf(sq.id);
     setQuizDone(true);
   }
   // Bowser resolution: lose coins by performance. Trivia → penalty × %wrong;
@@ -2034,6 +2236,24 @@ export default function App({
               </p>
             )}
             <p className="hint">{onlineCleared.length} spots cleared</p>
+            <p className="hint">
+              🔗 Longest run: <b>{myRun}</b>
+              {myRun > 0 && (
+                <>
+                  {' '}
+                  — earning +{myRun} 🪙 every{' '}
+                  {cfg.territoryTickSec(onlineConfig) >= 120
+                    ? `${Math.round(cfg.territoryTickSec(onlineConfig) / 60)} min`
+                    : `${cfg.territoryTickSec(onlineConfig)}s`}
+                </>
+              )}
+              {(myTeam?.reinforcements ?? 0) > 0 && (
+                <>
+                  {' '}· 🧱 <b>{myTeam?.reinforcements}</b> charge{(myTeam?.reinforcements ?? 0) > 1 ? 's' : ''} — check in
+                  at a corner you own to fortify it
+                </>
+              )}
+            </p>
             <label className="toggle">
               <input type="checkbox" checked={gpsOn} onChange={(e) => setGpsOn(e.target.checked)} />
               Require GPS proximity (turn on at the party)
@@ -2800,7 +3020,7 @@ export default function App({
                               Cancel star claim
                             </button>
                             <button className="btn btn--ghost" onClick={() => void fixReleaseSpaces(t.id)}>
-                              Release spaces
+                              Release turf
                             </button>
                           </div>
                           {fixClaims.length > 0 && (
@@ -2857,10 +3077,12 @@ export default function App({
               {cfgField('Coins / check-in', 'coinReward')}
               {cfgField('GPS radius (m)', 'radiusM')}
               {cfgField('Rob amount (🪙)', 'robAmount')}
-              {cfgField('Claim a space (🪙)', 'claimCost')}
-              {cfgField('Space toll (🪙)', 'tollAmount')}
               {cfgField('Ambush stake (🪙)', 'ambushStake')}
               {cfgField('Ambush reward (🪙)', 'ambushReward')}
+              {cfgField('Turf income tick (sec)', 'territoryTickSec')}
+              {cfgField('Failed-steal lockout (sec)', 'stealLockSec')}
+              {cfgField('🧱 fail forfeit (🪙)', 'reinforceForfeit')}
+              {cfgField('Home-turf radius (m)', 'defendRadiusM')}
               {(hostStatus === 'live' || hostStatus === 'paused') && (
                 <button className="btn" onClick={doApplyConfig} disabled={netBusy}>
                   ⚙️ Apply settings now
@@ -3030,6 +3252,7 @@ export default function App({
                 : []
           }
           tokens={appMode === 'online' ? tokens : undefined}
+          turf={appMode === 'online' ? turfPaint : undefined}
         />
         {((phase === 'area' && mode === 'boundary') || (phase === 'squares' && mode === 'add')) && (
           <div className="add-banner">
@@ -3298,6 +3521,221 @@ export default function App({
               </div>
             );
           })()}
+        {myCornerModal &&
+          (() => {
+            const myColor = membership ? teamColorOf(teams, membership.teamId) : '#2fa05a';
+            const fortified = reinforcedSet.has(myCornerModal.spotId);
+            const charges = myTeam?.reinforcements ?? 0;
+            return (
+              <div
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  background: 'rgba(20,16,12,0.42)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  zIndex: 1000,
+                }}
+                onClick={() => !cornerBusy && setMyCornerModal(null)}
+              >
+                <div
+                  style={{
+                    width: 340,
+                    maxWidth: '90%',
+                    background: '#fdfaf2',
+                    border: '2px solid #3f3b36',
+                    borderRadius: 14,
+                    overflow: 'hidden',
+                    boxShadow: '0 14px 44px rgba(0,0,0,0.38)',
+                    animation: 'pop-in 0.24s cubic-bezier(0.2,0.85,0.35,1.2)',
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div style={{ background: myColor, color: '#fff', padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <span style={{ fontSize: '1.9rem', lineHeight: 1 }}>{fortified ? '🧱' : '🏴'}</span>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontWeight: 800, fontSize: '1.05rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {myCornerModal.name}
+                      </div>
+                      <div style={{ fontSize: '0.7rem', opacity: 0.92, textTransform: 'uppercase', letterSpacing: 1.5 }}>
+                        Your corner{fortified ? ' · reinforced' : ''}
+                      </div>
+                    </div>
+                  </div>
+                  <div style={{ padding: '16px 18px' }}>
+                    {fortified ? (
+                      <p className="hint" style={{ marginTop: 0 }}>
+                        🧱 Fortified — a thief here faces a 2-question gauntlet and forfeits{' '}
+                        {cfg.reinforceForfeit(onlineConfig)} 🪙 to you if they miss.
+                      </p>
+                    ) : (
+                      <>
+                        <p className="hint" style={{ marginTop: 0 }}>
+                          Your paint holds this corner in your run. Fortify it with a 🧱 charge
+                          {charges > 0 ? ` (you have ${charges})` : ' — win one from a chance card'}.
+                        </p>
+                        <button
+                          className="btn btn--go"
+                          style={{ width: '100%' }}
+                          disabled={cornerBusy || charges < 1}
+                          onClick={() => void doReinforce()}
+                        >
+                          {cornerBusy ? '…' : charges < 1 ? 'No 🧱 charges yet' : '🧱 Reinforce this corner'}
+                        </button>
+                      </>
+                    )}
+                    <button
+                      className="btn"
+                      style={{ width: '100%', marginTop: 8 }}
+                      onClick={() => {
+                        const spotId = myCornerModal.spotId;
+                        const sq = onlineBoard?.squares.find((s) => s.id === spotId);
+                        setMyCornerModal(null);
+                        if (sq) openArmOnCleared(spotId, sq);
+                      }}
+                    >
+                      🪤 Set a trap here
+                    </button>
+                    <button className="btn btn--ghost" style={{ width: '100%', marginTop: 6 }} onClick={() => setMyCornerModal(null)}>
+                      Close
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+        {stealModal &&
+          (() => {
+            const defName = teams.find((t) => t.id === stealModal.defenderId)?.name ?? 'a rival';
+            const defColor = teamColorOf(teams, stealModal.defenderId);
+            return (
+              <div
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  background: 'rgba(20,16,12,0.42)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  zIndex: 1000,
+                }}
+                onClick={() => !stealBusy && setStealModal(null)}
+              >
+                <div
+                  style={{
+                    width: 340,
+                    maxWidth: '90%',
+                    background: '#fdfaf2',
+                    border: '2px solid #3f3b36',
+                    borderRadius: 14,
+                    overflow: 'hidden',
+                    boxShadow: '0 14px 44px rgba(0,0,0,0.38)',
+                    animation: 'pop-in 0.24s cubic-bezier(0.2,0.85,0.35,1.2)',
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div style={{ background: defColor, color: '#fff', padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <span style={{ fontSize: '1.9rem', lineHeight: 1 }}>🏴</span>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontWeight: 800, fontSize: '1.05rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {stealModal.name}
+                      </div>
+                      <div style={{ fontSize: '0.7rem', opacity: 0.92, textTransform: 'uppercase', letterSpacing: 1.5 }}>
+                        {defName}'s corner
+                      </div>
+                    </div>
+                  </div>
+                  <div style={{ padding: '16px 18px' }}>
+                    {stealResult === 'won' ? (
+                      <>
+                        <p className="chance-card-text" style={{ fontSize: '1.15rem', fontWeight: 800, textAlign: 'center', margin: '8px 0 14px' }}>
+                          🏴 Corner stolen! It's painted your color — {defName}'s run just took the hit.
+                        </p>
+                        <button className="btn btn--go" style={{ width: '100%' }} onClick={() => setStealModal(null)}>
+                          Nice
+                        </button>
+                      </>
+                    ) : stealResult === 'lost' ? (
+                      <>
+                        <p className="chance-card-text" style={{ fontSize: '1.15rem', fontWeight: 800, textAlign: 'center', margin: '8px 0 14px' }}>
+                          🛡 Blew it! {defName} holds the corner — you can't hit them again for{' '}
+                          {Math.ceil(cfg.stealLockSec(onlineConfig) / 60)} min
+                          {stealForfeited > 0 && (
+                            <>
+                              {' '}
+                              — and the 🧱 wall cost you <b>{stealForfeited} 🪙</b>, paid to {defName}
+                            </>
+                          )}
+                          .
+                        </p>
+                        <button className="btn" style={{ width: '100%' }} onClick={() => setStealModal(null)}>
+                          Walk it off
+                        </button>
+                      </>
+                    ) : stealResult === 'gone' ? (
+                      <>
+                        <p className="chance-card-text" style={{ fontWeight: 800, textAlign: 'center', margin: '8px 0 14px' }}>
+                          🤔 This corner just changed hands — someone beat you to it.
+                        </p>
+                        <button className="btn" style={{ width: '100%' }} onClick={() => setStealModal(null)}>
+                          Close
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <p className="hint" style={{ marginTop: 0 }}>
+                          Steal this corner from <b>{defName}</b> — answer{' '}
+                          {stealModal.questions.length > 1 ? <b>all {stealModal.questions.length} right</b> : 'right'} to
+                          flip it. Miss, and you're locked out of hitting them for{' '}
+                          {Math.ceil(cfg.stealLockSec(onlineConfig) / 60)} min.
+                        </p>
+                        {stealModal.reinforced && (
+                          <p className="hint" style={{ background: '#3b2a1d', color: '#fcd9a8', borderRadius: 8, padding: '7px 10px' }}>
+                            🧱 <b>Reinforced!</b> Miss and you also forfeit {cfg.reinforceForfeit(onlineConfig)} 🪙 to {defName}.
+                          </p>
+                        )}
+                        {stealModal.defenderNear && (
+                          <p className="hint" style={{ background: '#3b1d1d', color: '#fecaca', borderRadius: 8, padding: '7px 10px' }}>
+                            ⚔️ <b>{defName} is right there</b> — home-turf defense makes this play harder.
+                          </p>
+                        )}
+                        {stealModal.questions.map((sq2, qi) => (
+                          <div key={qi} style={{ marginTop: qi ? 12 : 4 }}>
+                            <div className="quiz-q" style={{ fontWeight: 700, margin: '6px 0' }}>
+                              {stealModal.questions.length > 1 ? `${qi + 1}. ` : ''}
+                              {sq2.q}
+                            </div>
+                            {sq2.image && <img src={sq2.image} alt="" className="quiz-photo" />}
+                            {sq2.choices.map((c, ci) => (
+                              <button
+                                key={ci}
+                                className={`quiz-choice ${stealPicks[qi] === ci ? 'quiz-choice--picked' : ''}`}
+                                onClick={() => setStealPicks((p) => ({ ...p, [qi]: ci }))}
+                              >
+                                <span>{c}</span>
+                              </button>
+                            ))}
+                          </div>
+                        ))}
+                        <button
+                          className="btn btn--go"
+                          style={{ width: '100%', marginTop: 8 }}
+                          disabled={stealBusy || stealModal.questions.some((_, i) => stealPicks[i] == null)}
+                          onClick={resolveSteal}
+                        >
+                          {stealBusy ? '…' : 'Make the play'}
+                        </button>
+                        <button className="btn btn--ghost" style={{ width: '100%', marginTop: 6 }} onClick={() => setStealModal(null)}>
+                          Back away
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
         {onlineBarModal &&
           (() => {
             const claim = starClaimRows.find((c) => c.bar_spot_id === onlineBarModal.spotId && c.status !== 'lost');
@@ -3491,8 +3929,6 @@ export default function App({
           (() => {
             const others = teams.filter((t) => t.id !== membership?.teamId);
             const robAmt = cfg.robAmount(onlineConfig);
-            const claimCost = cfg.claimCost(onlineConfig);
-            const tollAmt = cfg.tollAmount(onlineConfig);
             const close = () => {
               setOnlineChanceModal(null);
               setChanceOutcome(null);
@@ -3571,24 +4007,9 @@ export default function App({
                           </button>
                         ))}
                       </>
-                    ) : chanceOutcome === 'claim' ? (
-                      <>
-                        <p className="chance-card-text" style={{ fontWeight: 800, marginTop: 0 }}>{chanceCardText || '🏴 Land grab!'}</p>
-                        <p className="hint" style={{ marginTop: 4 }}>
-                          Buy this space for {claimCost} 🪙? Rivals who land here secretly pay you a {tollAmt} 🪙 toll.
-                        </p>
-                        <button
-                          className="btn btn--go"
-                          style={{ width: '100%' }}
-                          disabled={chanceBusy || (myTeam?.coins ?? 0) < claimCost}
-                          onClick={() => void claimThisSpace()}
-                        >
-                          {(myTeam?.coins ?? 0) < claimCost ? `Need ${claimCost} 🪙` : `Claim for ${claimCost} 🪙`}
-                        </button>
-                      </>
                     ) : (
                       <>
-                        <p className="hint" style={{ marginTop: 0 }}>Draw from the deck — coins, a robbery, turf, or a bust.</p>
+                        <p className="hint" style={{ marginTop: 0 }}>Draw from the deck — coins, a robbery, a 🧱 reinforcement, or a bust.</p>
                         <button
                           className="btn btn--go"
                           style={{ width: '100%', fontSize: '1.05rem' }}

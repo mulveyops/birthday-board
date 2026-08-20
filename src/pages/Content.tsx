@@ -20,7 +20,7 @@ const EFFECT_META: Record<ChanceCard['effect'], { label: string; hint: string }>
   gain: { label: '🍀 Gain coins', hint: 'The team gets the amount below.' },
   lose: { label: '💸 Lose coins', hint: 'The team loses the amount below (floored at 0).' },
   rob: { label: '🦹 Rob a team', hint: 'Steal from a rival — amount comes from game settings.' },
-  claim: { label: '🏴 Claim this space', hint: 'Buy the space; rivals who land here pay a secret toll.' },
+  claim: { label: '🧱 Reinforcement', hint: 'Awards a 🧱 charge — spend it at a corner you own to fortify it against steals.' },
   nothing: { label: '😐 Nothing', hint: 'A dud — just the flavor text.' },
 };
 

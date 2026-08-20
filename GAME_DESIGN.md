@@ -1,6 +1,6 @@
 # Milwaukee Birthday Game — Design Doc
 
-**Status:** v0.1 draft · started 2026-08-04
+**Status:** v0.2 · started 2026-08-04 · territory (turf) layer added 2026-08-19
 **Format:** city-wide, real-time, walk-around party game · "Mario Party meets Pokémon GO"
 
 > This is a living blueprint. Numbers marked _(tunable)_ are starting proposals to
@@ -59,6 +59,18 @@ places. The loop:
 > mechanic below. Exploration is rewarded by **spreading spots densely** so
 > covering ground = finding spots — not by continuous GPS coin-trails (battery).
 
+**v0.2 refinement — a two-layer world.** Spots split into two tiers (corners are
+*capture points*, not movement spaces — this does **not** reintroduce tiles):
+
+| Layer | What | Content weight | Role |
+|---|---|---|---|
+| **Corners (intersections)** | Every street intersection; claimable **turf** | ~15 s micro-hit: coins, a chance card, one question, or nothing | The territory game — paint the map, build runs (§4.5) |
+| **POIs** | Bars, parks, churches, river views | The rich stuff: Stars, head-to-head arenas, boss battles (Bowser), boost rewards | Destinations worth walking to; where teams collide |
+
+All heavy authored content lives at POIs; corners stay fast so claiming a block
+of them never bogs the walk down. **All intersections are in play** _(confirmed
+start — prune later if runs get too long)_.
+
 ---
 
 ## 3. Players, teams & setup
@@ -106,12 +118,51 @@ These are opposing social forces, and the push–pull is the point:
 
 ---
 
+## 4.5 Territory (turf) — ✓ confirmed core mechanic, built 2026-08-19
+
+Clearing a corner (check-in + its micro-interaction) **paints it your team's
+color** on the shared map. Painted corners generate passive income:
+
+- **Runs, not blobs:** your income is the length of your **longest run** —
+  a chain of adjacent owned corners walking the street graph. **Turns are
+  allowed** (a1 → b1 → c1 → c2 is a run of 4). What breaks a run is a corner
+  you don't own; a non-claimable POI mid-block does **not** sever it.
+- **Income:** every **10-minute tick** _(tunable: `territoryTickSec`)_ each team
+  earns **coins equal to its longest run**. A 6-run ≈ 36 🪙/hour — meaningful
+  fuel toward a Star, never a substitute for playing.
+- **Stealing — "make a play":** land on a rival's corner → one trivia question.
+  Right = the corner **flips to you** (their run is cut mid-chain — the natural
+  comeback lever against a snowballing leader). Wrong = you're **locked out of
+  hitting that team for 10 minutes** _(tunable: `stealLockSec`)_ — steals are a
+  real play, not free ping-pong.
+- **No decay:** corners stay painted until stolen — venturing out is never
+  punished for moving on.
+- **🧱 Reinforcement** _(added 2026-08-19; replaces the old toll spaces)_: chance
+  cards award a **reinforcement charge**; check in at a corner you own to spend
+  it. A steal attempt at a fortified corner is a **2-question gauntlet**, and a
+  failed attacker **forfeits ~50 🪙** _(tunable: `reinforceForfeit`)_ to the
+  defender. The 🧱 is lost when the corner is finally stolen.
+- **Home-turf defense:** if the defending team's **last check-in is fresh
+  (≤10 min) and within ~75 m** _(tunable: `defendRadiusM`)_ of the corner, a
+  steal there is the 2-question gauntlet too — attacking a team standing on
+  their own turf is a bad idea. (Presence = last tap-GPS check-in; no
+  continuous tracking.)
+- The two behaviors this buys: **forge your own path** (extend the run outward)
+  vs **go cut someone** (one flipped corner halves a leader's income).
+
+**Economy stance _(confirmed)_:** coins should be **easy to come by** — any
+somewhat-active team can afford a Star, with spare change left over for items
+from chance spots and POIs. Turf income accelerates everyone late-game into a
+Star-buying crescendo; it decides *pace*, Stars decide *winning*.
+
+---
+
 ## 5. Economy — two layers
 
 ### Layer A — Progression (how you win)
 | Resource | Source | Role |
 |---|---|---|
-| **Coins** | Spots (grind currency) | Spent to claim Stars; also a bonus-star tiebreaker |
+| **Coins** | Spots (grind currency) + **turf income** (§4.5) | Spent to claim Stars + items; also a bonus-star tiebreaker |
 | **Stars** | Bought at bars (see §7) | **Victory points.** 2–3 live at once; **lock permanently once claimed** |
 
 - Proposed: **~6 total Stars** across the game; **2–3 active at a time**; a Star
@@ -242,6 +293,10 @@ T+3:30   HARD DEADLINE: everyone at the final bar. Tally.
 | # spots total | ~40–60 | Density = exploration reward |
 | **Spawn cadence** | **new spawn every 15–25 min, jittered** | Confirmed direction; never a fixed beat |
 | Spawns live at once | 1–2 | Open — see §13 |
+| Turf income tick | 10 min (`territoryTickSec`) | Each tick pays longest-run coins per team |
+| Failed-steal lockout | 10 min (`stealLockSec`) | Per attacker→defender pair |
+| 🧱 fail forfeit | 50 🪙 (`reinforceForfeit`) | Failed steal at a fortified corner |
+| Home-turf radius | 75 m (`defendRadiusM`) | Fresh defender check-in within → hard steal |
 | Battle resolution | **TBD (black box)** | Interface fixed: teams in → winner out |
 | Session length | 3.5 h | Hard final-bar deadline |
 
@@ -270,6 +325,13 @@ T+3:30   HARD DEADLINE: everyone at the final bar. Tally.
     once? Do unclaimed spawns **expire**? How is **fairness** handled so a spawn
     isn't a free gift to the nearest team (countdown? spawn away from any one team?)
     vs. just embracing the luck?
+11. ~~Toll spaces vs turf~~ **Resolved 2026-08-19: tolls retired.** Chance
+    'claim' cards now award 🧱 reinforcement charges instead (see §4.5).
+12. **POI boosts:** which boss-battle rewards? Candidates: advantage in the next
+    head-to-head, steal-proof corners for 30 min, double turf income for a tick,
+    faster Star meter, one remote corner-cut.
+13. **Turf claim on a flubbed challenge:** clearing paints the corner even at
+    0/2 trivia — right call, or should paint require ≥1 correct?
 
 ---
 

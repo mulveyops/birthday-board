@@ -922,6 +922,9 @@ interface Props {
   starClaims?: { barSpotId: string; pct: number; mine: boolean }[];
   /** Live team tokens (other players) drawn on the board. */
   tokens?: { teamId: string; lat: number; lng: number; emoji: string; name: string; me?: boolean }[];
+  /** Turf: spot_id → owning team's paint (corner discs tinted per team;
+   * reinforced corners get a 🧱 badge). */
+  turf?: Record<string, { color: string; mine: boolean; reinforced?: boolean }>;
 }
 
 const WORLD_RING: [number, number][] = [
@@ -994,6 +997,7 @@ export default function BoardCanvas({
   onClaimSpawn,
   starClaims,
   tokens,
+  turf,
 }: Props) {
   const clearedSet = useMemo(() => new Set(cleared ?? []), [cleared]);
   const starSet = useMemo(() => new Set(starBars ?? []), [starBars]);
@@ -1570,28 +1574,51 @@ export default function BoardCanvas({
             // resolved play type (coin/chance) or stays a plain node in design.
             const t = sq.type !== 'blank' ? sq.type : playActive ? nodeType?.[sq.id] : undefined;
             const Icon = t ? SPOT_SPRITE[t] : undefined;
+            const own = turf?.[sq.id];
             if (Icon) {
               // Start/finish are one-of-a-kind waypoints — give them a halo so
               // they pop against any background art.
               const halo = t === 'start' || t === 'finish';
               return (
-                <g key={`n${sq.id}`} opacity={done ? 0.4 : 1}>
+                <g key={`n${sq.id}`} opacity={done && !own ? 0.4 : 1}>
                   {halo && <circle cx={X(sq)} cy={Y(sq)} r={21} fill="#fffdf4" stroke="#3f3b36" strokeWidth={2.5} opacity={0.92} />}
+                  {own && (
+                    <circle
+                      cx={X(sq)}
+                      cy={Y(sq)}
+                      r={20}
+                      fill={own.color}
+                      fillOpacity={0.55}
+                      stroke={own.color}
+                      strokeWidth={own.mine ? 4 : 2.5}
+                    />
+                  )}
                   <Icon x={X(sq)} y={Y(sq)} s={halo ? 1.3 : 1.15} />
+                  {own?.reinforced && (
+                    <text x={X(sq) + 13} y={Y(sq) - 12} fontSize={13} textAnchor="middle" dominantBaseline="central">
+                      🧱
+                    </text>
+                  )}
                 </g>
               );
             }
             return (
-              <circle
-                key={`n${sq.id}`}
-                cx={X(sq)}
-                cy={Y(sq)}
-                r={15}
-                fill={done ? '#c3bdae' : NODE_FILL}
-                stroke={done ? '#8f897a' : '#3f3b36'}
-                strokeWidth={3}
-                opacity={done ? 0.85 : 1}
-              />
+              <g key={`n${sq.id}`}>
+                <circle
+                  cx={X(sq)}
+                  cy={Y(sq)}
+                  r={15}
+                  fill={own ? own.color : done ? '#c3bdae' : NODE_FILL}
+                  stroke={own ? '#3f3b36' : done ? '#8f897a' : '#3f3b36'}
+                  strokeWidth={own?.mine ? 4 : 3}
+                  opacity={own ? 1 : done ? 0.85 : 1}
+                />
+                {own?.reinforced && (
+                  <text x={X(sq) + 11} y={Y(sq) - 10} fontSize={13} textAnchor="middle" dominantBaseline="central">
+                    🧱
+                  </text>
+                )}
+              </g>
             );
           })}
           </g>

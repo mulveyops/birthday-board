@@ -51,6 +51,7 @@ export default function PanZoom({
   const box = useRef({ cw: 0, ch: 0 }); // host size, cached at fit + gesture start
   const raf = useRef(0);
   const wheelSettle = useRef(0);
+  const commitTimer = useRef(0);
   const pointers = useRef(new Map<number, { x: number; y: number }>());
   const drag = useRef<{ x0: number; y0: number; tx0: number; ty0: number } | null>(null);
   const pinch = useRef<{ d0: number; s0: number; wx: number; wy: number } | null>(null);
@@ -82,6 +83,13 @@ export default function PanZoom({
     }
   };
   const commit = () => setView({ ...live.current });
+  // Committing re-renders React and re-rasterizes the SVG at the new scale -
+  // real work. Do it after a quiet gap, so a follow-up gesture that starts
+  // right away cancels it and never trips over the burst.
+  const commitSoon = () => {
+    window.clearTimeout(commitTimer.current);
+    commitTimer.current = window.setTimeout(commit, 180);
+  };
 
   // Fit-and-center on mount and on EVERY container size change (rotation,
   // browser chrome collapsing, the bottom bar claiming space). At fit scale
@@ -141,7 +149,7 @@ export default function PanZoom({
       live.current = clamped({ ...v, s, tx: mx - wx * s, ty: my - wy * s });
       schedulePaint();
       window.clearTimeout(wheelSettle.current);
-      wheelSettle.current = window.setTimeout(commit, 140);
+      wheelSettle.current = window.setTimeout(commit, 180);
     };
     el.addEventListener('wheel', onWheel, { passive: false });
     return () => el.removeEventListener('wheel', onWheel);
@@ -161,12 +169,16 @@ export default function PanZoom({
   };
 
   function onPointerDown(e: React.PointerEvent) {
+    window.clearTimeout(commitTimer.current); // a new gesture outruns the commit
     try {
       hostRef.current?.setPointerCapture(e.pointerId);
     } catch {
       /* a pointer can be gone by the time we capture (or synthetic in tests) */
     }
     const p = rel(e);
+    // A missed pointerup (mobile Safari steals touches for system gestures)
+    // would wedge the map forever - a third "finger" means we lost one.
+    if (pointers.current.size >= 2 && !pointers.current.has(e.pointerId)) pointers.current.clear();
     pointers.current.set(e.pointerId, p);
     const v = live.current;
     if (pointers.current.size === 1) {
@@ -220,7 +232,7 @@ export default function PanZoom({
       drag.current = { x0: p.x, y0: p.y, tx0: v.tx, ty0: v.ty };
     } else {
       drag.current = null;
-      commit();
+      commitSoon();
     }
   }
 
@@ -233,12 +245,18 @@ export default function PanZoom({
       onPointerMove={onPointerMove}
       onPointerUp={onPointerEnd}
       onPointerCancel={onPointerEnd}
+      onLostPointerCapture={onPointerEnd}
     >
       <div
         ref={innerRef}
         style={{ transformOrigin: '0 0', width: worldW, height: worldH, willChange: 'transform' }}
       >
-        {view.fit > 0 ? children({ scale: view.s, wasDrag: () => dragDist.current > 8 }) : null}
+        {view.fit > 0
+          ? children({
+              scale: view.fit * Math.pow(2, Math.round(Math.log2(view.s / view.fit) * 2) / 2),
+              wasDrag: () => dragDist.current > 8,
+            })
+          : null}
       </div>
     </div>
   );

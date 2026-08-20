@@ -2094,7 +2094,9 @@ export default function App({
     }
     setLabelingStreets(true);
     try {
-      const streetLabels = await buildStreetLabels(board.boundary);
+      // Labels sit in the blocks BETWEEN the drawn spaces — pass the pips.
+      const spaces = deriveSpots(board).map((s) => ({ lat: s.lat, lng: s.lng }));
+      const streetLabels = await buildStreetLabels(board.boundary, spaces);
       if (!streetLabels.length) {
         alert('No named streets found in this area.');
         return;

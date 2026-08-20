@@ -1588,7 +1588,14 @@ export default function BoardCanvas({
             // Keep the text upright: the path must run left→right.
             if (pts[pts.length - 1][0] < pts[0][0]) pts = [...pts].reverse();
             const d = 'M ' + pts.map(([x, y]) => `${x.toFixed(1)} ${y.toFixed(1)}`).join(' L ');
-            const fs = sl.major ? 30 : 15;
+            // Fit the name inside its between-spaces block: shrink from the
+            // base size until it fits the path (units are meters).
+            let plen = 0;
+            for (let k = 1; k < pts.length; k++) plen += Math.hypot(pts[k][0] - pts[k - 1][0], pts[k][1] - pts[k - 1][1]);
+            const base = sl.major ? 24 : 15;
+            const floor = sl.major ? 13 : 9;
+            const fs = Math.max(floor, Math.min(base, (plen * 0.92) / (Math.max(3, sl.name.length) * 0.82)));
+            if ((fs * Math.max(3, sl.name.length) * 0.82) > plen) return null; // still can't fit — skip
             return (
               <g key={`slbl${i}`} pointerEvents="none">
                 <path id={`slbl-path-${i}`} d={d} fill="none" />

@@ -964,32 +964,53 @@ export async function generateStreetBoard(
 // Majors (Brady, Humboldt…) label big & always; minors appear on zoom-in.
 // ---------------------------------------------------------------------------
 
-/** "East Brady Street" → "Brady St" — map-label shorthand. */
+/** "East Brady Street" → "Brady" — just the name itself, to fit a block. */
 function shortStreetName(raw: string): string {
-  const suffix: Record<string, string> = {
-    street: 'St',
-    avenue: 'Ave',
-    boulevard: 'Blvd',
-    drive: 'Dr',
-    court: 'Ct',
-    place: 'Pl',
-    terrace: 'Ter',
-    lane: 'Ln',
-    road: 'Rd',
-    parkway: 'Pkwy',
-    circle: 'Cir',
-  };
+  const suffixes = new Set([
+    'street', 'avenue', 'boulevard', 'drive', 'court', 'place', 'terrace',
+    'lane', 'road', 'parkway', 'circle', 'st', 'ave', 'blvd', 'dr', 'ct',
+    'pl', 'ter', 'ln', 'rd', 'pkwy', 'cir',
+  ]);
   let words = raw.trim().split(/\s+/);
   if (words.length > 2 && /^(north|south|east|west|n\.?|s\.?|e\.?|w\.?)$/i.test(words[0])) words = words.slice(1);
-  return words.map((w) => suffix[w.toLowerCase()] ?? w).join(' ');
+  if (words.length > 1 && suffixes.has(words[words.length - 1].toLowerCase().replace('.', ''))) words = words.slice(0, -1);
+  return words.join(' ');
 }
 
 const MAJOR_HIGHWAYS = new Set(['primary', 'secondary', 'tertiary']);
 const LABEL_MIN_RUN = 140; // in-board runs shorter than this stay unlabeled
-const LABEL_SPLIT_LEN = 1000; // repeat the label on very long runs
+const LABEL_EDGE_M = 22; // labels keep this clear of a space's node pip
+const LABEL_MIN_BLOCK = 45; // a between-spaces gap must be this long to hold text
+const LABEL_CUT_DIST = 25; // a space this close to the street cuts its blocks
 
-/** Build the street-name labels for a board area. */
-export async function buildStreetLabels(boundary: LatLng[]): Promise<StreetLabel[]> {
+/** Nearest distance from p to the run, and the arc-length position of that
+ * nearest point — used to cut a street's label blocks at each board space. */
+function projectOnRun(pts: LatLng[], cum: number[], p: LatLng): { dist: number; t: number } {
+  const kx = Math.cos(toRad(pts[0].lat)) * 111320;
+  const ky = 111320;
+  const px = (p.lng - pts[0].lng) * kx;
+  const py = (p.lat - pts[0].lat) * ky;
+  let best = { dist: Infinity, t: 0 };
+  for (let i = 0; i < pts.length - 1; i++) {
+    const ax = (pts[i].lng - pts[0].lng) * kx;
+    const ay = (pts[i].lat - pts[0].lat) * ky;
+    const bx = (pts[i + 1].lng - pts[0].lng) * kx;
+    const by = (pts[i + 1].lat - pts[0].lat) * ky;
+    const dx = bx - ax;
+    const dy = by - ay;
+    const l2 = dx * dx + dy * dy;
+    const s = l2 === 0 ? 0 : Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / l2));
+    const d = Math.hypot(px - (ax + s * dx), py - (ay + s * dy));
+    if (d < best.dist) best = { dist: d, t: cum[i] + s * (cum[i + 1] - cum[i]) };
+  }
+  return best;
+}
+
+// (block slicing reuses the existing subPolyline helper above)
+
+/** Build the street-name labels for a board area. `spaces` are the drawn
+ * intersection pips — labels sit in the blocks BETWEEN them, never across. */
+export async function buildStreetLabels(boundary: LatLng[], spaces: LatLng[]): Promise<StreetLabel[]> {
   const { coords, ways } = await fetchNamedStreetWays(boundary);
   if (!ways.length) return [];
 
@@ -1059,14 +1080,37 @@ export async function buildStreetLabels(boundary: LatLng[]): Promise<StreetLabel
     const short = shortStreetName(name);
 
     for (const run of kept) {
-      // Long runs carry the name more than once, like a real map.
-      const len = runLenM(run);
-      const pieces = len >= LABEL_SPLIT_LEN ? 2 : 1;
-      const per = Math.ceil(run.length / pieces);
-      for (let k = 0; k < pieces; k++) {
-        const slice = run.slice(k * per, Math.min(run.length, (k + 1) * per + 1));
-        if (slice.length < 2 || runLenM(slice) < LABEL_MIN_RUN) continue;
-        labels.push({ name: short, pts: simplify(slice, 8), major });
+      // Cut the run at every board space near it → the gaps between spaces
+      // are the label blocks; the name sits inside a block, clear of the pips.
+      const cum: number[] = [0];
+      for (let i = 1; i < run.length; i++) cum.push(cum[i - 1] + metersBetween(run[i - 1], run[i]));
+      const L = cum[cum.length - 1];
+      const cuts: number[] = [];
+      for (const sp of spaces) {
+        const pr = projectOnRun(run, cum, sp);
+        if (pr.dist <= LABEL_CUT_DIST) cuts.push(pr.t);
+      }
+      cuts.sort((x, y) => x - y);
+      const bounds = [0, ...cuts, L];
+      const blocks: { a: number; b: number; len: number }[] = [];
+      for (let i = 0; i < bounds.length - 1; i++) {
+        const a = bounds[i] + (i === 0 ? 8 : LABEL_EDGE_M);
+        const b = bounds[i + 1] - (i === bounds.length - 2 ? 8 : LABEL_EDGE_M);
+        if (b - a >= LABEL_MIN_BLOCK) blocks.push({ a, b, len: b - a });
+      }
+      if (!blocks.length) continue;
+      // Minors: one label in the roomiest block. Majors repeat along the
+      // street (every other roomy block, up to 4) like a real map — so
+      // wherever you're looking, Brady says Brady.
+      let picks: typeof blocks;
+      if (major) {
+        picks = blocks.filter((bl) => bl.len >= 60).filter((_, i) => i % 2 === 0).slice(0, 4);
+        if (!picks.length) picks = [[...blocks].sort((x, y) => y.len - x.len)[0]];
+      } else {
+        picks = [[...blocks].sort((x, y) => y.len - x.len)[0]];
+      }
+      for (const bl of picks) {
+        labels.push({ name: short, pts: simplify(subPolyline(run, cum, bl.a, bl.b), 8), major });
       }
     }
   }

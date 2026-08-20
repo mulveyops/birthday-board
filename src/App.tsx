@@ -1227,7 +1227,8 @@ export default function App({
     [allSpawns, nowTs],
   );
 
-  // Star-meter rings for bars under an active claim (gold = mine, red = a rival's).
+  // Star-meter rings for bars under an active claim, painted in the claiming
+  // team's turf color with a live countdown so the play reads from across the map.
   const onlineStarClaims = useMemo(
     () =>
       starClaimRows
@@ -1239,9 +1240,11 @@ export default function App({
             barSpotId: c.bar_spot_id,
             pct: Math.min(1, Math.max(0, (total - remaining) / total)),
             mine: c.team_id === membership?.teamId,
+            color: teamColorOf(teams, c.team_id),
+            secs: Math.max(0, Math.ceil(remaining / 1000)),
           };
         }),
-    [starClaimRows, nowTs, membership, onlineConfig],
+    [starClaimRows, nowTs, membership, onlineConfig, teams],
   );
 
   const myTeam = useMemo(() => teams.find((t) => t.id === membership?.teamId) ?? null, [teams, membership]);
@@ -3716,7 +3719,15 @@ export default function App({
             appMode === 'online'
               ? onlineStarClaims
               : claim
-                ? [{ barSpotId: claim.barId, pct: Math.min(1, Math.max(0, (CLAIM_MS / 1000 - claimLeft) / (CLAIM_MS / 1000))), mine: true }]
+                ? [
+                    {
+                      barSpotId: claim.barId,
+                      pct: Math.min(1, Math.max(0, (CLAIM_MS / 1000 - claimLeft) / (CLAIM_MS / 1000))),
+                      mine: true,
+                      color: '#f0c33c',
+                      secs: Math.max(0, Math.ceil(claimLeft)),
+                    },
+                  ]
                 : []
           }
           tokens={appMode === 'online' ? tokens : undefined}

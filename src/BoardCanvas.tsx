@@ -961,8 +961,8 @@ interface Props {
   starBars?: string[];
   spawns?: { id: string; lat: number; lng: number }[];
   onClaimSpawn?: (id: string) => void;
-  /** Bars currently under a star claim (meter ring). */
-  starClaims?: { barSpotId: string; pct: number; mine: boolean }[];
+  /** Bars currently under a star claim (meter ring, claiming team's color + countdown). */
+  starClaims?: { barSpotId: string; pct: number; mine: boolean; color: string; secs: number }[];
   /** Live team tokens (other players) drawn on the board. */
   tokens?: { teamId: string; lat: number; lng: number; emoji: string; name: string; me?: boolean }[];
   /** Turf: spot_id → owning team's paint (corner discs tinted per team;
@@ -1899,7 +1899,7 @@ export default function BoardCanvas({
               const claim = starClaims?.find((c) => c.barSpotId === sq.id);
               const cx = X(sq);
               const cy = Y(sq);
-              const R = 30;
+              const R = 32;
               const C = 2 * Math.PI * R;
               return (
                 <Fragment key={`bar${sq.id}`}>
@@ -1908,20 +1908,43 @@ export default function BoardCanvas({
                   </g>
                   {claim && (
                     <>
-                      <circle cx={cx} cy={cy} r={R} fill="none" stroke="#3f3b36" strokeOpacity={0.22} strokeWidth={5} />
+                      {/* pulsing halo in the claiming team's color — readable
+                          from across the map, not just up close */}
+                      <circle cx={cx} cy={cy} fill={claim.color} r={38} opacity={0.2}>
+                        <animate attributeName="r" values="36;46;36" dur="1.8s" repeatCount="indefinite" />
+                        <animate attributeName="opacity" values="0.28;0.06;0.28" dur="1.8s" repeatCount="indefinite" />
+                      </circle>
+                      <circle cx={cx} cy={cy} r={R} fill="none" stroke="#fffdf4" strokeOpacity={0.85} strokeWidth={9} />
+                      <circle cx={cx} cy={cy} r={R} fill="none" stroke="#3f3b36" strokeOpacity={0.22} strokeWidth={6.5} />
                       <circle
                         cx={cx}
                         cy={cy}
                         r={R}
                         fill="none"
-                        stroke={claim.mine ? '#f0c33c' : '#e0533a'}
-                        strokeWidth={5}
+                        stroke={claim.color}
+                        strokeWidth={6.5}
                         strokeLinecap="round"
                         strokeDasharray={C}
                         strokeDashoffset={C * (1 - claim.pct)}
                         transform={`rotate(-90 ${cx} ${cy})`}
                         style={{ transition: 'stroke-dashoffset 0.5s linear' }}
                       />
+                      <text x={cx} y={cy - R} fontSize={17} textAnchor="middle" dominantBaseline="central">
+                        ⭐
+                      </text>
+                      <text
+                        x={cx}
+                        y={cy + R + 13}
+                        fontSize={14}
+                        fontWeight={800}
+                        textAnchor="middle"
+                        fill="#3f3b36"
+                        stroke="#fffdf4"
+                        strokeWidth={3.5}
+                        paintOrder="stroke"
+                      >
+                        {claim.secs}s
+                      </text>
                     </>
                   )}
                 </Fragment>

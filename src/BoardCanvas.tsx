@@ -849,7 +849,7 @@ function splitAtMid(line: [number, number][]) {
   };
 }
 
-function MapController({ board, recage, playActive }: { board: Board; recage: number; playActive: boolean }) {
+function MapController({ board, recage }: { board: Board; recage: number }) {
   const map = useMap();
   // Dev convenience: drive the map from the console (zoom tests etc).
   if (import.meta.env.DEV) (window as unknown as { __mkeMap?: L.Map }).__mkeMap = map;
@@ -870,11 +870,7 @@ function MapController({ board, recage, playActive }: { board: Board; recage: nu
       }
       let bounds: L.LatLngBounds;
       const fit = board.phase === 'squares' && board.backdrop ? BACKDROP_FIT[board.backdrop] : undefined;
-      if (playActive) {
-        // Playing: the board itself should fill the screen. Fitting the art
-        // frame instead leaves the board adrift in a sea of backdrop.
-        bounds = L.latLngBounds(board.boundary.map((pt) => [pt.lat, pt.lng] as [number, number])).pad(0.02);
-      } else if (fit?.blob) {
+      if (fit?.blob) {
         // Match the view to the art-shaped SVG frame so the whole backdrop
         // (banner included) is what the fully-zoomed-out board shows.
         const lats = board.boundary.map((pt) => pt.lat);
@@ -912,7 +908,7 @@ function MapController({ board, recage, playActive }: { board: Board; recage: nu
     ro.observe(el);
     return () => ro.disconnect();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [map, board.phase, board.padding, board.backdrop, recage, playActive]);
+  }, [map, board.phase, board.padding, board.backdrop, recage]);
   return null;
 }
 
@@ -1408,7 +1404,7 @@ export default function BoardCanvas({
           maxZoom={20}
         />
       )}
-      <MapController board={board} recage={recage} playActive={playActive} />
+      <MapController board={board} recage={recage} />
       <ZoomWatcher onZoom={setRelZoom} />
       <ClickHandler
         enabled={(editingArea && mode === 'boundary') || (placingSquares && mode === 'add')}

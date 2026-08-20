@@ -238,6 +238,7 @@ export default function App({
   const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null);
   const [connectFrom, setConnectFrom] = useState<string | null>(null); // first space picked in Connect mode
   const [connecting, setConnecting] = useState(false);
+  const [connectStraight, setConnectStraight] = useState(false); // join ends directly, ignoring the road network
   const [snapping, setSnapping] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [sceneryLoading, setSceneryLoading] = useState(false);
@@ -1818,14 +1819,22 @@ export default function App({
     }
     setConnecting(true);
     try {
+      const straight = [
+        { lat: a.lat, lng: a.lng },
+        { lat: b.lat, lng: b.lng },
+      ];
+      // Straight mode joins the two ends directly. Use it where the real road
+      // network would detour (or doesn't link them at all) and you just want
+      // the corners to meet on the board.
       let path: LatLng[];
-      try {
-        path = await routeAlongStreets({ lat: a.lat, lng: a.lng }, { lat: b.lat, lng: b.lng });
-      } catch {
-        path = [
-          { lat: a.lat, lng: a.lng },
-          { lat: b.lat, lng: b.lng },
-        ];
+      if (connectStraight) {
+        path = straight;
+      } else {
+        try {
+          path = await routeAlongStreets({ lat: a.lat, lng: a.lng }, { lat: b.lat, lng: b.lng });
+        } catch {
+          path = straight;
+        }
       }
       setBoard((bd) => ({
         ...bd,
@@ -2536,13 +2545,25 @@ export default function App({
                 {mode === 'connect' ? '✓ Done connecting' : '🔗 Connect spaces (fill in a street)'}
               </button>
               {mode === 'connect' && (
-                <p className="hint">
-                  {connecting
-                    ? 'Drawing the street…'
-                    : connectFrom
-                      ? 'Now click the second space — a street is drawn between them.'
-                      : 'Click one space, then another, to link them along the street.'}
-                </p>
+                <>
+                  <label className="toggle">
+                    <input
+                      type="checkbox"
+                      checked={connectStraight}
+                      onChange={(e) => setConnectStraight(e.target.checked)}
+                    />
+                    Straight line (join the two ends directly)
+                  </label>
+                  <p className="hint">
+                    {connecting
+                      ? 'Drawing the street…'
+                      : connectFrom
+                        ? `Now click the second space — ${connectStraight ? 'a straight link is drawn to it.' : 'a street is drawn between them.'}`
+                        : connectStraight
+                          ? 'Click one end, then the other — they join in a straight line, ignoring the real roads.'
+                          : 'Click one space, then another, to link them along the street.'}
+                  </p>
+                </>
               )}
               <label className="toggle">
                 <input

@@ -1430,6 +1430,16 @@ export default function App({
   }
 
   // GPS gate (party) — off for desk testing, on requires being within the radius.
+  /** Human, actionable text for each way geolocation fails. */
+  function geoErrorText(err: GeolocationPositionError): string {
+    if (err.code === err.PERMISSION_DENIED) {
+      return '📍 Location is blocked for this site. iPhone: tap "aA" in the address bar → Website Settings → Location → Allow (and check Settings → Privacy → Location Services is on for your browser). Android: tap the lock icon → Permissions → Location → Allow.';
+    }
+    if (err.code === err.TIMEOUT) {
+      return '📍 Timed out waiting for a GPS fix — step outside or near a window and try again.';
+    }
+    return '📍 Location unavailable — make sure Location Services are switched on for your browser, then try again.';
+  }
   function withProximity(target: { lat: number; lng: number }, cb: () => void) {
     if (!cfg.gpsRequired(onlineConfig)) return cb(); // host setting — no player opt-out
     navigator.geolocation.getCurrentPosition(
@@ -1438,8 +1448,31 @@ export default function App({
         if (d <= onlineConfig.radiusM) cb();
         else alert(`Too far — you're ${Math.round(d)}m away (need within ${onlineConfig.radiusM}m).`);
       },
-      () => alert('Could not read your location.'),
-      { enableHighAccuracy: true, timeout: 8000 },
+      (err) => alert(geoErrorText(err)),
+      // maximumAge: a fix from the last 20s is fine — walking speed, 35m radius.
+      { enableHighAccuracy: true, timeout: 12000, maximumAge: 20000 },
+    );
+  }
+  // "Test my GPS" (menu): grabs a fix and reports accuracy + the nearest spot,
+  // so radius tuning on the walk uses real numbers instead of guesses.
+  const [gpsTest, setGpsTest] = useState('');
+  function runGpsTest() {
+    setGpsTest('Getting a GPS fix…');
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const here = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        const spots = onlineBoard ? deriveSpots(onlineBoard) : [];
+        let best: { d: number; name: string } | null = null;
+        for (const sq of spots) {
+          const d = metersBetween(here, sq);
+          if (!best || d < best.d) best = { d, name: sq.title || 'a spot' };
+        }
+        setGpsTest(
+          `✅ Fix ±${Math.round(pos.coords.accuracy)}m${best ? ` · nearest spot (${best.name}) is ${Math.round(best.d)}m away` : ''} · radius ${onlineConfig.radiusM}m`,
+        );
+      },
+      (err) => setGpsTest(geoErrorText(err)),
+      { enableHighAccuracy: true, timeout: 12000 },
     );
   }
   function onlineCheckIn(spotId: string) {
@@ -2513,6 +2546,10 @@ export default function App({
                 ? `📍 GPS check-ins on — be within ${onlineConfig.radiusM}m of a spot`
                 : '📍 GPS check-ins off (host setting) — desk-testing mode'}
             </p>
+            <button className="btn" onClick={runGpsTest}>
+              📍 Test my GPS
+            </button>
+            {gpsTest && <p className="hint">{gpsTest}</p>}
             <button className="btn" onClick={bumpCage}>
               🎯 Recenter board
             </button>

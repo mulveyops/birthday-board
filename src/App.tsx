@@ -1009,51 +1009,130 @@ export default function App({
   const [events, setEvents] = useState<EventRow[]>([]);
   // Messaging: shared row store + composer state for whichever surface is active.
   const [messages, setMessages] = useState<MessageRow[]>([]);
+  // --- Messaging: three layers, keyed by channel ---------------------------
+  //   'all'            the Party room (everyone posts; host posts also banner)
+  //   'host:<teamId>'  that team's private line to the hosts
+  //   'dm:<a>:<b>'     team ↔ team (ids sorted) — hidden from the host UI
   const [msgOpen, setMsgOpen] = useState(false);
-  const [msgTo, setMsgTo] = useState<string>('admin'); // 'admin' or a team id
+  const [msgThread, setMsgThread] = useState<string | null>(null); // null = thread list
+  const [msgPick, setMsgPick] = useState(false); // "message a team" picker
   const [msgText, setMsgText] = useState('');
-  const [msgSeen, setMsgSeen] = useState(0); // how many of my messages I've seen (unread badge)
+  // Per-thread read counts, persisted so badges survive a refresh.
+  const [msgSeen, setMsgSeen] = useState<Record<string, number>>({});
+  const msgSeenKey = `mke-msgseen-${membership?.gameId ?? savedHostGame()?.id ?? 'x'}`;
+  useEffect(() => {
+    try {
+      setMsgSeen(JSON.parse(localStorage.getItem(msgSeenKey) || '{}'));
+    } catch {
+      setMsgSeen({});
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [msgSeenKey]);
+  const markSeen = (ch: string, count: number) =>
+    setMsgSeen((m) => {
+      if ((m[ch] ?? 0) >= count) return m;
+      const next = { ...m, [ch]: count };
+      localStorage.setItem(msgSeenKey, JSON.stringify(next));
+      return next;
+    });
 
   /** Display name for a message party (null = the host). */
   const msgName = (id: string | null) =>
     id == null ? 'Host' : teams.find((t) => t.id === id)?.name ?? 'a team';
-  // Messages this team can see: host broadcasts + anything to/from us.
-  const myMsgs = useMemo(() => {
+  const chanDm = (a: string, b: string) => `dm:${[a, b].sort().join(':')}`;
+  /** A row's channel; legacy rows (pre-channels.sql) derive from from/to. */
+  const channelOf = (m: MessageRow): string =>
+    m.channel ??
+    (m.from_team == null && m.to_team == null
+      ? 'all'
+      : m.from_team == null
+        ? `host:${m.to_team}`
+        : m.to_team == null
+          ? `host:${m.from_team}`
+          : chanDm(m.from_team, m.to_team));
+
+  // This viewer's threads: Party + my host line always exist; DMs as they come.
+  const myThreads = useMemo(() => {
     const tid = membership?.teamId;
-    if (!tid) return [];
-    return messages.filter(
-      (m) => (m.from_team == null && m.to_team == null) || m.from_team === tid || m.to_team === tid,
-    );
-  }, [messages, membership]);
-  const msgUnread = Math.max(0, myMsgs.length - msgSeen);
+    const map = new Map<string, MessageRow[]>();
+    if (!tid) return map;
+    map.set('all', []);
+    map.set(`host:${tid}`, []);
+    for (const m of messages) {
+      const ch = channelOf(m);
+      if (ch === 'all' || ch === `host:${tid}` || (ch.startsWith('dm:') && ch.includes(tid))) {
+        map.set(ch, [...(map.get(ch) ?? []), m]);
+      }
+    }
+    return map;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [messages, membership, teams]);
+  const threadUnread = (ch: string) => Math.max(0, (myThreads.get(ch)?.length ?? 0) - (msgSeen[ch] ?? 0));
+  const msgUnread = [...myThreads.keys()].reduce((n, ch) => n + threadUnread(ch), 0);
+  /** A thread's display name for the player. */
+  const threadLabel = (ch: string) => {
+    if (ch === 'all') return '📣 Party';
+    if (ch.startsWith('host:')) return '🎩 Hosts';
+    const other = ch.slice(3).split(':').find((x) => x !== membership?.teamId);
+    const t = teams.find((x) => x.id === other);
+    return `${t?.emoji ?? '🎲'} ${t?.name ?? 'a team'}`;
+  };
   function openMsgPanel() {
+    setMsgThread(null);
+    setMsgPick(false);
     setMsgOpen(true);
-    setMsgSeen(myMsgs.length);
   }
+  // Reading a thread marks it seen (also as new messages arrive while open).
+  useEffect(() => {
+    if (!msgOpen || !msgThread) return;
+    markSeen(msgThread, myThreads.get(msgThread)?.length ?? 0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [msgOpen, msgThread, messages]);
+
   async function sendTeamMsg() {
-    if (!membership || !msgText.trim()) return;
-    const to = msgTo === 'admin' ? null : msgTo;
+    if (!membership || !msgText.trim() || !msgThread) return;
+    const tid = membership.teamId;
+    const to = msgThread.startsWith('dm:') ? msgThread.slice(3).split(':').find((x) => x !== tid) ?? null : null;
     try {
-      await sendMessage(membership.gameId, membership.teamId, to, msgText.trim());
+      await sendMessage(membership.gameId, tid, to, msgText.trim(), msgThread);
       setMsgText('');
-      setMsgSeen((n) => n + 1); // don't badge our own message
+      markSeen(msgThread, (myThreads.get(msgThread)?.length ?? 0) + 1); // don't badge our own message
     } catch (e) {
       alert('Send failed: ' + (e as Error).message);
     }
   }
-  // Host composer: 'all' broadcasts (message + banner event); a team id DMs them.
-  const [hostMsgTo, setHostMsgTo] = useState<string>('all');
+
+  // --- Host messaging: Party + one line per team (team↔team DMs stay private).
+  const [hostThread, setHostThread] = useState<string | null>(null);
+  const hostThreads = useMemo(() => {
+    const map = new Map<string, MessageRow[]>();
+    map.set('all', []);
+    for (const t of teams) map.set(`host:${t.id}`, []);
+    for (const m of messages) {
+      const ch = channelOf(m);
+      if (map.has(ch)) map.set(ch, [...(map.get(ch) ?? []), m]);
+    }
+    return map;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [messages, teams]);
+  const hostThreadUnread = (ch: string) => Math.max(0, (hostThreads.get(ch)?.length ?? 0) - (msgSeen[ch] ?? 0));
+  useEffect(() => {
+    if (!hostThread) return;
+    markSeen(hostThread, hostThreads.get(hostThread)?.length ?? 0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hostThread, messages]);
   async function sendHostMsg() {
-    if (!hostGame || !msgText.trim()) return;
+    if (!hostGame || !msgText.trim() || !hostThread) return;
     const text = msgText.trim();
     try {
-      if (hostMsgTo === 'all') {
-        await sendMessage(hostGame.id, null, null, text);
+      if (hostThread === 'all') {
+        await sendMessage(hostGame.id, null, null, text, 'all');
         await logEvent(hostGame.id, 'announce', `📣 ${text}`);
       } else {
-        await sendMessage(hostGame.id, null, hostMsgTo, text);
+        await sendMessage(hostGame.id, null, hostThread.slice(5), text, hostThread);
       }
       setMsgText('');
+      markSeen(hostThread, (hostThreads.get(hostThread)?.length ?? 0) + 1);
     } catch (e) {
       alert('Send failed: ' + (e as Error).message);
     }
@@ -3203,39 +3282,52 @@ export default function App({
                       🏁 End
                     </button>
                   </div>
-                  <p className="hint" style={{ marginTop: 8 }}>💬 Message teams ("everyone" also banners)</p>
-                  <select
-                    value={hostMsgTo}
-                    onChange={(e) => setHostMsgTo(e.target.value)}
-                    style={{ width: '100%', padding: '6px 8px', borderRadius: 6, marginBottom: 4 }}
-                  >
-                    <option value="all">📣 To: everyone</option>
-                    {teams.map((t) => (
-                      <option key={t.id} value={t.id}>
-                        To: {t.emoji} {t.name}
-                      </option>
-                    ))}
-                  </select>
-                  <div className="row">
-                    <input
-                      value={msgText}
-                      onChange={(e) => setMsgText(e.target.value)}
-                      onKeyDown={(e) => e.key === 'Enter' && void sendHostMsg()}
-                      placeholder="e.g. Final 30 minutes!"
-                      style={{ flex: 1, padding: '6px 8px', border: '1px solid #cfc7b5', borderRadius: 6 }}
-                    />
-                    <button className="btn" style={{ flex: 'none' }} onClick={() => void sendHostMsg()} disabled={netBusy || !msgText.trim()}>
-                      Send
-                    </button>
-                  </div>
-                  <div style={{ maxHeight: 140, overflowY: 'auto', margin: '4px 0' }}>
-                    {[...messages].reverse().map((m) => (
-                      <div key={m.id} className="hint" style={{ margin: '2px 0' }}>
-                        <b>{msgName(m.from_team)}</b> → {m.to_team ? msgName(m.to_team) : m.from_team ? 'Host' : 'everyone'}: {m.text}
+                  <p className="hint" style={{ marginTop: 8 }}>💬 Messages (Party posts also banner)</p>
+                  {hostThread == null ? (
+                    <div className="msg-threads msg-threads--host">
+                      {[...hostThreads.keys()].map((ch) => {
+                        const rows = hostThreads.get(ch) ?? [];
+                        const last = rows[rows.length - 1];
+                        const unread = hostThreadUnread(ch);
+                        const team = ch === 'all' ? null : teams.find((t) => t.id === ch.slice(5));
+                        return (
+                          <button key={ch} className="msg-thread" onClick={() => setHostThread(ch)}>
+                            <span className="msg-thread__name">
+                              {ch === 'all' ? '📣 Party' : `${team?.emoji ?? '🎲'} ${team?.name ?? 'team'}`}
+                              {unread > 0 && <span className="msg-badge msg-badge--inline">{unread}</span>}
+                            </span>
+                            <span className="msg-thread__last">{last ? last.text : '—'}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <>
+                      <button className="btn btn--ghost" onClick={() => setHostThread(null)}>
+                        ‹ All conversations
+                      </button>
+                      <div style={{ maxHeight: 150, overflowY: 'auto', margin: '4px 0' }}>
+                        {(hostThreads.get(hostThread) ?? []).map((m) => (
+                          <div key={m.id} className="hint" style={{ margin: '2px 0' }}>
+                            <b>{m.from_team == null ? 'You' : msgName(m.from_team)}:</b> {m.text}
+                          </div>
+                        ))}
+                        {(hostThreads.get(hostThread) ?? []).length === 0 && <div className="hint">No messages yet.</div>}
                       </div>
-                    ))}
-                    {messages.length === 0 && <div className="hint">No messages yet.</div>}
-                  </div>
+                      <div className="msg-compose-row">
+                        <input
+                          value={msgText}
+                          onChange={(e) => setMsgText(e.target.value)}
+                          onKeyDown={(e) => e.key === 'Enter' && void sendHostMsg()}
+                          placeholder={hostThread === 'all' ? 'Announce to everyone…' : 'Message this team…'}
+                          style={{ flex: 1 }}
+                        />
+                        <button className="msg-send" onClick={() => void sendHostMsg()} disabled={netBusy || !msgText.trim()} aria-label="Send">
+                          ➤
+                        </button>
+                      </div>
+                    </>
+                  )}
                   <button className="btn" onClick={doDropSpawn} disabled={netBusy}>
                     🎁 Drop a bonus spawn now
                   </button>
@@ -3421,52 +3513,103 @@ export default function App({
           <div className="msg-scrim" onClick={() => setMsgOpen(false)}>
             <div className="msg-panel" onClick={(e) => e.stopPropagation()}>
               <div className="msg-head">
-                <span>💬 Messages</span>
+                {msgThread != null || msgPick ? (
+                  <button onClick={() => { setMsgThread(null); setMsgPick(false); }} aria-label="Back">
+                    ‹
+                  </button>
+                ) : (
+                  <span className="msg-head__pad" />
+                )}
+                <span>{msgPick ? 'Message a team' : msgThread != null ? threadLabel(msgThread) : '💬 Messages'}</span>
                 <button onClick={() => setMsgOpen(false)} aria-label="Close">
                   ✕
                 </button>
               </div>
-              <div className="msg-list">
-                {myMsgs.length === 0 ? (
-                  <p className="msg-empty">No messages yet. Rally another team — or ask the host for help.</p>
-                ) : (
-                  myMsgs.map((m) => {
-                    const mine = m.from_team === membership.teamId;
-                    return (
-                      <div key={m.id} className={`msg-row ${mine ? 'msg-row--mine' : ''}`}>
-                        <div className="msg-meta">
-                          {mine ? 'You' : msgName(m.from_team)} →{' '}
-                          {m.to_team ? (m.to_team === membership.teamId ? 'you' : msgName(m.to_team)) : m.from_team ? 'Host' : 'everyone'}
-                        </div>
-                        <div className="msg-bubble">{m.text}</div>
-                      </div>
-                    );
-                  })
-                )}
-              </div>
-              <div className="msg-compose">
-                <select value={msgTo} onChange={(e) => setMsgTo(e.target.value)}>
-                  <option value="admin">To: Host</option>
+              {msgPick ? (
+                // Start a team-to-team chat: pick who to talk to.
+                <div className="msg-threads">
                   {teams
                     .filter((t) => t.id !== membership.teamId)
                     .map((t) => (
-                      <option key={t.id} value={t.id}>
-                        To: {t.emoji} {t.name}
-                      </option>
+                      <button
+                        key={t.id}
+                        className="msg-thread"
+                        onClick={() => { setMsgThread(chanDm(membership.teamId, t.id)); setMsgPick(false); }}
+                      >
+                        <span className="msg-thread__name">{t.emoji} {t.name}</span>
+                        <span className="msg-thread__go">›</span>
+                      </button>
                     ))}
-                </select>
-                <div className="msg-compose-row">
-                  <input
-                    value={msgText}
-                    onChange={(e) => setMsgText(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && void sendTeamMsg()}
-                    placeholder="Type a message…"
-                  />
-                  <button className="btn btn--go" disabled={!msgText.trim()} onClick={() => void sendTeamMsg()}>
-                    Send
+                </div>
+              ) : msgThread == null ? (
+                // Thread list: Party + Hosts always; team DMs as they exist.
+                <div className="msg-threads">
+                  {[...myThreads.keys()]
+                    .sort((a, b) => (a === 'all' ? -1 : b === 'all' ? 1 : a.startsWith('host:') ? -1 : b.startsWith('host:') ? 1 : 0))
+                    .map((ch) => {
+                      const rows = myThreads.get(ch) ?? [];
+                      const last = rows[rows.length - 1];
+                      const unread = threadUnread(ch);
+                      return (
+                        <button key={ch} className="msg-thread" onClick={() => setMsgThread(ch)}>
+                          <span className="msg-thread__name">
+                            {threadLabel(ch)}
+                            {unread > 0 && <span className="msg-badge msg-badge--inline">{unread}</span>}
+                          </span>
+                          <span className="msg-thread__last">
+                            {last
+                              ? `${last.from_team === membership.teamId ? 'You: ' : ''}${last.text}`
+                              : ch === 'all'
+                                ? 'The whole party (hosts included)'
+                                : 'Your private line to the hosts'}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  <button className="msg-thread msg-thread--new" onClick={() => setMsgPick(true)}>
+                    <span className="msg-thread__name">＋ Message a team…</span>
                   </button>
                 </div>
-              </div>
+              ) : (
+                <>
+                  <div className="msg-list">
+                    {(myThreads.get(msgThread) ?? []).length === 0 ? (
+                      <p className="msg-empty">
+                        {msgThread === 'all'
+                          ? 'Nothing in the Party room yet — say hi!'
+                          : msgThread.startsWith('host:')
+                            ? 'Need a hand or a ruling? The hosts read this.'
+                            : 'No messages yet. Propose an alliance — or talk trash.'}
+                      </p>
+                    ) : (
+                      (myThreads.get(msgThread) ?? []).map((m) => {
+                        const mine = m.from_team === membership.teamId;
+                        return (
+                          <div key={m.id} className={`msg-row ${mine ? 'msg-row--mine' : ''}`}>
+                            {msgThread === 'all' && !mine && (
+                              <div className="msg-meta">{m.from_team == null ? '🎩 Host' : msgName(m.from_team)}</div>
+                            )}
+                            <div className={`msg-bubble${m.from_team == null ? ' msg-bubble--host' : ''}`}>{m.text}</div>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+                  <div className="msg-compose">
+                    <div className="msg-compose-row">
+                      <input
+                        value={msgText}
+                        onChange={(e) => setMsgText(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && void sendTeamMsg()}
+                        placeholder={msgThread === 'all' ? 'Message the whole party…' : 'Type a message…'}
+                      />
+                      <button className="msg-send" disabled={!msgText.trim()} onClick={() => void sendTeamMsg()} aria-label="Send">
+                        ➤
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         )}

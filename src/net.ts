@@ -345,6 +345,8 @@ export interface MessageRow {
   id: string;
   from_team: string | null;
   to_team: string | null;
+  /** 'all' | 'host:<teamId>' | 'dm:<a>:<b>' - null on pre-channel rows. */
+  channel: string | null;
   text: string;
   created_at: string;
 }
@@ -354,22 +356,38 @@ export async function sendMessage(
   fromTeam: string | null,
   toTeam: string | null,
   text: string,
+  channel?: string,
 ): Promise<void> {
   assertConfigured();
-  const { error } = await supabase.from('messages').insert({ game_id: gameId, from_team: fromTeam, to_team: toTeam, text });
-  if (error) throw error;
+  // channel arrives with channels.sql; fall back for a pre-upgrade DB (a team's
+  // Party post then lands in its host thread - degraded but not lost).
+  const { error } = await supabase
+    .from('messages')
+    .insert({ game_id: gameId, from_team: fromTeam, to_team: toTeam, text, channel: channel ?? null });
+  if (!error) return;
+  const { error: e2 } = await supabase
+    .from('messages')
+    .insert({ game_id: gameId, from_team: fromTeam, to_team: toTeam, text });
+  if (e2) throw e2;
 }
 
 export async function listMessages(gameId: string): Promise<MessageRow[]> {
   assertConfigured();
   const { data, error } = await supabase
     .from('messages')
+    .select('id, from_team, to_team, channel, text, created_at')
+    .eq('game_id', gameId)
+    .order('created_at', { ascending: true })
+    .limit(300);
+  if (!error) return (data ?? []) as MessageRow[];
+  const { data: legacy, error: e2 } = await supabase
+    .from('messages')
     .select('id, from_team, to_team, text, created_at')
     .eq('game_id', gameId)
     .order('created_at', { ascending: true })
     .limit(300);
-  if (error) throw error;
-  return (data ?? []) as MessageRow[];
+  if (e2) throw e2;
+  return ((legacy ?? []) as Omit<MessageRow, 'channel'>[]).map((m) => ({ ...m, channel: null }));
 }
 
 export function subscribeMessages(gameId: string, onChange: () => void) {

@@ -253,6 +253,7 @@ export default function App({
   const [currentLayoutId, setCurrentLayoutId] = useState<string | null>(null);
   const [cloudStatus, setCloudStatus] = useState<CloudStatus>(isConfigured ? 'idle' : 'offline');
   const [remoteNewer, setRemoteNewer] = useState(false);
+  const [dirty, setDirty] = useState(false); // edits made since the last save
   const currentLayoutIdRef = useRef<string | null>(null);
   const lastSavedAtRef = useRef<string | null>(null); // timestamp of our last write/load (echo suppression)
   const skipSaveRef = useRef(false); // set true right before a programmatic setBoard so it doesn't re-save
@@ -320,21 +321,39 @@ export default function App({
     }
   }
 
-  // Debounced autosave of the working board to the open cloud layout.
+  // MANUAL SAVE: an edit only marks the board dirty. Nothing reaches the cloud
+  // until you press Save, so the saved layout stays a safe point to revert to.
   useEffect(() => {
     if (!isConfigured || !currentLayoutId) return;
     if (skipSaveRef.current) {
       skipSaveRef.current = false;
+      setDirty(false);
       return;
     }
-    pendingSaveRef.current = { id: currentLayoutId, board };
-    setCloudStatus('saving');
-    window.clearTimeout(saveTimerRef.current);
-    saveTimerRef.current = window.setTimeout(() => {
-      void flushSave();
-    }, 800);
+    setDirty(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [board, currentLayoutId]);
+
+  /** Write the working board to its layout (the only path to the cloud). */
+  async function saveNow() {
+    if (!currentLayoutId) return;
+    setCloudStatus('saving');
+    try {
+      lastSavedAtRef.current = await saveLayout(currentLayoutId, board);
+      setDirty(false);
+      setCloudStatus('saved');
+    } catch {
+      setCloudStatus('error');
+    }
+  }
+
+  /** Throw away everything since the last save and reload that saved board. */
+  async function revertToSaved() {
+    if (!currentLayoutId) return;
+    if (!confirm('Discard every change since your last save and reload the saved board?')) return;
+    await openLayout(currentLayoutId, true);
+    setDirty(false);
+  }
 
   // Load a layout into the working board. discardLocal=true skips flushing local
   // edits first (used by "Load latest" to take the remote version).
@@ -342,8 +361,8 @@ export default function App({
     if (discardLocal) {
       pendingSaveRef.current = null;
       window.clearTimeout(saveTimerRef.current);
-    } else {
-      await flushSave();
+    } else if (dirty && !confirm('You have unsaved changes. Open this layout and lose them?')) {
+      return;
     }
     setCloudStatus('loading');
     try {
@@ -2906,16 +2925,34 @@ export default function App({
                   Delete
                 </button>
               </div>
+              <div className="row">
+                <button
+                  className="btn btn--go"
+                  onClick={() => void saveNow()}
+                  disabled={!currentLayoutId || !dirty || cloudStatus === 'saving'}
+                >
+                  {cloudStatus === 'saving' ? '💾 Saving…' : dirty ? '💾 Save' : '💾 Saved'}
+                </button>
+                <button
+                  className="btn btn--ghost"
+                  onClick={() => void revertToSaved()}
+                  disabled={!currentLayoutId || !dirty}
+                >
+                  ↩ Revert
+                </button>
+              </div>
               <p className="hint">
                 {cloudStatus === 'saving'
                   ? 'Saving…'
                   : cloudStatus === 'loading'
                     ? 'Loading…'
                     : cloudStatus === 'error'
-                      ? '⚠ Sync error — your next edit will retry.'
-                      : currentLayoutId
-                        ? 'All changes saved ✓'
-                        : 'Pick or create a layout to sync.'}
+                      ? '⚠ Save failed — press Save to try again.'
+                      : !currentLayoutId
+                        ? 'Pick or create a layout to save to.'
+                        : dirty
+                          ? '● Unsaved changes — Revert goes back to your last save.'
+                          : 'Saved ✓ — this is your revert point.'}
               </p>
               {remoteNewer && (
                 <div className="cloud-alert">

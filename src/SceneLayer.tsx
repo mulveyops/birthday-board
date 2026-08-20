@@ -4,6 +4,24 @@
 // `full raster export-app`) from real OSM footprints, the city street-tree
 // inventory, and the board graph; this layer just projects and draws.
 import { Fragment, useEffect, useState } from 'react';
+import type { CullRect } from './PanZoom';
+
+/** Point inside the render window (with margin for the sprite's extent)? */
+const ptIn = (c: CullRect | null | undefined, x: number, y: number, m: number) =>
+  !c || (x >= c.x0 - m && x <= c.x1 + m && y >= c.y0 - m && y <= c.y1 + m);
+/** Projected bounding box of a point run overlaps the render window? */
+const lineIn = (c: CullRect | null | undefined, X: Proj, Y: Proj, line: [number, number][], m: number) => {
+  if (!c || !line.length) return true;
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  for (const p of line) {
+    const x = X(p), y = Y(p);
+    if (x < minX) minX = x;
+    if (x > maxX) maxX = x;
+    if (y < minY) minY = y;
+    if (y > maxY) maxY = y;
+  }
+  return maxX >= c.x0 - m && minX <= c.x1 + m && maxY >= c.y0 - m && minY <= c.y1 + m;
+};
 
 interface GroundEnt { ref: string; lat: number; lng: number; sc: number; rot: number }
 interface StandingEnt {
@@ -54,17 +72,19 @@ const PROP_STYLE: Record<string, { stroke: string; width: number; opacity: numbe
 };
 
 /** Everything that lies ON the ground: park tints, lot fabric, courts. */
-export function SceneGround({ X, Y }: { X: Proj; Y: Proj }) {
+export function SceneGround({ X, Y, cull }: { X: Proj; Y: Proj; cull?: CullRect | null }) {
   const scene = useScene();
   if (!scene) return null;
   const pts = (line: [number, number][]) => line.map((p) => `${X(p).toFixed(1)},${Y(p).toFixed(1)}`).join(' ');
   return (
     <g>
       <defs dangerouslySetInnerHTML={{ __html: scene.defs }} />
-      {scene.data.parks.map((ring, i) => (
+      {scene.data.parks.map((ring, i) =>
+        !lineIn(cull, X, Y, ring, 20) ? null : (
         <polygon key={`pk${i}`} points={pts(ring)} fill="#a2d06c" stroke="#92c05d" strokeWidth={1.2} strokeLinejoin="round" />
       ))}
       {scene.data.props.map((p, i) => {
+        if (!lineIn(cull, X, Y, p.pts, 20)) return null;
         if (p.k === 'parking') {
           return <polygon key={`pp${i}`} points={pts(p.pts)} fill="#cfc9b8" stroke="#b9b2a0" strokeWidth={0.6} opacity={0.9} />;
         }
@@ -82,7 +102,8 @@ export function SceneGround({ X, Y }: { X: Proj; Y: Proj }) {
           />
         );
       })}
-      {scene.data.ground.map((e, i) => (
+      {scene.data.ground.map((e, i) =>
+        !ptIn(cull, X(e), Y(e), 50) ? null : (
         <use
           key={`g${i}`}
           href={`#${e.ref}`}
@@ -94,13 +115,15 @@ export function SceneGround({ X, Y }: { X: Proj; Y: Proj }) {
 }
 
 /** Buildings, trees, cars, heroes — painter-sorted upstream at bake time. */
-export function SceneStanding({ X, Y }: { X: Proj; Y: Proj }) {
+export function SceneStanding({ X, Y, cull }: { X: Proj; Y: Proj; cull?: CullRect | null }) {
   const scene = useScene();
   if (!scene) return null;
   return (
     <g>
       {scene.data.standing.map((e, i) => {
         const x = X(e), y = Y(e);
+        // margin covers the widest sprites (hero buildings, wide rasters)
+        if (!ptIn(cull, x, y, Math.max(e.w ?? 0, 80))) return null;
         if (e.t === 'img') {
           return (
             <image

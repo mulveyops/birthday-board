@@ -13,7 +13,7 @@ import L from 'leaflet';
 import type { Board, LatLng } from './types';
 import { SQUARE_TYPES } from './squareTypes';
 import { SceneGround, SceneStanding } from './SceneLayer';
-import PanZoom from './PanZoom';
+import PanZoom, { type CullRect } from './PanZoom';
 import { metersBetween } from './snap';
 
 export type Mode = 'select' | 'boundary' | 'add' | 'connect';
@@ -1049,6 +1049,25 @@ export default function BoardCanvas({
   // How far above minimum zoom the map sits (0 = whole board). Major street
   // names always show; minor ones appear from one zoom step in.
   const [relZoom, setRelZoom] = useState(0);
+  // Viewport culling (flat engine, zoomed in): PanZoom reports the world
+  // window worth rendering; everything outside it simply doesn't exist, so
+  // the browser never rasterizes offscreen sprites at high device resolution.
+  const [cullRect, setCullRect] = useState<CullRect | null>(null);
+  /** Point survives the cull? m = margin for the sprite's drawn extent. */
+  const inCull = (x: number, y: number, m = 60) =>
+    !cullRect || (x >= cullRect.x0 - m && x <= cullRect.x1 + m && y >= cullRect.y0 - m && y <= cullRect.y1 + m);
+  /** Bounding box of a point run overlaps the cull window? */
+  const lineCull = (pts: { x: number; y: number }[], m = 60) => {
+    if (!cullRect || !pts.length) return true;
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    for (const p of pts) {
+      if (p.x < minX) minX = p.x;
+      if (p.x > maxX) maxX = p.x;
+      if (p.y < minY) minY = p.y;
+      if (p.y > maxY) maxY = p.y;
+    }
+    return maxX >= cullRect.x0 - m && minX <= cullRect.x1 + m && maxY >= cullRect.y0 - m && minY <= cullRect.y1 + m;
+  };
   const ring = board.boundary.map((p) => [p.lat, p.lng] as [number, number]);
   const closed = board.boundaryClosed && ring.length >= 3;
   const editingArea = board.phase === 'area';
@@ -1434,34 +1453,40 @@ export default function BoardCanvas({
           {!backdropFit?.blob && (
             <polygon points={ptsOf(groundRing)} fill={board.artUnderlay ? '#a9d476' : GRASS} />
           )}
-          {board.artUnderlay && <SceneGround X={X} Y={Y} />}
+          {board.artUnderlay && <SceneGround X={X} Y={Y} cull={cullRect} />}
           {SHOW_BLOCK_TINTS &&
             board.scenery?.blocks.map((b, i) => {
               const lawn = BLOCK_LAWN[b.kind];
-              return b.ring.length >= 3 && lawn ? (
+              return b.ring.length >= 3 && lawn && lineCull(b.ring.map((p) => ({ x: X(p), y: Y(p) })), 20) ? (
                 <polygon key={`bl${i}`} points={ptsOf(b.ring)} fill={lawn} opacity={0.92} />
               ) : null;
             })}
           {SHOW_GREENS &&
             board.scenery?.woods.map((r, i) =>
-              r.length >= 3 ? <polygon key={`wd${i}`} points={ptsOf(r)} fill={WOOD_FILL} /> : null,
+              r.length >= 3 && lineCull(r.map((p) => ({ x: X(p), y: Y(p) })), 20) ? (
+                <polygon key={`wd${i}`} points={ptsOf(r)} fill={WOOD_FILL} />
+              ) : null,
             )}
           {SHOW_GREENS &&
             board.scenery?.parks.map((r, i) =>
-              r.length >= 3 ? <polygon key={`pk${i}`} points={ptsOf(r)} fill={PARK_FILL} /> : null,
+              r.length >= 3 && lineCull(r.map((p) => ({ x: X(p), y: Y(p) })), 20) ? (
+                <polygon key={`pk${i}`} points={ptsOf(r)} fill={PARK_FILL} />
+              ) : null,
             )}
           {/* water + rivers: drawn only on the plain sky — an illustrated
               backdrop paints its own river, so the SVG one would double it */}
           {!board.backdrop &&
             board.scenery?.water.map((r, i) =>
-              r.length >= 3 ? (
+              r.length >= 3 && lineCull(r.map((p) => ({ x: X(p), y: Y(p) })), 20) ? (
                 <polygon key={`wt${i}`} points={ptsOf(r)} fill={WATER_FILL} stroke="#3a7b8c" strokeWidth={1.5} />
               ) : null,
             )}
 
           {/* rivers: dark bank, bright water, dashed current */}
           {!board.backdrop &&
-          board.scenery?.rivers.map((line, i) => (
+          board.scenery?.rivers
+            .filter((line) => lineCull(line.map((p) => ({ x: X(p), y: Y(p) })), 20))
+            .map((line, i) => (
             <Fragment key={`rv${i}`}>
               <polyline
                 points={ptsOf(line)}
@@ -1497,7 +1522,7 @@ export default function BoardCanvas({
               (baked into the art underlay when that's active) */}
           {board.edges.map((edge) => {
             const line = edgeLine(edge);
-            if (!line) return null;
+            if (!line || !lineCull(line.map((p) => ({ x: X(p), y: Y(p) })), 40)) return null;
             return (
               <polyline
                 key={`sw${edge.id}`}
@@ -1518,7 +1543,7 @@ export default function BoardCanvas({
           {/* track casing */}
           {board.edges.map((edge) => {
             const line = edgeLine(edge);
-            if (!line) return null;
+            if (!line || !lineCull(line.map((p) => ({ x: X(p), y: Y(p) })), 40)) return null;
             return (
               <polyline
                 key={`c${edge.id}`}
@@ -1536,7 +1561,7 @@ export default function BoardCanvas({
               merge smoothly. No per-tile coloring, no dividers. */}
           {board.edges.map((edge) => {
             const line = edgeLine(edge);
-            if (!line) return null;
+            if (!line || !lineCull(line.map((p) => ({ x: X(p), y: Y(p) })), 40)) return null;
             return (
               <polyline
                 key={`f${edge.id}`}
@@ -1552,7 +1577,7 @@ export default function BoardCanvas({
 
           </g>
 
-          {board.artUnderlay && <SceneStanding X={X} Y={Y} />}
+          {board.artUnderlay && <SceneStanding X={X} Y={Y} cull={cullRect} />}
 
           {/* STREET NAMES — curved along their street, classic-map style.
               Major streets (Brady, Humboldt…) label big and always; minor
@@ -1562,6 +1587,7 @@ export default function BoardCanvas({
             if (!sl.major && relZoom < 1) return null;
             let pts = sl.pts.map((p) => [X(p), Y(p)] as [number, number]);
             if (pts.length < 2) return null;
+            if (!lineCull(pts.map(([x, y]) => ({ x, y })), 80)) return null;
             // Keep the text upright: the path must run left→right.
             if (pts[pts.length - 1][0] < pts[0][0]) pts = [...pts].reverse();
             const d = 'M ' + pts.map(([x, y]) => `${x.toFixed(1)} ${y.toFixed(1)}`).join(' L ');
@@ -1597,7 +1623,7 @@ export default function BoardCanvas({
         </>
       ) : null,
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [placingSquares, geo, board, backdropFit, relZoom, selectedEdgeId],
+    [placingSquares, geo, board, backdropFit, relZoom, selectedEdgeId, cullRect],
   );
   const sceneNodes =
     placingSquares && geo ? (
@@ -1610,6 +1636,7 @@ export default function BoardCanvas({
           <g filter="url(#track-shadow)">
           {intersections.map((sq) => {
             if (sq.type === 'bar') return null; // bars render as custom SVG POIs below
+            if (!inCull(X(sq), Y(sq), 40)) return null;
             const done = clearedSet.has(sq.id);
             // Explicit type wins (design + play); a blank intersection uses its
             // resolved play type (coin/chance) or stays a plain node in design.
@@ -1670,9 +1697,9 @@ export default function BoardCanvas({
       placingSquares && geo ? (
         <>
           {/* ground shadows anchor every building/hero to the lawn */}
-          {fabric.map((h, i) => (
+          {fabric.filter((h) => inCull(h.x, h.y, 80)).map((h) => (
             <ellipse
-              key={`sh${i}`}
+              key={`sh${h.x.toFixed(1)}-${h.y.toFixed(1)}`}
               cx={h.x}
               cy={h.y + 1.5}
               rx={(h.t === 'warehouse' ? 9 : h.t === 'shopRow' ? 6.2 : h.t === 'bush' ? 3.2 : 5) * h.s}
@@ -1682,9 +1709,9 @@ export default function BoardCanvas({
             />
           ))}
           {SHOW_POIS &&
-            fronts.map((f, i) => (
+            fronts.filter((f) => inCull(f.x, f.y, 100)).map((f) => (
             <ellipse
-              key={`shf${i}`}
+              key={`shf${f.x.toFixed(1)}-${f.y.toFixed(1)}`}
               cx={f.x}
               cy={f.y + 1.5}
               rx={
@@ -1707,41 +1734,41 @@ export default function BoardCanvas({
           {/* buildings ABOVE the track: a south-side roof drapes over the road
               edge instead of being clipped by it. Painter-sorted by y. */}
           {[
-            ...fabric.map((h, i) => ({
+            ...fabric.filter((h) => inCull(h.x, h.y, 100)).map((h) => ({
               y: h.y,
               el:
                 h.t === 'house' ? (
-                  <HouseSprite key={`h${i}`} x={h.x} y={h.y} s={h.s} c={h.c} v={h.v} />
+                  <HouseSprite key={`h${h.x.toFixed(1)}-${h.y.toFixed(1)}`} x={h.x} y={h.y} s={h.s} c={h.c} v={h.v} />
                 ) : h.t === 'warehouse' ? (
-                  <WarehouseSprite key={`h${i}`} x={h.x} y={h.y} s={h.s} c={h.c} />
+                  <WarehouseSprite key={`h${h.x.toFixed(1)}-${h.y.toFixed(1)}`} x={h.x} y={h.y} s={h.s} c={h.c} />
                 ) : h.t === 'bush' ? (
-                  <BushSprite key={`h${i}`} x={h.x} y={h.y} s={h.s} v={h.v} />
+                  <BushSprite key={`h${h.x.toFixed(1)}-${h.y.toFixed(1)}`} x={h.x} y={h.y} s={h.s} v={h.v} />
                 ) : (
-                  <StorefrontSprite key={`h${i}`} x={h.x} y={h.y} s={h.s} c={h.c} />
+                  <StorefrontSprite key={`h${h.x.toFixed(1)}-${h.y.toFixed(1)}`} x={h.x} y={h.y} s={h.s} c={h.c} />
                 ),
             })),
-            ...(SHOW_POIS ? fronts : []).map((f, i) => ({
+            ...(SHOW_POIS ? fronts.filter((f) => inCull(f.x, f.y, 120)) : []).map((f, i) => ({
               y: f.y,
               el:
                 f.kind === 'bar' ? (
                   (() => {
                     const B = bespokeBar(f.name);
                     return B ? (
-                      <B key={`fr${i}`} x={f.x} y={f.y} s={f.s} />
+                      <B key={`fr${f.x.toFixed(1)}-${f.y.toFixed(1)}`} x={f.x} y={f.y} s={f.s} />
                     ) : (
-                      <BarSprite key={`fr${i}`} x={f.x} y={f.y} s={f.s} />
+                      <BarSprite key={`fr${f.x.toFixed(1)}-${f.y.toFixed(1)}`} x={f.x} y={f.y} s={f.s} />
                     );
                   })()
                 ) : f.kind === 'hedwigs' ? (
-                  <HedwigSprite key={`fr${i}`} x={f.x} y={f.y} s={f.s} />
+                  <HedwigSprite key={`fr${f.x.toFixed(1)}-${f.y.toFixed(1)}`} x={f.x} y={f.y} s={f.s} />
                 ) : f.kind === 'church' ? (
-                  <ChurchSprite key={`fr${i}`} x={f.x} y={f.y} s={f.s} />
+                  <ChurchSprite key={`fr${f.x.toFixed(1)}-${f.y.toFixed(1)}`} x={f.x} y={f.y} s={f.s} />
                 ) : f.kind === 'theater' ? (
-                  <TheaterSprite key={`fr${i}`} x={f.x} y={f.y} s={f.s} icon={f.icon} />
+                  <TheaterSprite key={`fr${f.x.toFixed(1)}-${f.y.toFixed(1)}`} x={f.x} y={f.y} s={f.s} icon={f.icon} />
                 ) : f.kind === 'civic' || f.kind === 'museum' ? (
-                  <CivicSprite key={`fr${i}`} x={f.x} y={f.y} s={f.s} />
+                  <CivicSprite key={`fr${f.x.toFixed(1)}-${f.y.toFixed(1)}`} x={f.x} y={f.y} s={f.s} />
                 ) : (
-                  <StorefrontSprite key={`fr${i}`} x={f.x} y={f.y} s={f.s} c={f.c} icon={f.icon} />
+                  <StorefrontSprite key={`fr${f.x.toFixed(1)}-${f.y.toFixed(1)}`} x={f.x} y={f.y} s={f.s} c={f.c} icon={f.icon} />
                 ),
             })),
           ]
@@ -1751,12 +1778,13 @@ export default function BoardCanvas({
           {/* trees over the track edge too, so canopies overlap the road */}
           {board.scenery?.trees
             .filter((p) => hash01(p.lat * 7.13, p.lng * 3.37) < TREE_KEEP)
+            .filter((p) => inCull(X(p), Y(p), 60))
             .filter((p) => !pfClear.some((c) => Math.hypot(X(p) - c.x, Y(p) - c.y) < c.r))
-            .map((p, i) => {
+            .map((p) => {
             const h = hash01(p.lng * 1e4, p.lat * 1e4);
             const s = 0.8 + h * 0.55;
             return (
-              <Fragment key={`t${i}`}>
+              <Fragment key={`t${p.lat.toFixed(6)}-${p.lng.toFixed(6)}`}>
                 <ellipse cx={X(p)} cy={Y(p) + 1} rx={4.4 * s} ry={1.8} fill={SHADOW} opacity={0.1} />
                 <TreeSprite x={X(p)} y={Y(p)} s={s} v={Math.floor(h * 91)} />
               </Fragment>
@@ -1765,14 +1793,16 @@ export default function BoardCanvas({
 
           {/* bespoke green-space scenes (playground, ball field) on their parks */}
           {SHOW_POIS &&
-            parkFeatures.map((p, i) => {
+            parkFeatures
+              .filter((p) => inCull(X({ lat: p.lat, lng: p.lng }), Y({ lat: p.lat, lng: p.lng }), 150))
+              .map((p, i) => {
               const P = p.Sprite;
               return <P key={`pf${i}`} x={X({ lat: p.lat, lng: p.lng })} y={Y({ lat: p.lat, lng: p.lng })} s={p.sc} />;
             })}
         </>
       ) : null,
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [placingSquares, geo, board, fabric, fronts, parkFeatures],
+    [placingSquares, geo, board, fabric, fronts, parkFeatures, cullRect],
   );
   const sceneBars =
     placingSquares && geo ? (
@@ -1781,6 +1811,7 @@ export default function BoardCanvas({
               else the generic tavern); dims once cleared/claimed */}
           {intersections
             .filter((sq) => sq.type === 'bar')
+            .filter((sq) => inCull(X(sq), Y(sq), 120))
             .map((sq) => {
               const B = bespokeBar(sq.title) ?? BarSprite;
               const dim = clearedSet.has(sq.id) || starSet.has(sq.id);
@@ -1901,6 +1932,7 @@ export default function BoardCanvas({
                   const jy = hash01(gy * 5.37 + 3, gx * 2.91 + 4);
                   const cx = (gx + (jx - 0.5) * 0.85) * step;
                   const cy = (gy + (jy - 0.5) * 0.85) * step;
+                  if (!inCull(cx, cy, 250)) continue;
                   const ll = { lat: geo.maxLat - cy / geo.ky, lng: geo.minLng + cx / geo.kx };
                   if (pointInPolyLL(ll, keepOut)) continue; // keep clouds off the board itself
                   const h = hash01(cx, cy);
@@ -1920,7 +1952,7 @@ export default function BoardCanvas({
         </>
       ) : null,
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [placingSquares, geo, board, closed],
+    [placingSquares, geo, board, closed, cullRect],
   );
   // The whole board picture, shared by both engines: the designer wraps it in
   // Leaflet's SVGOverlay; the flat player viewport puts it in a plain <svg>.
@@ -1947,6 +1979,7 @@ export default function BoardCanvas({
         worldH={geo.H}
         background={backdropFit?.sky ?? '#8fc4e8'}
         onRelZoom={(r) => setRelZoom(Math.round(r * 2) / 2)}
+        onCull={setCullRect}
       >
         {({ scale, wasDrag }) => (
           <svg width={geo.W} height={geo.H} viewBox={`0 0 ${geo.W.toFixed(1)} ${geo.H.toFixed(1)}`}>

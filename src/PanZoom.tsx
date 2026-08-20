@@ -18,6 +18,19 @@ interface View {
   fit: number;
 }
 
+/** World-space window the child should bother rendering (null = everything). */
+export interface CullRect {
+  x0: number;
+  y0: number;
+  x1: number;
+  y1: number;
+}
+
+// Culling kicks in past this multiple of the fit scale. Below it the whole
+// board rasterizes cheaply; above it, painting offscreen sprites at high
+// device resolution is what froze pans for seconds on phones.
+const CULL_ZOOM = 2;
+
 interface Props {
   worldW: number;
   worldH: number;
@@ -30,6 +43,10 @@ interface Props {
   /** Zoom above fit in Leaflet-like levels: log2(scale / fit). Fires on
    * commits, not per frame - like Leaflet's zoomend. */
   onRelZoom?: (rel: number) => void;
+  /** Fires when the render-worthy world window changes: null at low zoom
+   * (draw everything), else the visible rect padded by a viewport on each
+   * side. Fires mid-drag too, so long pans fill in as they go. */
+  onCull?: (rect: CullRect | null) => void;
   /** Render prop: committed scale (px per world unit) + whether the gesture
    * that just ended was a drag (so taps after a pan can be ignored). */
   children: (view: { scale: number; wasDrag: () => boolean }) => ReactNode;
@@ -42,6 +59,7 @@ export default function PanZoom({
   maxZoomX = 8,
   background,
   onRelZoom,
+  onCull,
   children,
 }: Props) {
   const hostRef = useRef<HTMLDivElement>(null);
@@ -82,14 +100,44 @@ export default function PanZoom({
       });
     }
   };
+  // The world window worth rendering. Hysteresis: the rect is padded by a
+  // full viewport per side, and only moves when the screen escapes it — so
+  // panning inside the window costs nothing, and an escape re-renders only
+  // the small zoomed-in subset of the board.
+  const cullRef = useRef<{ rect: CullRect; s: number } | null>(null);
+  const maybeCull = () => {
+    const v = live.current;
+    const { cw, ch } = box.current;
+    let next: CullRect | null = null;
+    if (v.fit > 0 && v.s > v.fit * CULL_ZOOM && cw > 0) {
+      const vis = { x0: -v.tx / v.s, y0: -v.ty / v.s, x1: (cw - v.tx) / v.s, y1: (ch - v.ty) / v.s };
+      const c = cullRef.current;
+      // The window survives while the screen stays inside it AND the zoom is
+      // near the level it was built for. Zooming in shrinks the visible rect
+      // (it never escapes), so without the scale check the window would stay
+      // fit-sized forever and cull nothing.
+      const sameZoom = c && v.s < c.s * 1.5 && v.s > c.s / 1.5;
+      if (c && sameZoom && vis.x0 >= c.rect.x0 && vis.y0 >= c.rect.y0 && vis.x1 <= c.rect.x1 && vis.y1 <= c.rect.y1) return;
+      const padX = (vis.x1 - vis.x0) / 2;
+      const padY = (vis.y1 - vis.y0) / 2;
+      next = { x0: vis.x0 - padX, y0: vis.y0 - padY, x1: vis.x1 + padX, y1: vis.y1 + padY };
+    } else if (!cullRef.current) {
+      return;
+    }
+    cullRef.current = next ? { rect: next, s: v.s } : null;
+    onCull?.(next);
+  };
   // A pan leaves the scale untouched, and children consume ONLY the scale —
   // the transform is painted imperatively. So a pan-only commit has nothing
   // to tell React; skipping it keeps gesture-end free of re-render jank.
-  const commit = () =>
+  // (The cull window is the exception, and it updates via onCull.)
+  const commit = () => {
+    maybeCull();
     setView((prev) => {
       const v = live.current;
       return prev.s === v.s && prev.fit === v.fit ? prev : { ...v };
     });
+  };
   // Committing re-renders React and re-rasterizes the SVG at the new scale -
   // real work. Do it after a quiet gap, so a follow-up gesture that starts
   // right away cancels it and never trips over the burst.
@@ -163,6 +211,7 @@ export default function PanZoom({
       const wy = (my - v.ty) / v.s;
       live.current = clamped({ ...v, s, tx: mx - wx * s, ty: my - wy * s });
       schedulePaint();
+      maybeCull();
       window.clearTimeout(wheelSettle.current);
       wheelSettle.current = window.setTimeout(commit, 180);
     };
@@ -228,12 +277,14 @@ export default function PanZoom({
       const s = Math.max(v.fit, Math.min(v.fit * maxZoomX, pinch.current.s0 * (d / pinch.current.d0)));
       live.current = clamped({ ...v, s, tx: mx - pinch.current.wx * s, ty: my - pinch.current.wy * s });
       schedulePaint();
+      maybeCull();
     } else if (drag.current) {
       const dx = p.x - drag.current.x0;
       const dy = p.y - drag.current.y0;
       dragDist.current = Math.max(dragDist.current, Math.hypot(dx, dy));
       live.current = clamped({ ...v, tx: drag.current.tx0 + dx, ty: drag.current.ty0 + dy });
       schedulePaint();
+      maybeCull();
     }
   }
 

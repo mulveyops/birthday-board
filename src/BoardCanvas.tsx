@@ -914,7 +914,10 @@ function MapController({ board, recage }: { board: Board; recage: number }) {
     ro.observe(el);
     return () => ro.disconnect();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [map, board.phase, board.padding, board.backdrop, recage]);
+    // board.boundary is in here on purpose: a player's board arrives from
+    // the server AFTER first paint, and without it the fit would keep the
+    // view it computed for the empty placeholder board.
+  }, [map, board.phase, board.padding, board.backdrop, board.boundary, recage]);
   return null;
 }
 

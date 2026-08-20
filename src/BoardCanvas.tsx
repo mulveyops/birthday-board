@@ -849,6 +849,9 @@ function splitAtMid(line: [number, number][]) {
   };
 }
 
+/** Slack around the backdrop art when fitting it to the screen. */
+const BACKDROP_MARGIN = 0.035;
+
 function MapController({ board, recage }: { board: Board; recage: number }) {
   const map = useMap();
   // Dev convenience: drive the map from the console (zoom tests etc).
@@ -882,7 +885,10 @@ function MapController({ board, recage }: { board: Board; recage: number }) {
         bounds = L.latLngBounds([
           [Math.min(...lats) - pad.b / ky, Math.min(...lngs) - pad.l / kx],
           [Math.max(...lats) + pad.t / ky, Math.max(...lngs) + pad.r / kx],
-        ]);
+        ])
+          // A little breathing room so the artwork's own edges (the compass
+          // sits right on one) clear rounded screen corners and safe areas.
+          .pad(BACKDROP_MARGIN);
       } else {
         const skyPad = board.phase === 'squares' ? 0.14 : 0; // extra blue sky around the board
         bounds = L.latLngBounds(board.boundary.map((pt) => [pt.lat, pt.lng] as [number, number])).pad(

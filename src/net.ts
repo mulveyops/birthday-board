@@ -802,6 +802,7 @@ export interface GameConfig {
   reinforceForfeit: number; // coins a failed attacker forfeits at a 🧱 corner
   defendRadiusM: number; // defender's fresh check-in within this → home-turf defense
   gpsRequired: boolean; // check-ins demand physical presence (HOST setting, not the player's)
+  starIntervalSec: number; // a star lands at a bar this often (0 = admin drops only)
 }
 
 /** Config value with a fallback (older published games lack newer fields). */
@@ -817,6 +818,7 @@ export const cfg = {
   defendRadiusM: (c: Partial<GameConfig> | undefined) => c?.defendRadiusM ?? 75,
   // Default TRUE: an older published game must fail toward "you have to be there".
   gpsRequired: (c: Partial<GameConfig> | undefined) => c?.gpsRequired ?? true,
+  starIntervalSec: (c: Partial<GameConfig> | undefined) => c?.starIntervalSec ?? 1200,
 };
 
 export const PARTY_CONFIG: GameConfig = {
@@ -838,6 +840,7 @@ export const PARTY_CONFIG: GameConfig = {
   reinforceForfeit: 50,
   defendRadiusM: 75,
   gpsRequired: true,
+  starIntervalSec: 1200,
 };
 export const TEST_CONFIG: GameConfig = {
   starCost: 40,
@@ -858,6 +861,7 @@ export const TEST_CONFIG: GameConfig = {
   reinforceForfeit: 50,
   defendRadiusM: 75,
   gpsRequired: false,
+  starIntervalSec: 90,
 };
 
 export interface GameFull {
@@ -1173,6 +1177,50 @@ export function subscribeSpawns(gameId: string, onChange: () => void) {
   return () => {
     supabase.removeChannel(ch);
   };
+}
+
+// ---------------------------------------------------------------------------
+// Star spawns: stars LAND at bars over time; buy-a-round needs a landed star.
+// ---------------------------------------------------------------------------
+
+export interface StarSpawnRow {
+  id: string;
+  bar_spot_id: string;
+  tick_no: number | null;
+  created_at: string;
+}
+
+export async function listStarSpawns(gameId: string): Promise<StarSpawnRow[]> {
+  assertConfigured();
+  const { data, error } = await supabase
+    .from('star_spawns')
+    .select('id, bar_spot_id, tick_no, created_at')
+    .eq('game_id', gameId);
+  if (error) throw error;
+  return (data ?? []) as StarSpawnRow[];
+}
+
+export function subscribeStarSpawns(gameId: string, onChange: () => void) {
+  const ch = supabase
+    .channel(`star_spawns:${gameId}`)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'star_spawns', filter: `game_id=eq.${gameId}` }, onChange)
+    .subscribe();
+  return () => {
+    supabase.removeChannel(ch);
+  };
+}
+
+/** Land a star at a bar. For auto drops pass the star tick number — the partial
+ * unique index elects exactly one client (23505 → someone else landed it).
+ * Admin-forced drops pass null and always land. */
+export async function dropStar(gameId: string, barSpotId: string, tickNo: number | null): Promise<boolean> {
+  assertConfigured();
+  const { error } = await supabase.from('star_spawns').insert({ game_id: gameId, bar_spot_id: barSpotId, tick_no: tickNo });
+  if (error) {
+    if (error.code === '23505') return false;
+    throw error;
+  }
+  return true;
 }
 
 // ---------------------------------------------------------------------------

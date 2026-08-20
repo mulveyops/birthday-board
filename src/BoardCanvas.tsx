@@ -963,6 +963,8 @@ interface Props {
   onClaimSpawn?: (id: string) => void;
   /** Bars currently under a star claim (meter ring, claiming team's color + countdown). */
   starClaims?: { barSpotId: string; pct: number; mine: boolean; color: string; secs: number }[];
+  /** Bars holding a landed, unclaimed star (bouncing ⭐ beacon). */
+  starDrops?: string[];
   /** Live team tokens (other players) drawn on the board. */
   tokens?: { teamId: string; lat: number; lng: number; emoji: string; name: string; me?: boolean }[];
   /** Turf: spot_id → owning team's paint (corner discs tinted per team;
@@ -1041,6 +1043,7 @@ export default function BoardCanvas({
   spawns,
   onClaimSpawn,
   starClaims,
+  starDrops,
   tokens,
   turf,
   flat = false,
@@ -1897,15 +1900,36 @@ export default function BoardCanvas({
               const B = bespokeBar(sq.title) ?? BarSprite;
               const dim = clearedSet.has(sq.id) || starSet.has(sq.id);
               const claim = starClaims?.find((c) => c.barSpotId === sq.id);
+              const hasStar = !claim && starDrops?.includes(sq.id);
               const cx = X(sq);
               const cy = Y(sq);
               const R = 32;
               const C = 2 * Math.PI * R;
               return (
                 <Fragment key={`bar${sq.id}`}>
-                  <g opacity={dim ? 0.5 : 1}>
-                    <B x={cx} y={cy} s={2} />
-                  </g>
+                  {/* On art-underlay boards the baked building IS the bar's
+                      visual — no generic tavern stamped on top of custom art.
+                      The live layer only adds the dynamic star/claim state. */}
+                  {!board.artUnderlay && (
+                    <g opacity={dim ? 0.5 : 1}>
+                      <B x={cx} y={cy} s={2} />
+                    </g>
+                  )}
+                  {hasStar && (
+                    <>
+                      {/* landed, unclaimed star — a beacon you can spot from
+                          across the map; the claim ring takes over once a
+                          team starts buying */}
+                      <circle cx={cx} cy={cy} fill="#f0c33c" r={30} opacity={0.25}>
+                        <animate attributeName="r" values="26;40;26" dur="1.5s" repeatCount="indefinite" />
+                        <animate attributeName="opacity" values="0.35;0.08;0.35" dur="1.5s" repeatCount="indefinite" />
+                      </circle>
+                      <text x={cx} y={cy - 34} fontSize={30} textAnchor="middle" dominantBaseline="central" style={{ paintOrder: 'stroke' }} stroke="#fffdf4" strokeWidth={2}>
+                        ⭐
+                        <animate attributeName="y" values={`${cy - 34};${cy - 44};${cy - 34}`} dur="1s" repeatCount="indefinite" />
+                      </text>
+                    </>
+                  )}
                   {claim && (
                     <>
                       {/* pulsing halo in the claiming team's color — readable

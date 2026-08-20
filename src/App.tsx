@@ -43,6 +43,9 @@ import {
   transferCoins,
   adjustStars,
   dropSpawnNow,
+  listStarSpawns,
+  subscribeStarSpawns,
+  dropStar,
   hostCancelStarClaims,
   hostReleaseTurf,
   hostUnclearSpot,
@@ -91,6 +94,7 @@ import {
   type Position,
   type SpawnRow,
   type StarClaimRow,
+  type StarSpawnRow,
   type EventRow,
   type GameConfig,
 } from './net';
@@ -844,6 +848,29 @@ export default function App({
       setNetBusy(false);
     }
   }
+  /** Host-forced star drop: lands at the next rotation-eligible bar. */
+  async function doDropStar() {
+    if (!hostGame) return;
+    const pool = board.squares.filter((s) => s.type === 'bar').sort((a, b) => a.id.localeCompare(b.id));
+    if (!pool.length) {
+      alert('The board has no bar spots to land a star on.');
+      return;
+    }
+    const target = pool.find((sq) => (starAvailable[sq.id] ?? 0) <= 0 && !starClaimRows.some((c) => c.bar_spot_id === sq.id && c.status === 'claiming')) ?? null;
+    if (!target) {
+      alert('Every bar already has a star waiting or a claim running.');
+      return;
+    }
+    setNetBusy(true);
+    try {
+      await dropStar(hostGame.id, target.id, null);
+      await logEvent(hostGame.id, 'star', `⭐ A star just landed at ${target.title || 'a bar'} — first team to buy a round claims it!`);
+    } catch (e) {
+      alert('Star drop failed: ' + (e as Error).message);
+    } finally {
+      setNetBusy(false);
+    }
+  }
   async function doDropSpawn() {
     if (!hostGame) return;
     setNetBusy(true);
@@ -1006,6 +1033,7 @@ export default function App({
   const [positions, setPositions] = useState<Position[]>([]);
   const [allSpawns, setAllSpawns] = useState<SpawnRow[]>([]);
   const [starClaimRows, setStarClaimRows] = useState<StarClaimRow[]>([]);
+  const [starSpawnRows, setStarSpawnRows] = useState<StarSpawnRow[]>([]);
   const [events, setEvents] = useState<EventRow[]>([]);
   // Messaging: shared row store + composer state for whichever surface is active.
   const [messages, setMessages] = useState<MessageRow[]>([]);
@@ -1247,6 +1275,52 @@ export default function App({
     [starClaimRows, nowTs, membership, onlineConfig, teams],
   );
 
+  // A bar has a star AVAILABLE when more stars have landed there than claims
+  // were ever started there (claiming or locked). Buy-a-round needs one.
+  const starAvailable = useMemo(() => {
+    const m: Record<string, number> = {};
+    for (const s of starSpawnRows) m[s.bar_spot_id] = (m[s.bar_spot_id] ?? 0) + 1;
+    for (const c of starClaimRows) if (c.status !== 'lost') m[c.bar_spot_id] = (m[c.bar_spot_id] ?? 0) - 1;
+    return m;
+  }, [starSpawnRows, starClaimRows]);
+  // Auto star drops: every starIntervalSec one client wins the tick (guarded
+  // insert) and lands a star at the next bar in rotation that isn't already
+  // holding or resolving one. Unclaimed stars WAIT — no expiry.
+  const starTickTried = useRef<Set<number>>(new Set());
+  useEffect(() => {
+    if (appMode !== 'online' || !membership || !onlineBoard || onlineStatus !== 'live' || !onlineStartedAt) return;
+    const ivMs = cfg.starIntervalSec(onlineConfig) * 1000;
+    if (ivMs <= 0) return;
+    const tickNo = Math.floor((nowTs - Date.parse(onlineStartedAt)) / ivMs);
+    if (tickNo < 1 || starTickTried.current.has(tickNo)) return;
+    starTickTried.current.add(tickNo);
+    const pool = onlineBoard.squares.filter((s) => s.type === 'bar').sort((a, b) => a.id.localeCompare(b.id));
+    if (!pool.length) return;
+    // deterministic rotation start + skip bars already engaged, so every
+    // client that could win the tick would land the star at the SAME bar
+    let target: Square | null = null;
+    for (let i = 0; i < pool.length; i++) {
+      const sq = pool[(tickNo + i) % pool.length];
+      const midClaim = starClaimRows.some((c) => c.bar_spot_id === sq.id && c.status === 'claiming');
+      if ((starAvailable[sq.id] ?? 0) <= 0 && !midClaim) {
+        target = sq;
+        break;
+      }
+    }
+    if (!target) return; // every bar is holding a star nobody claimed
+    const barName = target.title || 'a bar';
+    const gid = membership.gameId;
+    const barId = target.id;
+    void (async () => {
+      try {
+        const won = await dropStar(gid, barId, tickNo);
+        if (won) await logEvent(gid, 'star', `⭐ A star just landed at ${barName} — first team to buy a round claims it!`);
+      } catch {
+        /* net hiccup — another client's attempt covers the tick */
+      }
+    })();
+  }, [appMode, nowTs, membership, onlineBoard, onlineStatus, onlineStartedAt, onlineConfig, starAvailable]);
+
   const myTeam = useMemo(() => teams.find((t) => t.id === membership?.teamId) ?? null, [teams, membership]);
   const onlineNodeType = useMemo(() => (onlineBoard ? deriveNodeType(deriveSpots(onlineBoard)) : {}), [onlineBoard]);
   // Turf graph: which corners are claimable + which are "consecutive" (runs can turn).
@@ -1301,6 +1375,7 @@ export default function App({
     const loadPos = () => listPositions(gid).then((p) => alive && setPositions(p)).catch(() => {});
     const loadSpawns = () => listSpawns(gid).then((s) => alive && setAllSpawns(s)).catch(() => {});
     const loadStars = () => listStarClaims(gid).then((s) => alive && setStarClaimRows(s)).catch(() => {});
+    const loadStarSpawns = () => listStarSpawns(gid).then((s) => alive && setStarSpawnRows(s)).catch(() => {});
     const loadEvents = () => listEvents(gid).then((e) => alive && setEvents(e)).catch(() => {});
     const loadMsgs = () => listMessages(gid).then((m) => alive && setMessages(m)).catch(() => {});
     const loadAmbushes = () => listAmbushes(gid).then((a) => alive && setAmbushes(a)).catch(() => {});
@@ -1322,6 +1397,7 @@ export default function App({
     loadPos();
     loadSpawns();
     loadStars();
+    loadStarSpawns();
     loadEvents();
     loadMsgs();
     loadAmbushes();
@@ -1332,6 +1408,7 @@ export default function App({
     const u2 = subscribePositions(gid, loadPos);
     const u3 = subscribeSpawns(gid, loadSpawns);
     const u4 = subscribeStars(gid, loadStars);
+    const u12 = subscribeStarSpawns(gid, loadStarSpawns);
     const u5 = subscribeEvents(gid, loadEvents);
     const u6 = subscribeGame(gid, loadGame);
     const u8 = subscribeMessages(gid, loadMsgs);
@@ -1350,6 +1427,7 @@ export default function App({
       u9();
       u10();
       u11();
+      u12();
     };
   }, [appMode, membership]);
 
@@ -1924,6 +2002,10 @@ export default function App({
   }
   async function doBuyRound() {
     if (!membership || !onlineBarModal) return;
+    if ((starAvailable[onlineBarModal.spotId] ?? 0) <= 0) {
+      alert('No star at this bar right now — wait for one to land!');
+      return;
+    }
     try {
       const r = await buyRoundDb(membership.gameId, membership.teamId, onlineBarModal.spotId, onlineConfig.starCost, onlineConfig.meterSec * 1000);
       if (r === 'nocoins') alert(`Not enough 🪙 (need ${onlineConfig.starCost}).`);
@@ -3387,6 +3469,9 @@ export default function App({
                   <button className="btn" onClick={doDropSpawn} disabled={netBusy}>
                     🎁 Drop a bonus spawn now
                   </button>
+                  <button className="btn" onClick={doDropStar} disabled={netBusy}>
+                    ⭐ Land a star at a bar now
+                  </button>
                 </>
               )}
               {hostStatus === 'ended' && <p className="hint">Game ended — final standings below.</p>}
@@ -3474,6 +3559,7 @@ export default function App({
               {cfgField('Drop lasts (sec)', 'spawnTtlSec')}
               {cfgField('Coins / check-in', 'coinReward')}
               {cfgField('GPS radius (m)', 'radiusM')}
+              {cfgField('Star drop interval (s)', 'starIntervalSec')}
               <label
                 style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, margin: '3px 0', fontSize: '0.82rem' }}
               >
@@ -3713,6 +3799,7 @@ export default function App({
           onCheckIn={appMode === 'online' ? openSpotSheet : checkIn}
           nodeType={appMode === 'play' ? nodeType : appMode === 'online' ? onlineNodeType : undefined}
           starBars={appMode === 'online' ? [] : play.starBars}
+          starDrops={appMode === 'online' ? Object.keys(starAvailable).filter((id) => starAvailable[id] > 0) : undefined}
           spawns={appMode === 'online' ? activeSpawns : appMode === 'play' ? spawns : []}
           onClaimSpawn={appMode === 'online' ? onlineClaimSpawn : claimSpawn}
           starClaims={
@@ -4346,6 +4433,15 @@ export default function App({
                           {claimMine ? ' Hold on!' : ' Get there and contest it before it locks!'}
                         </p>
                       ))}
+                    {type === 'bar' &&
+                      !claim &&
+                      ((starAvailable[spotId] ?? 0) > 0 ? (
+                        <p className="hint">
+                          ⭐ <b>A star is sitting here, unclaimed</b> — first team to buy a round starts claiming it!
+                        </p>
+                      ) : (
+                        <p className="hint">😴 No star here right now — stars land at bars as the game goes on.</p>
+                      ))}
                     {cleared && !owner && <p className="hint">✅ Already cleared this game.</p>}
                     {sheetGps?.checking && <p className="hint">📡 Checking your location…</p>}
                     {sheetGps?.msg && <p className="hint" style={{ color: '#b45309', fontWeight: 600 }}>☝️ {sheetGps.msg}</p>}
@@ -4414,10 +4510,11 @@ export default function App({
                   </div>
                   <div style={{ padding: '16px 18px' }}>
                     {!claim ? (
+                      (starAvailable[onlineBarModal.spotId] ?? 0) > 0 ? (
                       <>
                         <p className="hint" style={{ marginTop: 0 }}>
-                          Buy a round to claim a ⭐ ({onlineConfig.starCost} 🪙). The meter runs {onlineConfig.meterSec}s while
-                          you're contestable.
+                          ⭐ A star is HERE! Buy a round to claim it ({onlineConfig.starCost} 🪙). The meter runs{' '}
+                          {onlineConfig.meterSec}s while you're contestable.
                         </p>
                         <button
                           className="btn btn--go"
@@ -4428,6 +4525,12 @@ export default function App({
                           Buy a round ({onlineConfig.starCost} 🪙)
                         </button>
                       </>
+                      ) : (
+                        <p className="hint" style={{ marginTop: 0 }}>
+                          😴 No star here right now. Stars land at bars as the game goes on — watch the feed for{' '}
+                          <b>"a star just landed"</b> and get there first.
+                        </p>
+                      )
                     ) : claim.status === 'locked' ? (
                       <p className="hint" style={{ marginTop: 0 }}>
                         ⭐ Claimed by <b>{claimTeam?.name ?? 'another team'}</b> — this star is locked.

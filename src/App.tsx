@@ -1145,7 +1145,7 @@ export default function App({
       const art = [...document.querySelectorAll('svg image')].find((i) =>
         (i.getAttribute('href') || '').includes('backdrops'),
       ) as SVGImageElement | undefined;
-      if (!m || !wrap) return;
+      if (!wrap) return;
       const w = wrap.getBoundingClientRect();
       const a2 = art?.getBoundingClientRect();
       const vv = window.visualViewport;
@@ -1154,7 +1154,7 @@ export default function App({
           `scr ${Math.round(window.innerWidth)}x${Math.round(window.innerHeight)} dpr${window.devicePixelRatio}`,
           vv ? `vv ${Math.round(vv.width)}x${Math.round(vv.height)}@${vv.scale.toFixed(2)} off${Math.round(vv.offsetLeft)}` : 'vv -',
           `map ${Math.round(w.width)}x${Math.round(w.height)}`,
-          `z ${m.getZoom().toFixed(2)}/${m.getMinZoom().toFixed(2)}`,
+          m ? `z ${m.getZoom().toFixed(2)}/${m.getMinZoom().toFixed(2)}` : 'z -',
           a2 ? `art L${Math.round(a2.left - w.left)} R${Math.round(w.right - a2.right)} w${Math.round(a2.width)}` : 'art -',
         ].join(' · '),
       );

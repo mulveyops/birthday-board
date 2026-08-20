@@ -1671,3 +1671,10 @@ body {
   background: #fff7e2;
   transform: scale(1.06);
 }
+
+/* Kill double-tap page zoom: on the game screen the page must never zoom —
+   only the map does. (A page left zoomed by the join form shows a correctly
+   centered board panned off to one side.) */
+body {
+  touch-action: manipulation;
+}

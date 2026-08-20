@@ -854,8 +854,9 @@ const BACKDROP_MARGIN = 0.035;
 
 function MapController({ board, recage }: { board: Board; recage: number }) {
   const map = useMap();
-  // Dev convenience: drive the map from the console (zoom tests etc).
-  if (import.meta.env.DEV) (window as unknown as { __mkeMap?: L.Map }).__mkeMap = map;
+  // The view readout + Recenter diagnostics need this handle in EVERY build
+  // (it was dev-only once, which made the readout silently blank in prod).
+  (window as unknown as { __mkeMap?: L.Map }).__mkeMap = map;
   useEffect(() => {
     // Re-fit whenever the map's box changes: the first fit runs before the
     // layout settles (the HUD sheet collapsing hands the map the whole

@@ -1594,3 +1594,65 @@ body {
   border-radius: 10px;
   font-family: inherit;
 }
+
+/* ===================================================================== */
+/* Player shell: the map owns the screen; the HUD is a toggled overlay,   */
+/* not a half-height panel stacked above it.                             */
+/* ===================================================================== */
+.app--player .panel-toggle {
+  display: inline-flex;
+}
+.app--player.app--panel-collapsed .sidebar {
+  display: none;
+}
+@media (min-width: 769px) {
+  /* On a wide screen the open HUD floats over the map instead of squeezing it. */
+  .app--player .sidebar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 500;
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.45);
+  }
+  .app--player .map-wrap {
+    width: 100%;
+  }
+}
+
+/* Join page: the code/team form as its own page (see .site in this file). */
+.join-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 4px 2px 0;
+}
+.join-form .field span {
+  font-weight: 700;
+}
+.join-form input {
+  width: 100%;
+  box-sizing: border-box;
+  font-size: 1.05rem;
+  padding: 11px 12px;
+}
+.icon-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 6px;
+}
+.icon-pick {
+  font-size: 1.5rem;
+  line-height: 1;
+  padding: 8px 10px;
+  border-radius: 12px;
+  border: 2px solid #cfc7b5;
+  background: #fffdf6;
+  cursor: pointer;
+}
+.icon-pick--on {
+  border-color: #f59e0b;
+  background: #fff7e2;
+  transform: scale(1.06);
+}

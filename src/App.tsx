@@ -95,6 +95,7 @@ import {
   type GameConfig,
 } from './net';
 import { territoryIds, territoryAdjacency, longestRun, computeRuns } from './territory';
+import { navigate } from './Root';
 
 const PHASES: { key: Phase; label: string }[] = [
   { key: 'area', label: 'Area' },
@@ -525,7 +526,7 @@ export default function App({
   const [appMode, setAppMode] = useState<'design' | 'play' | 'online'>('design');
   // On mobile the side panel and map stack; this collapses the panel so the map
   // can go full-screen for drawing the area / placing spaces. Ignored on desktop.
-  const [panelOpen, setPanelOpen] = useState(true);
+  const [panelOpen, setPanelOpen] = useState(variant !== 'player');
   const [play, setPlay] = useState<{
     coins: number;
     stars: number;
@@ -964,6 +965,10 @@ export default function App({
       />
     </label>
   );
+  // Placeholder team icons — tap one instead of typing an emoji on a phone.
+  // Proper team icons are a later job; these just make teams tellable apart.
+  const TEAM_ICONS = ['🎲', '🚀', '🦄', '🦖', '🌹', '🍕', '🎸', '🦈'];
+
   async function doJoin() {
     if (!joinCode.trim() || !joinName.trim()) {
       alert('Enter a game code and a team name.');
@@ -2248,11 +2253,68 @@ export default function App({
     </button>
   );
 
+  // A player who hasn't joined gets a plain full page — the split
+  // sidebar/map view made no sense before there's a game to look at.
+  if (variant === 'player' && !membership) {
+    return (
+      <div className="site">
+        <div className="site-card">
+          <div className="site-hero">
+            <h1>Join the game</h1>
+            <p className="site-date">Enter the code your host gives you at the party.</p>
+          </div>
+          <div className="join-form">
+            <label className="field">
+              <span>Game code</span>
+              <input
+                value={joinCode}
+                onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
+                placeholder="GAME CODE"
+                autoCapitalize="characters"
+                autoCorrect="off"
+              />
+            </label>
+            <label className="field">
+              <span>Team name</span>
+              <input value={joinName} onChange={(e) => setJoinName(e.target.value)} placeholder="Team name" />
+            </label>
+            <div className="field">
+              <span>Team icon</span>
+              <div className="icon-picker">
+                {TEAM_ICONS.map((ic) => (
+                  <button
+                    key={ic}
+                    type="button"
+                    className={`icon-pick${joinEmoji === ic ? ' icon-pick--on' : ''}`}
+                    onClick={() => setJoinEmoji(ic)}
+                  >
+                    {ic}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <button className="site-btn site-btn--primary" onClick={doJoin} disabled={netBusy}>
+              {netBusy ? '…' : 'Join game'}
+            </button>
+            <p className="hint">
+              Playing as a group? Everyone can join on their own phone — enter the <b>same team name</b> to share one
+              team.
+            </p>
+            <p className="hint">No code yet? The game goes live at the party — check back then.</p>
+          </div>
+        </div>
+        <button className="site-admin-link" onClick={() => navigate('/')}>
+          ← back
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div
       className={`app${panelOpen ? '' : ' app--panel-collapsed'}${
         variant === 'player' || appMode === 'play' || appMode === 'online' ? ' app--game' : ''
-      }`}
+      }${variant === 'player' ? ' app--player' : ''}`}
     >
       <aside className="sidebar">
         <header className="brand">

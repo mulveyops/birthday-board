@@ -1448,7 +1448,7 @@ export default function App({
         if (d <= onlineConfig.radiusM) cb();
         else
           setGpsPopup({
-            emoji: '🏃',
+            emoji: '☝️',
             title: 'Not close enough!',
             body: `You're ${Math.round(d)}m away — get within ${onlineConfig.radiusM}m of the spot.`,
           });
@@ -1466,7 +1466,7 @@ export default function App({
   const [gpsPopup, setGpsPopup] = useState<{ emoji: string; title: string; body: string } | null>(null);
   useEffect(() => {
     if (!gpsPopup) return;
-    const t = setTimeout(() => setGpsPopup(null), 4500);
+    const t = setTimeout(() => setGpsPopup(null), 3000);
     return () => clearTimeout(t);
   }, [gpsPopup]);
   async function runGpsTest() {

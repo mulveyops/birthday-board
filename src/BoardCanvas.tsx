@@ -1398,11 +1398,14 @@ export default function BoardCanvas({
   // Clear a gap in the tree fill for each bespoke park scene so it isn't buried.
   const pfClear = parkFeatures.map((pf) => ({ x: X({ lat: pf.lat, lng: pf.lng }), y: Y({ lat: pf.lat, lng: pf.lng }), r: 24 * pf.sc }));
 
-  // The whole board picture, shared by both engines: the designer wraps it in
-  // Leaflet's SVGOverlay; the flat player viewport puts it in a plain <svg>.
-  const sceneSvg =
-    placingSquares && geo ? (
-      <>
+  // The board picture is assembled from memoized STATIC chunks (ground/roads/
+  // labels, buildings/trees, sky garnish) interleaved with small DYNAMIC ones
+  // (nodes, bars+claim rings, spawns, tokens). The per-second game tick and
+  // zoom commits then reconcile dozens of elements, not ~1700 sprites.
+  const sceneGround = useMemo(
+    () =>
+      placingSquares && geo ? (
+        <>
           <defs>
             {/* subtle lift so the track floats above the scenery */}
             <filter id="track-shadow" x="-5%" y="-5%" width="110%" height="110%">
@@ -1591,7 +1594,14 @@ export default function BoardCanvas({
               </g>
             );
           })}
-
+        </>
+      ) : null,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [placingSquares, geo, board, backdropFit, relZoom, selectedEdgeId],
+  );
+  const sceneNodes =
+    placingSquares && geo ? (
+      <>
           {/* the "spaces" are the intersections — a node where 3+ roads meet,
               drawn a touch wider than the street so it reads as a distinct pip.
               In play mode a cleared node grays out; the active one glows.
@@ -1653,7 +1663,12 @@ export default function BoardCanvas({
             );
           })}
           </g>
-
+      </>
+    ) : null;
+  const sceneFabric = useMemo(
+    () =>
+      placingSquares && geo ? (
+        <>
           {/* ground shadows anchor every building/hero to the lawn */}
           {fabric.map((h, i) => (
             <ellipse
@@ -1754,7 +1769,14 @@ export default function BoardCanvas({
               const P = p.Sprite;
               return <P key={`pf${i}`} x={X({ lat: p.lat, lng: p.lng })} y={Y({ lat: p.lat, lng: p.lng })} s={p.sc} />;
             })}
-
+        </>
+      ) : null,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [placingSquares, geo, board, fabric, fronts, parkFeatures],
+  );
+  const sceneBars =
+    placingSquares && geo ? (
+      <>
           {/* bar POIs — a custom SVG pinned at the real place (bespoke by name,
               else the generic tavern); dims once cleared/claimed */}
           {intersections
@@ -1793,7 +1815,11 @@ export default function BoardCanvas({
                 </Fragment>
               );
             })}
-
+      </>
+    ) : null;
+  const sceneMisc =
+    placingSquares && geo ? (
+      <>
           {/* (dividers & one-way arrows removed — the road is one clean path) */}
 
           {/* selected-space glow + emoji for special spaces */}
@@ -1853,7 +1879,12 @@ export default function BoardCanvas({
               </text>
             </g>
           ))}
-
+      </>
+    ) : null;
+  const sceneSky = useMemo(
+    () =>
+      placingSquares && geo ? (
+        <>
           {/* clouds scattered across the whole blue sky around the board
               (the illustrated backdrop paints its own sky, clouds and all) */}
           {closed &&
@@ -1886,6 +1917,23 @@ export default function BoardCanvas({
               illustrated backdrop has its own banner + compass baked in) */}
           {!board.backdrop && <RibbonSprite x={geo.W / 2} y={100} text="Lower East Side" />}
           {!board.backdrop && <CartoucheSprite x={geo.W - 165} y={geo.H - 175} s={1.5} />}
+        </>
+      ) : null,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [placingSquares, geo, board, closed],
+  );
+  // The whole board picture, shared by both engines: the designer wraps it in
+  // Leaflet's SVGOverlay; the flat player viewport puts it in a plain <svg>.
+  // Static chunks + dynamic game pieces, composed in the original paint order.
+  const sceneSvg =
+    placingSquares && geo ? (
+      <>
+        {sceneGround}
+        {sceneNodes}
+        {sceneFabric}
+        {sceneBars}
+        {sceneMisc}
+        {sceneSky}
       </>
     ) : null;
 

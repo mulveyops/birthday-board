@@ -82,7 +82,14 @@ export default function PanZoom({
       });
     }
   };
-  const commit = () => setView({ ...live.current });
+  // A pan leaves the scale untouched, and children consume ONLY the scale —
+  // the transform is painted imperatively. So a pan-only commit has nothing
+  // to tell React; skipping it keeps gesture-end free of re-render jank.
+  const commit = () =>
+    setView((prev) => {
+      const v = live.current;
+      return prev.s === v.s && prev.fit === v.fit ? prev : { ...v };
+    });
   // Committing re-renders React and re-rasterizes the SVG at the new scale -
   // real work. Do it after a quiet gap, so a follow-up gesture that starts
   // right away cancels it and never trips over the burst.

@@ -1440,26 +1440,32 @@ export default function App({
     }
     return '📍 Location unavailable — make sure Location Services are switched on for your browser, then try again.';
   }
-  function withProximity(target: { lat: number; lng: number }, cb: () => void) {
+  function withProximity(target: { lat: number; lng: number }, cb: () => void, ui?: { fail: (msg: string) => void }) {
     if (!cfg.gpsRequired(onlineConfig)) return cb(); // host setting — no player opt-out
+    // No ui hook (e.g. grabbing a drop) → the shared popup carries the pending
+    // state; the spot sheet reports inline via ui.fail instead.
+    if (!ui) setGpsPopup({ emoji: '📡', title: 'Checking your location…', body: 'Hold tight — getting a fresh GPS fix.' });
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const d = metersBetween({ lat: pos.coords.latitude, lng: pos.coords.longitude }, target);
-        if (d <= onlineConfig.radiusM) cb();
-        else {
-          // Accuracy + fix age turn a rejection into a diagnosable data point:
-          // "42m away, ±35m, 18s old" is Wi-Fi cache; "42m away, ±6m, 0s old" is real.
-          const ageS = Math.max(0, Math.round((Date.now() - pos.timestamp) / 1000));
-          setGpsPopup({
-            emoji: '☝️',
-            title: 'Not close enough!',
-            body: `You're ${Math.round(d)}m away — get within ${onlineConfig.radiusM}m of the spot. (fix ±${Math.round(pos.coords.accuracy)}m, ${ageS}s old)`,
-          });
+        if (d <= onlineConfig.radiusM) {
+          if (!ui) setGpsPopup(null);
+          cb();
+        } else {
+          const msg = `You're ${Math.round(d)}m away — get within ${onlineConfig.radiusM}m of the spot. (fix ±${Math.round(pos.coords.accuracy)}m)`;
+          if (ui) ui.fail(msg);
+          else setGpsPopup({ emoji: '☝️', title: 'Not close enough!', body: msg });
         }
       },
-      (err) => setGpsPopup({ emoji: '🛰️', title: 'Location trouble', body: geoErrorText(err) }),
-      // maximumAge: a fix from the last 20s is fine — walking speed, 35m radius.
-      { enableHighAccuracy: true, timeout: 12000, maximumAge: 20000 },
+      (err) => {
+        const msg = geoErrorText(err);
+        if (ui) ui.fail(msg);
+        else setGpsPopup({ emoji: '🛰️', title: 'Location trouble', body: msg });
+      },
+      // maximumAge 0 — NEVER accept a cached fix. The field test showed why:
+      // rejected at 36m, kept walking into the radius, and every retap for 20s
+      // got the same stale fix handed back.
+      { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 },
     );
   }
   // "Test my GPS" (menu): grabs a fix and reports accuracy + the nearest spot,
@@ -1503,12 +1509,24 @@ export default function App({
       { enableHighAccuracy: true, timeout: 12000 },
     );
   }
-  function onlineCheckIn(spotId: string) {
+  // Tap = information, always. The sheet shows what the spot is and who holds
+  // it; only its "I'm here" button runs the GPS gate and the actual play.
+  const [spotSheet, setSpotSheet] = useState<{ spotId: string } | null>(null);
+  const [sheetGps, setSheetGps] = useState<{ checking?: boolean; msg?: string } | null>(null);
+  function openSpotSheet(spotId: string) {
+    if (!membership || !onlineBoard) return;
+    if (!onlineBoard.squares.some((s) => s.id === spotId)) return;
+    setSheetGps(null);
+    setSpotSheet({ spotId });
+  }
+  /** The play itself — everything that used to happen on tap. Runs only after
+   * the sheet's action button passes the proximity gate. */
+  function runSpotAction(spotId: string) {
     if (!membership || !onlineBoard || onlineStatus !== 'live') return;
     const sq = onlineBoard.squares.find((s) => s.id === spotId);
     if (!sq) return;
     const type = onlineNodeType[spotId] ?? 'coin';
-    withProximity(sq, () => {
+    {
       // An armed trap? Third parties spring it (the two ambushers pass safely).
       const trap = spotAmbush[spotId];
       if (trap && trap.status === 'armed' && trap.initiator !== membership.teamId && trap.ally !== membership.teamId) {
@@ -1567,7 +1585,7 @@ export default function App({
         alert('Check-in failed: ' + (e as Error).message),
       );
       paintTurf(spotId);
-    });
+    }
   }
   // --- Turf steal handlers ---------------------------------------------------
   /** Deal n distinct bank questions; no bank published → coin-flip calls. */
@@ -3689,7 +3707,7 @@ export default function App({
           }}
           playActive={appMode === 'play' || appMode === 'online'}
           cleared={appMode === 'online' ? onlineCleared : play.cleared}
-          onCheckIn={appMode === 'online' ? onlineCheckIn : checkIn}
+          onCheckIn={appMode === 'online' ? openSpotSheet : checkIn}
           nodeType={appMode === 'play' ? nodeType : appMode === 'online' ? onlineNodeType : undefined}
           starBars={appMode === 'online' ? [] : play.starBars}
           spawns={appMode === 'online' ? activeSpawns : appMode === 'play' ? spawns : []}
@@ -4182,6 +4200,161 @@ export default function App({
                         </button>
                       </>
                     )}
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+        {spotSheet &&
+          membership &&
+          onlineBoard &&
+          (() => {
+            const spotId = spotSheet.spotId;
+            const sq = onlineBoard.squares.find((s) => s.id === spotId);
+            if (!sq) return null;
+            // start/finish are waypoint types on the square itself; play types
+            // come from the resolved node map.
+            const type: string = sq.type === 'start' || sq.type === 'finish' ? sq.type : (onlineNodeType[spotId] ?? 'coin');
+            const meta =
+              type === 'bar'
+                ? { emoji: '🍺', label: 'Star hub', color: '#f97316', blurb: `Buy a round here (${onlineConfig.starCost} 🪙) to claim a ⭐ for your team.` }
+                : type === 'chance'
+                  ? { emoji: '🎲', label: 'Chance', color: '#9a5fe0', blurb: 'Draw a card — anything can happen.' }
+                  : type === 'challenge'
+                    ? { emoji: '🧠', label: 'Challenge', color: '#2f7fe0', blurb: 'Answer trivia to earn coins.' }
+                    : type === 'bowser'
+                      ? { emoji: '🔥', label: 'Bowser', color: '#dc2626', blurb: 'A forced gauntlet — beat the challenge or lose coins.' }
+                      : type === 'start'
+                        ? { emoji: '🚩', label: 'Start', color: '#2fa05a', blurb: 'Where it all begins.' }
+                        : type === 'finish'
+                          ? { emoji: '🏁', label: 'Finish', color: '#2fa05a', blurb: 'The finish line.' }
+                          : { emoji: '🪙', label: 'Corner', color: '#b98a2f', blurb: 'Check in to collect coins and paint this corner your color.' };
+            const owner = territoryMap[spotId] && turfIds.has(spotId) ? territoryMap[spotId] : null;
+            const ownerTeam = owner ? teams.find((t) => t.id === owner) : null;
+            const ownerMine = owner === membership.teamId;
+            const reinforced = owner ? reinforcedSet.has(spotId) : false;
+            const claim = type === 'bar' ? starClaimRows.find((c) => c.bar_spot_id === spotId && c.status !== 'lost') : undefined;
+            const claimTeam = claim ? teams.find((t) => t.id === claim.team_id) : null;
+            const claimMine = claim?.team_id === membership.teamId;
+            const claimSecs = claim?.status === 'claiming' ? Math.max(0, Math.ceil((Date.parse(claim.ends_at) - nowTs) / 1000)) : 0;
+            const cleared = onlineCleared.includes(spotId);
+            const live = onlineStatus === 'live';
+            const gated = cfg.gpsRequired(onlineConfig);
+            const actionLabel =
+              type === 'bar'
+                ? claim && claim.status === 'claiming' && !claimMine
+                  ? "⚔️ I'm here — contest it"
+                  : "🍺 I'm here — open the bar"
+                : owner && !ownerMine
+                  ? "⚔️ I'm here — make the steal"
+                  : owner && ownerMine
+                    ? "🧱 I'm here — corner options"
+                    : type === 'chance'
+                      ? "🎲 I'm here — draw a card"
+                      : type === 'challenge'
+                        ? "🧠 I'm here — take it on"
+                        : type === 'bowser'
+                          ? "🔥 I'm here — face Bowser"
+                          : "✅ I'm here — check in";
+            const goHere = () => {
+              setSheetGps({ checking: true });
+              withProximity(
+                sq,
+                () => {
+                  setSpotSheet(null);
+                  setSheetGps(null);
+                  runSpotAction(spotId);
+                },
+                { fail: (msg) => setSheetGps({ msg }) },
+              );
+            };
+            return (
+              <div
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  background: 'rgba(20,16,12,0.42)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  zIndex: 1000,
+                }}
+                onClick={() => setSpotSheet(null)}
+              >
+                <div
+                  style={{
+                    width: 340,
+                    maxWidth: '90%',
+                    background: '#fdfaf2',
+                    border: '2px solid #3f3b36',
+                    borderRadius: 14,
+                    overflow: 'hidden',
+                    boxShadow: '0 14px 44px rgba(0,0,0,0.38)',
+                    animation: 'pop-in 0.24s cubic-bezier(0.2,0.85,0.35,1.2)',
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div style={{ background: meta.color, color: '#fff', padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <span style={{ fontSize: '1.9rem', lineHeight: 1 }}>{meta.emoji}</span>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontWeight: 800, fontSize: '1.05rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {sq.title || meta.label}
+                      </div>
+                      <div style={{ fontSize: '0.7rem', opacity: 0.92, textTransform: 'uppercase', letterSpacing: 1.5 }}>{meta.label}</div>
+                    </div>
+                  </div>
+                  <div style={{ padding: '16px 18px' }}>
+                    <p className="hint" style={{ marginTop: 0 }}>{meta.blurb}</p>
+                    {ownerTeam && (
+                      <p className="hint" style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                        <span
+                          style={{
+                            width: 12,
+                            height: 12,
+                            borderRadius: 4,
+                            background: teamColorOf(teams, ownerTeam.id),
+                            border: '1.5px solid #3f3b36',
+                            flex: '0 0 auto',
+                          }}
+                        />
+                        <span>
+                          Held by <b>{ownerTeam.name}</b>
+                          {ownerMine ? ' — that’s you!' : ''}
+                          {reinforced ? ' · 🧱 reinforced' : ''}
+                        </span>
+                      </p>
+                    )}
+                    {claim &&
+                      (claim.status === 'locked' ? (
+                        <p className="hint">
+                          ⭐ Star claimed by <b>{claimTeam?.name ?? 'another team'}</b> — locked in.
+                        </p>
+                      ) : (
+                        <p className="hint">
+                          ⭐ <b>{claimTeam?.name ?? 'A team'}</b> is buying a star — that ring is their meter, <b>{claimSecs}s</b> left.
+                          {claimMine ? ' Hold on!' : ' Get there and contest it before it locks!'}
+                        </p>
+                      ))}
+                    {cleared && !owner && <p className="hint">✅ Already cleared this game.</p>}
+                    {sheetGps?.checking && <p className="hint">📡 Checking your location…</p>}
+                    {sheetGps?.msg && <p className="hint" style={{ color: '#b45309', fontWeight: 600 }}>☝️ {sheetGps.msg}</p>}
+                    {live ? (
+                      <button className="btn btn--go" style={{ width: '100%' }} disabled={!!sheetGps?.checking} onClick={goHere}>
+                        {actionLabel}
+                      </button>
+                    ) : (
+                      <button className="btn btn--go" style={{ width: '100%' }} disabled>
+                        Game hasn't started yet
+                      </button>
+                    )}
+                    {gated && live && (
+                      <p className="hint" style={{ marginBottom: 0, fontSize: '0.72rem', opacity: 0.75 }}>
+                        📍 Checks your GPS — you need to be within {onlineConfig.radiusM}m.
+                      </p>
+                    )}
+                    <button className="btn btn--ghost" style={{ width: '100%', marginTop: 8 }} onClick={() => setSpotSheet(null)}>
+                      Close
+                    </button>
                   </div>
                 </div>
               </div>

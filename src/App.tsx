@@ -131,6 +131,14 @@ function teamColorOf(teams: { id: string }[], teamId: string): string {
   const i = teams.findIndex((t) => t.id === teamId);
   return TEAM_COLORS[(i >= 0 ? i : 0) % TEAM_COLORS.length];
 }
+/** Encounter kinds shown in the POI editor (emoji + short label). */
+const ENC_META: Record<string, { emoji: string; label: string }> = {
+  'star-bar': { emoji: '⭐', label: 'Star bar' },
+  h2h: { emoji: '⚔️', label: 'Head-to-head' },
+  challenge: { emoji: '🎯', label: 'Challenge' },
+  boss: { emoji: '🔥', label: 'Boss' },
+  landmark: { emoji: '📍', label: 'Landmark' },
+};
 /** Deterministic 0..1 from a string id — stable spot typing, no persistence. */
 function strHash01(s: string): number {
   let h = 2166136261;
@@ -2540,6 +2548,15 @@ export default function App({
   // Each tool category is a header button; one section open at a time. Bodies
   // stay mounted (hidden attr) so inputs keep state when collapsed.
   const [openSection, setOpenSection] = useState('setup');
+  // Which POI row is expanded in the Points-of-interest list editor.
+  const [openPoiId, setOpenPoiId] = useState<string | null>(null);
+  const poiSquares = useMemo(
+    () =>
+      board.squares
+        .filter((s) => s.type === 'poi' || s.type === 'bar')
+        .sort((a, b) => (a.title || '').localeCompare(b.title || '')),
+    [board.squares],
+  );
   const accHead = (id: string, title: string) => (
     <button
       type="button"
@@ -2930,11 +2947,6 @@ export default function App({
                   </button>
                 ))}
               </div>
-              {rosterMissing.length > 0 && (
-                <button className="btn" onClick={addRosterPois}>
-                  📍 Add the real POIs ({rosterMissing.length} missing)
-                </button>
-              )}
               {board.squares.some((s) => s.type !== 'blank') && (
                 <button className="btn btn--danger" onClick={clearSpots}>
                   Clear all spots
@@ -2985,6 +2997,130 @@ export default function App({
         )}
         </div>
 
+        {accHead('pois', '📍 Points of interest')}
+        <div className="acc-body" hidden={openSection !== 'pois'}>
+          {phase !== 'squares' ? (
+            <p className="hint">Finish Board setup first.</p>
+          ) : (
+            <section className="panel">
+              <h2>Points of interest ({poiSquares.length})</h2>
+              <p className="hint">
+                The real places of the board. Each gets a <b>story</b> (the blurb players read) and a <b>play</b> (its
+                encounter). Tap one to edit — changes ride the normal board save.
+              </p>
+              {rosterMissing.length > 0 && (
+                <button className="btn" onClick={addRosterPois}>
+                  📍 Add the real POIs ({rosterMissing.length} missing)
+                </button>
+              )}
+              <div style={{ maxHeight: 430, overflowY: 'auto', margin: '4px -4px 0', padding: '0 4px' }}>
+                {poiSquares.map((s) => {
+                  const enc = s.poi?.encounter ?? (s.type === 'bar' ? 'star-bar' : 'landmark');
+                  const em = ENC_META[enc] ?? ENC_META.landmark;
+                  const isOpen = openPoiId === s.id;
+                  const hasPlay = enc === 'h2h' || enc === 'challenge' || enc === 'boss';
+                  return (
+                    <div key={s.id} style={{ borderBottom: '1px solid rgba(63,59,54,0.15)', padding: '3px 0' }}>
+                      <button
+                        className="linkbtn"
+                        style={{ display: 'flex', width: '100%', justifyContent: 'space-between', alignItems: 'center', gap: 8, textAlign: 'left' }}
+                        onClick={() => {
+                          setOpenPoiId(isOpen ? null : s.id);
+                          setSelectedId(s.id);
+                        }}
+                      >
+                        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {em.emoji} <b>{s.title || '(untitled)'}</b>
+                        </span>
+                        <span style={{ flex: '0 0 auto', fontSize: '0.72rem', opacity: 0.75 }}>
+                          {em.label}
+                          {!s.poi?.blurb && ' · needs blurb'}
+                          {isOpen ? ' ▾' : ' ▸'}
+                        </span>
+                      </button>
+                      {isOpen && (
+                        <div style={{ padding: '4px 2px 8px' }}>
+                          <label className="field">
+                            <span>Title</span>
+                            <input value={s.title} onChange={(e) => updateSquare(s.id, { title: e.target.value })} />
+                          </label>
+                          <label className="field">
+                            <span>Type — Bar joins the ⭐ star rotation</span>
+                            <select
+                              value={s.type}
+                              onChange={(e) => updateSquare(s.id, { type: e.target.value as SquareType })}
+                            >
+                              <option value="poi">📍 Point of interest</option>
+                              <option value="bar">🍺 Bar (star rotation)</option>
+                            </select>
+                          </label>
+                          <label className="field">
+                            <span>Encounter</span>
+                            <select value={enc} onChange={(e) => updatePoi(s, { encounter: e.target.value as PoiProps['encounter'] })}>
+                              <option value="star-bar">⭐ Star bar (in the rotation)</option>
+                              <option value="h2h">⚔️ Head-to-head vs another team</option>
+                              <option value="challenge">🎯 Specific challenge to undertake</option>
+                              <option value="boss">🔥 Boss / set-piece</option>
+                              <option value="landmark">📍 Landmark (flavor only)</option>
+                            </select>
+                          </label>
+                          <label className="field">
+                            <span>Blurb — what players read when they tap it</span>
+                            <textarea
+                              rows={2}
+                              value={s.poi?.blurb ?? ''}
+                              placeholder={'e.g. Milwaukee legend since 1908 — home of "I Closed Wolski’s."'}
+                              onChange={(e) => updatePoi(s, { blurb: e.target.value || undefined })}
+                            />
+                          </label>
+                          {hasPlay && (
+                            <>
+                              <label className="field">
+                                <span>
+                                  {enc === 'h2h' ? 'The head-to-head — rules of the showdown' : enc === 'boss' ? 'The gauntlet — what teams face here' : 'The task — what a team must do here'}
+                                </span>
+                                <textarea
+                                  rows={3}
+                                  value={s.poi?.task ?? ''}
+                                  placeholder={
+                                    enc === 'h2h'
+                                      ? 'e.g. Both teams pick a champion: bags toss, closest to the board wins.'
+                                      : 'e.g. Order a cannoli and get the counter staff to say "happy birthday Abby & Steven."'
+                                  }
+                                  onChange={(e) => updatePoi(s, { task: e.target.value || undefined })}
+                                />
+                              </label>
+                              <label className="field">
+                                <span>Reward for winning it (🪙)</span>
+                                <input
+                                  type="number"
+                                  value={s.poi?.reward ?? 0}
+                                  onChange={(e) => updatePoi(s, { reward: Number(e.target.value) || undefined })}
+                                />
+                              </label>
+                            </>
+                          )}
+                          <label className="field">
+                            <span>Art asset key (bespoke sprite, optional)</span>
+                            <input
+                              value={s.poi?.artRef ?? ''}
+                              placeholder="e.g. hero_wolskis"
+                              onChange={(e) => updatePoi(s, { artRef: e.target.value || undefined })}
+                            />
+                          </label>
+                          <p className="hint" style={{ marginBottom: 0 }}>
+                            📍 It's selected on the map — drag its pin to reposition.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+                {poiSquares.length === 0 && <p className="hint">None yet — add the roster above.</p>}
+              </div>
+            </section>
+          )}
+        </div>
         {accHead('bars', '🍺 Real bars')}
         <div className="acc-body" hidden={openSection !== 'bars'}>
         {phase !== 'squares' ? (

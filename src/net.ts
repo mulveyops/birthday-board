@@ -1,5 +1,5 @@
 import type { Board, ChanceCard, TriviaQuestion } from './types';
-import { supabase, assertConfigured } from './supabase';
+import { supabase, assertConfigured, isConfigured } from './supabase';
 
 // ---------------------------------------------------------------------------
 // Slice-1 data access: publish a board → game, join a game by code.
@@ -1331,6 +1331,46 @@ export interface EventRow {
 export async function logEvent(gameId: string, type: string, text: string): Promise<void> {
   assertConfigured();
   await supabase.from('events').insert({ game_id: gameId, type, payload: { text } });
+}
+
+// Trivia answer log (supabase/trivia_answers.sql): analytics only — which
+// questions turned out hard, and how each team did. Nothing in the game reads
+// it back, so callers fire and forget.
+
+/** Where a question was asked. Steals are the high-pressure ones. */
+export type TriviaContext = 'spot' | 'bowser' | 'steal';
+
+/**
+ * Record one row per answered question. Unanswered questions (a modal closed
+ * early) are skipped. Never throws: a stats write must not interrupt play.
+ */
+export async function logTriviaAnswers(
+  gameId: string,
+  teamId: string,
+  context: TriviaContext,
+  spotId: string | null,
+  questions: TriviaQuestion[],
+  picks: Record<number, number>,
+): Promise<void> {
+  if (!isConfigured) return;
+  const rows = questions
+    .map((q, i) => ({ q, pick: picks[i] }))
+    .filter((r) => r.pick != null)
+    .map(({ q, pick }) => ({
+      game_id: gameId,
+      team_id: teamId,
+      context,
+      spot_id: spotId,
+      question_id: q.id ?? null,
+      question: q.q,
+      choices: q.choices,
+      pick,
+      correct: q.correct,
+      is_correct: pick === q.correct,
+    }));
+  if (!rows.length) return;
+  const { error } = await supabase.from('trivia_answers').insert(rows);
+  if (error) console.warn('trivia_answers insert failed', error.message);
 }
 
 export async function listEvents(gameId: string, limit = 25): Promise<EventRow[]> {

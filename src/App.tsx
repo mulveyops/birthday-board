@@ -30,6 +30,7 @@ import {
   lockStar,
   stealStarClaim,
   logEvent,
+  logTriviaAnswers,
   listEvents,
   subscribeEvents,
   getGameFull,
@@ -1734,6 +1735,7 @@ export default function App({
     if (questions.some((_, i) => stealPicks[i] == null)) return;
     const defName = teams.find((t) => t.id === defenderId)?.name ?? 'a team';
     const allRight = questions.every((q, i) => stealPicks[i] === q.correct);
+    logTriviaAnswers(membership.gameId, membership.teamId, 'steal', spotId, questions, stealPicks).catch(() => {});
     setStealBusy(true);
     try {
       if (allRight) {
@@ -1975,6 +1977,7 @@ export default function App({
     const correct = qs.reduce((n, q, i) => n + (quizPick[i] === q.correct ? 1 : 0), 0);
     const base = sq.reward > 0 ? sq.reward : onlineConfig.coinReward;
     const award = qs.length ? Math.round((base * correct) / qs.length) : base;
+    logTriviaAnswers(membership.gameId, membership.teamId, 'spot', sq.id, qs, quizPick).catch(() => {});
     setOnlineCleared((c) => (c.includes(sq.id) ? c : [...c, sq.id]));
     checkInSpot(membership.gameId, membership.teamId, sq.id, sq.lat, sq.lng, award).catch((e) =>
       alert('Check-in failed: ' + (e as Error).message),
@@ -1994,6 +1997,7 @@ export default function App({
     if (qs.length > 0 && !tier) {
       const correct = qs.reduce((n, q, i) => n + (quizPick[i] === q.correct ? 1 : 0), 0);
       loss = Math.round((penalty * (qs.length - correct)) / qs.length);
+      logTriviaAnswers(membership.gameId, membership.teamId, 'bowser', sq.id, qs, quizPick).catch(() => {});
     } else {
       loss = tier === 'nailed' ? 0 : tier === 'struggled' ? Math.round(penalty / 2) : penalty;
     }

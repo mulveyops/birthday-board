@@ -28,12 +28,15 @@ block sits.
   around it labelled. Those streets, their labels and the white circular game
   markers are already on the map. **Do not paint any of them.** Look at this
   image to understand which way the block faces, then set it aside.
-- `block-09-style-reference.png` — **the look to match.** A different block of
-  this same map, already painted and approved. Match its camera angle, its
-  outline weight, its colour temperature and its level of detail. Your block
-  will sit a short walk from it on the finished map, and the two need to look
-  like the same hand made them. Note what it does *not* contain: no streets,
-  no lettering, no map markers — only the block itself.
+- `block-09-style-reference.png` — **a texture sample: HOW to paint, never WHAT
+  to paint.** A close crop of ordinary housing from elsewhere on this map,
+  shown only so the whole board looks like one hand made it. Copy its camera
+  angle, outline weight, colour temperature, and how big a house and a tree
+  are relative to each other.
+  **None of the buildings in it belong on your block, and neither does its
+  layout.** It is a swatch, not a plan. Your block's contents are specified
+  below and they are different — if your painting ends up resembling this
+  crop, you have copied the wrong thing.
 
 > ## ⚠ OUTPUT SIZE: **604 × 372 px — LANDSCAPE, wider than it is tall**
 >
@@ -70,9 +73,9 @@ block sits.
 
 ## Style
 
-**Match `block-09-style-reference.png`.** It is another block of this same map,
-already approved, and it settles every question below. When this text and that
-image disagree, follow the image.
+**Paint in the manner of `block-09-style-reference.png`** — its brushwork, not its
+contents. Where this text and that image disagree about *how* something looks,
+follow the image; about *what* is on this block, this text is the only source.
 
 Warm, cartoony **board-game illustration** — the look of a modern tabletop map
 or a cosy city-builder, not a satellite photo and not a technical drawing.
@@ -152,6 +155,9 @@ windows.
   no white circular game markers. If you find yourself writing a street name,
   something has gone wrong — reread this brief.
 - Nothing from the neighbouring blocks: paint your block, not its surroundings.
+- **Nothing from the style sample.** Not its buildings, not its layout, not a
+  church or any other landmark that appears in it. It shows brushwork only;
+  every building on your block is listed in this brief and nowhere else.
 - Nothing outside the stencil. No drop shadows past the polygon edge.
 - No rounded corners, no inset border, no empty margin inside the stencil.
 - **Don't change the canvas shape.** 604 × 372 (1.62 : 1, landscape) — a

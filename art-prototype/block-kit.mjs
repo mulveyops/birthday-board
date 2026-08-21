@@ -623,12 +623,14 @@ for (const e of labeled) {
       `Corner tavern — a real Brady-area bar and a place people on this board actually walk into. Two-story corner building, tavern front at street level, warm lit windows, and a painted sign band reading "${full}" (readable text allowed for this name). Give it more character than anything around it: a bolder colour, an awning, a corner entrance cut across the corner.`,
   });
 }
-// The single most effective way to hold the style steady across 31 separate
-// chats is to show the painter a block we already accepted. Snapshot of the
-// approved block 11 art; regenerate with:
-//   sharp('art-prototype/blocks/block-11.png').resize(760) → style-reference.png
+// Holding one style across 31 separate chats needs a picture, not adjectives.
+// But a whole approved block as the sample gets COPIED — block 13 came back as
+// a near-replica of block 11, church and all — so the sample is a close crop of
+// plain housing with no landmark in it, and the brief hammers "how, not what".
+// Recut from an accepted block with:
+//   sharp(art).extract({ a landmark-free band }).resize(680) → style-reference.png
 const STYLE_REF = 'art-prototype/style-reference.png';
-const STYLE_REF_FROM_BLOCK = 11; // don't hand a block its own painting back
+const STYLE_REF_FROM_BLOCK = 11; // the block the sample was cut from
 const shipStyleRef = existsSync(STYLE_REF) && blockNum !== STYLE_REF_FROM_BLOCK;
 if (shipStyleRef) await sharp(STYLE_REF).png().toFile(share('style-reference.png'));
 
@@ -704,12 +706,15 @@ block sits.
   image to understand which way the block faces, then set it aside.${
     shipStyleRef
       ? `
-- \`${id}-style-reference.png\` — **the look to match.** A different block of
-  this same map, already painted and approved. Match its camera angle, its
-  outline weight, its colour temperature and its level of detail. Your block
-  will sit a short walk from it on the finished map, and the two need to look
-  like the same hand made them. Note what it does *not* contain: no streets,
-  no lettering, no map markers — only the block itself.`
+- \`${id}-style-reference.png\` — **a texture sample: HOW to paint, never WHAT
+  to paint.** A close crop of ordinary housing from elsewhere on this map,
+  shown only so the whole board looks like one hand made it. Copy its camera
+  angle, outline weight, colour temperature, and how big a house and a tree
+  are relative to each other.
+  **None of the buildings in it belong on your block, and neither does its
+  layout.** It is a swatch, not a plan. Your block's contents are specified
+  below and they are different — if your painting ends up resembling this
+  crop, you have copied the wrong thing.`
       : ''
   }${hardPois
     .filter((p) => p.ref)
@@ -755,7 +760,7 @@ block sits.
 
 ## Style
 
-${shipStyleRef ? `**Match \`${id}-style-reference.png\`.** It is another block of this same map,\nalready approved, and it settles every question below. When this text and that\nimage disagree, follow the image.\n\n` : ''}Warm, cartoony **board-game illustration** — the look of a modern tabletop map
+${shipStyleRef ? `**Paint in the manner of \`${id}-style-reference.png\`** — its brushwork, not its\ncontents. Where this text and that image disagree about *how* something looks,\nfollow the image; about *what* is on this block, this text is the only source.\n\n` : ''}Warm, cartoony **board-game illustration** — the look of a modern tabletop map
 or a cosy city-builder, not a satellite photo and not a technical drawing.
 
 - **Camera: strongly top-down.** Roofs dominate; walls are visible but
@@ -902,7 +907,14 @@ windows.
 - **No street names, no labels, no lettering of any kind on the ground**, and
   no white circular game markers. If you find yourself writing a street name,
   something has gone wrong — reread this brief.
-- Nothing from the neighbouring blocks: paint your block, not its surroundings.
+- Nothing from the neighbouring blocks: paint your block, not its surroundings.${
+    shipStyleRef
+      ? `
+- **Nothing from the style sample.** Not its buildings, not its layout, not a
+  church or any other landmark that appears in it. It shows brushwork only;
+  every building on your block is listed in this brief and nowhere else.`
+      : ''
+  }
 - Nothing outside the stencil. No drop shadows past the polygon edge.
 - No rounded corners, no inset border, no empty margin inside the stencil.
 - **Don't change the canvas shape.** ${cw} × ${ch} (${(cw / ch).toFixed(2)} : 1, ${cw < ch ? 'portrait' : cw > ch ? 'landscape' : 'square'}) — a

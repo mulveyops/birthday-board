@@ -42,6 +42,24 @@ export interface ChanceCard {
   amount: number;
 }
 
+/** Rich point-of-interest properties for real places (bars, landmarks).
+ * Edited in the designer; the player's spot sheet (and, as they're built,
+ * the encounter runtimes) read from it. */
+export interface PoiProps {
+  /** What happens here. star-bar = the ⭐ rotation (follows square TYPE
+   * 'bar'); h2h = head-to-head between teams; challenge = a specific task
+   * to undertake; boss = set-piece showdown; landmark = flavor only. */
+  encounter: 'star-bar' | 'h2h' | 'challenge' | 'boss' | 'landmark';
+  /** One-liner players read on the spot sheet — what IS this place? */
+  blurb?: string;
+  /** The play itself: the task/rules a team takes on here. */
+  task?: string;
+  /** Coins for winning/completing the play. */
+  reward?: number;
+  /** Bespoke art asset key (ChatGPT art pipeline), e.g. "hero_wolskis". */
+  artRef?: string;
+}
+
 export interface Square extends LatLng {
   id: string;
   type: SquareType;
@@ -49,6 +67,8 @@ export interface Square extends LatLng {
   notes: string;
   /** Coins awarded, or the magnitude/difficulty of the square. */
   reward: number;
+  /** Point-of-interest properties (bar/poi squares). */
+  poi?: PoiProps;
   /** One-off custom trivia written directly on this square; auto-scored in play. */
   questions?: TriviaQuestion[];
   /** Specific shared-bank questions picked for this spot (references, so bank

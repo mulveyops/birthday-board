@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import QRCode from 'qrcode';
 import BoardCanvas, { type Mode } from './BoardCanvas';
-import type { Board, ChanceCard, Edge, LatLng, Phase, Square, SquareType, TriviaQuestion } from './types';
+import type { Board, ChanceCard, Edge, LatLng, Phase, PoiProps, Square, SquareType, TriviaQuestion } from './types';
 import { SQUARE_TYPES, TYPE_ORDER } from './squareTypes';
 import { loadBoard, saveBoard, makeSquare, defaultBoard } from './boardStore';
 import { metersBetween, simplify, snapToStreetsFollowing, routeAlongStreets } from './snap';
@@ -2159,6 +2159,11 @@ export default function App({
   function updateSquare(id: string, patch: Partial<Square>) {
     setBoard((b) => ({ ...b, squares: b.squares.map((s) => (s.id === id ? { ...s, ...patch } : s)) }));
   }
+  /** Patch a square's POI properties, defaulting the encounter by type. */
+  function updatePoi(sq: Square, patch: Partial<PoiProps>) {
+    const base: PoiProps = sq.poi ?? { encounter: sq.type === 'bar' ? 'star-bar' : 'landmark' };
+    updateSquare(sq.id, { poi: { ...base, ...patch } });
+  }
   // --- Trivia question authoring (on a challenge square) ---------------------
   function patchQuestions(sq: Square, fn: (qs: TriviaQuestion[]) => TriviaQuestion[]) {
     updateSquare(sq.id, { questions: fn(sq.questions ? sq.questions.map((q) => ({ ...q, choices: [...q.choices] })) : []) });
@@ -3069,6 +3074,72 @@ export default function App({
                     placeholder="e.g. Count the ducks on the mural. More found = more 🪙."
                   />
                 </label>
+                {(selected.type === 'bar' || selected.type === 'poi') &&
+                  (() => {
+                    const enc = selected.poi?.encounter ?? (selected.type === 'bar' ? 'star-bar' : 'landmark');
+                    const hasPlay = enc === 'h2h' || enc === 'challenge' || enc === 'boss';
+                    return (
+                      <div className="quiz-editor">
+                        <span className="quiz-editor-label">📍 Point of interest</span>
+                        <p className="hint" style={{ marginTop: 2 }}>
+                          What this place IS and what happens here. The ⭐ star rotation follows the square <b>Type</b> ("Bar") —
+                          these fields add the story and the play.
+                        </p>
+                        <label className="field">
+                          <span>Encounter</span>
+                          <select value={enc} onChange={(e) => updatePoi(selected, { encounter: e.target.value as PoiProps['encounter'] })}>
+                            <option value="star-bar">⭐ Star bar (in the rotation)</option>
+                            <option value="h2h">⚔️ Head-to-head vs another team</option>
+                            <option value="challenge">🎯 Specific challenge to undertake</option>
+                            <option value="boss">🔥 Boss / set-piece</option>
+                            <option value="landmark">📍 Landmark (flavor only)</option>
+                          </select>
+                        </label>
+                        <label className="field">
+                          <span>Blurb — what players read when they tap it</span>
+                          <textarea
+                            rows={2}
+                            value={selected.poi?.blurb ?? ''}
+                            placeholder={'e.g. Milwaukee legend since 1908 — home of "I Closed Wolski’s."'}
+                            onChange={(e) => updatePoi(selected, { blurb: e.target.value || undefined })}
+                          />
+                        </label>
+                        {hasPlay && (
+                          <>
+                            <label className="field">
+                              <span>{enc === 'h2h' ? 'The head-to-head — rules of the showdown' : enc === 'boss' ? 'The gauntlet — what teams face here' : 'The task — what a team must do here'}</span>
+                              <textarea
+                                rows={3}
+                                value={selected.poi?.task ?? ''}
+                                placeholder={
+                                  enc === 'h2h'
+                                    ? 'e.g. Both teams pick a champion: bags toss, closest to the board wins.'
+                                    : 'e.g. Order a cannoli and get the counter staff to say "happy birthday Abby & Steven."'
+                                }
+                                onChange={(e) => updatePoi(selected, { task: e.target.value || undefined })}
+                              />
+                            </label>
+                            <label className="field">
+                              <span>Reward for winning it (🪙)</span>
+                              <input
+                                type="number"
+                                value={selected.poi?.reward ?? 0}
+                                onChange={(e) => updatePoi(selected, { reward: Number(e.target.value) || undefined })}
+                              />
+                            </label>
+                          </>
+                        )}
+                        <label className="field">
+                          <span>Art asset key (bespoke sprite, optional)</span>
+                          <input
+                            value={selected.poi?.artRef ?? ''}
+                            placeholder="e.g. hero_wolskis"
+                            onChange={(e) => updatePoi(selected, { artRef: e.target.value || undefined })}
+                          />
+                        </label>
+                      </div>
+                    );
+                  })()}
                 {(selected.type === 'challenge' || selected.type === 'bowser') && (
                   <div className="quiz-editor">
                     <span className="quiz-editor-label">
@@ -4323,12 +4394,21 @@ export default function App({
             const spotId = spotSheet.spotId;
             const sq = onlineBoard.squares.find((s) => s.id === spotId);
             if (!sq) return null;
-            // start/finish are waypoint types on the square itself; play types
-            // come from the resolved node map.
-            const type: string = sq.type === 'start' || sq.type === 'finish' ? sq.type : (onlineNodeType[spotId] ?? 'coin');
+            // start/finish/poi are waypoint types on the square itself; play
+            // types come from the resolved node map.
+            const type: string =
+              sq.type === 'start' || sq.type === 'finish' || sq.type === 'poi' ? sq.type : (onlineNodeType[spotId] ?? 'coin');
             const meta =
               type === 'bar'
                 ? { emoji: '🍺', label: 'Star hub', color: '#f97316', blurb: `Buy a round here (${onlineConfig.starCost} 🪙) to claim a ⭐ for your team.` }
+                : type === 'poi'
+                  ? sq.poi?.encounter === 'h2h'
+                    ? { emoji: '⚔️', label: 'Head-to-head', color: '#e0533a', blurb: 'Challenge another team to a showdown here.' }
+                    : sq.poi?.encounter === 'challenge'
+                      ? { emoji: '🎯', label: 'Challenge site', color: '#2f7fe0', blurb: 'A specific task to take on at this spot.' }
+                      : sq.poi?.encounter === 'boss'
+                        ? { emoji: '🔥', label: 'Boss', color: '#dc2626', blurb: 'A set-piece showdown.' }
+                        : { emoji: '📍', label: 'Point of interest', color: '#e05fa0', blurb: 'A neighborhood landmark.' }
                 : type === 'chance'
                   ? { emoji: '🎲', label: 'Chance', color: '#9a5fe0', blurb: 'Draw a card — anything can happen.' }
                   : type === 'challenge'
@@ -4415,7 +4495,13 @@ export default function App({
                     </div>
                   </div>
                   <div style={{ padding: '16px 18px' }}>
-                    <p className="hint" style={{ marginTop: 0 }}>{meta.blurb}</p>
+                    <p className="hint" style={{ marginTop: 0 }}>{sq.poi?.blurb || meta.blurb}</p>
+                    {sq.poi?.task && (sq.poi.encounter === 'h2h' || sq.poi.encounter === 'challenge' || sq.poi.encounter === 'boss') && (
+                      <p className="hint">
+                        🎯 <b>The play here:</b> {sq.poi.task}
+                        {sq.poi.reward ? ` (+${sq.poi.reward} 🪙)` : ''}
+                      </p>
+                    )}
                     {ownerTeam && (
                       <p className="hint" style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
                         <span

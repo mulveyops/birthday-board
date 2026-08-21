@@ -20,7 +20,7 @@ export default function Home() {
         </div>
       </div>
 
-      <div style={{ display: 'flex', gap: 14, justifyContent: 'center' }}>
+      <div className="site-corner-links">
         <button className="site-admin-link" onClick={() => navigate('/ref')}>
           referee
         </button>

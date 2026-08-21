@@ -177,6 +177,18 @@ body {
   font-family: inherit;
   font-size: 0.78rem;
 }
+/* Several corner links side by side: the WRAPPER takes the corner and the
+   links flow inside it instead of all pinning to the same spot. */
+.site-corner-links {
+  position: absolute;
+  bottom: 12px;
+  right: 14px;
+  display: flex;
+  gap: 18px;
+}
+.site-corner-links .site-admin-link {
+  position: static;
+}
 
 /* RSVP form fields */
 .rsvp-field {

@@ -23,9 +23,17 @@ block sits.
 - `block-22-canvas.png` — **the stencil.** The white shape is the real block:
   the part of your painting we keep. Everything outside it is cut away. It is
   the exact size your painting must be.
-- `block-22-context.png` — where this block sits on the map, its paintable area
-  washed red, with the surrounding streets labelled. Reference only: do not
-  paint anything you see in it.
+- `block-22-context.png` — **orientation only, never a thing to copy.** It shows
+  where this block sits on the finished map, washed red, with the streets
+  around it labelled. Those streets, their labels and the white circular game
+  markers are already on the map. **Do not paint any of them.** Look at this
+  image to understand which way the block faces, then set it aside.
+- `block-22-style-reference.png` — **the look to match.** A different block of
+  this same map, already painted and approved. Match its camera angle, its
+  outline weight, its colour temperature and its level of detail. Your block
+  will sit a short walk from it on the finished map, and the two need to look
+  like the same hand made them. Note what it does *not* contain: no streets,
+  no lettering, no map markers — only the block itself.
 
 > ## ⚠ OUTPUT SIZE: **580 × 1712 px — PORTRAIT, taller than it is wide**
 >
@@ -42,23 +50,18 @@ block sits.
   final size on the board canvas (145 × 428 px at position x 1033, y 1074 on the
   1875 × 2048 base) — we downscale and place it; paint at this working size so
   detail survives.
-- **Paint the whole rectangle, corner to corner — no transparency, no
-  margin, no rounded card.** Do not try to reproduce the block's outline
-  yourself. We cut the exact shape out afterwards with the stencil, and we can
-  only cut away what you painted: any bare pixel you leave becomes a hole in
-  the map.
-- **The stencil says which part of your painting will be SEEN.** In the
-  attached `block-22-canvas.png` (same 580 × 1712), the white area is the real
-  block — its true shape, traced from the map, including the sidewalk that
-  runs to the kerb. Everything outside the white gets discarded.
-  - **Every building, tree and detail you care about must sit inside the
-    white area**, comfortably clear of its edge. Anything crossing that edge
-    is sliced in half on the finished map.
-  - **Outside the white, paint plain ground only** — grass, paving, nothing
-    with a shape worth losing. It is there so the cut has something to bite
-    into, and you will never see it again.
-- The roads, their dark outlines and the white game spots belong to the base
-  map — do not draw them.
+- **You are painting ONE BLOCK — the land between the streets. You are not
+  painting a map.** No roads, no street names, no labels, no markers, no
+  neighbouring blocks. Those already exist and yours must not duplicate them.
+- **The white shape in `block-22-canvas.png` is what you are painting**: the real
+  block, traced from the map, including its own sidewalk out to the kerb.
+  Every building, tree and detail must sit inside it, comfortably clear of the
+  edge — anything crossing that edge gets sliced in half on the finished map.
+- **Let the ground — and only the ground — spill about 69 px past that
+  edge.** Grass, hedge, paving: no buildings, no roads, nothing with a shape.
+  We cut along the white edge exactly, and that spill means the cut lands on
+  your paint instead of leaving a bare seam beside the road. Outside the
+  spill, leave the canvas empty.
 - **The perimeter band of your painting is the sidewalk/terrace zone** (~6 m
   ≈ 42 px wide): paint your own sidewalk paving there, with the street
   trees in the grass terrace strip alongside it.
@@ -66,6 +69,10 @@ block sits.
   flat ≈ 118 × 56 px; a street tree canopy ~8 m ≈ 56 px across).
 
 ## Style
+
+**Match `block-22-style-reference.png`.** It is another block of this same map,
+already approved, and it settles every question below. When this text and that
+image disagree, follow the image.
 
 Warm, cartoony **board-game illustration** — the look of a modern tabletop map
 or a cosy city-builder, not a satellite photo and not a technical drawing.
@@ -149,8 +156,13 @@ windows.
 
 ## Don'ts
 
-- No roads, crosswalks, cars-on-the-road, or game spots — the road surface and
-  its dark outline are the base map's.
+- **No streets.** No road surface, kerb line, crosswalk, centre line, or car
+  driving on one. The map already has its roads; a second set painted on top
+  of them is the single worst outcome here.
+- **No street names, no labels, no lettering of any kind on the ground**, and
+  no white circular game markers. If you find yourself writing a street name,
+  something has gone wrong — reread this brief.
+- Nothing from the neighbouring blocks: paint your block, not its surroundings.
 - Nothing outside the stencil. No drop shadows past the polygon edge.
 - No rounded corners, no inset border, no empty margin inside the stencil.
 - **Don't change the canvas shape.** 580 × 1712 (0.34 : 1, portrait) — a

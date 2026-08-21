@@ -944,6 +944,10 @@ const otherPois = namedPois.filter((p) => {
       }
       if (score < bestScore) { bestScore = score; best = c; }
     }
+    // On a small block every candidate can fall off the canvas, and a label
+    // drawn off the edge is simply invisible — block 20's landmark came back
+    // numbered but unnamed. Pull it back inside and sit it on the box.
+    if (bestScore >= 1000) best = { x: Math.min(Math.max(b.x + 8, 8), cw - est - 8), y: b.y + Math.min(b.h - 10, 34), anchor: 'start' };
     plan +=
       `<text x="${best.x}" y="${best.y}" font-size="30" font-family="Arial" font-weight="bold" fill="#7f1d1d" text-anchor="${best.anchor}" ` +
       `stroke="#ffffff" stroke-width="7" paint-order="stroke">${label}</text>`;
@@ -967,8 +971,10 @@ const otherPois = namedPois.filter((p) => {
   // chats drifted to double size without one.
   const barPx = Math.round(20 / mPerWorkPx);
   const barX = 24, barY = barTop;
+  // shrink the caption rather than let it run off a narrow block's canvas
+  const capSize = Math.max(15, Math.min(28, Math.floor((cw - 28) / (caption.length * 0.52))));
   const legend =
-    `<text x="${cw / 2}" y="${capY}" font-size="28" font-family="Arial" font-weight="bold" fill="#7f1d1d" text-anchor="middle" stroke="#fff" stroke-width="7" paint-order="stroke">${caption}</text>` +
+    `<text x="${cw / 2}" y="${capY}" font-size="${capSize}" font-family="Arial" font-weight="bold" fill="#7f1d1d" text-anchor="middle" stroke="#fff" stroke-width="${Math.max(4, Math.round(capSize / 4))}" paint-order="stroke">${caption}</text>` +
     `<rect x="${barX}" y="${barY}" width="${barPx}" height="14" fill="#111827" stroke="#ffffff" stroke-width="3"/>` +
     `<text x="${barX}" y="${barY - 10}" font-size="26" font-family="Arial" font-weight="bold" fill="#111827" stroke="#fff" stroke-width="6" paint-order="stroke">20 m — a house is about this wide</text>`;
   await sharp(shapePng)

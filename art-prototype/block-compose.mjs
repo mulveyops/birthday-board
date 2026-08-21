@@ -270,8 +270,83 @@ async function compareVersions(nn) {
  * stencil is covered. It only ever repeats colour already at the edge (grass,
  * sidewalk, hedge), so it reads as the art continuing to the kerb.
  */
+/**
+ * Some deliveries come back with an opaque WHITE background behind a rounded
+ * block shape instead of transparency. The stencil then faithfully keeps that
+ * white, and it lands on the board as bright wedges in the block's corners —
+ * and the bleed can't help, because as far as it can tell the pixel is
+ * painted. So: flood in from the border over near-white pixels only, and
+ * knock them back to transparent for the bleed to fill properly.
+ */
+function dropWhiteBackground(art, w, h) {
+  const nearWhite = (i) => {
+    const r = art[i * 4], g = art[i * 4 + 1], b = art[i * 4 + 2];
+    // bright AND essentially colourless — the cream sidewalk (216,199,143) has a
+    // strong yellow cast and is never caught by this
+    return art[i * 4 + 3] >= 128 && r >= 238 && g >= 238 && b >= 238 && Math.max(r, g, b) - Math.min(r, g, b) <= 9;
+  };
+  const seen = new Uint8Array(w * h);
+  const stack = [];
+  for (let x = 0; x < w; x++) { stack.push(x, (h - 1) * w + x); }
+  for (let y = 0; y < h; y++) { stack.push(y * w, y * w + w - 1); }
+  let dropped = 0;
+  while (stack.length) {
+    const p = stack.pop();
+    if (seen[p] || !nearWhite(p)) continue;
+    seen[p] = 1;
+    art[p * 4 + 3] = 0;
+    dropped++;
+    const x = p % w, y = (p / w) | 0;
+    if (x > 0) stack.push(p - 1);
+    if (x < w - 1) stack.push(p + 1);
+    if (y > 0) stack.push(p - w);
+    if (y < h - 1) stack.push(p + w);
+  }
+  return dropped;
+}
+
 async function bleedToStencil(artPng, maskPng, w, h, nn, quiet = false) {
   const art = await sharp(artPng).ensureAlpha().raw().toBuffer();
+  const whited = dropWhiteBackground(art, w, h);
+  if (whited && !quiet) console.log(`  block ${nn}: dropped ${whited}px of white background the delivery painted behind the block`);
+  // How much of the block the delivery actually covered, measured BEFORE the
+  // deliberate trim below — this is the quality signal worth watching, and
+  // folding our own trim into it would make every block look worse than it is.
+  const maskPre = await sharp(maskPng).ensureAlpha().raw().toBuffer();
+  let asDelivered = 0, stencilPx = 0;
+  for (let i = 0; i < w * h; i++) {
+    if (maskPre[i * 4 + 3] < 128) continue;
+    stencilPx++;
+    if (art[i * 4 + 3] < 128) asDelivered++;
+  }
+  // Shave the outermost ring of the delivery and let the bleed rebuild it from
+  // the colour just inside. The very edge of a delivered painting is where the
+  // junk lives — anti-aliased halos, a leftover pale fringe, the last of a
+  // white background — and regrowing it costs nothing visually.
+  {
+    const TRIM = 2;
+    let edge = new Uint8Array(w * h);
+    for (let y = 0; y < h; y++)
+      for (let x = 0; x < w; x++) {
+        const i = y * w + x;
+        if (art[i * 4 + 3] < 128) continue;
+        if (x === 0 || y === 0 || x === w - 1 || y === h - 1) { edge[i] = 1; continue; }
+        if (art[(i - 1) * 4 + 3] < 128 || art[(i + 1) * 4 + 3] < 128 ||
+            art[(i - w) * 4 + 3] < 128 || art[(i + w) * 4 + 3] < 128) edge[i] = 1;
+      }
+    for (let pass = 0; pass < TRIM; pass++) {
+      const next = new Uint8Array(w * h);
+      for (let i = 0; i < w * h; i++) if (edge[i]) art[i * 4 + 3] = 0;
+      for (let y = 1; y < h - 1; y++)
+        for (let x = 1; x < w - 1; x++) {
+          const i = y * w + x;
+          if (art[i * 4 + 3] < 128) continue;
+          if (art[(i - 1) * 4 + 3] < 128 || art[(i + 1) * 4 + 3] < 128 ||
+              art[(i - w) * 4 + 3] < 128 || art[(i + w) * 4 + 3] < 128) next[i] = 1;
+        }
+      edge = next;
+    }
+  }
   const mask = await sharp(maskPng).ensureAlpha().raw().toBuffer();
   const inStencil = (i) => mask[i * 4 + 3] >= 128;
   const painted = new Uint8Array(w * h);
@@ -308,7 +383,11 @@ async function bleedToStencil(artPng, maskPng, w, h, nn, quiet = false) {
     }
   }
   const pct = ((before / (w * h)) * 100).toFixed(1);
-  if (!quiet) console.log(`  block ${nn}: art left ${before}px (${pct}% of bbox) of the stencil bare — bled to fill${bare ? `, ${bare}px still bare` : ''}`);
+  if (!quiet)
+    console.log(
+      `  block ${nn}: delivery covered ${(100 - (100 * asDelivered) / stencilPx).toFixed(1)}% of the block` +
+        `${bare ? `, ${bare}px still bare after bleeding` : ``}`,
+    );
   return sharp(art, { raw: { width: w, height: h, channels: 4 } }).png().toBuffer();
 }
 

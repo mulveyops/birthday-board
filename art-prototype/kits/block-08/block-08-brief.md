@@ -50,16 +50,17 @@ Bounded by:
 See `block-08-context.png` — your block outlined in red dashes on the actual base
 map (shown at 2×), so you can see the street geometry your edges meet.
 
-## The landmark — paint this first, and paint it BIG
+## No landmark here — this block is background
 
-_No named landmarks on this block — this one is pure neighborhood fabric, so let it be quiet and even._
+Nothing on this block is a landmark, and that is the point. It is the ordinary
+neighbourhood fabric that makes the landmark blocks elsewhere on the board feel
+special, so keep it **even and unshowy**: no invented hero building, no
+attention-grabbing centrepiece, no one house obviously fancier than the rest.
+Pleasant, lived-in, quiet.
 
-## Everything else is supporting cast
+## Other named places here
 
-Named real places on this block (get the buildings right, no signage needed
-unless noted above):
-
-- (none besides the above)
+_Nothing else on this block is named — it is all ordinary housing._
 
 ## Texture guidance — paint the vibe, counts are approximate
 

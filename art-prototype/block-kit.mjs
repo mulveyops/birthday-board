@@ -595,9 +595,10 @@ const otherPois = namedPois.filter((p) => {
     return shares && near;
   });
 });
-const poiLines = otherPois.length
-  ? otherPois.map((p) => `- **${p.name}**${p.what ? ` (${p.what})` : ''} — around (${p.px[0]}, ${p.px[1]})`).join('\n')
-  : '- (none besides the above)';
+// only rendered when there are any — the empty case gets its own sentence
+const poiLines = otherPois
+  .map((p) => `- **${p.name}**${p.what ? ` (${p.what})` : ''} — around (${p.px[0]}, ${p.px[1]})`)
+  .join('\n');
 
 const brief = `# ${id} — art brief
 
@@ -651,11 +652,11 @@ ${'Bounded by:'}
 See \`${id}-context.png\` — your block outlined in red dashes on the actual base
 map (shown at 2×), so you can see the street geometry your edges meet.
 
-## The landmark${hardPois.length > 1 ? 's' : ''} — paint ${hardPois.length > 1 ? 'these' : 'this'} first, and paint ${hardPois.length > 1 ? 'them' : 'it'} BIG
-
 ${
   hardPois.length
-    ? `This is a game board. ${hardPois.length > 1 ? 'These are places' : 'This is a place'} players physically walk to,
+    ? `## The landmark${hardPois.length > 1 ? 's' : ''} — paint ${hardPois.length > 1 ? 'these' : 'this'} first, and paint ${hardPois.length > 1 ? 'them' : 'it'} BIG
+
+This is a game board. ${hardPois.length > 1 ? 'These are places' : 'This is a place'} players physically walk to,
 so ${hardPois.length > 1 ? 'they have' : 'it has'} to be the thing the eye lands on first — not one building among many.
 **Deliberately exaggerate ${hardPois.length > 1 ? 'them' : 'it'}.** Real-world proportions are the wrong
 instinct here; a landmark painted at its true size vanishes into the houses.
@@ -689,29 +690,41 @@ your camera.`
     }`,
   )
   .join('\n\n')}`
-    : '_No named landmarks on this block — this one is pure neighborhood fabric, so let it be quiet and even._'
-}
+    : `## No landmark here — this block is background
 
-## Everything else is supporting cast
+Nothing on this block is a landmark, and that is the point. It is the ordinary
+neighbourhood fabric that makes the landmark blocks elsewhere on the board feel
+special, so keep it **even and unshowy**: no invented hero building, no
+attention-grabbing centrepiece, no one house obviously fancier than the rest.
+Pleasant, lived-in, quiet.`
+}
 
 ${
   hardPois.length
-    ? `${
-        hardPois.length > 1
-          ? `Those ${hardPois.length} are the focal points of this block — nothing else competes with
+    ? `## Everything else is supporting cast
+
+${
+  hardPois.length > 1
+    ? `Those ${hardPois.length} are the focal points of this block — nothing else competes with
 them.`
-          : `That one building is the focal point of this block — nothing else competes
+    : `That one building is the focal point of this block — nothing else competes
 with it.`
-      } The rest of the block is deliberately **quieter**: ordinary houses,
+} The rest of the block is deliberately **quieter**: ordinary houses,
 simpler roofs, less saturated colours, no second attention-grabber. Thin the
 fabric rather than packing buildings in — the landmark${hardPois.length > 1 ? 's have' : ' has'} earned the space.
 
 `
     : ''
-}Named real places on this block (get the buildings right, no signage needed
-unless noted above):
+}## Other named places here
 
-${poiLines}
+${
+  otherPois.length
+    ? `Real addresses on this block. Get the building type right; they need no
+signage${hardPois.length ? ' — only the landmark above carries readable text' : ' and no readable text'}.
+
+${poiLines}`
+    : '_Nothing else on this block is named — it is all ordinary housing._'
+}
 
 ## Texture guidance — paint the vibe, counts are approximate
 

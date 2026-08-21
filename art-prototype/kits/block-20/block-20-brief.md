@@ -86,10 +86,9 @@ with it. The rest of the block is deliberately **quieter**: ordinary houses,
 simpler roofs, less saturated colours, no second attention-grabber. Thin the
 fabric rather than packing buildings in — the landmark has earned the space.
 
-Named real places on this block (get the buildings right, no signage needed
-unless noted above):
+## Other named places here
 
-- (none besides the above)
+_Nothing else on this block is named — it is all ordinary housing._
 
 ## Texture guidance — paint the vibe, counts are approximate
 

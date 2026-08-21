@@ -80,8 +80,10 @@ with it. The rest of the block is deliberately **quieter**: ordinary houses,
 simpler roofs, less saturated colours, no second attention-grabber. Thin the
 fabric rather than packing buildings in — the landmark has earned the space.
 
-Named real places on this block (get the buildings right, no signage needed
-unless noted above):
+## Other named places here
+
+Real addresses on this block. Get the building type right; they need no
+signage — only the landmark above carries readable text.
 
 - **Arlington Place** (apartments) — around (55, 841)
 

@@ -257,7 +257,7 @@ const kitDir = `art-prototype/kits/${id}`;
 mkdirSync(kitDir, { recursive: true });
 // clear old landmark references — a renamed slug would otherwise leave a stale
 // image in the folder and get handed to ChatGPT alongside the current one
-for (const f of readdirSync(kitDir)) if (f.endsWith('-reference.png')) rmSync(`${kitDir}/${f}`);
+for (const f of readdirSync(kitDir)) if (f.endsWith('-reference.png') || f.endsWith('-layout.png')) rmSync(`${kitDir}/${f}`);
 const share = (suffix) => `${kitDir}/${id}-${suffix}`;
 // local work-canvas coords (WORK_SCALE× the bbox, origin at bbox top-left)
 const LX = (v) => (PXx(v) - bx1) * WORK_SCALE;
@@ -684,6 +684,82 @@ const otherPois = namedPois.filter((p) => {
   });
 });
 // only rendered when there are any — the empty case gets its own sentence
+// --- output 4: the layout plan ---------------------------------------------
+// Text kept losing to pictures: the style swatch shows ordinary houses, so
+// block 13 came back as ordinary houses however loudly the words asked for
+// three taverns. So the landmark requirement gets a picture of its own —
+// the block's shape with each landmark drawn where it goes, at the size it
+// should be. Only for blocks that have landmarks; fabric blocks don't need it.
+if (hardPois.length) {
+  const shape = Buffer.alloc(bw * bh * 4);
+  for (let y = 0; y < bh; y++)
+    for (let x = 0; x < bw; x++)
+      if (maskBits[(by1 + y) * pxW + bx1 + x]) shape.writeUInt32LE(0xffe8eef0, (y * bw + x) * 4); // pale block
+  const shapePng = await sharp(shape, { raw: { width: bw, height: bh, channels: 4 } })
+    .resize(cw, ch, { kernel: 'nearest' })
+    .png()
+    .toBuffer();
+  const boxes = hardPois.map((p) => {
+    const [x, y] = p.px;
+    // keep the drawn box on the canvas — an anchor near a corner otherwise
+    // pushes half the rectangle off the edge and reads as a smaller building
+    const w = Math.min(p.size.pxW, cw), h = Math.min(p.size.pxH, ch);
+    return {
+      x: Math.max(0, Math.min(cw - w, x - w / 2)),
+      y: Math.max(0, Math.min(ch - h, y - h / 2)),
+      w,
+      h,
+      cx: x,
+      cy: y,
+    };
+  });
+  let plan = '';
+  boxes.forEach((b, i) => {
+    plan +=
+      `<rect x="${b.x}" y="${b.y}" width="${b.w}" height="${b.h}" fill="#dc2626" fill-opacity="0.28" stroke="#b91c1c" stroke-width="5"/>` +
+      `<circle cx="${b.x + b.w / 2}" cy="${b.y + b.h / 2}" r="26" fill="#b91c1c"/>` +
+      `<text x="${b.x + b.w / 2}" y="${b.y + b.h / 2 + 11}" font-size="32" font-family="Arial" font-weight="bold" fill="#fff" text-anchor="middle">${i + 1}</text>`;
+  });
+  // Labels go wherever they collide least: try each side of the box, score by
+  // overlap with the other boxes and by falling off the canvas, take the best.
+  const LH = 34;
+  boxes.forEach((b, i) => {
+    const label = `${i + 1}. ${hardPois[i].name.replace(/&/g, '&amp;')}`;
+    const est = label.length * 15;
+    const cands = [
+      { x: b.x + b.w / 2, y: b.y - 16, anchor: 'middle' },
+      { x: b.x + b.w / 2, y: b.y + b.h + LH, anchor: 'middle' },
+      { x: b.x - 12, y: b.y + b.h / 2, anchor: 'end' },
+      { x: b.x + b.w + 12, y: b.y + b.h / 2, anchor: 'start' },
+    ];
+    let best = cands[0], bestScore = Infinity;
+    for (const c of cands) {
+      const x1 = c.anchor === 'middle' ? c.x - est / 2 : c.anchor === 'end' ? c.x - est : c.x;
+      const r = { x: x1, y: c.y - LH, w: est, h: LH };
+      let score = 0;
+      if (r.x < 4 || r.x + r.w > cw - 4 || r.y < 4 || r.y + r.h > ch - 4) score += 1000;
+      for (const o of boxes) {
+        const ox = Math.max(0, Math.min(r.x + r.w, o.x + o.w) - Math.max(r.x, o.x));
+        const oy = Math.max(0, Math.min(r.y + r.h, o.y + o.h) - Math.max(r.y, o.y));
+        score += ox * oy;
+      }
+      if (score < bestScore) { bestScore = score; best = c; }
+    }
+    plan +=
+      `<text x="${best.x}" y="${best.y}" font-size="30" font-family="Arial" font-weight="bold" fill="#7f1d1d" text-anchor="${best.anchor}" ` +
+      `stroke="#ffffff" stroke-width="7" paint-order="stroke">${label}</text>`;
+  });
+  // put the caption in whichever end of the canvas no landmark box reaches
+  const topClear = boxes.every((b) => b.y > 90);
+  const legend =
+    `<text x="${cw / 2}" y="${topClear ? 46 : ch - 18}" font-size="28" font-family="Arial" font-weight="bold" fill="#7f1d1d" text-anchor="middle" stroke="#fff" stroke-width="7" paint-order="stroke">` +
+    `${hardPois.length === 1 ? 'Where the landmark goes' : `Where the ${hardPois.length} landmarks go`} — everything else is ordinary houses</text>`;
+  await sharp(shapePng)
+    .composite([{ input: Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${cw}" height="${ch}">${plan}${legend}</svg>`), left: 0, top: 0 }])
+    .png()
+    .toFile(share('layout.png'));
+}
+
 const poiLines = otherPois
   .map((p) => `- **${p.name}**${p.what ? ` (${p.what})` : ''} — around (${p.px[0]}, ${p.px[1]})`)
   .join('\n');
@@ -718,6 +794,14 @@ block sits.
   around it labelled. Those streets, their labels and the white circular game
   markers are already on the map. **Do not paint any of them.** Look at this
   image to understand which way the block faces, then set it aside.${
+    hardPois.length
+      ? `
+- \`${id}-layout.png\` — **the plan: where the ${hardPois.length > 1 ? `${hardPois.length} landmarks go` : 'landmark goes'}.** The block's shape
+  with ${hardPois.length > 1 ? 'each' : 'the'} landmark drawn as a numbered red box, at its position and roughly
+  its size. Everything not inside a red box is ordinary housing. **This is the
+  layout to follow.** The style sample below is not a layout.`
+      : ''
+  }${
     shipStyleRef
       ? `
 - \`${id}-style-reference.png\` — **a texture sample: HOW to paint, never WHAT
@@ -939,6 +1023,27 @@ windows.
 - **Don't paint the landmark${hardPois.length > 1 ? 's' : ''} at realistic size.** Undersized is the one failure
   that makes the whole block useless to us — when in doubt, go bigger.
 - Don't give a plain house a feature interesting enough to compete with it.`
+      : ''
+  }${
+    hardPois.length
+      ? `
+
+## Before you call it finished
+
+The last thing to do, and the one that matters most. Check the painting against
+this list — ${hardPois.length > 1 ? 'each of these is' : 'this is'} a real place people walk to in this game, and a block
+missing ${hardPois.length > 1 ? 'one' : 'it'} is unusable to us however good the rest looks. It is by far the
+most common way these come back wrong.
+
+${hardPois
+  .map(
+    (p) =>
+      `- [ ] **${p.name}** is in the painting, near canvas px (${p.px[0]}, ${p.px[1]}), roughly ${p.size.pxW} × ${p.size.pxH} px, and obviously bigger and more interesting than the houses around it.`,
+  )
+  .join('\n')}
+- [ ] Nothing in a red box on the layout plan has been left out.
+- [ ] The canvas is ${cw} × ${ch} px.
+- [ ] No streets, no lettering other than the name${hardPois.length > 1 ? 's' : ''} above, no map markers.`
       : ''
   }
 `;

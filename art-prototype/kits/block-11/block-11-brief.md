@@ -28,6 +28,10 @@ block sits.
   around it labelled. Those streets, their labels and the white circular game
   markers are already on the map. **Do not paint any of them.** Look at this
   image to understand which way the block faces, then set it aside.
+- `block-11-layout.png` — **the plan: where the landmark goes.** The block's shape
+  with the landmark drawn as a numbered red box, at its position and roughly
+  its size. Everything not inside a red box is ordinary housing. **This is the
+  layout to follow.** The style sample below is not a layout.
 - `block-11-st-hedwigs-reference.png` — our approved painting of ST. HEDWIG'S, for
   identity only (see its section below).
 
@@ -199,3 +203,15 @@ windows.
 - **Don't paint the landmark at realistic size.** Undersized is the one failure
   that makes the whole block useless to us — when in doubt, go bigger.
 - Don't give a plain house a feature interesting enough to compete with it.
+
+## Before you call it finished
+
+The last thing to do, and the one that matters most. Check the painting against
+this list — this is a real place people walk to in this game, and a block
+missing it is unusable to us however good the rest looks. It is by far the
+most common way these come back wrong.
+
+- [ ] **ST. HEDWIG'S** is in the painting, near canvas px (50, 846), roughly 418 × 224 px, and obviously bigger and more interesting than the houses around it.
+- [ ] Nothing in a red box on the layout plan has been left out.
+- [ ] The canvas is 564 × 948 px.
+- [ ] No streets, no lettering other than the name above, no map markers.

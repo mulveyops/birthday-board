@@ -28,6 +28,10 @@ block sits.
   around it labelled. Those streets, their labels and the white circular game
   markers are already on the map. **Do not paint any of them.** Look at this
   image to understand which way the block faces, then set it aside.
+- `block-13-layout.png` — **the plan: where the 3 landmarks go.** The block's shape
+  with each landmark drawn as a numbered red box, at its position and roughly
+  its size. Everything not inside a red box is ordinary housing. **This is the
+  layout to follow.** The style sample below is not a layout.
 - `block-13-style-reference.png` — **a texture sample: HOW to paint, never WHAT
   to paint.** A close crop of ordinary housing from elsewhere on this map,
   shown only so the whole board looks like one hand made it. Copy its camera
@@ -235,3 +239,17 @@ windows.
 - **Don't paint the landmarks at realistic size.** Undersized is the one failure
   that makes the whole block useless to us — when in doubt, go bigger.
 - Don't give a plain house a feature interesting enough to compete with it.
+
+## Before you call it finished
+
+The last thing to do, and the one that matters most. Check the painting against
+this list — each of these is a real place people walk to in this game, and a block
+missing one is unusable to us however good the rest looks. It is by far the
+most common way these come back wrong.
+
+- [ ] **The Standard Tavern** is in the painting, near canvas px (85, 84), roughly 227 × 64 px, and obviously bigger and more interesting than the houses around it.
+- [ ] **Pete's Pub** is in the painting, near canvas px (641, 895), roughly 237 × 99 px, and obviously bigger and more interesting than the houses around it.
+- [ ] **Hi Hat Garage** is in the painting, near canvas px (753, 862), roughly 216 × 147 px, and obviously bigger and more interesting than the houses around it.
+- [ ] Nothing in a red box on the layout plan has been left out.
+- [ ] The canvas is 868 × 948 px.
+- [ ] No streets, no lettering other than the names above, no map markers.

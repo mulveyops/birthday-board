@@ -28,10 +28,6 @@ block sits.
   around it labelled. Those streets, their labels and the white circular game
   markers are already on the map. **Do not paint any of them.** Look at this
   image to understand which way the block faces, then set it aside.
-- `block-02-layout.png` — **the plan: where the landmark goes.** The block's shape
-  with the landmark drawn as a numbered red box, at its position and roughly
-  its size. Everything not inside a red box is ordinary housing. **This is the
-  layout to follow.** The style sample below is not a layout.
 - `block-02-style-reference.png` — **a texture sample: HOW to paint, never WHAT
   to paint.** A close crop of ordinary housing from elsewhere on this map,
   shown only so the whole board looks like one hand made it. Copy its camera
@@ -112,40 +108,18 @@ Bounded by:
 See `block-02-context.png` — your block outlined in red dashes on the actual base
 map (shown at 2×), so you can see the street geometry your edges meet.
 
-## The landmark — paint this first, and paint it BIG
+## No landmark here — this block is background
 
-This is a game board. This is a place players physically walk to,
-so it has to be the thing the eye lands on first — not one building among many.
-**Deliberately exaggerate it.** Real-world proportions are the wrong
-instinct here; a landmark painted at its true size vanishes into the houses.
-
-
-### 1. Jamo's
-
-- **Centre it on canvas px (72, 1055)**, facing its street. The whole building must sit inside the white area of the stencil: nothing on the finished map is worse than a landmark sliced in half by a street.
-- **Paint it about 160 × 120 px** — that is 1.4× its real 16 × 12 m
-  footprint, and roughly 30% of the block's width. Oversized on purpose.
-- **It must be the biggest, tallest, most detailed and most saturated thing on
-  the block**, by an obvious margin. If it does not dominate, it is wrong.
-- **Clear a halo of ~125 px (18 m) around it** — inside that halo only its own
-  grounds belong: steps, entry walks, foundation planting, a little plaza or
-  yard. No houses, no garages, no fences crowding it.
-- Give it real vertical presence even from this top-down camera: a bolder, taller roofline than anything beside it — a raised corner, a deep sign band, a chimney,
-  clearly taller than every roof around it and catching light on top.
-
-Corner tavern — a real Brady-area bar and a place people on this board actually walk into. Two-story corner building, tavern front at street level, warm lit windows, and a painted sign band reading "Jamo's" (readable text allowed for this name). Give it more character than anything around it: a bolder colour, an awning, a corner entrance cut across the corner.
-
-## Everything else is supporting cast
-
-That one building is the focal point of this block — nothing else competes
-with it. The rest of the block is deliberately **quieter**: ordinary houses,
-simpler roofs, less saturated colours, no second attention-grabber. Thin the
-fabric rather than packing buildings in — the landmark has earned the space.
+Nothing on this block is a landmark, and that is the point. It is the ordinary
+neighbourhood fabric that makes the landmark blocks elsewhere on the board feel
+special, so keep it **even and unshowy**: no invented hero building, no
+attention-grabbing centrepiece, no one house obviously fancier than the rest.
+Pleasant, lived-in, quiet.
 
 ## Other named places here
 
 Real addresses on this block. Get the building type right; they need no
-signage — only the landmark above carries readable text.
+signage and no readable text.
 
 - **Arlington Place** (apartments) — around (55, 841)
 
@@ -168,7 +142,7 @@ Property details (real):
 - 1 × fence
 - 3 × walk
 
-Counts are a vibe, not a checklist — and the landmark outranks all of it. Drop houses if they crowd it.
+Counts are a vibe, not a checklist.
 
 Composition rules of thumb: street trees live in the terrace band just inside
 each street edge; houses front their street with small setbacks and entry
@@ -195,18 +169,3 @@ windows.
   delivery in the wrong orientation is unusable no matter how good the art is.
 - No invented store names, street names, or readable text (exceptions above).
 - Don't relocate or mirror the landmark.
-- **Don't paint the landmark at realistic size.** Undersized is the one failure
-  that makes the whole block useless to us — when in doubt, go bigger.
-- Don't give a plain house a feature interesting enough to compete with it.
-
-## Before you call it finished
-
-The last thing to do, and the one that matters most. Check the painting against
-this list — this is a real place people walk to in this game, and a block
-missing it is unusable to us however good the rest looks. It is by far the
-most common way these come back wrong.
-
-- [ ] **Jamo's** is in the painting, near canvas px (72, 1055), roughly 160 × 120 px, and obviously bigger and more interesting than the houses around it.
-- [ ] Nothing in a red box on the layout plan has been left out.
-- [ ] The canvas is 532 × 1108 px.
-- [ ] No streets, no lettering other than the name above, no map markers.

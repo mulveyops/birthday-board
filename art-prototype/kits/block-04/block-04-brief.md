@@ -28,8 +28,8 @@ block sits.
   around it labelled. Those streets, their labels and the white circular game
   markers are already on the map. **Do not paint any of them.** Look at this
   image to understand which way the block faces, then set it aside.
-- `block-04-layout.png` — **the plan: where the landmark goes.** The block's shape
-  with the landmark drawn as a numbered red box, at its position and roughly
+- `block-04-layout.png` — **the plan: where the 2 landmarks go.** The block's shape
+  with each landmark drawn as a numbered red box, at its position and roughly
   its size. Everything not inside a red box is ordinary housing. **This is the
   layout to follow.** The style sample below is not a layout.
 - `block-04-style-reference.png` — **a texture sample: HOW to paint, never WHAT
@@ -41,7 +41,7 @@ block sits.
   layout.** It is a swatch, not a plan. Your block's contents are specified
   below and they are different — if your painting ends up resembling this
   crop, you have copied the wrong thing.
-- `block-04-wolskis-reference.png` — our approved painting of WOLSKI'S, for
+- `block-04-wolskis-tavern-reference.png` — our approved painting of Wolski's Tavern, for
   identity only (see its section below).
 
 > ## ⚠ OUTPUT SIZE: **1224 × 1632 px — PORTRAIT, taller than it is wide**
@@ -114,41 +114,68 @@ Bounded by:
 See `block-04-context.png` — your block outlined in red dashes on the actual base
 map (shown at 2×), so you can see the street geometry your edges meet.
 
-## The landmark — paint this first, and paint it BIG
+## The landmarks — paint these first, and paint them BIG
 
-This is a game board. This is a place players physically walk to,
-so it has to be the thing the eye lands on first — not one building among many.
-**Deliberately exaggerate it.** Real-world proportions are the wrong
+This is a game board. These are places players physically walk to,
+so they have to be the thing the eye lands on first — not one building among many.
+**Deliberately exaggerate them.** Real-world proportions are the wrong
 instinct here; a landmark painted at its true size vanishes into the houses.
 
+**This block has 2 of them: Wolski's Tavern, Pulaski Street Playfield. All 2 must appear** —
+they are separate real businesses at the positions given below, and a block
+that is missing one is unusable to us even if the rest is perfect. Check them
+off before you finish.
 
-### 1. WOLSKI'S
 
-- **Centre it on canvas px (446, 578)**, facing its street. The whole building must sit inside the white area of the stencil: nothing on the finished map is worse than a landmark sliced in half by a street.
-- **Paint it about 196 × 141 px** — that is 1.6× its real 18 × 13 m
-  footprint, and roughly 16% of the block's width. Oversized on purpose.
-- **It must be the biggest, tallest, most detailed and most saturated thing on
-  the block**, by an obvious margin. If it does not dominate, it is wrong.
+### 1. Wolski's Tavern
+
+- **Centre it on canvas px (359, 595)**, facing its street. This is a tight corner of the block — turn the building to follow its
+  street and tuck it into the space. Trim its length if you must, but keep the
+  whole of it inside the white area: a landmark sliced in half by a street is
+  the worst thing that can happen on this map.
+- **Paint it about 158 × 113 px** — that is 1.3× its real 18 × 13 m
+  footprint, and roughly 13% of the block's width. Oversized on purpose.
+- **It must be the biggest, tallest, most detailed and most saturated building on
+  the block**, by an obvious margin. If it does not stand out, it is wrong.
 - **Clear a halo of ~139 px (20 m) around it** — inside that halo only its own
   grounds belong: steps, entry walks, foundation planting, a little plaza or
   yard. No houses, no garages, no fences crowding it.
 - Give it real vertical presence even from this top-down camera: a steep front gable and a brick chimney, riding above the houses beside it,
   clearly taller than every roof around it and catching light on top.
 
-**Wolski's Tavern** (a 1908 bar in an 1895 front-gabled wood house) — a house that became a tavern, and the most beloved dive in the neighbourhood. White/cream clapboard, dark roof, a painted WOLSKI'S signboard band across the first floor (readable text allowed), warm amber windows. Its charm is that it is small and wooden where everything else is brick — keep that character while still making it dominate the block.
+**Wolski's Tavern** (a bar since 1908 in an 1895 house) — a house that became a tavern, and the most beloved dive in the neighbourhood. Front-gabled two-storey **wood** building, light clapboard siding, dark roof, domestic proportions — small and wooden where everything near it is brick. A painted **WOLSKI'S** signboard band across the first floor (readable text allowed), warm amber windows, a couple of sidewalk picnic tables. Its charm is its modesty: characterful, not grand.
 
-**Identity reference: `block-04-wolskis-reference.png`** (attached) — our own
+**Identity reference: `block-04-wolskis-tavern-reference.png`** (attached) — our own
 approved painting of this exact building. Match its materials, colour and
 character. **Do NOT match its camera**: that reference is drawn from a lower
 three-quarter angle, while this block is strongly top-down. Same building,
 your camera.
 
+### 2. Pulaski Street Playfield
+
+- **It is a park, not a building** — open ground, and the one place on this
+  block where nothing is built. Centre it on canvas px (642, 457) and let it
+  cover roughly **1041 × 521 px** — its true size, about 85% of the block's
+  width. Do not shrink it to make room for houses; the houses give way to it.
+- **Nothing is built inside it.** No sheds, no garages, no houses creeping in
+  at the edges.
+- It must read as **public parkland at a glance** — open mown grass, paths, big
+  shade trees around the rim — never as a run of back gardens.
+
+**Pulaski Street Playfield**, the neighbourhood's green lung and a game challenge site — the one block on the board where the eye rests. Laid out west to east:
+   - a colourful **playground** at the north-west corner, play structures on pale sand, paths curling through
+   - a **hard court** immediately east of it: deep red/maroon surface with white painted lines, the brightest colour on the block
+   - a broad **open green lawn** through the middle
+   - **Pulaski Softball Field** at the east end: a big tan skinned infield with its diamond and backstop, grass outfield around it
+   - mature shade trees along the edges, benches, a picnic table
+   Openness is the point — **no buildings inside the park**, and the green should read as generous and public from right across the board.
+
 ## Everything else is supporting cast
 
-That one building is the focal point of this block — nothing else competes
-with it. The rest of the block is deliberately **quieter**: ordinary houses,
+Those 2 are the focal points of this block — nothing else competes with
+them. The rest of the block is deliberately **quieter**: ordinary houses,
 simpler roofs, less saturated colours, no second attention-grabber. Thin the
-fabric rather than packing buildings in — the landmark has earned the space.
+fabric rather than packing buildings in — the landmarks have earned the space.
 
 ## Other named places here
 
@@ -208,19 +235,20 @@ windows.
 - **Don't change the canvas shape.** 1224 × 1632 (0.75 : 1, portrait) — a
   delivery in the wrong orientation is unusable no matter how good the art is.
 - No invented store names, street names, or readable text (exceptions above).
-- Don't relocate or mirror the landmark.
-- **Don't paint the landmark at realistic size.** Undersized is the one failure
+- Don't relocate or mirror the landmarks.
+- **Don't paint the landmarks at realistic size.** Undersized is the one failure
   that makes the whole block useless to us — when in doubt, go bigger.
 - Don't give a plain house a feature interesting enough to compete with it.
 
 ## Before you call it finished
 
 The last thing to do, and the one that matters most. Check the painting against
-this list — this is a real place people walk to in this game, and a block
-missing it is unusable to us however good the rest looks. It is by far the
+this list — each of these is a real place people walk to in this game, and a block
+missing one is unusable to us however good the rest looks. It is by far the
 most common way these come back wrong.
 
-- [ ] **WOLSKI'S** is in the painting, near canvas px (446, 578), roughly 196 × 141 px, and obviously bigger and more interesting than the houses around it.
+- [ ] **Wolski's Tavern** is in the painting, near canvas px (359, 595), roughly 158 × 113 px, and obviously bigger and more interesting than the houses around it.
+- [ ] **Pulaski Street Playfield** is in the painting, near canvas px (642, 457), roughly 1041 × 521 px, and obviously bigger and more interesting than the houses around it.
 - [ ] Nothing in a red box on the layout plan has been left out.
 - [ ] The canvas is 1224 × 1632 px.
-- [ ] No streets, no lettering other than the name above, no map markers.
+- [ ] No streets, no lettering other than the names above, no map markers.

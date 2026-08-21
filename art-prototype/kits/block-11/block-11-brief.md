@@ -32,7 +32,7 @@ block sits.
   with the landmark drawn as a numbered red box, at its position and roughly
   its size. Everything not inside a red box is ordinary housing. **This is the
   layout to follow.** The style sample below is not a layout.
-- `block-11-st-hedwigs-reference.png` — our approved painting of ST. HEDWIG'S, for
+- `block-11-st-hedwigs-reference.png` — our approved painting of St Hedwig's, for
   identity only (see its section below).
 
 > ## ⚠ OUTPUT SIZE: **564 × 948 px — PORTRAIT, taller than it is wide**
@@ -109,27 +109,24 @@ so it has to be the thing the eye lands on first — not one building among many
 instinct here; a landmark painted at its true size vanishes into the houses.
 
 
-### 1. ST. HEDWIG'S
+### 1. St Hedwig's
 
-- **Centre it on canvas px (50, 846)**, facing its street. This is a tight corner of the block — turn the building to follow its
-  street and tuck it into the space. Trim its length if you must, but keep the
-  whole of it inside the white area: a landmark sliced in half by a street is
-  the worst thing that can happen on this map.
-- **Paint it about 418 × 224 px** — that is 1.3× its real 48 × 26 m
-  footprint, and roughly 74% of the block's width. Oversized on purpose.
-- **It must be the biggest, tallest, most detailed and most saturated thing on
-  the block**, by an obvious margin. If it does not dominate, it is wrong.
+- **Centre it on canvas px (202, 831)**, facing its street. The whole building must sit inside the white area of the stencil: nothing on the finished map is worse than a landmark sliced in half by a street.
+- **Paint it about 467 × 253 px** — that is 1.4× its real 48 × 26 m
+  footprint, and roughly 83% of the block's width. Oversized on purpose.
+- **It must be the biggest, tallest, most detailed and most saturated building on
+  the block**, by an obvious margin. If it does not stand out, it is wrong.
 - **Clear a halo of ~208 px (30 m) around it** — inside that halo only its own
   grounds belong: steps, entry walks, foundation planting, a little plaza or
   yard. No houses, no garages, no fences crowding it.
 - Give it real vertical presence even from this top-down camera: its tower and spire, the tallest thing for blocks around,
   clearly taller than every roof around it and catching light on top.
 
-**Saint Hedwig Catholic Church** (1886, Henry Messmer) — THE landmark of this block and the visual crest of Brady Street.
-   - **Cream City brick** body (pale warm cream — NOT red brick), stone trim, Romanesque round-arched windows.
-   - Single tall central tower with a **copper-patina-green spire** (162 ft) — slightly bulbous Eastern-European transition at its base. The spire is the tallest thing on the whole board; let it read over everything.
-   - **Long axis runs east–west**: the tower and main doors at the WEST end, the tall gabled nave stretching back EAST behind it.
-   - Palette: cream body, patina-green spire, brown-gray slate nave roof, pale stone trim, dark wood doors, stained-glass blue-purple.
+**Saint Hedwig Catholic Church** (1888, Henry Messmer) — the visual crest of Brady Street.
+   - **Cream city brick** body (pale, warm, buttery yellow-cream — NOT red brick), stone trim, round-arched Romanesque windows.
+   - One tall central tower carrying a **copper-patina-green spire**, with a slightly bulbous Eastern-European swell where spire meets tower. It is the tallest thing on the whole board.
+   - **Long axis east–west**: tower and main doors at the WEST end facing Humboldt, the tall gabled nave running back EAST.
+   - Palette: cream body, patina-green spire, brown-grey slate roof, pale stone trim, dark wood doors, blue-purple stained glass.
 
 **Identity reference: `block-11-st-hedwigs-reference.png`** (attached) — our own
 approved painting of this exact building. Match its materials, colour and
@@ -211,7 +208,7 @@ this list — this is a real place people walk to in this game, and a block
 missing it is unusable to us however good the rest looks. It is by far the
 most common way these come back wrong.
 
-- [ ] **ST. HEDWIG'S** is in the painting, near canvas px (50, 846), roughly 418 × 224 px, and obviously bigger and more interesting than the houses around it.
+- [ ] **St Hedwig's** is in the painting, near canvas px (202, 831), roughly 467 × 253 px, and obviously bigger and more interesting than the houses around it.
 - [ ] Nothing in a red box on the layout plan has been left out.
 - [ ] The canvas is 564 × 948 px.
 - [ ] No streets, no lettering other than the name above, no map markers.

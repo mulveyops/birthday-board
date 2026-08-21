@@ -119,47 +119,47 @@ so they have to be the thing the eye lands on first — not one building among m
 **Deliberately exaggerate them.** Real-world proportions are the wrong
 instinct here; a landmark painted at its true size vanishes into the houses.
 
-**This block has 2 of them: Fink’s, Scaffidi’s Hideout. All 2 must appear** —
+**This block has 2 of them: Fink's, Red Lion Pub. All 2 must appear** —
 they are separate real businesses at the positions given below, and a block
 that is missing one is unusable to us even if the rest is perfect. Check them
 off before you finish.
 
 
-### 1. Fink’s
+### 1. Fink's
 
-- **Centre it on canvas px (1537, 0)**, facing its street. This is a tight corner of the block — turn the building to follow its
+- **Centre it on canvas px (1533, 0)**, facing its street. This is a tight corner of the block — turn the building to follow its
   street and tuck it into the space. Trim its length if you must, but keep the
   whole of it inside the white area: a landmark sliced in half by a street is
   the worst thing that can happen on this map.
-- **Paint it about 146 × 64 px** — that is 1.3× its real 17 × 7 m
-  footprint, and roughly 18% of the block's width. Oversized on purpose.
-- **It must be the biggest, tallest, most detailed and most saturated thing on
-  the block**, by an obvious margin. If it does not dominate, it is wrong.
-- **Clear a halo of ~125 px (18 m) around it** — inside that halo only its own
-  grounds belong: steps, entry walks, foundation planting, a little plaza or
-  yard. No houses, no garages, no fences crowding it.
-- Give it real vertical presence even from this top-down camera: a bolder, taller roofline than anything beside it — a raised corner, a deep sign band, a chimney,
-  clearly taller than every roof around it and catching light on top.
-
-Corner tavern — a real Brady-area bar and a place people on this board actually walk into. Two-story corner building, tavern front at street level, warm lit windows, and a painted sign band reading "Fink’s" (readable text allowed for this name). Give it more character than anything around it: a bolder colour, an awning, a corner entrance cut across the corner.
-
-### 2. Scaffidi’s Hideout
-
-- **Centre it on canvas px (1529, 461)**, facing its street. This is a tight corner of the block — turn the building to follow its
-  street and tuck it into the space. Trim its length if you must, but keep the
-  whole of it inside the white area: a landmark sliced in half by a street is
-  the worst thing that can happen on this map.
-- **Paint it about 166 × 104 px** — that is 1.3× its real 19 × 12 m
+- **Paint it about 158 × 61 px** — that is 1.3× its real 18 × 7 m
   footprint, and roughly 20% of the block's width. Oversized on purpose.
-- **It must be the biggest, tallest, most detailed and most saturated thing on
-  the block**, by an obvious margin. If it does not dominate, it is wrong.
+- **It must be the biggest, tallest, most detailed and most saturated building on
+  the block**, by an obvious margin. If it does not stand out, it is wrong.
 - **Clear a halo of ~125 px (18 m) around it** — inside that halo only its own
   grounds belong: steps, entry walks, foundation planting, a little plaza or
   yard. No houses, no garages, no fences crowding it.
-- Give it real vertical presence even from this top-down camera: a bolder, taller roofline than anything beside it — a raised corner, a deep sign band, a chimney,
+- Give it real vertical presence even from this top-down camera: a bold painted gable front standing up over the sidewalk,
   clearly taller than every roof around it and catching light on top.
 
-Corner tavern — a real Brady-area bar and a place people on this board actually walk into. Two-story corner building, tavern front at street level, warm lit windows, and a painted sign band reading "Scaffidi’s Hideout" (readable text allowed for this name). Give it more character than anything around it: a bolder colour, an awning, a corner entrance cut across the corner.
+**Fink's** — a small **single-storey front-gabled** corner bar, long and narrow, sitting right up on the sidewalk. The building dates to 1894 and has been six other taverns since (Listwan's, Al Hauke's, Baldy's, Mama Roux, the Red Room). Modest and neighbourly rather than grand: a painted **FINK'S** sign board across the gable front (readable text allowed), warm lit windows, a door on the corner.
+
+### 2. Red Lion Pub
+
+- **Centre it on canvas px (33, 480)**, facing its street. This is a tight corner of the block — turn the building to follow its
+  street and tuck it into the space. Trim its length if you must, but keep the
+  whole of it inside the white area: a landmark sliced in half by a street is
+  the worst thing that can happen on this map.
+- **Paint it about 376 × 96 px** — that is 1.3× its real 43 × 11 m
+  footprint, and roughly 47% of the block's width. Oversized on purpose.
+- **It must be the biggest, tallest, most detailed and most saturated building on
+  the block**, by an obvious margin. If it does not stand out, it is wrong.
+- **Clear a halo of ~139 px (20 m) around it** — inside that halo only its own
+  grounds belong: steps, entry walks, foundation planting, a little plaza or
+  yard. No houses, no garages, no fences crowding it.
+- Give it real vertical presence even from this top-down camera: a long flat brick roofline, wider than anything else on the block,
+  clearly taller than every roof around it and catching light on top.
+
+**The Red Lion Pub on Tannery Row** — a long two-storey **brick** commercial block from 1890, by far the widest building here at 43 m, shopfront below and apartments above. It was the **Gettleman Brewery** in 1911 and still looks it: nineteenth-century brewery-era masonry, flat roofline, regular window rhythm, stone sills. A British pub at street level — dark painted shopfront, a hanging **RED LION** sign (readable text allowed), warm windows, a few pavement tables.
 
 ## Everything else is supporting cast
 
@@ -170,10 +170,7 @@ fabric rather than packing buildings in — the landmarks have earned the space.
 
 ## Other named places here
 
-Real addresses on this block. Get the building type right; they need no
-signage — only the landmark above carries readable text.
-
-- **Red Lion Pub on Tannery Row** (pub) — around (35, 489)
+_Nothing else on this block is named — it is all ordinary housing._
 
 ## Texture guidance — paint the vibe, counts are approximate
 
@@ -239,8 +236,8 @@ this list — each of these is a real place people walk to in this game, and a b
 missing one is unusable to us however good the rest looks. It is by far the
 most common way these come back wrong.
 
-- [ ] **Fink’s** is in the painting, near canvas px (1537, 0), roughly 146 × 64 px, and obviously bigger and more interesting than the houses around it.
-- [ ] **Scaffidi’s Hideout** is in the painting, near canvas px (1529, 461), roughly 166 × 104 px, and obviously bigger and more interesting than the houses around it.
+- [ ] **Fink's** is in the painting, near canvas px (1533, 0), roughly 158 × 61 px, and obviously bigger and more interesting than the houses around it.
+- [ ] **Red Lion Pub** is in the painting, near canvas px (33, 480), roughly 376 × 96 px, and obviously bigger and more interesting than the houses around it.
 - [ ] Nothing in a red box on the layout plan has been left out.
 - [ ] The canvas is 804 × 552 px.
 - [ ] No streets, no lettering other than the names above, no map markers.

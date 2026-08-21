@@ -4,17 +4,24 @@
 // everything ChatGPT needs to illustrate that block as a drop-in transparent
 // asset, plus what our compositor needs to place it.
 //
-// The three files to HAND TO CHATGPT land together in their own folder,
-// art-prototype/kits/block-NN/ — drag the whole folder into the chat:
+// The files to HAND TO CHATGPT land together in their own folder,
+// art-prototype/kits/block-NN/ — drag the whole folder into a FRESH chat (the
+// brief is written to stand alone, so a retry never inherits a failed attempt):
 //
-//   block-NN-brief.md     the art brief: bounding streets by compass, hard
-//                         constraints (landmarks + named places with exact
-//                         canvas positions), fabric/texture guidance mined
-//                         from the baked scene, style + delivery rules
-//   block-NN-context.png  crop of the base map around the block, paintable
-//                         area washed red, landmarks flagged, streets labeled
-//   block-NN-canvas.png   the stencil at WORK_SCALE× the block's exact pixel
-//                         bbox — white = paintable, rest transparent
+//   block-NN-brief.md      the art brief — self-contained: what the project is,
+//                          what is attached, exact canvas size and orientation,
+//                          the points of interest with positions and sizes,
+//                          fabric guidance from the baked scene, don'ts, and a
+//                          closing checklist
+//   block-NN-canvas.png    the stencil at WORK_SCALE× the block's exact pixel
+//                          bbox — white = the block we keep, rest is cut away
+//   block-NN-context.png   crop of the base map around the block, paintable
+//                          area washed red, streets labelled. Orientation only
+//   block-NN-layout.png    (landmark blocks) the block outline with each point
+//                          of interest boxed and numbered where it belongs
+//   block-NN-style-...png  a landmark-free housing swatch: brushwork to match
+//   block-NN-<slug>-...png (some landmarks) our approved painting of that
+//                          building, for identity — not for its camera
 //
 // Plus, for our tooling only:
 //   <outBase>-block-NN-place.json   bbox + position, read by block-compose.mjs
@@ -255,10 +262,12 @@ const id = `block-${nn}`;
 // the three shareable files live together, ready to drag into a chat
 const kitDir = `art-prototype/kits/${id}`;
 mkdirSync(kitDir, { recursive: true });
-// clear old landmark references — a renamed slug would otherwise leave a stale
-// image in the folder and get handed to ChatGPT alongside the current one
-for (const f of readdirSync(kitDir)) if (f.endsWith('-reference.png') || f.endsWith('-layout.png')) rmSync(`${kitDir}/${f}`);
-const share = (suffix) => `${kitDir}/${id}-${suffix}`;
+// Stale extras (a renamed landmark leaves its old reference image behind, and
+// it would be handed to ChatGPT next to the current one) are swept at the END
+// of the run, once we know what we actually wrote. Deleting up front raced the
+// rewrite of the same filename and intermittently killed the run on Windows.
+const written = new Set(['brief.md', 'canvas.png', 'context.png']);
+const share = (suffix) => { written.add(suffix); return `${kitDir}/${id}-${suffix}`; };
 // local work-canvas coords (WORK_SCALE× the bbox, origin at bbox top-left)
 const LX = (v) => (PXx(v) - bx1) * WORK_SCALE;
 const LY = (v) => (PXy(v) - by1) * WORK_SCALE;
@@ -344,11 +353,8 @@ const friendly = (ref) => {
   const hit = FABRIC.find(([re]) => re.test(ref));
   return hit ? hit[1] : ref;
 };
-const HERO_FILE_NAME = { 'st-hedwig': "ST. HEDWIG'S", wolskis: "WOLSKI'S", gloriosos: "GLORIOSO'S" };
 const inBlock = (e) => pointIn(face.ring, X(e), Y(e));
 const entries = scene.standing.filter(inBlock);
-const heroes = entries.filter((e) => e.t === 'img');
-const labeled = entries.filter((e) => e.label);
 const fabric = {};
 for (const e of entries) {
   if (e.t === 'img' || e.label) continue;
@@ -458,34 +464,42 @@ function fitAnchor(px, py, boxW, boxH, maxR = 14) {
   return { x: px, y: py, moved: -1 }; // block genuinely too tight — brief says so
 }
 
-/** How big to paint a landmark, in work-canvas px, plus its cleared halo. */
-function prominence(name, lat, lng, isHero, poiCount) {
-  const fallback = { wM: isHero ? 40 : 16, hM: isHero ? 25 : 12 };
-  let fp = footprintAt(lat, lng) ?? fallback;
-  // A POI node can sit nearer a garage or a porch than its own building. Any
-  // "footprint" too small or too sliver-shaped to be the real thing is a bad
-  // match, not a tiny landmark — quoting it would ask for a shed.
-  if (fp.wM * fp.hM < 60 || fp.hM < 5 || fp.wM / fp.hM > 4) fp = fallback;
-  const base = isHero ? 1.4 : 1.8; // small corner buildings need the bigger push
-  const cap = isHero ? 1.6 : 2.2; // past this a building stops looking like itself
+/**
+ * How big to paint a point of interest, in work-canvas px, plus its halo.
+ * Sizes come from the reviewed POI table rather than from whatever polygon the
+ * map happened to attach to a node — those matches went wrong often enough
+ * (Jamo's once measured 9 × 3 m, a shed) to be worth stating by hand.
+ */
+function prominence(poi, poiCount) {
+  const [trueW, trueH] = poi.sizeM;
+  const toPx = (m) => Math.round(m / mPerWorkPx);
   const blockWm = bw * mPerPx;
+  // A park is already the size it is: painted at life size, not exaggerated.
+  if (poi.kind === 'park') {
+    return {
+      trueW, trueH,
+      factor: '1.0',
+      pxW: toPx(trueW), pxH: toPx(trueH),
+      haloPx: 0, evictM: 0,
+      pctBlock: Math.round((trueW / blockWm) * 100),
+    };
+  }
+  const big = trueW >= 35; // church, market, brewery: already commanding
+  const base = big ? 1.4 : 1.8; // small corner buildings need the bigger push
+  const cap = big ? 1.6 : 2.2; // past this a building stops looking like itself
   // A lone landmark spanning less than a third of its block won't read as the
   // focal point, so push it there — but never past the cap: Wolski's is a
   // little wood cottage, and blown up 3× it reads as a different building.
-  const floorFactor = poiCount === 1 ? (blockWm * 0.32) / fp.wM : 0;
+  const floorFactor = poiCount === 1 ? (blockWm * 0.32) / trueW : 0;
   const scale = Math.min(cap, Math.max(base, floorFactor));
-  const wantM = fp.wM * scale;
-  const toPx = (m) => Math.round(m / mPerWorkPx);
-  const evictM = HERO_EVICT_M[name] ?? DEFAULT_EVICT_M;
   return {
-    trueW: Math.round(fp.wM),
-    trueH: Math.round(fp.hM),
+    trueW, trueH,
     factor: scale.toFixed(1),
-    pxW: toPx(wantM),
-    pxH: toPx(fp.hM * scale),
-    haloPx: toPx(evictM),
-    evictM,
-    pctBlock: Math.round((wantM / blockWm) * 100),
+    pxW: toPx(trueW * scale),
+    pxH: toPx(trueH * scale),
+    haloPx: toPx(poi.evict),
+    evictM: poi.evict,
+    pctBlock: Math.round(((trueW * scale) / blockWm) * 100),
   };
 }
 
@@ -493,33 +507,151 @@ function prominence(name, lat, lng, isHero, poiCount) {
 // Keyed by hero/label name; blocks whose landmarks aren't written up yet get a
 // TODO line in the brief. Full source: art-prototype/HERO_PACKETS.md +
 // art-prototype/grounding/.
-// Scene labels are truncated at bake (fit-to-width); full names resolved by
-// matching label positions to the OSM bar/pub POIs.
-const LABEL_FULL = {
-  'FINK’S': 'Fink’s',
-  'SCAFFIDI’': 'Scaffidi’s Hideout',
-  "JAMO'S": "Jamo's",
-  THE: 'The Standard Tavern',
-  "PETE'S": "Pete's Pub",
-  HI: 'Hi Hat Garage',
-  "ANGELO'S": "Angelo's Piano Lounge",
-};
-const POI_NOTES = {
-  "ST. HEDWIG'S": `**Saint Hedwig Catholic Church** (1886, Henry Messmer) — THE landmark of this block and the visual crest of Brady Street.
-   - **Cream City brick** body (pale warm cream — NOT red brick), stone trim, Romanesque round-arched windows.
-   - Single tall central tower with a **copper-patina-green spire** (162 ft) — slightly bulbous Eastern-European transition at its base. The spire is the tallest thing on the whole board; let it read over everything.
-   - **Long axis runs east–west**: the tower and main doors at the WEST end, the tall gabled nave stretching back EAST behind it.
-   - Palette: cream body, patina-green spire, brown-gray slate nave roof, pale stone trim, dark wood doors, stained-glass blue-purple.`,
-  "WOLSKI'S": `**Wolski's Tavern** (a 1908 bar in an 1895 front-gabled wood house) — a house that became a tavern, and the most beloved dive in the neighbourhood. White/cream clapboard, dark roof, a painted WOLSKI'S signboard band across the first floor (readable text allowed), warm amber windows. Its charm is that it is small and wooden where everything else is brick — keep that character while still making it dominate the block.`,
-  "GLORIOSO'S": `**Glorioso's Italian Market**, in the former Astor Theatre (1907–13) — a wide, low theatre block with a tall flat parapet, light stucco body, a long run of storefront glass along Brady, a bold GLORIOSO'S signage band and Italian tricolour (green/white/red) awnings. It should read instantly as "old movie house turned Italian grocery".`,
-};
-// Our own approved painting of a landmark, shipped with the kit as a visual
-// identity reference. Camera differs on purpose — see the wording in the brief.
-const POI_REFERENCE = {
-  "ST. HEDWIG'S": 'art-prototype/heroes/st-hedwig-v2.png',
-  "WOLSKI'S": 'art-prototype/heroes/wolskis-v2.png',
-  "GLORIOSO'S": 'art-prototype/heroes/gloriosos-v1.png',
-};
+// THE POINTS OF INTEREST — the definitive set, chosen by Steven, reviewed
+// against the map in art-prototype/POI_LIST.md (edit the descriptions there
+// and mirror them here). These are the places players walk to, so they are the
+// only buildings that get exaggerated size, a cleared halo and a box on the
+// layout plan. Every other named business is described as an ordinary building
+// in the "Other named places" list.
+//
+//   name    what the sign says, and what the brief calls it
+//   at      [lat, lng] of the real thing
+//   kind    'building' | 'park' | 'house' — drives sizing and wording
+//   sizeM   [long, short] painted footprint in metres, before exaggeration;
+//           for a park, the area it should occupy
+//   evict   metres of clear ground around it
+//   cue     how it stands tall, in ITS OWN vocabulary (never name a building
+//           type a block hasn't got — a stray "spire" grew a church once)
+//   desc    the identity paragraph, straight from POI_LIST.md
+//   ref     optional approved painting shipped as an identity reference
+const POINTS_OF_INTEREST = [
+  {
+    name: "St Hedwig's",
+    at: [43.053174, -87.897631],
+    kind: 'building',
+    sizeM: [48, 26],
+    evict: 30,
+    cue: 'its tower and spire, the tallest thing for blocks around',
+    ref: 'art-prototype/heroes/st-hedwig-v2.png',
+    desc: `**Saint Hedwig Catholic Church** (1888, Henry Messmer) — the visual crest of Brady Street.
+   - **Cream city brick** body (pale, warm, buttery yellow-cream — NOT red brick), stone trim, round-arched Romanesque windows.
+   - One tall central tower carrying a **copper-patina-green spire**, with a slightly bulbous Eastern-European swell where spire meets tower. It is the tallest thing on the whole board.
+   - **Long axis east–west**: tower and main doors at the WEST end facing Humboldt, the tall gabled nave running back EAST.
+   - Palette: cream body, patina-green spire, brown-grey slate roof, pale stone trim, dark wood doors, blue-purple stained glass.`,
+  },
+  {
+    name: "Glorioso's Italian Market",
+    at: [43.052838, -87.899352],
+    kind: 'building',
+    sizeM: [40, 30],
+    evict: 24,
+    cue: 'the tall flat parapet of the old theatre, standing above its neighbours',
+    ref: 'art-prototype/heroes/gloriosos-v1.png',
+    desc: `**Glorioso's Italian Market**, in the former **Astor Theatre** (1913, architect Myers E. Becongia) — an old movie house turned Italian grocery, and the biggest commercial mass on Brady Street. Wide, low theatre massing with a tall flat parapet, clearly bigger and flatter-topped than its neighbours. Light **stucco** body, a long run of storefront glass along Brady, a bold horizontal **GLORIOSO'S** sign band (readable text allowed), and Italian tricolour — green, white, red — in the awnings.`,
+  },
+  {
+    name: "Wolski's Tavern",
+    at: [43.055231, -87.896601],
+    kind: 'building',
+    sizeM: [18, 13],
+    evict: 20,
+    cue: 'a steep front gable and a brick chimney, riding above the houses beside it',
+    ref: 'art-prototype/heroes/wolskis-v2.png',
+    desc: `**Wolski's Tavern** (a bar since 1908 in an 1895 house) — a house that became a tavern, and the most beloved dive in the neighbourhood. Front-gabled two-storey **wood** building, light clapboard siding, dark roof, domestic proportions — small and wooden where everything near it is brick. A painted **WOLSKI'S** signboard band across the first floor (readable text allowed), warm amber windows, a couple of sidewalk picnic tables. Its charm is its modesty: characterful, not grand.`,
+  },
+  {
+    name: 'Pulaski Street Playfield',
+    at: [43.05541, -87.8961],
+    kind: 'park',
+    sizeM: [150, 75],
+    evict: 0,
+    cue: 'the openness itself — no building interrupts it',
+    desc: `**Pulaski Street Playfield**, the neighbourhood's green lung and a game challenge site — the one block on the board where the eye rests. Laid out west to east:
+   - a colourful **playground** at the north-west corner, play structures on pale sand, paths curling through
+   - a **hard court** immediately east of it: deep red/maroon surface with white painted lines, the brightest colour on the block
+   - a broad **open green lawn** through the middle
+   - **Pulaski Softball Field** at the east end: a big tan skinned infield with its diamond and backstop, grass outfield around it
+   - mature shade trees along the edges, benches, a picnic table
+   Openness is the point — **no buildings inside the park**, and the green should read as generous and public from right across the board.`,
+  },
+  {
+    name: "Fink's",
+    at: [43.056064, -87.898304],
+    kind: 'building',
+    sizeM: [18, 7],
+    evict: 18,
+    cue: 'a bold painted gable front standing up over the sidewalk',
+    desc: `**Fink's** — a small **single-storey front-gabled** corner bar, long and narrow, sitting right up on the sidewalk. The building dates to 1894 and has been six other taverns since (Listwan's, Al Hauke's, Baldy's, Mama Roux, the Red Room). Modest and neighbourly rather than grand: a painted **FINK'S** sign board across the gable front (readable text allowed), warm lit windows, a door on the corner.`,
+  },
+  {
+    name: 'Red Lion Pub',
+    at: [43.055323, -87.90096],
+    kind: 'building',
+    sizeM: [43, 11],
+    evict: 20,
+    cue: 'a long flat brick roofline, wider than anything else on the block',
+    desc: `**The Red Lion Pub on Tannery Row** — a long two-storey **brick** commercial block from 1890, by far the widest building here at 43 m, shopfront below and apartments above. It was the **Gettleman Brewery** in 1911 and still looks it: nineteenth-century brewery-era masonry, flat roofline, regular window rhythm, stone sills. A British pub at street level — dark painted shopfront, a hanging **RED LION** sign (readable text allowed), warm windows, a few pavement tables.`,
+  },
+  {
+    name: 'Eagle Park Brewing',
+    at: [43.05429, -87.9015],
+    kind: 'building',
+    sizeM: [30, 20],
+    evict: 20,
+    cue: 'a shaped parapet over wide garage bays, low and broad',
+    desc: `**Eagle Park Brewing Company** — a 1920s tannery garage turned brewery taproom (it was the **Gallun Tanneries Garage**). Low, wide, **single-storey brick** industrial building with Mediterranean Revival touches: a shaped parapet, arched openings, tile accents. Big **garage-door bays** along the front, opened up with glass. An outdoor patio with picnic benches and string lights. Industrial bones, friendly use.`,
+  },
+  {
+    name: 'The Hi Hat',
+    at: [43.053146, -87.895206],
+    kind: 'building',
+    sizeM: [22, 25],
+    evict: 18,
+    cue: 'a two-storey brick corner beside a low flat-roofed garage — tall and squat together',
+    desc: `**The Hi Hat** — one bar living in **two adjoining buildings**, and the contrast between them is the whole picture. On the corner, the **Hi Hat Lounge**: two storeys of **cream city brick**, apartment windows above, a dark painted bar front below. Attached to it, the **Hi Hat Garage**: a low **single-storey concrete** garage from 1922 (once Zawatski Garage) that kept every bit of the garage about it — wide door openings glazed and thrown open to the street, flat roofline, plain parapet. A **HI HAT** sign band (readable text allowed), sidewalk tables under awnings, warm light spilling from both. Paint them together as one venue.`,
+  },
+  {
+    name: 'Hosed on Brady',
+    at: [43.052678, -87.897001],
+    kind: 'building',
+    sizeM: [18, 10],
+    evict: 18,
+    cue: 'a flat raised false front squaring off the roof, taller than the building behind it',
+    desc: `**Hosed on Brady** — a two-storey **brick** corner tavern whose signature is its **boomtown false front**: a flat, raised parapet squaring off the roof and making the building look taller than it really is. Corner entrance, warm lit windows, a painted sign band (readable text allowed). A century of beer-hall history in a small footprint — Ziegler Brewing in 1938, Schlitz's Krueger's in 1954, Franklin Place until 2009.`,
+  },
+  {
+    name: 'Y-Not II',
+    at: [43.049499, -87.90309],
+    kind: 'building',
+    sizeM: [24, 21],
+    evict: 20,
+    cue: 'three storeys of brick with a low tiled roof, rising over its corner',
+    desc: `**Y-Not II** — a dark, beloved corner dive, open since 1968, on the ground floor of a handsome **three-storey Spanish Colonial brick apartment building**: the tall one on its corner, low-pitched tile-look roof, arched detailing and balconies above. The bar takes the corner at street level — painted shopfront, neon in the window, a small **Y-NOT II** sign (readable text allowed). Tall building, small bar.`,
+  },
+  {
+    name: '811 East Pleasant — the party house',
+    at: [43.050374, -87.901729],
+    kind: 'house',
+    sizeM: [16, 10],
+    evict: 14,
+    cue: 'a steep decorated gable over pale brick, brighter and better kept than its neighbours',
+    desc: `**811 East Pleasant Street — this is the house the whole party is at**, so it has to be findable at a glance. An 1888 Queen Anne **cream city brick** two-flat (architect James Douglas) — pale, warm, buttery yellow-cream masonry where its neighbours are painted timber, and **the brick is what makes it recognisable**. Two storeys over a raised basement, front steps up to the entrance, tall narrow Victorian windows with stone sills, a steep roof with decorative gable trim. Make it feel warm and lived-in and celebrated: lit windows, flowers, something festive at the door.`,
+  },
+  {
+    name: '1680 North Cass — the blue house',
+    at: [43.052534, -87.901812],
+    kind: 'house',
+    sizeM: [17, 8],
+    evict: 14,
+    cue: 'a decorated gable end and porch roof standing a little above the houses beside it',
+    desc: `**1680 North Cass Street — the blue house.** An 1890 Queen Anne two-flat, narrow and deep on its lot in the classic Milwaukee proportion. **Painted blue** siding — the blue is what identifies it, and it should be the one clearly blue house on its block. A front porch with steps up, tall narrow windows, a pitched roof with a modest decorative gable. Homely and friendly.`,
+  },
+  // Nomad World Pub is the finish line but sits outside the board boundary —
+  // deferred by agreement until we decide where on the east edge it perches.
+];
+
+// which of them land on this block
+const onThisBlock = POINTS_OF_INTEREST.filter((p) => pointIn(face.ring, X({ lng: p.at[1] }), Y({ lat: p.at[0] })));
 
 // --- output 1: stencil canvas ----------------------------------------------
 const cw = bw * WORK_SCALE, ch = bh * WORK_SCALE;
@@ -542,10 +674,10 @@ for (let y = 0; y < bh; y++)
     if (maskBits[(by1 + y) * pxW + bx1 + x]) tint.writeUInt32LE(0x5a0000dc, (y * bw + x) * 4); // RGBA dc0000 @ 0x5a
 const tintPng = await sharp(tint, { raw: { width: bw, height: bh, channels: 4 } }).png().toBuffer();
 let anno = `<rect x="${bx1 - cx1}" y="${by1 - cy1}" width="${bw}" height="${bh}" fill="none" stroke="#dc2626" stroke-width="2.5" stroke-dasharray="10 6"/>`;
-for (const h of heroes) {
-  const name = HERO_FILE_NAME[Object.keys(HERO_FILE_NAME).find((k) => (h.href || '').includes(k))] ?? 'HERO';
-  const hx = PXx(X(h)) - cx1, hy = PXy(Y(h)) - cy1;
-  anno += `<circle cx="${hx}" cy="${hy}" r="7" fill="#dc2626"/><text x="${hx + 11}" y="${hy + 5}" font-size="17" font-family="Arial" font-weight="bold" fill="#dc2626">${name}</text>`;
+for (const poi of onThisBlock) {
+  const at = { lat: poi.at[0], lng: poi.at[1] };
+  const hx = PXx(X(at)) - cx1, hy = PXy(Y(at)) - cy1;
+  anno += `<circle cx="${hx}" cy="${hy}" r="7" fill="#dc2626"/><text x="${hx + 11}" y="${hy + 5}" font-size="17" font-family="Arial" font-weight="bold" fill="#dc2626" stroke="#fff" stroke-width="3.5" paint-order="stroke">${poi.name.replace(/&/g, '&amp;')}</text>`;
 }
 // street names along each side of the block, just outside the outline
 const bcx = (bx1 + bx2) / 2 - cx1, bcy = (by1 + by2) / 2 - cy1;
@@ -579,7 +711,7 @@ await sharp(annotated).resize((cx2 - cx1) * 2).png().toFile(share('context.png')
 
 // --- output 3: the brief ----------------------------------------------------
 const sideLine = (dir) => (sides[dir].length ? sides[dir].join(' / ') : '(no named street — board edge or alley)');
-const poiCount = heroes.length + labeled.length;
+const poiCount = onThisBlock.length;
 const hardPois = [];
 /**
  * Place a landmark: nudge the anchor inward so the exaggerated building fits
@@ -587,6 +719,16 @@ const hardPois = [];
  * narrow wedge corner), walk the exaggeration back until it does fit. Better to
  * quote a size that works than to hand over one that must be sliced.
  */
+/** A park isn't a building: it keeps its real extent and never gets nudged. */
+function placePark(at, size) {
+  const toLocal = (v, origin) => Math.max(0, Math.round((v - origin) * WORK_SCALE));
+  return {
+    px: [toLocal(PXx(X(at)), bx1), toLocal(PXy(Y(at)), by1)],
+    moved: 0,
+    size,
+    tight: false,
+  };
+}
 function placeLandmark(e, size) {
   const toLocal = (v, origin) => Math.max(0, Math.round((v - origin) * WORK_SCALE));
   const MIN_FACTOR = 1.2; // still visibly bigger than life — the whole point
@@ -614,28 +756,11 @@ function placeLandmark(e, size) {
   const fit = fitAnchor(PXx(X(e)), PXy(Y(e)), 0, 0);
   return { px: [toLocal(fit.x, bx1), toLocal(fit.y, by1)], moved: -1, size: scaleTo(last), tight: true };
 }
-for (const h of heroes) {
-  const name = HERO_FILE_NAME[Object.keys(HERO_FILE_NAME).find((k) => (h.href || '').includes(k))] ?? 'HERO';
-  const size0 = prominence(name, h.lat, h.lng, true, poiCount);
-  hardPois.push({
-    name,
-    ...placeLandmark(h, size0),
-    cue: VERTICAL_CUE[name] ?? DEFAULT_CUE,
-    note: POI_NOTES[name] ?? '_TODO: identity notes not written yet._',
-    ref: POI_REFERENCE[name],
-  });
-}
-for (const e of labeled) {
-  const full = LABEL_FULL[e.label] ?? e.label;
-  const size0 = prominence(full, e.lat, e.lng, false, poiCount);
-  hardPois.push({
-    name: full,
-    ...placeLandmark(e, size0),
-    cue: VERTICAL_CUE[full] ?? DEFAULT_CUE,
-    note:
-      POI_NOTES[full] ??
-      `Corner tavern — a real Brady-area bar and a place people on this board actually walk into. Two-story corner building, tavern front at street level, warm lit windows, and a painted sign band reading "${full}" (readable text allowed for this name). Give it more character than anything around it: a bolder colour, an awning, a corner entrance cut across the corner.`,
-  });
+for (const poi of onThisBlock) {
+  const at = { lat: poi.at[0], lng: poi.at[1] };
+  const size0 = prominence(poi, poiCount);
+  const placed = poi.kind === 'park' ? placePark(at, size0) : placeLandmark(at, size0);
+  hardPois.push({ name: poi.name, kind: poi.kind, cue: poi.cue, note: poi.desc, ref: poi.ref, ...placed });
 }
 // Holding one style across 31 separate chats needs a picture, not adjectives.
 // But a whole approved block as the sample gets COPIED — block 13 came back as
@@ -695,10 +820,6 @@ if (hardPois.length) {
   for (let y = 0; y < bh; y++)
     for (let x = 0; x < bw; x++)
       if (maskBits[(by1 + y) * pxW + bx1 + x]) shape.writeUInt32LE(0xffe8eef0, (y * bw + x) * 4); // pale block
-  const shapePng = await sharp(shape, { raw: { width: bw, height: bh, channels: 4 } })
-    .resize(cw, ch, { kernel: 'nearest' })
-    .png()
-    .toBuffer();
   const boxes = hardPois.map((p) => {
     const [x, y] = p.px;
     // keep the drawn box on the canvas — an anchor near a corner otherwise
@@ -713,8 +834,38 @@ if (hardPois.length) {
       cy: y,
     };
   });
+  // A park is an area, not a box: fill it clipped to the block's real outline
+  // and punched out around the buildings, so the plan can't read as "put a
+  // giant rectangular thing here, on top of the tavern".
+  const buildingBoxes = boxes.filter((_, i) => hardPois[i].kind !== 'park');
+  for (let i = 0; i < hardPois.length; i++) {
+    if (hardPois[i].kind !== 'park') continue;
+    const b = boxes[i];
+    for (let y = 0; y < bh; y++) {
+      for (let x = 0; x < bw; x++) {
+        if (!maskBits[(by1 + y) * pxW + bx1 + x]) continue;
+        const wx = (x + 0.5) * WORK_SCALE, wy = (y + 0.5) * WORK_SCALE;
+        if (wx < b.x || wx > b.x + b.w || wy < b.y || wy > b.y + b.h) continue;
+        const onBuilding = buildingBoxes.some(
+          (o) => wx > o.x - 18 && wx < o.x + o.w + 18 && wy > o.y - 18 && wy < o.y + o.h + 18,
+        );
+        if (!onBuilding) shape.writeUInt32LE(0x8874c67a, (y * bw + x) * 4); // green wash, park
+      }
+    }
+  }
+  const shapePng = await sharp(shape, { raw: { width: bw, height: bh, channels: 4 } })
+    .resize(cw, ch, { kernel: 'nearest' })
+    .png()
+    .toBuffer();
   let plan = '';
   boxes.forEach((b, i) => {
+    if (hardPois[i].kind === 'park') {
+      // already painted as an area; just number it at its centre
+      plan +=
+        `<circle cx="${b.x + b.w / 2}" cy="${b.y + b.h / 2}" r="26" fill="#166534"/>` +
+        `<text x="${b.x + b.w / 2}" y="${b.y + b.h / 2 + 11}" font-size="32" font-family="Arial" font-weight="bold" fill="#fff" text-anchor="middle">${i + 1}</text>`;
+      return;
+    }
     plan +=
       `<rect x="${b.x}" y="${b.y}" width="${b.w}" height="${b.h}" fill="#dc2626" fill-opacity="0.28" stroke="#b91c1c" stroke-width="5"/>` +
       `<circle cx="${b.x + b.w / 2}" cy="${b.y + b.h / 2}" r="26" fill="#b91c1c"/>` +
@@ -912,23 +1063,34 @@ ${hardPois
   .map(
     (p, i) => `### ${i + 1}. ${p.name}
 
-- **Centre it on canvas px (${p.px[0]}, ${p.px[1]})**, facing its street.${
-      p.moved === -1
-        ? ` This is a tight corner of the block — turn the building to follow its
+${
+      p.kind === 'park'
+        ? `- **It is a park, not a building** — open ground, and the one place on this
+  block where nothing is built. Centre it on canvas px (${p.px[0]}, ${p.px[1]}) and let it
+  cover roughly **${p.size.pxW} × ${p.size.pxH} px** — its true size, about ${p.size.pctBlock}% of the block's
+  width. Do not shrink it to make room for houses; the houses give way to it.
+- **Nothing is built inside it.** No sheds, no garages, no houses creeping in
+  at the edges.
+- It must read as **public parkland at a glance** — open mown grass, paths, big
+  shade trees around the rim — never as a run of back gardens.`
+        : `- **Centre it on canvas px (${p.px[0]}, ${p.px[1]})**, facing its street.${
+            p.moved === -1
+              ? ` This is a tight corner of the block — turn the building to follow its
   street and tuck it into the space. Trim its length if you must, but keep the
   whole of it inside the white area: a landmark sliced in half by a street is
   the worst thing that can happen on this map.`
-        : ' The whole building must sit inside the white area of the stencil: nothing on the finished map is worse than a landmark sliced in half by a street.'
-    }
+              : ' The whole building must sit inside the white area of the stencil: nothing on the finished map is worse than a landmark sliced in half by a street.'
+          }
 - **Paint it about ${p.size.pxW} × ${p.size.pxH} px** — that is ${p.size.factor}× its real ${p.size.trueW} × ${p.size.trueH} m
   footprint, and roughly ${p.size.pctBlock}% of the block's width. Oversized on purpose.
-- **It must be the biggest, tallest, most detailed and most saturated thing on
-  the block**, by an obvious margin. If it does not dominate, it is wrong.
+- **It must be the biggest, tallest, most detailed and most saturated ${p.kind === 'house' ? 'house' : 'building'} on
+  the block**, by an obvious margin. If it does not stand out, it is wrong.
 - **Clear a halo of ~${p.size.haloPx} px (${p.size.evictM} m) around it** — inside that halo only its own
   grounds belong: steps, entry walks, foundation planting, a little plaza or
   yard. No houses, no garages, no fences crowding it.
 - Give it real vertical presence even from this top-down camera: ${p.cue},
-  clearly taller than every roof around it and catching light on top.
+  clearly taller than every roof around it and catching light on top.`
+    }
 
 ${p.note}${
       p.ref
@@ -1048,6 +1210,21 @@ ${hardPois
   }
 `;
 writeFileSync(share('brief.md'), brief);
+// sweep anything left from an earlier run under a different name
+for (const f of readdirSync(kitDir)) {
+  if (!f.startsWith(id + '-')) continue;
+  if (!written.has(f.slice(id.length + 1))) rmSync(`${kitDir}/${f}`);
+}
+// A half-written kit is worse than none — it would be handed to ChatGPT with a
+// brief pointing at files that aren't there. Writes have gone missing here
+// before (transient file locks while regenerating all 31 back to back), so
+// prove the folder is complete rather than assume it.
+const short = [...written].filter((f) => !existsSync(`${kitDir}/${id}-${f}`));
+if (short.length) {
+  console.error(`${id}: INCOMPLETE KIT — missing ${short.join(', ')}. Re-run this block.`);
+  process.exit(1);
+}
+
 // placement manifest for block-compose.mjs
 writeFileSync(
   `${outBase}-${id}-place.json`,
@@ -1057,4 +1234,4 @@ writeFileSync(
 console.log(`${id}: bbox ${bw}×${bh}px @ (${bx1},${by1}) → work canvas ${cw}×${ch}`);
 console.log(`  streets N[${sides.North}] E[${sides.East}] S[${sides.South}] W[${sides.West}]`);
 console.log(`  hard POIs: ${hardPois.map((p) => p.name).join(', ') || 'none'}; named places: ${namedPois.length}`);
-console.log(`  kit → ${kitDir}/ (brief.md, context.png, canvas.png)`);
+console.log(`  kit → ${kitDir}/ (${[...written].join(', ')})`);

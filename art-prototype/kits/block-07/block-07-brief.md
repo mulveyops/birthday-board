@@ -28,6 +28,10 @@ block sits.
   around it labelled. Those streets, their labels and the white circular game
   markers are already on the map. **Do not paint any of them.** Look at this
   image to understand which way the block faces, then set it aside.
+- `block-07-layout.png` — **the plan: where the landmark goes.** The block's shape
+  with the landmark drawn as a numbered red box, at its position and roughly
+  its size. Everything not inside a red box is ordinary housing. **This is the
+  layout to follow.** The style sample below is not a layout.
 - `block-07-style-reference.png` — **a texture sample: HOW to paint, never WHAT
   to paint.** A close crop of ordinary housing from elsewhere on this map,
   shown only so the whole board looks like one hand made it. Copy its camera
@@ -108,20 +112,39 @@ Bounded by:
 See `block-07-context.png` — your block outlined in red dashes on the actual base
 map (shown at 2×), so you can see the street geometry your edges meet.
 
-## No landmark here — this block is background
+## The landmark — paint this first, and paint it BIG
 
-Nothing on this block is a landmark, and that is the point. It is the ordinary
-neighbourhood fabric that makes the landmark blocks elsewhere on the board feel
-special, so keep it **even and unshowy**: no invented hero building, no
-attention-grabbing centrepiece, no one house obviously fancier than the rest.
-Pleasant, lived-in, quiet.
+This is a game board. This is a place players physically walk to,
+so it has to be the thing the eye lands on first — not one building among many.
+**Deliberately exaggerate it.** Real-world proportions are the wrong
+instinct here; a landmark painted at its true size vanishes into the houses.
+
+
+### 1. Eagle Park Brewing
+
+- **Centre it on canvas px (360, 87)**, facing its street. The whole building must sit inside the white area of the stencil: nothing on the finished map is worse than a landmark sliced in half by a street.
+- **Paint it about 300 × 200 px** — that is 1.4× its real 30 × 20 m
+  footprint, and roughly 50% of the block's width. Oversized on purpose.
+- **It must be the biggest, tallest, most detailed and most saturated building on
+  the block**, by an obvious margin. If it does not stand out, it is wrong.
+- **Clear a halo of ~139 px (20 m) around it** — inside that halo only its own
+  grounds belong: steps, entry walks, foundation planting, a little plaza or
+  yard. No houses, no garages, no fences crowding it.
+- Give it real vertical presence even from this top-down camera: a shaped parapet over wide garage bays, low and broad,
+  clearly taller than every roof around it and catching light on top.
+
+**Eagle Park Brewing Company** — a 1920s tannery garage turned brewery taproom (it was the **Gallun Tanneries Garage**). Low, wide, **single-storey brick** industrial building with Mediterranean Revival touches: a shaped parapet, arched openings, tile accents. Big **garage-door bays** along the front, opened up with glass. An outdoor patio with picnic benches and string lights. Industrial bones, friendly use.
+
+## Everything else is supporting cast
+
+That one building is the focal point of this block — nothing else competes
+with it. The rest of the block is deliberately **quieter**: ordinary houses,
+simpler roofs, less saturated colours, no second attention-grabber. Thin the
+fabric rather than packing buildings in — the landmark has earned the space.
 
 ## Other named places here
 
-Real addresses on this block. Get the building type right; they need no
-signage and no readable text.
-
-- **Eagle Park Brewing Company** (pub) — around (350, 89)
+_Nothing else on this block is named — it is all ordinary housing._
 
 ## Texture guidance — paint the vibe, counts are approximate
 
@@ -146,7 +169,7 @@ Property details (real):
 - 1 × walk
 - 1 × parking
 
-Counts are a vibe, not a checklist.
+Counts are a vibe, not a checklist — and the landmark outranks all of it. Drop houses if they crowd it.
 
 Composition rules of thumb: street trees live in the terrace band just inside
 each street edge; houses front their street with small setbacks and entry
@@ -173,3 +196,18 @@ windows.
   delivery in the wrong orientation is unusable no matter how good the art is.
 - No invented store names, street names, or readable text (exceptions above).
 - Don't relocate or mirror the landmark.
+- **Don't paint the landmark at realistic size.** Undersized is the one failure
+  that makes the whole block useless to us — when in doubt, go bigger.
+- Don't give a plain house a feature interesting enough to compete with it.
+
+## Before you call it finished
+
+The last thing to do, and the one that matters most. Check the painting against
+this list — this is a real place people walk to in this game, and a block
+missing it is unusable to us however good the rest looks. It is by far the
+most common way these come back wrong.
+
+- [ ] **Eagle Park Brewing** is in the painting, near canvas px (360, 87), roughly 300 × 200 px, and obviously bigger and more interesting than the houses around it.
+- [ ] Nothing in a red box on the layout plan has been left out.
+- [ ] The canvas is 600 × 372 px.
+- [ ] No streets, no lettering other than the name above, no map markers.

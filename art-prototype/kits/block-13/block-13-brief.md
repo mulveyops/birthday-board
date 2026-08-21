@@ -28,8 +28,8 @@ block sits.
   around it labelled. Those streets, their labels and the white circular game
   markers are already on the map. **Do not paint any of them.** Look at this
   image to understand which way the block faces, then set it aside.
-- `block-13-layout.png` — **the plan: where the 3 landmarks go.** The block's shape
-  with each landmark drawn as a numbered red box, at its position and roughly
+- `block-13-layout.png` — **the plan: where the landmark goes.** The block's shape
+  with the landmark drawn as a numbered red box, at its position and roughly
   its size. Everything not inside a red box is ordinary housing. **This is the
   layout to follow.** The style sample below is not a layout.
 - `block-13-style-reference.png` — **a texture sample: HOW to paint, never WHAT
@@ -112,73 +112,38 @@ Bounded by:
 See `block-13-context.png` — your block outlined in red dashes on the actual base
 map (shown at 2×), so you can see the street geometry your edges meet.
 
-## The landmarks — paint these first, and paint them BIG
+## The landmark — paint this first, and paint it BIG
 
-This is a game board. These are places players physically walk to,
-so they have to be the thing the eye lands on first — not one building among many.
-**Deliberately exaggerate them.** Real-world proportions are the wrong
+This is a game board. This is a place players physically walk to,
+so it has to be the thing the eye lands on first — not one building among many.
+**Deliberately exaggerate it.** Real-world proportions are the wrong
 instinct here; a landmark painted at its true size vanishes into the houses.
 
-**This block has 3 of them: The Standard Tavern, Pete's Pub, Hi Hat Garage. All 3 must appear** —
-they are separate real businesses at the positions given below, and a block
-that is missing one is unusable to us even if the rest is perfect. Check them
-off before you finish.
 
+### 1. The Hi Hat
 
-### 1. The Standard Tavern
-
-- **Centre it on canvas px (85, 84)**, facing its street. This is a tight corner of the block — turn the building to follow its
+- **Centre it on canvas px (827, 891)**, facing its street. This is a tight corner of the block — turn the building to follow its
   street and tuck it into the space. Trim its length if you must, but keep the
   whole of it inside the white area: a landmark sliced in half by a street is
   the worst thing that can happen on this map.
-- **Paint it about 227 × 64 px** — that is 1.3× its real 26 × 7 m
-  footprint, and roughly 26% of the block's width. Oversized on purpose.
-- **It must be the biggest, tallest, most detailed and most saturated thing on
-  the block**, by an obvious margin. If it does not dominate, it is wrong.
+- **Paint it about 195 × 221 px** — that is 1.3× its real 22 × 25 m
+  footprint, and roughly 22% of the block's width. Oversized on purpose.
+- **It must be the biggest, tallest, most detailed and most saturated building on
+  the block**, by an obvious margin. If it does not stand out, it is wrong.
 - **Clear a halo of ~125 px (18 m) around it** — inside that halo only its own
   grounds belong: steps, entry walks, foundation planting, a little plaza or
   yard. No houses, no garages, no fences crowding it.
-- Give it real vertical presence even from this top-down camera: a bolder, taller roofline than anything beside it — a raised corner, a deep sign band, a chimney,
+- Give it real vertical presence even from this top-down camera: a two-storey brick corner beside a low flat-roofed garage — tall and squat together,
   clearly taller than every roof around it and catching light on top.
 
-Corner tavern — a real Brady-area bar and a place people on this board actually walk into. Two-story corner building, tavern front at street level, warm lit windows, and a painted sign band reading "The Standard Tavern" (readable text allowed for this name). Give it more character than anything around it: a bolder colour, an awning, a corner entrance cut across the corner.
-
-### 2. Pete's Pub
-
-- **Centre it on canvas px (641, 895)**, facing its street. The whole building must sit inside the white area of the stencil: nothing on the finished map is worse than a landmark sliced in half by a street.
-- **Paint it about 237 × 99 px** — that is 1.8× its real 19 × 8 m
-  footprint, and roughly 27% of the block's width. Oversized on purpose.
-- **It must be the biggest, tallest, most detailed and most saturated thing on
-  the block**, by an obvious margin. If it does not dominate, it is wrong.
-- **Clear a halo of ~125 px (18 m) around it** — inside that halo only its own
-  grounds belong: steps, entry walks, foundation planting, a little plaza or
-  yard. No houses, no garages, no fences crowding it.
-- Give it real vertical presence even from this top-down camera: a bolder, taller roofline than anything beside it — a raised corner, a deep sign band, a chimney,
-  clearly taller than every roof around it and catching light on top.
-
-Corner tavern — a real Brady-area bar and a place people on this board actually walk into. Two-story corner building, tavern front at street level, warm lit windows, and a painted sign band reading "Pete's Pub" (readable text allowed for this name). Give it more character than anything around it: a bolder colour, an awning, a corner entrance cut across the corner.
-
-### 3. Hi Hat Garage
-
-- **Centre it on canvas px (753, 862)**, facing its street. The whole building must sit inside the white area of the stencil: nothing on the finished map is worse than a landmark sliced in half by a street.
-- **Paint it about 216 × 147 px** — that is 1.4× its real 22 × 15 m
-  footprint, and roughly 25% of the block's width. Oversized on purpose.
-- **It must be the biggest, tallest, most detailed and most saturated thing on
-  the block**, by an obvious margin. If it does not dominate, it is wrong.
-- **Clear a halo of ~125 px (18 m) around it** — inside that halo only its own
-  grounds belong: steps, entry walks, foundation planting, a little plaza or
-  yard. No houses, no garages, no fences crowding it.
-- Give it real vertical presence even from this top-down camera: a bolder, taller roofline than anything beside it — a raised corner, a deep sign band, a chimney,
-  clearly taller than every roof around it and catching light on top.
-
-Corner tavern — a real Brady-area bar and a place people on this board actually walk into. Two-story corner building, tavern front at street level, warm lit windows, and a painted sign band reading "Hi Hat Garage" (readable text allowed for this name). Give it more character than anything around it: a bolder colour, an awning, a corner entrance cut across the corner.
+**The Hi Hat** — one bar living in **two adjoining buildings**, and the contrast between them is the whole picture. On the corner, the **Hi Hat Lounge**: two storeys of **cream city brick**, apartment windows above, a dark painted bar front below. Attached to it, the **Hi Hat Garage**: a low **single-storey concrete** garage from 1922 (once Zawatski Garage) that kept every bit of the garage about it — wide door openings glazed and thrown open to the street, flat roofline, plain parapet. A **HI HAT** sign band (readable text allowed), sidewalk tables under awnings, warm light spilling from both. Paint them together as one venue.
 
 ## Everything else is supporting cast
 
-Those 3 are the focal points of this block — nothing else competes with
-them. The rest of the block is deliberately **quieter**: ordinary houses,
+That one building is the focal point of this block — nothing else competes
+with it. The rest of the block is deliberately **quieter**: ordinary houses,
 simpler roofs, less saturated colours, no second attention-grabber. Thin the
-fabric rather than packing buildings in — the landmarks have earned the space.
+fabric rather than packing buildings in — the landmark has earned the space.
 
 ## Other named places here
 
@@ -186,7 +151,9 @@ Real addresses on this block. Get the building type right; they need no
 signage — only the landmark above carries readable text.
 
 - **Brady East STD Clinic** (clinic) — around (640, 931)
+- **Hi Hat Garage** (pub) — around (803, 833)
 - **Peters, Weiland & Company** (warehouse) — around (392, 413)
+- **The Standard Tavern** (bar) — around (78, 88)
 
 ## Texture guidance — paint the vibe, counts are approximate
 
@@ -235,21 +202,19 @@ windows.
 - **Don't change the canvas shape.** 868 × 948 (0.92 : 1, portrait) — a
   delivery in the wrong orientation is unusable no matter how good the art is.
 - No invented store names, street names, or readable text (exceptions above).
-- Don't relocate or mirror the landmarks.
-- **Don't paint the landmarks at realistic size.** Undersized is the one failure
+- Don't relocate or mirror the landmark.
+- **Don't paint the landmark at realistic size.** Undersized is the one failure
   that makes the whole block useless to us — when in doubt, go bigger.
 - Don't give a plain house a feature interesting enough to compete with it.
 
 ## Before you call it finished
 
 The last thing to do, and the one that matters most. Check the painting against
-this list — each of these is a real place people walk to in this game, and a block
-missing one is unusable to us however good the rest looks. It is by far the
+this list — this is a real place people walk to in this game, and a block
+missing it is unusable to us however good the rest looks. It is by far the
 most common way these come back wrong.
 
-- [ ] **The Standard Tavern** is in the painting, near canvas px (85, 84), roughly 227 × 64 px, and obviously bigger and more interesting than the houses around it.
-- [ ] **Pete's Pub** is in the painting, near canvas px (641, 895), roughly 237 × 99 px, and obviously bigger and more interesting than the houses around it.
-- [ ] **Hi Hat Garage** is in the painting, near canvas px (753, 862), roughly 216 × 147 px, and obviously bigger and more interesting than the houses around it.
+- [ ] **The Hi Hat** is in the painting, near canvas px (827, 891), roughly 195 × 221 px, and obviously bigger and more interesting than the houses around it.
 - [ ] Nothing in a red box on the layout plan has been left out.
 - [ ] The canvas is 868 × 948 px.
-- [ ] No streets, no lettering other than the names above, no map markers.
+- [ ] No streets, no lettering other than the name above, no map markers.

@@ -41,7 +41,7 @@ block sits.
   layout.** It is a swatch, not a plan. Your block's contents are specified
   below and they are different — if your painting ends up resembling this
   crop, you have copied the wrong thing.
-- `block-20-gloriosos-reference.png` — our approved painting of GLORIOSO'S, for
+- `block-20-gloriosos-italian-market-reference.png` — our approved painting of Glorioso's Italian Market, for
   identity only (see its section below).
 
 > ## ⚠ OUTPUT SIZE: **664 × 772 px — PORTRAIT, taller than it is wide**
@@ -122,22 +122,25 @@ so it has to be the thing the eye lands on first — not one building among many
 instinct here; a landmark painted at its true size vanishes into the houses.
 
 
-### 1. GLORIOSO'S
+### 1. Glorioso's Italian Market
 
-- **Centre it on canvas px (161, 130)**, facing its street. The whole building must sit inside the white area of the stencil: nothing on the finished map is worse than a landmark sliced in half by a street.
-- **Paint it about 347 × 262 px** — that is 1.3× its real 40 × 30 m
-  footprint, and roughly 52% of the block's width. Oversized on purpose.
-- **It must be the biggest, tallest, most detailed and most saturated thing on
-  the block**, by an obvious margin. If it does not dominate, it is wrong.
+- **Centre it on canvas px (65, 17)**, facing its street. This is a tight corner of the block — turn the building to follow its
+  street and tuck it into the space. Trim its length if you must, but keep the
+  whole of it inside the white area: a landmark sliced in half by a street is
+  the worst thing that can happen on this map.
+- **Paint it about 350 × 263 px** — that is 1.3× its real 40 × 30 m
+  footprint, and roughly 53% of the block's width. Oversized on purpose.
+- **It must be the biggest, tallest, most detailed and most saturated building on
+  the block**, by an obvious margin. If it does not stand out, it is wrong.
 - **Clear a halo of ~167 px (24 m) around it** — inside that halo only its own
   grounds belong: steps, entry walks, foundation planting, a little plaza or
   yard. No houses, no garages, no fences crowding it.
 - Give it real vertical presence even from this top-down camera: the tall flat parapet of the old theatre, standing above its neighbours,
   clearly taller than every roof around it and catching light on top.
 
-**Glorioso's Italian Market**, in the former Astor Theatre (1907–13) — a wide, low theatre block with a tall flat parapet, light stucco body, a long run of storefront glass along Brady, a bold GLORIOSO'S signage band and Italian tricolour (green/white/red) awnings. It should read instantly as "old movie house turned Italian grocery".
+**Glorioso's Italian Market**, in the former **Astor Theatre** (1913, architect Myers E. Becongia) — an old movie house turned Italian grocery, and the biggest commercial mass on Brady Street. Wide, low theatre massing with a tall flat parapet, clearly bigger and flatter-topped than its neighbours. Light **stucco** body, a long run of storefront glass along Brady, a bold horizontal **GLORIOSO'S** sign band (readable text allowed), and Italian tricolour — green, white, red — in the awnings.
 
-**Identity reference: `block-20-gloriosos-reference.png`** (attached) — our own
+**Identity reference: `block-20-gloriosos-italian-market-reference.png`** (attached) — our own
 approved painting of this exact building. Match its materials, colour and
 character. **Do NOT match its camera**: that reference is drawn from a lower
 three-quarter angle, while this block is strongly top-down. Same building,
@@ -218,7 +221,7 @@ this list — this is a real place people walk to in this game, and a block
 missing it is unusable to us however good the rest looks. It is by far the
 most common way these come back wrong.
 
-- [ ] **GLORIOSO'S** is in the painting, near canvas px (161, 130), roughly 347 × 262 px, and obviously bigger and more interesting than the houses around it.
+- [ ] **Glorioso's Italian Market** is in the painting, near canvas px (65, 17), roughly 350 × 263 px, and obviously bigger and more interesting than the houses around it.
 - [ ] Nothing in a red box on the layout plan has been left out.
 - [ ] The canvas is 664 × 772 px.
 - [ ] No streets, no lettering other than the name above, no map markers.

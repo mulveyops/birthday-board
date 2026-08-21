@@ -2202,6 +2202,19 @@ export default function App({
     );
   }
   function removeSquare(id: string) {
+    // A connected square is part of the road network — deleting it takes its
+    // road segments with it (and cuts the turf graph there). That is almost
+    // never what "remove this stray bar" means, so make it loud and point at
+    // the safe alternative.
+    const connected = board.edges.filter((e) => e.from === id || e.to === id).length;
+    if (
+      connected > 0 &&
+      !confirm(
+        `⚠️ ${connected} road segment${connected === 1 ? '' : 's'} meet at this space — deleting it removes those roads too.\n\n` +
+          `To just remove a bar/icon and keep the intersection, Cancel and set its Type to "blank" instead.`,
+      )
+    )
+      return;
     setBoard((b) => ({
       ...b,
       squares: b.squares.filter((s) => s.id !== id),

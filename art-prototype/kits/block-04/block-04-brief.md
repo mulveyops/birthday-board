@@ -140,7 +140,8 @@ off before you finish.
 
 ### 1. Wolski's Tavern
 
-- **Centre it on canvas px (359, 595)**, facing its street. This is a tight corner of the block — turn the building to follow its
+- **It stands in the middle of the left edge of the canvas**, centred near
+  px (359, 595), its front facing the street. This is a tight corner of the block — turn the building to follow its
   street and tuck it into the space. Trim its length if you must, but keep the
   whole of it inside the white area: a landmark sliced in half by a street is
   the worst thing that can happen on this map.
@@ -165,9 +166,10 @@ your camera.
 ### 2. Pulaski Street Playfield
 
 - **It is a park, not a building** — open ground, and the one place on this
-  block where nothing is built. Centre it on canvas px (642, 457) and let it
-  cover roughly **1041 × 521 px** — its true size, about 85% of the block's
-  width. Do not shrink it to make room for houses; the houses give way to it.
+  block where nothing is built. It occupies the middle of the top edge of the canvas,
+  centred near px (642, 457), covering roughly **1041 × 521 px** — its true
+  size, about 85% of the block's width. Do not shrink it to make room for
+  houses; the houses give way to it.
 - **Nothing is built inside it.** No sheds, no garages, no houses creeping in
   at the edges.
 - It must read as **public parkland at a glance** — open mown grass, paths, big
@@ -260,9 +262,10 @@ this list — each of these is a real place people walk to in this game, and a b
 missing one is unusable to us however good the rest looks. It is by far the
 most common way these come back wrong.
 
-- [ ] **Wolski's Tavern** is in the painting, near canvas px (359, 595), roughly 158 × 113 px, and obviously bigger and more interesting than the houses around it.
-- [ ] **Pulaski Street Playfield** is in the painting, near canvas px (642, 457), roughly 1041 × 521 px, and obviously bigger and more interesting than the houses around it.
+- [ ] **Wolski's Tavern** — the little wooden corner tavern — is in the middle of the left edge, roughly 158 × 113 px, and looks like what it is: not grander, not more civic, not a different kind of building.
+- [ ] **Pulaski Street Playfield** — the park with the softball diamond — is in the middle of the top edge, roughly 1041 × 521 px, and looks like what it is: not grander, not more civic, not a different kind of building.
 - [ ] Nothing in a red box on the layout plan has been left out.
 - [ ] Buildings match the grey outlines on the site plan in size and number — not bigger, not fewer.
+- [ ] **Every part of the white stencil area is painted** — a bare patch becomes a hole in the map.
 - [ ] The canvas is 1224 × 1632 px.
 - [ ] No streets, no lettering other than the names above, no map markers.

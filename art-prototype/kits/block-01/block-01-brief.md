@@ -49,19 +49,19 @@ block sits.
   below and they are different — if your painting ends up resembling this
   crop, you have copied the wrong thing.
 
-> ## ⚠ OUTPUT SIZE: **804 × 552 px — LANDSCAPE, wider than it is tall**
+> ## ⚠ OUTPUT SIZE: **2132 × 1160 px — LANDSCAPE, wider than it is tall**
 >
 > Identical in size and shape to the attached `block-01-canvas.png`. This is not a
 > preference — the painting is composited onto a map at exactly this size, so a
 > different shape gets stretched and every building in it comes out squashed.
 > If you cannot output these exact pixels, output a **larger** image with the
-> **same ratio (1.46 : 1)** and the same orientation. Never a default 4:3 or
+> **same ratio (1.84 : 1)** and the same orientation. Never a default 4:3 or
 > 16:9 canvas, and never the other orientation.
 
 ## Deliverable
 
-- **One PNG, exactly 804 × 552 px, painted edge to edge.** That is 4× the block's
-  final size on the board canvas (201 × 138 px at position x 610, y 476 on the
+- **One PNG, exactly 2132 × 1160 px, painted edge to edge.** That is 4× the block's
+  final size on the board canvas (533 × 290 px at position x 473, y 452 on the
   1875 × 2048 base) — we downscale and place it; paint at this working size so
   detail survives.
 - **You are painting ONE BLOCK — the land between the streets. You are not
@@ -138,12 +138,10 @@ off before you finish.
 
 ### 1. Fink's
 
-- **Centre it on canvas px (1533, 0)**, facing its street. This is a tight corner of the block — turn the building to follow its
-  street and tuck it into the space. Trim its length if you must, but keep the
-  whole of it inside the white area: a landmark sliced in half by a street is
-  the worst thing that can happen on this map.
-- **Paint it about 158 × 61 px** — that is 1.3× its real 18 × 7 m
-  footprint, and roughly 20% of the block's width. Oversized on purpose.
+- **It stands in the top-right corner of the canvas**, centred near
+  px (2047, 37), its front facing the street. The whole building must sit inside the white area of the stencil: nothing on the finished map is worse than a landmark sliced in half by a street.
+- **Paint it about 180 × 70 px** — that is 1.4× its real 18 × 7 m
+  footprint, and roughly 9% of the block's width. Oversized on purpose.
 - **It must be the biggest, tallest, most detailed and most saturated building on
   the block**, by an obvious margin. If it does not stand out, it is wrong.
 - **Clear a halo of ~125 px (18 m) around it** — inside that halo only its own
@@ -156,12 +154,13 @@ off before you finish.
 
 ### 2. Red Lion Pub
 
-- **Centre it on canvas px (33, 480)**, facing its street. This is a tight corner of the block — turn the building to follow its
+- **It stands in the middle of the left edge of the canvas**, centred near
+  px (581, 576), its front facing the street. This is a tight corner of the block — turn the building to follow its
   street and tuck it into the space. Trim its length if you must, but keep the
   whole of it inside the white area: a landmark sliced in half by a street is
   the worst thing that can happen on this map.
 - **Paint it about 376 × 96 px** — that is 1.3× its real 43 × 11 m
-  footprint, and roughly 47% of the block's width. Oversized on purpose.
+  footprint, and roughly 18% of the block's width. Oversized on purpose.
 - **It must be the biggest, tallest, most detailed and most saturated building on
   the block**, by an obvious margin. If it does not stand out, it is wrong.
 - **Clear a halo of ~139 px (20 m) around it** — inside that halo only its own
@@ -181,7 +180,11 @@ fabric rather than packing buildings in — the landmarks have earned the space.
 
 ## Other named places here
 
-_Nothing else on this block is named — it is all ordinary housing._
+Real addresses on this block. Get the building type right; they need no
+signage — only the landmark above carries readable text.
+
+- **The 1818 Lofts** (industrial) — around (178, 997)
+- **Gallun Tannery Row** — around (196, 966)
 
 ## Texture guidance — paint the vibe, counts are approximate
 
@@ -234,7 +237,7 @@ windows.
   your block is listed in this brief and nowhere else.
 - Nothing outside the stencil. No drop shadows past the polygon edge.
 - No rounded corners, no inset border, no empty margin inside the stencil.
-- **Don't change the canvas shape.** 804 × 552 (1.46 : 1, landscape) — a
+- **Don't change the canvas shape.** 2132 × 1160 (1.84 : 1, landscape) — a
   delivery in the wrong orientation is unusable no matter how good the art is.
 - No invented store names, street names, or readable text (exceptions above).
 - Don't relocate or mirror the landmarks.
@@ -249,9 +252,10 @@ this list — each of these is a real place people walk to in this game, and a b
 missing one is unusable to us however good the rest looks. It is by far the
 most common way these come back wrong.
 
-- [ ] **Fink's** is in the painting, near canvas px (1533, 0), roughly 158 × 61 px, and obviously bigger and more interesting than the houses around it.
-- [ ] **Red Lion Pub** is in the painting, near canvas px (33, 480), roughly 376 × 96 px, and obviously bigger and more interesting than the houses around it.
+- [ ] **Fink's** — the small single-storey corner bar — is in the top-right corner, roughly 180 × 70 px, and looks like what it is: not grander, not more civic, not a different kind of building.
+- [ ] **Red Lion Pub** — the long two-storey brick pub — is in the middle of the left edge, roughly 376 × 96 px, and looks like what it is: not grander, not more civic, not a different kind of building.
 - [ ] Nothing in a red box on the layout plan has been left out.
 - [ ] Buildings match the grey outlines on the site plan in size and number — not bigger, not fewer.
-- [ ] The canvas is 804 × 552 px.
+- [ ] **Every part of the white stencil area is painted** — a bare patch becomes a hole in the map.
+- [ ] The canvas is 2132 × 1160 px.
 - [ ] No streets, no lettering other than the names above, no map markers.

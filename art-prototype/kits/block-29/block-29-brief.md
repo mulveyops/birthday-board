@@ -133,7 +133,8 @@ instinct here; a landmark painted at its true size vanishes into the houses.
 
 ### 1. 811 East Pleasant — the party house
 
-- **Centre it on canvas px (171, 53)**, facing its street. The whole building must sit inside the white area of the stencil: nothing on the finished map is worse than a landmark sliced in half by a street.
+- **It stands in the top-left corner of the canvas**, centred near
+  px (171, 53), its front facing the street. The whole building must sit inside the white area of the stencil: nothing on the finished map is worse than a landmark sliced in half by a street.
 - **Paint it about 200 × 125 px** — that is 1.8× its real 16 × 10 m
   footprint, and roughly 37% of the block's width. Oversized on purpose.
 - **It must be the biggest, tallest, most detailed and most saturated house on
@@ -220,8 +221,9 @@ this list — this is a real place people walk to in this game, and a block
 missing it is unusable to us however good the rest looks. It is by far the
 most common way these come back wrong.
 
-- [ ] **811 East Pleasant — the party house** is in the painting, near canvas px (171, 53), roughly 200 × 125 px, and obviously bigger and more interesting than the houses around it.
+- [ ] **811 East Pleasant — the party house** — the cream-brick house dressed for a party — is in the top-left corner, roughly 200 × 125 px, and looks like what it is: not grander, not more civic, not a different kind of building.
 - [ ] Nothing in a red box on the layout plan has been left out.
 - [ ] Buildings match the grey outlines on the site plan in size and number — not bigger, not fewer.
+- [ ] **Every part of the white stencil area is painted** — a bare patch becomes a hole in the map.
 - [ ] The canvas is 536 × 752 px.
 - [ ] No streets, no lettering other than the name above, no map markers.

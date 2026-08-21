@@ -179,3 +179,10 @@ windows.
   delivery in the wrong orientation is unusable no matter how good the art is.
 - No invented store names, street names, or readable text (exceptions above).
 - No invented centrepiece: this block has no landmark and should not grow one.
+
+## Before you call it finished
+
+- [ ] Buildings match the grey outlines on the site plan in size and number — not bigger, not fewer.
+- [ ] **Every part of the white stencil area is painted** — a bare patch becomes a hole in the map.
+- [ ] The canvas is 544 × 760 px.
+- [ ] No streets, no lettering anywhere, no map markers, no invented centrepiece.

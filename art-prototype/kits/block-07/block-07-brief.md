@@ -133,7 +133,8 @@ instinct here; a landmark painted at its true size vanishes into the houses.
 
 ### 1. Eagle Park Brewing
 
-- **Centre it on canvas px (360, 87)**, facing its street. The whole building must sit inside the white area of the stencil: nothing on the finished map is worse than a landmark sliced in half by a street.
+- **It stands in the middle of the top edge of the canvas**, centred near
+  px (360, 87), its front facing the street. The whole building must sit inside the white area of the stencil: nothing on the finished map is worse than a landmark sliced in half by a street.
 - **Paint it about 300 × 200 px** — that is 1.4× its real 30 × 20 m
   footprint, and roughly 50% of the block's width. Oversized on purpose.
 - **It must be the biggest, tallest, most detailed and most saturated building on
@@ -220,8 +221,9 @@ this list — this is a real place people walk to in this game, and a block
 missing it is unusable to us however good the rest looks. It is by far the
 most common way these come back wrong.
 
-- [ ] **Eagle Park Brewing** is in the painting, near canvas px (360, 87), roughly 300 × 200 px, and obviously bigger and more interesting than the houses around it.
+- [ ] **Eagle Park Brewing** — the low brick garage turned taproom — is in the middle of the top edge, roughly 300 × 200 px, and looks like what it is: not grander, not more civic, not a different kind of building.
 - [ ] Nothing in a red box on the layout plan has been left out.
 - [ ] Buildings match the grey outlines on the site plan in size and number — not bigger, not fewer.
+- [ ] **Every part of the white stencil area is painted** — a bare patch becomes a hole in the map.
 - [ ] The canvas is 600 × 372 px.
 - [ ] No streets, no lettering other than the name above, no map markers.

@@ -133,7 +133,6 @@ Pleasant, lived-in, quiet.
 Real addresses on this block. Get the building type right; they need no
 signage and no readable text.
 
-- **Jack's American Pub** (pub) — around (333, -1)
 - **DORSIA** (restaurant) — around (105, 51)
 - **MKE's Smallest Bar** (bar) — around (501, 33)
 
@@ -182,3 +181,10 @@ windows.
   delivery in the wrong orientation is unusable no matter how good the art is.
 - No invented store names, street names, or readable text (exceptions above).
 - No invented centrepiece: this block has no landmark and should not grow one.
+
+## Before you call it finished
+
+- [ ] Buildings match the grey outlines on the site plan in size and number — not bigger, not fewer.
+- [ ] **Every part of the white stencil area is painted** — a bare patch becomes a hole in the map.
+- [ ] The canvas is 608 × 848 px.
+- [ ] No streets, no lettering anywhere, no map markers, no invented centrepiece.

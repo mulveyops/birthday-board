@@ -122,7 +122,8 @@ instinct here; a landmark painted at its true size vanishes into the houses.
 
 ### 1. St Hedwig's
 
-- **Centre it on canvas px (202, 831)**, facing its street. The whole building must sit inside the white area of the stencil: nothing on the finished map is worse than a landmark sliced in half by a street.
+- **It stands in the middle of the bottom edge of the canvas**, centred near
+  px (202, 831), its front facing the street. The whole building must sit inside the white area of the stencil: nothing on the finished map is worse than a landmark sliced in half by a street.
 - **Paint it about 467 × 253 px** — that is 1.4× its real 48 × 26 m
   footprint, and roughly 83% of the block's width. Oversized on purpose.
 - **It must be the biggest, tallest, most detailed and most saturated building on
@@ -221,8 +222,9 @@ this list — this is a real place people walk to in this game, and a block
 missing it is unusable to us however good the rest looks. It is by far the
 most common way these come back wrong.
 
-- [ ] **St Hedwig's** is in the painting, near canvas px (202, 831), roughly 467 × 253 px, and obviously bigger and more interesting than the houses around it.
+- [ ] **St Hedwig's** — the cream-brick church with the green spire — is in the middle of the bottom edge, roughly 467 × 253 px, and looks like what it is: not grander, not more civic, not a different kind of building.
 - [ ] Nothing in a red box on the layout plan has been left out.
 - [ ] Buildings match the grey outlines on the site plan in size and number — not bigger, not fewer.
+- [ ] **Every part of the white stencil area is painted** — a bare patch becomes a hole in the map.
 - [ ] The canvas is 564 × 948 px.
 - [ ] No streets, no lettering other than the name above, no map markers.

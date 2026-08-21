@@ -135,7 +135,8 @@ instinct here; a landmark painted at its true size vanishes into the houses.
 
 ### 1. Glorioso's Italian Market
 
-- **Centre it on canvas px (65, 17)**, facing its street. This is a tight corner of the block — turn the building to follow its
+- **It stands in the top-left corner of the canvas**, centred near
+  px (65, 17), its front facing the street. This is a tight corner of the block — turn the building to follow its
   street and tuck it into the space. Trim its length if you must, but keep the
   whole of it inside the white area: a landmark sliced in half by a street is
   the worst thing that can happen on this map.
@@ -234,8 +235,9 @@ this list — this is a real place people walk to in this game, and a block
 missing it is unusable to us however good the rest looks. It is by far the
 most common way these come back wrong.
 
-- [ ] **Glorioso's Italian Market** is in the painting, near canvas px (65, 17), roughly 350 × 263 px, and obviously bigger and more interesting than the houses around it.
+- [ ] **Glorioso's Italian Market** — the old theatre turned Italian market — is in the top-left corner, roughly 350 × 263 px, and looks like what it is: not grander, not more civic, not a different kind of building.
 - [ ] Nothing in a red box on the layout plan has been left out.
 - [ ] Buildings match the grey outlines on the site plan in size and number — not bigger, not fewer.
+- [ ] **Every part of the white stencil area is painted** — a bare patch becomes a hole in the map.
 - [ ] The canvas is 664 × 772 px.
 - [ ] No streets, no lettering other than the name above, no map markers.

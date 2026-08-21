@@ -165,6 +165,7 @@ const face = blocksRaw[blockNum - 1];
 const [ccx, ccy] = centroid(face.ring);
 const base = await sharp('art-prototype/out/reference.png').raw().toBuffer({ resolveWithObject: true });
 const pxW = base.info.width, pxH = base.info.height, nCh = base.info.channels;
+const mPerBasePx = W / pxW;
 const PXx = (v) => (v * pxW) / W;
 const PXy = (v) => (v * pxH) / H;
 
@@ -179,13 +180,28 @@ const isInterior = (x, y) => {
 };
 const maskBits = new Uint8Array(pxW * pxH);
 {
-  const sx = Math.round(PXx(ccx)), sy = Math.round(PXy(ccy));
-  if (!isInterior(sx, sy)) {
-    console.error(`block centroid (${sx},${sy}) is not on block-interior green — cannot trace this block`);
+  // Seed from a GRID of points across the whole ring, not just the centroid.
+  // A single seed silently traced a fragment when a rendered feature split the
+  // block's green into separate regions — block 1's stencil covered 38% of the
+  // block, its brief placed Fink's at canvas px (1537, 0) on an 804-wide
+  // canvas, and the delivery filled the fragment with one pub and a car park.
+  // Every green region whose seed lies inside the ring belongs to the block.
+  const stack = [];
+  const step = Math.max(4, Math.round(8 / mPerBasePx));
+  const rxs = face.ring.map((q) => q[0]), rys = face.ring.map((q) => q[1]);
+  const gx1 = Math.max(0, Math.floor(PXx(Math.min(...rxs)))), gx2 = Math.min(pxW - 1, Math.ceil(PXx(Math.max(...rxs))));
+  const gy1 = Math.max(0, Math.floor(PXy(Math.min(...rys)))), gy2 = Math.min(pxH - 1, Math.ceil(PXy(Math.max(...rys))));
+  for (let y = gy1; y <= gy2; y += step)
+    for (let x = gx1; x <= gx2; x += step) {
+      if (maskBits[y * pxW + x] || !isInterior(x, y)) continue;
+      if (!pointIn(face.ring, (x * W) / pxW, (y * H) / pxH)) continue;
+      maskBits[y * pxW + x] = 1;
+      stack.push(y * pxW + x);
+    }
+  if (!stack.length) {
+    console.error('no block-interior green found inside this block\'s ring — cannot trace it');
     process.exit(1);
   }
-  const stack = [sy * pxW + sx];
-  maskBits[stack[0]] = 1;
   while (stack.length) {
     const p = stack.pop();
     const x = p % pxW, y = (p / pxW) | 0;
@@ -550,6 +566,7 @@ function prominence(poi, poiCount) {
 const POINTS_OF_INTEREST = [
   {
     name: "St Hedwig's",
+    short: "the cream-brick church with the green spire",
     at: [43.053174, -87.897631],
     kind: 'building',
     sizeM: [48, 26],
@@ -564,6 +581,7 @@ const POINTS_OF_INTEREST = [
   },
   {
     name: "Glorioso's Italian Market",
+    short: "the old theatre turned Italian market",
     at: [43.052838, -87.899352],
     kind: 'building',
     sizeM: [40, 30],
@@ -574,6 +592,7 @@ const POINTS_OF_INTEREST = [
   },
   {
     name: "Wolski's Tavern",
+    short: "the little wooden corner tavern",
     at: [43.055231, -87.896601],
     kind: 'building',
     sizeM: [18, 13],
@@ -584,6 +603,7 @@ const POINTS_OF_INTEREST = [
   },
   {
     name: 'Pulaski Street Playfield',
+    short: "the park with the softball diamond",
     at: [43.05541, -87.8961],
     kind: 'park',
     sizeM: [150, 75],
@@ -599,6 +619,7 @@ const POINTS_OF_INTEREST = [
   },
   {
     name: "Fink's",
+    short: "the small single-storey corner bar",
     at: [43.056064, -87.898304],
     kind: 'building',
     sizeM: [18, 7],
@@ -608,6 +629,7 @@ const POINTS_OF_INTEREST = [
   },
   {
     name: 'Red Lion Pub',
+    short: "the long two-storey brick pub",
     at: [43.055323, -87.90096],
     kind: 'building',
     sizeM: [43, 11],
@@ -617,6 +639,7 @@ const POINTS_OF_INTEREST = [
   },
   {
     name: 'Eagle Park Brewing',
+    short: "the low brick garage turned taproom",
     at: [43.05429, -87.9015],
     kind: 'building',
     sizeM: [30, 20],
@@ -626,6 +649,7 @@ const POINTS_OF_INTEREST = [
   },
   {
     name: 'The Hi Hat',
+    short: "the corner bar in two adjoining buildings",
     at: [43.053146, -87.895206],
     kind: 'building',
     sizeM: [22, 25],
@@ -635,6 +659,7 @@ const POINTS_OF_INTEREST = [
   },
   {
     name: 'Hosed on Brady',
+    short: "the false-front brick corner tavern",
     at: [43.052678, -87.897001],
     kind: 'building',
     sizeM: [18, 10],
@@ -644,6 +669,7 @@ const POINTS_OF_INTEREST = [
   },
   {
     name: 'Y-Not II',
+    short: "the corner dive bar under three storeys of apartments",
     at: [43.049499, -87.90309],
     kind: 'building',
     sizeM: [24, 21],
@@ -653,6 +679,7 @@ const POINTS_OF_INTEREST = [
   },
   {
     name: '811 East Pleasant — the party house',
+    short: "the cream-brick house dressed for a party",
     at: [43.050374, -87.901729],
     kind: 'house',
     sizeM: [16, 10],
@@ -662,6 +689,7 @@ const POINTS_OF_INTEREST = [
   },
   {
     name: '1680 North Cass — the blue house',
+    short: "the one clearly blue house",
     at: [43.052534, -87.901812],
     kind: 'house',
     sizeM: [17, 8],
@@ -678,6 +706,17 @@ const onThisBlock = POINTS_OF_INTEREST.filter((p) => inThisPiece(p.at[0], p.at[1
 
 // --- output 1: stencil canvas ----------------------------------------------
 const cw = bw * WORK_SCALE, ch = bh * WORK_SCALE;
+// "the top-right corner", "the middle of the left edge" — image models place
+// things by words far more reliably than by pixel coordinates
+function plainPosition(x, y) {
+  const col = x < cw / 3 ? 0 : x < (2 * cw) / 3 ? 1 : 2;
+  const row = y < ch / 3 ? 0 : y < (2 * ch) / 3 ? 1 : 2;
+  return [
+    ['the top-left corner', 'the middle of the top edge', 'the top-right corner'],
+    ['the middle of the left edge', 'the centre', 'the middle of the right edge'],
+    ['the bottom-left corner', 'the middle of the bottom edge', 'the bottom-right corner'],
+  ][row][col];
+}
 const maskRaw = Buffer.alloc(bw * bh * 4);
 for (let y = 0; y < bh; y++)
   for (let x = 0; x < bw; x++)
@@ -744,16 +783,20 @@ const hardPois = [];
  */
 /** A park isn't a building: it keeps its real extent and never gets nudged. */
 function placePark(at, size) {
-  const toLocal = (v, origin) => Math.max(0, Math.round((v - origin) * WORK_SCALE));
+  const lx = Math.max(0, Math.min(cw, Math.round((PXx(X(at)) - bx1) * WORK_SCALE)));
+  const ly = Math.max(0, Math.min(ch, Math.round((PXy(Y(at)) - by1) * WORK_SCALE)));
   return {
-    px: [toLocal(PXx(X(at)), bx1), toLocal(PXy(Y(at)), by1)],
+    px: [lx, ly],
     moved: 0,
     size,
     tight: false,
   };
 }
 function placeLandmark(e, size) {
-  const toLocal = (v, origin) => Math.max(0, Math.round((v - origin) * WORK_SCALE));
+  // clamped to the canvas on BOTH ends — an unclamped anchor once printed
+  // "canvas px (1537, 0)" on an 804-wide canvas and the landmark simply
+  // never got painted
+  const toLocal = (v, origin, max) => Math.max(0, Math.min(max, Math.round((v - origin) * WORK_SCALE)));
   const MIN_FACTOR = 1.2; // still visibly bigger than life — the whole point
   const scaleTo = (shrink) =>
     shrink === 1
@@ -771,19 +814,19 @@ function placeLandmark(e, size) {
     last = shrink;
     const fit = fitAnchor(PXx(X(e)), PXy(Y(e)), (size.pxW * shrink) / WORK_SCALE, (size.pxH * shrink) / WORK_SCALE);
     if (fit.moved >= 0) {
-      return { px: [toLocal(fit.x, bx1), toLocal(fit.y, by1)], moved: fit.moved, size: scaleTo(shrink), tight: shrink < 1 };
+      return { px: [toLocal(fit.x, bx1, cw), toLocal(fit.y, by1, ch)], moved: fit.moved, size: scaleTo(shrink), tight: shrink < 1 };
     }
   }
   // genuinely tight corner: keep it exaggerated at the floor, keep it where it
   // belongs, and let the brief tell the painter to fit it to the space
   const fit = fitAnchor(PXx(X(e)), PXy(Y(e)), 0, 0);
-  return { px: [toLocal(fit.x, bx1), toLocal(fit.y, by1)], moved: -1, size: scaleTo(last), tight: true };
+  return { px: [toLocal(fit.x, bx1, cw), toLocal(fit.y, by1, ch)], moved: -1, size: scaleTo(last), tight: true };
 }
 for (const poi of onThisBlock) {
   const at = { lat: poi.at[0], lng: poi.at[1] };
   const size0 = prominence(poi, poiCount);
   const placed = poi.kind === 'park' ? placePark(at, size0) : placeLandmark(at, size0);
-  hardPois.push({ name: poi.name, kind: poi.kind, cue: poi.cue, note: poi.desc, ref: poi.ref, ...placed });
+  hardPois.push({ name: poi.name, short: poi.short, kind: poi.kind, cue: poi.cue, note: poi.desc, ref: poi.ref, ...placed });
 }
 // Holding one style across 31 separate chats needs a picture, not adjectives.
 // But a whole approved block as the sample gets COPIED — block 13 came back as
@@ -1181,14 +1224,16 @@ ${hardPois
 ${
       p.kind === 'park'
         ? `- **It is a park, not a building** — open ground, and the one place on this
-  block where nothing is built. Centre it on canvas px (${p.px[0]}, ${p.px[1]}) and let it
-  cover roughly **${p.size.pxW} × ${p.size.pxH} px** — its true size, about ${p.size.pctBlock}% of the block's
-  width. Do not shrink it to make room for houses; the houses give way to it.
+  block where nothing is built. It occupies ${plainPosition(p.px[0], p.px[1])} of the canvas,
+  centred near px (${p.px[0]}, ${p.px[1]}), covering roughly **${p.size.pxW} × ${p.size.pxH} px** — its true
+  size, about ${p.size.pctBlock}% of the block's width. Do not shrink it to make room for
+  houses; the houses give way to it.
 - **Nothing is built inside it.** No sheds, no garages, no houses creeping in
   at the edges.
 - It must read as **public parkland at a glance** — open mown grass, paths, big
   shade trees around the rim — never as a run of back gardens.`
-        : `- **Centre it on canvas px (${p.px[0]}, ${p.px[1]})**, facing its street.${
+        : `- **It stands in ${plainPosition(p.px[0], p.px[1])} of the canvas**, centred near
+  px (${p.px[0]}, ${p.px[1]}), its front facing the street.${
             p.moved === -1
               ? ` This is a tight corner of the block — turn the building to follow its
   street and tuck it into the space. Trim its length if you must, but keep the
@@ -1317,14 +1362,22 @@ most common way these come back wrong.
 ${hardPois
   .map(
     (p) =>
-      `- [ ] **${p.name}** is in the painting, near canvas px (${p.px[0]}, ${p.px[1]}), roughly ${p.size.pxW} × ${p.size.pxH} px, and obviously bigger and more interesting than the houses around it.`,
+      `- [ ] **${p.name}** — ${p.short ?? 'the landmark'} — is in ${plainPosition(p.px[0], p.px[1])}, roughly ${p.size.pxW} × ${p.size.pxH} px, and looks like what it is: not grander, not more civic, not a different kind of building.`,
   )
   .join('\n')}
 - [ ] Nothing in a red box on the layout plan has been left out.
 - [ ] Buildings match the grey outlines on the site plan in size and number — not bigger, not fewer.
+- [ ] **Every part of the white stencil area is painted** — a bare patch becomes a hole in the map.
 - [ ] The canvas is ${cw} × ${ch} px.
 - [ ] No streets, no lettering other than the name${hardPois.length > 1 ? 's' : ''} above, no map markers.`
-      : ''
+      : `
+
+## Before you call it finished
+
+- [ ] Buildings match the grey outlines on the site plan in size and number — not bigger, not fewer.
+- [ ] **Every part of the white stencil area is painted** — a bare patch becomes a hole in the map.
+- [ ] The canvas is ${cw} × ${ch} px.
+- [ ] No streets, no lettering anywhere, no map markers, no invented centrepiece.`
   }
 `;
 writeFileSync(share('brief.md'), brief);

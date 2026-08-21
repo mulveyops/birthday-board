@@ -28,10 +28,17 @@ block sits.
   around it labelled. Those streets, their labels and the white circular game
   markers are already on the map. **Do not paint any of them.** Look at this
   image to understand which way the block faces, then set it aside.
-- `block-13-layout.png` — **the plan: where the landmark goes.** The block's shape
-  with the landmark drawn as a numbered red box, at its position and roughly
-  its size. Everything not inside a red box is ordinary housing. **This is the
-  layout to follow.** The style sample below is not a layout.
+- `block-13-layout.png` — **the site plan, and the most important attachment
+  after the stencil.** It shows this block's **real buildings as grey outlines
+  at exactly the size they should be painted**, with a 20 m scale bar. Match
+  those sizes and that spacing: how many buildings there are, how big each is
+  relative to the block, how much garden sits between them.
+  **Scale matters more here than any other instruction.** Each block is painted
+  separately and then set side by side on one map, so a block drawn at twice
+  life size ruins its neighbours as much as itself.
+  The landmark is drawn over the top as **numbered red boxes**, deliberately
+  bigger than life — those, and only those, are exaggerated. Everything not in
+  a red box is ordinary housing at true size.
 - `block-13-style-reference.png` — **a texture sample: HOW to paint, never WHAT
   to paint.** A close crop of ordinary housing from elsewhere on this map,
   shown only so the whole board looks like one hand made it. Copy its camera
@@ -72,8 +79,12 @@ block sits.
 - **The perimeter band of your painting is the sidewalk/terrace zone** (~6 m
   ≈ 42 px wide): paint your own sidewalk paving there, with the street
   trees in the grass terrace strip alongside it.
-- **North is up.** Scale: **1 px = 0.144 m** (a typical 17 × 8 m Polish
-  flat ≈ 118 × 56 px; a street tree canopy ~8 m ≈ 56 px across).
+- **North is up. Scale: 1 px = 0.144 m**, and this is not negotiable —
+  the site plan shows you what that means. A typical Milwaukee two-flat is
+  17 × 8 m ≈ **118 × 56 px**; a big street tree's canopy is 8 m ≈ **56 px**
+  across; a car is 4.5 m ≈ **31 px** long. Houses are small on this
+  canvas and there are a lot of them — that is correct. The commonest mistake
+  is painting a handful of oversized houses to fill the space.
 
 ## Style
 
@@ -216,5 +227,6 @@ most common way these come back wrong.
 
 - [ ] **The Hi Hat** is in the painting, near canvas px (827, 891), roughly 195 × 221 px, and obviously bigger and more interesting than the houses around it.
 - [ ] Nothing in a red box on the layout plan has been left out.
+- [ ] Buildings match the grey outlines on the site plan in size and number — not bigger, not fewer.
 - [ ] The canvas is 868 × 948 px.
 - [ ] No streets, no lettering other than the name above, no map markers.

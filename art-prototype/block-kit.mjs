@@ -809,17 +809,65 @@ const otherPois = namedPois.filter((p) => {
   });
 });
 // only rendered when there are any — the empty case gets its own sentence
-// --- output 4: the layout plan ---------------------------------------------
-// Text kept losing to pictures: the style swatch shows ordinary houses, so
-// block 13 came back as ordinary houses however loudly the words asked for
-// three taverns. So the landmark requirement gets a picture of its own —
-// the block's shape with each landmark drawn where it goes, at the size it
-// should be. Only for blocks that have landmarks; fabric blocks don't need it.
-if (hardPois.length) {
+// --- output 4: the site plan ------------------------------------------------
+// Two problems, one picture. Text kept losing to pictures — the style swatch
+// showed ordinary houses, so the tavern block came back as ordinary houses
+// however loudly the words asked for bars. And blocks painted in separate
+// chats drifted badly out of scale with each other: block 4 came back at
+// roughly double block 11's, its houses 30-40 m wide against a real 8-17 m,
+// because a chat fills its canvas attractively rather than counting metres.
+//
+// So the plan carries the REAL OSM BUILDING FOOTPRINTS at true size, every
+// block, plus a scale bar — the painter is shown how big a house is here
+// rather than told. Landmarks sit on top as red boxes at their exaggerated
+// size, which also makes the contrast between "landmark" and "ordinary"
+// visible at a glance.
+{
+  // real building outlines on this block, in work-canvas coordinates
+  const footprints = [];
+  for (const w of osm.buildings?.elements ?? []) {
+    if (!w.geometry?.length) continue;
+    // test against the block's own polygon, not the grown stencil — the
+    // stencil reaches across the sidewalk and catches the far kerb's buildings
+    const wx = w.geometry.reduce((s, g) => s + X({ lng: g.lon }), 0) / w.geometry.length;
+    const wy = w.geometry.reduce((s, g) => s + Y({ lat: g.lat }), 0) / w.geometry.length;
+    if (!pointIn(face.ring, wx, wy)) continue;
+    footprints.push(w.geometry.map((g) => [LX(X({ lng: g.lon })), LY(Y({ lat: g.lat }))]));
+  }
   const shape = Buffer.alloc(bw * bh * 4);
   for (let y = 0; y < bh; y++)
     for (let x = 0; x < bw; x++)
       if (maskBits[(by1 + y) * pxW + bx1 + x]) shape.writeUInt32LE(0xffe8eef0, (y * bw + x) * 4); // pale block
+  // Footprints are painted into the block's own silhouette rather than drawn
+  // as free-floating shapes: some real buildings straddle a block boundary
+  // (block 8 has one 46 x 61 m, taller than the whole canvas), and only the
+  // part standing on this block should be shown.
+  const fillPoly = (pts, colorLE) => {
+    const ys = pts.map((p) => p[1]);
+    const y0 = Math.max(0, Math.floor(Math.min(...ys))), y1 = Math.min(bh - 1, Math.ceil(Math.max(...ys)));
+    for (let y = y0; y <= y1; y++) {
+      const xsAt = [];
+      for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) {
+        const [xi, yi] = pts[i], [xj, yj] = pts[j];
+        if (yi > y !== yj > y) xsAt.push(((xj - xi) * (y - yi)) / (yj - yi) + xi);
+      }
+      xsAt.sort((a, b) => a - b);
+      for (let k = 0; k + 1 < xsAt.length; k += 2) {
+        for (let x = Math.max(0, Math.ceil(xsAt[k])); x <= Math.min(bw - 1, Math.floor(xsAt[k + 1])); x++) {
+          if (maskBits[(by1 + y) * pxW + bx1 + x]) shape.writeUInt32LE(colorLE, (y * bw + x) * 4);
+        }
+      }
+    }
+  };
+  const GREY = 0xffb8a394, EDGE = 0xff6b5a4a;
+  for (const pts of footprints) fillPoly(pts.map(([x, y]) => [x / WORK_SCALE, y / WORK_SCALE]), GREY);
+  // outline pass, so a terrace of adjoining buildings doesn't read as one mass
+  const isGrey = (x, y) => x >= 0 && y >= 0 && x < bw && y < bh && shape.readUInt32LE((y * bw + x) * 4) === GREY;
+  const edges = [];
+  for (let y = 0; y < bh; y++)
+    for (let x = 0; x < bw; x++)
+      if (isGrey(x, y) && !(isGrey(x - 1, y) && isGrey(x + 1, y) && isGrey(x, y - 1) && isGrey(x, y + 1))) edges.push(y * bw + x);
+  for (const i of edges) shape.writeUInt32LE(EDGE, i * 4);
   const boxes = hardPois.map((p) => {
     const [x, y] = p.px;
     // keep the drawn box on the canvas — an anchor near a corner otherwise
@@ -902,9 +950,18 @@ if (hardPois.length) {
   });
   // put the caption in whichever end of the canvas no landmark box reaches
   const topClear = boxes.every((b) => b.y > 90);
+  const capY = topClear ? 46 : ch - 74;
+  const caption = hardPois.length
+    ? `${hardPois.length === 1 ? 'Grey = real buildings at true size. Red = the landmark' : `Grey = real buildings at true size. Red = the ${hardPois.length} landmarks`}`
+    : 'Grey outlines are the real buildings, at the size they should be painted';
+  // A scale bar is the whole point of this image: blocks drawn in separate
+  // chats drifted to double size without one.
+  const barPx = Math.round(20 / mPerWorkPx);
+  const barX = 24, barY = ch - 34;
   const legend =
-    `<text x="${cw / 2}" y="${topClear ? 46 : ch - 18}" font-size="28" font-family="Arial" font-weight="bold" fill="#7f1d1d" text-anchor="middle" stroke="#fff" stroke-width="7" paint-order="stroke">` +
-    `${hardPois.length === 1 ? 'Where the landmark goes' : `Where the ${hardPois.length} landmarks go`} — everything else is ordinary houses</text>`;
+    `<text x="${cw / 2}" y="${capY}" font-size="28" font-family="Arial" font-weight="bold" fill="#7f1d1d" text-anchor="middle" stroke="#fff" stroke-width="7" paint-order="stroke">${caption}</text>` +
+    `<rect x="${barX}" y="${barY}" width="${barPx}" height="14" fill="#111827" stroke="#ffffff" stroke-width="3"/>` +
+    `<text x="${barX}" y="${barY - 10}" font-size="26" font-family="Arial" font-weight="bold" fill="#111827" stroke="#fff" stroke-width="6" paint-order="stroke">20 m — a house is about this wide</text>`;
   await sharp(shapePng)
     .composite([{ input: Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${cw}" height="${ch}">${plan}${legend}</svg>`), left: 0, top: 0 }])
     .png()
@@ -944,13 +1001,20 @@ block sits.
   where this block sits on the finished map, washed red, with the streets
   around it labelled. Those streets, their labels and the white circular game
   markers are already on the map. **Do not paint any of them.** Look at this
-  image to understand which way the block faces, then set it aside.${
+  image to understand which way the block faces, then set it aside.
+- \`${id}-layout.png\` — **the site plan, and the most important attachment
+  after the stencil.** It shows this block's **real buildings as grey outlines
+  at exactly the size they should be painted**, with a 20 m scale bar. Match
+  those sizes and that spacing: how many buildings there are, how big each is
+  relative to the block, how much garden sits between them.
+  **Scale matters more here than any other instruction.** Each block is painted
+  separately and then set side by side on one map, so a block drawn at twice
+  life size ruins its neighbours as much as itself.${
     hardPois.length
       ? `
-- \`${id}-layout.png\` — **the plan: where the ${hardPois.length > 1 ? `${hardPois.length} landmarks go` : 'landmark goes'}.** The block's shape
-  with ${hardPois.length > 1 ? 'each' : 'the'} landmark drawn as a numbered red box, at its position and roughly
-  its size. Everything not inside a red box is ordinary housing. **This is the
-  layout to follow.** The style sample below is not a layout.`
+  The ${hardPois.length > 1 ? `${hardPois.length} landmarks are` : 'landmark is'} drawn over the top as **numbered red boxes**, deliberately
+  bigger than life — those, and only those, are exaggerated. Everything not in
+  a red box is ordinary housing at true size.`
       : ''
   }${
     shipStyleRef
@@ -1004,8 +1068,12 @@ block sits.
 - **The perimeter band of your painting is the sidewalk/terrace zone** (~6 m
   ≈ ${Math.round(6 / (mPerPx / WORK_SCALE))} px wide): paint your own sidewalk paving there, with the street
   trees in the grass terrace strip alongside it.
-- **North is up.** Scale: **1 px = ${mPerWorkPx.toFixed(3)} m** (a typical 17 × 8 m Polish
-  flat ≈ ${Math.round(17 / mPerWorkPx)} × ${Math.round(8 / mPerWorkPx)} px; a street tree canopy ~8 m ≈ ${Math.round(8 / mPerWorkPx)} px across).
+- **North is up. Scale: 1 px = ${mPerWorkPx.toFixed(3)} m**, and this is not negotiable —
+  the site plan shows you what that means. A typical Milwaukee two-flat is
+  17 × 8 m ≈ **${Math.round(17 / mPerWorkPx)} × ${Math.round(8 / mPerWorkPx)} px**; a big street tree's canopy is 8 m ≈ **${Math.round(8 / mPerWorkPx)} px**
+  across; a car is 4.5 m ≈ **${Math.round(4.5 / mPerWorkPx)} px** long. Houses are small on this
+  canvas and there are a lot of them — that is correct. The commonest mistake
+  is painting a handful of oversized houses to fill the space.
 
 ## Style
 
@@ -1204,6 +1272,7 @@ ${hardPois
   )
   .join('\n')}
 - [ ] Nothing in a red box on the layout plan has been left out.
+- [ ] Buildings match the grey outlines on the site plan in size and number — not bigger, not fewer.
 - [ ] The canvas is ${cw} × ${ch} px.
 - [ ] No streets, no lettering other than the name${hardPois.length > 1 ? 's' : ''} above, no map markers.`
       : ''

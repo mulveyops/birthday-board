@@ -20,9 +20,14 @@ export default function Home() {
         </div>
       </div>
 
-      <button className="site-admin-link" onClick={() => navigate('/admin')}>
-        admin
-      </button>
+      <div style={{ display: 'flex', gap: 14, justifyContent: 'center' }}>
+        <button className="site-admin-link" onClick={() => navigate('/ref')}>
+          referee
+        </button>
+        <button className="site-admin-link" onClick={() => navigate('/admin')}>
+          admin
+        </button>
+      </div>
     </div>
   );
 }

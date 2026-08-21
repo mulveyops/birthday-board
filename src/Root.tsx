@@ -3,6 +3,7 @@ import App from './App';
 import Home from './pages/Home';
 import Rsvp from './pages/Rsvp';
 import Admin from './pages/Admin';
+import Referee from './pages/Referee';
 
 /**
  * Navigate client-side. We use HASH routing (#/rsvp) on purpose: the fragment
@@ -45,6 +46,7 @@ export default function Root() {
       />
     );
   if (p === '/admin') return <Admin />;
+  if (p === '/ref') return <Referee />;
   if (p === '/content') return <Admin initialTab="content" />;
   return <Home />;
 }

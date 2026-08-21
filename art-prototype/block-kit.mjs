@@ -1247,7 +1247,7 @@ windows.
 - **Don't change the canvas shape.** ${cw} × ${ch} (${(cw / ch).toFixed(2)} : 1, ${cw < ch ? 'portrait' : cw > ch ? 'landscape' : 'square'}) — a
   delivery in the wrong orientation is unusable no matter how good the art is.
 - No invented store names, street names, or readable text (exceptions above).
-- Don't relocate or mirror the landmark${hardPois.length > 1 ? 's' : ''}.${
+${hardPois.length ? `- Don't relocate or mirror the landmark${hardPois.length > 1 ? 's' : ''}.` : '- No invented centrepiece: this block has no landmark and should not grow one.'}${
     hardPois.length
       ? `
 - **Don't paint the landmark${hardPois.length > 1 ? 's' : ''} at realistic size.** Undersized is the one failure

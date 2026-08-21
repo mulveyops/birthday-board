@@ -181,4 +181,4 @@ windows.
 - **Don't change the canvas shape.** 660 × 748 (0.88 : 1, portrait) — a
   delivery in the wrong orientation is unusable no matter how good the art is.
 - No invented store names, street names, or readable text (exceptions above).
-- Don't relocate or mirror the landmark.
+- No invented centrepiece: this block has no landmark and should not grow one.

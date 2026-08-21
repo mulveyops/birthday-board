@@ -149,6 +149,31 @@ if (mode === 'use') {
   mkdirSync(dirOf(nn), { recursive: true });
   const v = `v${versionsOf(nn).length + 1}`;
   const meta = await sharp(src).metadata();
+  // Blocks have distinctive canvas ratios, so a delivery that fits some other
+  // block far better than this one is almost certainly being filed against the
+  // wrong number — easy to do when several downloads land minutes apart.
+  {
+    const ratio = meta.width / meta.height;
+    const fitOf = (b) => {
+      const p = JSON.parse(readFileSync(KIT(b).place, 'utf8'));
+      return Math.abs(ratio / (p.workCanvas[0] / p.workCanvas[1]) - 1);
+    };
+    const mine = fitOf(nn);
+    let best = nn, bestFit = mine;
+    for (const f of readdirSync(OUT)) {
+      const m2 = /^reference-block-(\d\d)-place\.json$/.exec(f);
+      if (!m2) continue;
+      const fit = fitOf(m2[1]);
+      if (fit < bestFit) { bestFit = fit; best = m2[1]; }
+    }
+    if (best !== nn && mine > 0.08) {
+      warnings.push(
+        `block ${nn}: this image is ${(mine * 100).toFixed(0)}% off block ${nn}'s canvas but only ` +
+          `${(bestFit * 100).toFixed(0)}% off block ${Number(best)}'s — is it actually block ${Number(best)}? ` +
+          `Filed as block ${nn} ${v}; delete ${dirOf(nn)}/${v}.png if that was a mistake.`,
+      );
+    }
+  }
   copyFileSync(src, `${dirOf(nn)}/${v}.png`);
   select(nn, v);
   console.log(`filed block ${nn} ${v} (${meta.width}×${meta.height}) — ${versionsOf(nn).length} version(s) kept`);

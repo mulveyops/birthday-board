@@ -948,16 +948,25 @@ const otherPois = namedPois.filter((p) => {
       `<text x="${best.x}" y="${best.y}" font-size="30" font-family="Arial" font-weight="bold" fill="#7f1d1d" text-anchor="${best.anchor}" ` +
       `stroke="#ffffff" stroke-width="7" paint-order="stroke">${label}</text>`;
   });
-  // put the caption in whichever end of the canvas no landmark box reaches
-  const topClear = boxes.every((b) => b.y > 90);
-  const capY = topClear ? 46 : ch - 74;
+  // Put the caption and the bar in whichever horizontal band is emptiest —
+  // block 1 has landmarks in both corners, and a caption dropped blindly at
+  // the bottom landed straight on one of them.
+  const bandLoad = (y0, y1) =>
+    boxes.reduce((s, b) => s + Math.max(0, Math.min(b.y + b.h, y1) - Math.max(b.y, y0)) * b.w, 0);
+  const bands = [
+    { capY: 46, barY: 96 },
+    { capY: ch - 74, barY: ch - 34 },
+    { capY: Math.round(ch / 2) - 10, barY: Math.round(ch / 2) + 30 },
+  ].map((b) => ({ ...b, load: bandLoad(b.capY - 40, b.barY + 20) }));
+  bands.sort((a, b) => a.load - b.load);
+  const { capY, barY: barTop } = bands[0];
   const caption = hardPois.length
     ? `${hardPois.length === 1 ? 'Grey = real buildings at true size. Red = the landmark' : `Grey = real buildings at true size. Red = the ${hardPois.length} landmarks`}`
     : 'Grey outlines are the real buildings, at the size they should be painted';
   // A scale bar is the whole point of this image: blocks drawn in separate
   // chats drifted to double size without one.
   const barPx = Math.round(20 / mPerWorkPx);
-  const barX = 24, barY = ch - 34;
+  const barX = 24, barY = barTop;
   const legend =
     `<text x="${cw / 2}" y="${capY}" font-size="28" font-family="Arial" font-weight="bold" fill="#7f1d1d" text-anchor="middle" stroke="#fff" stroke-width="7" paint-order="stroke">${caption}</text>` +
     `<rect x="${barX}" y="${barY}" width="${barPx}" height="14" fill="#111827" stroke="#ffffff" stroke-width="3"/>` +
@@ -1231,6 +1240,8 @@ windows.
 - **No streets.** No road surface, kerb line, crosswalk, centre line, or car
   driving on one. The map already has its roads; a second set painted on top
   of them is the single worst outcome here.
+- **No river, no water, no shoreline**, even if the block sits beside one. The
+  map paints its own river; yours would land on top of it in the wrong place.
 - **No street names, no labels, no lettering of any kind on the ground**, and
   no white circular game markers. If you find yourself writing a street name,
   something has gone wrong — reread this brief.

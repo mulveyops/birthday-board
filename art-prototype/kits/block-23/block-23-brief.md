@@ -179,6 +179,8 @@ windows.
 - **No streets.** No road surface, kerb line, crosswalk, centre line, or car
   driving on one. The map already has its roads; a second set painted on top
   of them is the single worst outcome here.
+- **No river, no water, no shoreline**, even if the block sits beside one. The
+  map paints its own river; yours would land on top of it in the wrong place.
 - **No street names, no labels, no lettering of any kind on the ground**, and
   no white circular game markers. If you find yourself writing a street name,
   something has gone wrong — reread this brief.

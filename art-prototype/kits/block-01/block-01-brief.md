@@ -1,5 +1,14 @@
 # block-01 — art brief
 
+> ## ⚠ OUTPUT SIZE: **804 × 552 px — LANDSCAPE, wider than it is tall**
+>
+> Identical in size and shape to the attached `block-01-canvas.png`. This is not a
+> preference — the painting is composited onto a map at exactly this size, so a
+> different shape gets stretched and every building in it comes out squashed.
+> If you cannot output these exact pixels, output a **larger** image with the
+> **same ratio (1.46 : 1)** and the same orientation. Never a default 4:3 or
+> 16:9 canvas, and never the other orientation.
+
 One block of the board, painted by you, composited by us. Numbering matches
 reference-blocks.png (this is block 1).
 
@@ -56,6 +65,12 @@ This is a game board. These are places players physically walk to,
 so they have to be the thing the eye lands on first — not one building among many.
 **Deliberately exaggerate them.** Real-world proportions are the wrong
 instinct here; a landmark painted at its true size vanishes into the houses.
+
+**This block has 2 of them: Fink’s, Scaffidi’s Hideout. All 2 must appear** —
+they are separate real businesses at the positions given below, and a block
+that is missing one is unusable to us even if the rest is perfect. Check them
+off before you finish.
+
 
 ### 1. Fink’s
 
@@ -144,6 +159,8 @@ windows.
   its dark outline are the base map's.
 - Nothing outside the stencil. No drop shadows past the polygon edge.
 - No rounded corners, no inset border, no empty margin inside the stencil.
+- **Don't change the canvas shape.** 804 × 552 (1.46 : 1, landscape) — a
+  delivery in the wrong orientation is unusable no matter how good the art is.
 - No invented store names, street names, or readable text (exceptions above).
 - Don't relocate or mirror the landmarks.
 - **Don't paint the landmarks at realistic size.** Undersized is the one failure

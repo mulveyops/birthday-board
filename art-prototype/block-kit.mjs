@@ -602,6 +602,15 @@ const poiLines = otherPois
 
 const brief = `# ${id} — art brief
 
+> ## ⚠ OUTPUT SIZE: **${cw} × ${ch} px — ${cw < ch ? 'PORTRAIT, taller than it is wide' : cw > ch ? 'LANDSCAPE, wider than it is tall' : 'SQUARE'}**
+>
+> Identical in size and shape to the attached \`${id}-canvas.png\`. This is not a
+> preference — the painting is composited onto a map at exactly this size, so a
+> different shape gets stretched and every building in it comes out squashed.
+> If you cannot output these exact pixels, output a **larger** image with the
+> **same ratio (${(cw / ch).toFixed(2)} : 1)** and the same orientation. Never a default 4:3 or
+> 16:9 canvas, and never the other orientation.
+
 One block of the board, painted by you, composited by us. Numbering matches
 reference-blocks.png (this is block ${blockNum}).
 
@@ -660,6 +669,16 @@ This is a game board. ${hardPois.length > 1 ? 'These are places' : 'This is a pl
 so ${hardPois.length > 1 ? 'they have' : 'it has'} to be the thing the eye lands on first — not one building among many.
 **Deliberately exaggerate ${hardPois.length > 1 ? 'them' : 'it'}.** Real-world proportions are the wrong
 instinct here; a landmark painted at its true size vanishes into the houses.
+${
+  hardPois.length > 1
+    ? `
+**This block has ${hardPois.length} of them: ${hardPois.map((p) => p.name).join(', ')}. All ${hardPois.length} must appear** —
+they are separate real businesses at the positions given below, and a block
+that is missing one is unusable to us even if the rest is perfect. Check them
+off before you finish.
+`
+    : ''
+}
 
 ${hardPois
   .map(
@@ -749,6 +768,8 @@ windows.
   its dark outline are the base map's.
 - Nothing outside the stencil. No drop shadows past the polygon edge.
 - No rounded corners, no inset border, no empty margin inside the stencil.
+- **Don't change the canvas shape.** ${cw} × ${ch} (${(cw / ch).toFixed(2)} : 1, ${cw < ch ? 'portrait' : cw > ch ? 'landscape' : 'square'}) — a
+  delivery in the wrong orientation is unusable no matter how good the art is.
 - No invented store names, street names, or readable text (exceptions above).
 - Don't relocate or mirror the landmark${hardPois.length > 1 ? 's' : ''}.${
     hardPois.length

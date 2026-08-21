@@ -34,6 +34,9 @@ mkdirSync(BLOCKS_DIR, { recursive: true });
 
 const [, , mode, ...rest] = process.argv;
 let judgeBlock = null; // crop this one for review at the end
+// held to the end of the run: a warning printed before a wall of progress
+// output is a warning nobody reads
+const warnings = [];
 
 if (mode === 'add') {
   const num = Number(rest[0]);
@@ -61,16 +64,7 @@ if (mode === 'add') {
     console.error(`no kit for block ${num} — run: node art-prototype/block-kit.mjs <board.json> ${num}`);
     process.exit(1);
   }
-  const place = JSON.parse(readFileSync(kit.place, 'utf8'));
   const meta = await sharp(src).metadata();
-  const want = place.workCanvas[0] / place.workCanvas[1];
-  const got = meta.width / meta.height;
-  if (Math.abs(got / want - 1) > 0.02) {
-    console.error(
-      `⚠ aspect mismatch for block ${num}: delivered ${meta.width}×${meta.height} (${got.toFixed(3)}), ` +
-        `kit canvas ${place.workCanvas.join('×')} (${want.toFixed(3)}) — art will distort; filing anyway, judge the crop.`
-    );
-  }
   copyFileSync(src, `${BLOCKS_DIR}/block-${nn}.png`);
   console.log(`filed ${BLOCKS_DIR}/block-${nn}.png (${meta.width}×${meta.height})`);
   judgeBlock = nn;
@@ -154,6 +148,19 @@ for (const nn of filed) {
     continue;
   }
   const place = JSON.parse(readFileSync(kit.place, 'utf8'));
+  // re-checked on every run, not just on `add` — a block delivered in the
+  // wrong shape stays wrong, and silence would let it ship
+  const src = await sharp(`${BLOCKS_DIR}/block-${nn}.png`).metadata();
+  const want = place.workCanvas[0] / place.workCanvas[1];
+  const got = src.width / src.height;
+  if (Math.abs(got / want - 1) > 0.02) {
+    const shape = (r) => `${r.toFixed(2)}:1 ${r > 1 ? 'landscape' : 'portrait'}`;
+    warnings.push(
+      `block ${nn}: delivered ${src.width}×${src.height} (${shape(got)}) but the kit asked for ` +
+        `${place.workCanvas.join('×')} (${shape(want)}) — fitting it squashes every building by ~${Math.round(Math.abs(got / want - 1) * 100)}%.` +
+        `${got > 1 !== want > 1 ? ' The ORIENTATION is flipped, which no amount of scaling fixes.' : ''} Regenerate rather than accept.`,
+    );
+  }
   const art = await sharp(`${BLOCKS_DIR}/block-${nn}.png`).resize(place.w, place.h).png().toBuffer();
   const mask = await sharp(kit.stencil).resize(place.w, place.h, { kernel: 'nearest' }).png().toBuffer();
   const bled = await bleedToStencil(art, mask, place.w, place.h, nn);
@@ -174,3 +181,9 @@ const chh = Math.min(place.base[1], place.y + place.h + M) - cy1;
 const crop = await sharp(painted).extract({ left: cx1, top: cy1, width: cw, height: chh }).png().toBuffer();
 await sharp(crop).resize(cw * 2).png().toFile(`${OUT}/board-painted-crop-${nn}.png`);
 console.log(`judging crop → ${OUT}/board-painted-crop-${nn}.png`);
+
+if (warnings.length) {
+  console.error(`\n${'='.repeat(70)}\n⚠  WRONG CANVAS SHAPE — DO NOT SHIP THIS BLOCK\n${'='.repeat(70)}`);
+  for (const w of warnings) console.error(`   ${w}`);
+  console.error('');
+}

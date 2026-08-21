@@ -1,5 +1,14 @@
 # block-29 — art brief
 
+> ## ⚠ OUTPUT SIZE: **536 × 752 px — PORTRAIT, taller than it is wide**
+>
+> Identical in size and shape to the attached `block-29-canvas.png`. This is not a
+> preference — the painting is composited onto a map at exactly this size, so a
+> different shape gets stretched and every building in it comes out squashed.
+> If you cannot output these exact pixels, output a **larger** image with the
+> **same ratio (0.71 : 1)** and the same orientation. Never a default 4:3 or
+> 16:9 canvas, and never the other orientation.
+
 One block of the board, painted by you, composited by us. Numbering matches
 reference-blocks.png (this is block 29).
 
@@ -100,5 +109,7 @@ windows.
   its dark outline are the base map's.
 - Nothing outside the stencil. No drop shadows past the polygon edge.
 - No rounded corners, no inset border, no empty margin inside the stencil.
+- **Don't change the canvas shape.** 536 × 752 (0.71 : 1, portrait) — a
+  delivery in the wrong orientation is unusable no matter how good the art is.
 - No invented store names, street names, or readable text (exceptions above).
 - Don't relocate or mirror the landmark.

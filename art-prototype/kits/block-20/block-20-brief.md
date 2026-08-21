@@ -1,5 +1,14 @@
 # block-20 — art brief
 
+> ## ⚠ OUTPUT SIZE: **664 × 772 px — PORTRAIT, taller than it is wide**
+>
+> Identical in size and shape to the attached `block-20-canvas.png`. This is not a
+> preference — the painting is composited onto a map at exactly this size, so a
+> different shape gets stretched and every building in it comes out squashed.
+> If you cannot output these exact pixels, output a **larger** image with the
+> **same ratio (0.86 : 1)** and the same orientation. Never a default 4:3 or
+> 16:9 canvas, and never the other orientation.
+
 One block of the board, painted by you, composited by us. Numbering matches
 reference-blocks.png (this is block 20).
 
@@ -56,6 +65,7 @@ This is a game board. This is a place players physically walk to,
 so it has to be the thing the eye lands on first — not one building among many.
 **Deliberately exaggerate it.** Real-world proportions are the wrong
 instinct here; a landmark painted at its true size vanishes into the houses.
+
 
 ### 1. GLORIOSO'S
 
@@ -131,6 +141,8 @@ windows.
   its dark outline are the base map's.
 - Nothing outside the stencil. No drop shadows past the polygon edge.
 - No rounded corners, no inset border, no empty margin inside the stencil.
+- **Don't change the canvas shape.** 664 × 772 (0.86 : 1, portrait) — a
+  delivery in the wrong orientation is unusable no matter how good the art is.
 - No invented store names, street names, or readable text (exceptions above).
 - Don't relocate or mirror the landmark.
 - **Don't paint the landmark at realistic size.** Undersized is the one failure

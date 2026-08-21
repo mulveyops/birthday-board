@@ -113,7 +113,10 @@ async function bleedToStencil(artPng, maskPng, w, h, nn) {
   }
   if (!bare) return artPng;
   const before = bare;
-  for (let pass = 0; pass < 40 && bare; pass++) {
+  // one ring per pass, so a deep gap on a big block needs as many passes as it
+  // is pixels deep — a fixed 40 left block 4 with a bare strip
+  const maxPasses = Math.max(40, Math.ceil(Math.max(w, h) / 2));
+  for (let pass = 0; pass < maxPasses && bare; pass++) {
     const snapshot = painted.slice(); // sample last pass only, so growth stays even
     for (let y = 0; y < h; y++) {
       for (let x = 0; x < w; x++) {
@@ -153,13 +156,19 @@ for (const nn of filed) {
   const src = await sharp(`${BLOCKS_DIR}/block-${nn}.png`).metadata();
   const want = place.workCanvas[0] / place.workCanvas[1];
   const got = src.width / src.height;
-  if (Math.abs(got / want - 1) > 0.02) {
-    const shape = (r) => `${r.toFixed(2)}:1 ${r > 1 ? 'landscape' : 'portrait'}`;
+  const off = Math.abs(got / want - 1);
+  const flipped = got > 1 !== want > 1;
+  const shape = (r) => `${r.toFixed(2)}:1 ${r > 1 ? 'landscape' : 'portrait'}`;
+  // Image models rarely hit an arbitrary ratio exactly, and a couple of percent
+  // of stretch is invisible — only shout when the art would actually deform.
+  if (flipped || off > 0.08) {
     warnings.push(
       `block ${nn}: delivered ${src.width}×${src.height} (${shape(got)}) but the kit asked for ` +
-        `${place.workCanvas.join('×')} (${shape(want)}) — fitting it squashes every building by ~${Math.round(Math.abs(got / want - 1) * 100)}%.` +
-        `${got > 1 !== want > 1 ? ' The ORIENTATION is flipped, which no amount of scaling fixes.' : ''} Regenerate rather than accept.`,
+        `${place.workCanvas.join('×')} (${shape(want)}) — fitting it squashes every building by ~${Math.round(off * 100)}%.` +
+        `${flipped ? ' The ORIENTATION is flipped, which no amount of scaling fixes.' : ''} Regenerate rather than accept.`,
     );
+  } else if (off > 0.02) {
+    console.log(`  block ${nn}: aspect off by ${(off * 100).toFixed(1)}% — harmless, art fitted as delivered`);
   }
   const art = await sharp(`${BLOCKS_DIR}/block-${nn}.png`).resize(place.w, place.h).png().toBuffer();
   const mask = await sharp(kit.stencil).resize(place.w, place.h, { kernel: 'nearest' }).png().toBuffer();

@@ -506,13 +506,27 @@ body {
 }
 
 .sidebar {
-  width: 340px;
-  min-width: 340px;
+  width: var(--sidebar-w, 340px);
+  min-width: var(--sidebar-w, 340px);
   height: 100%;
   overflow-y: auto;
   background: #0f172a;
   color: #e2e8f0;
   padding: 16px;
+}
+
+/* Drag strip between the panel and the map (admin desktop only). */
+.sidebar-resizer {
+  flex: 0 0 6px;
+  cursor: col-resize;
+  background: #1e293b;
+  border-left: 1px solid #334155;
+  transition: background 0.15s;
+  touch-action: none;
+}
+.sidebar-resizer:hover,
+.sidebar-resizer:active {
+  background: #3b82f6;
 }
 
 .map-wrap {
@@ -555,6 +569,9 @@ body {
     max-height: 46dvh;
     flex: 0 0 auto;
     padding: 12px;
+  }
+  .sidebar-resizer {
+    display: none;
   }
   .map-wrap {
     flex: 1 1 auto;

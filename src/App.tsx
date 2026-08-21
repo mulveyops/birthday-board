@@ -2550,6 +2550,11 @@ export default function App({
   const [openSection, setOpenSection] = useState('setup');
   // Which POI row is expanded in the Points-of-interest list editor.
   const [openPoiId, setOpenPoiId] = useState<string | null>(null);
+  // Designer sidebar width — draggable (desktop), remembered per device.
+  const [sidebarW, setSidebarW] = useState(() => {
+    const v = Number(localStorage.getItem('mke-sidebar-w'));
+    return v >= 300 && v <= 680 ? v : 340;
+  });
   const poiSquares = useMemo(
     () =>
       board.squares
@@ -2630,6 +2635,7 @@ export default function App({
       className={`app${panelOpen ? '' : ' app--panel-collapsed'}${
         variant === 'player' || appMode === 'play' || appMode === 'online' ? ' app--game' : ''
       }${variant === 'player' ? ' app--player' : ''}`}
+      style={variant === 'admin' ? ({ ['--sidebar-w' as string]: `${sidebarW}px` } as React.CSSProperties) : undefined}
     >
       <aside className="sidebar">
         <header className="brand">
@@ -3889,6 +3895,33 @@ export default function App({
         </>
         )}
       </aside>
+
+      {variant === 'admin' && (
+        <div
+          className="sidebar-resizer"
+          title="Drag to resize the panel"
+          onPointerDown={(e) => {
+            e.preventDefault();
+            (e.target as HTMLElement).setPointerCapture(e.pointerId);
+            const x0 = e.clientX;
+            const w0 = sidebarW;
+            const onMove = (ev: PointerEvent) => setSidebarW(Math.max(300, Math.min(680, w0 + (ev.clientX - x0))));
+            const onUp = () => {
+              window.removeEventListener('pointermove', onMove);
+              window.removeEventListener('pointerup', onUp);
+              setSidebarW((w) => {
+                localStorage.setItem('mke-sidebar-w', String(w));
+                return w;
+              });
+              // Leaflet + PanZoom re-fit on window resize; the panel drag
+              // changes their container without one, so send the signal.
+              window.dispatchEvent(new Event('resize'));
+            };
+            window.addEventListener('pointermove', onMove);
+            window.addEventListener('pointerup', onUp);
+          }}
+        />
+      )}
 
       <main className="map-wrap">
         <button

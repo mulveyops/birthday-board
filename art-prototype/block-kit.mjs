@@ -41,9 +41,11 @@ const SHORE_M = 60;
 const WORK_SCALE = 4; // ChatGPT paints at 4×; compositor downscales to exact bbox
 const CTX_MARGIN = 110; // px of surroundings shown in the context crop
 
-const [, , boardPath, blockNumArg, outBase = 'art-prototype/out/reference'] = process.argv;
+const argv = process.argv.slice(2);
+const half = argv.find((a) => a === 'a' || a === 'b') ?? null; // sliver blocks are painted in halves
+const [boardPath, blockNumArg, outBase = 'art-prototype/out/reference'] = argv.filter((a) => a !== 'a' && a !== 'b');
 if (!boardPath || !blockNumArg) {
-  console.error('usage: node art-prototype/block-kit.mjs <board.json> <blockNumber> [outBase]');
+  console.error('usage: node art-prototype/block-kit.mjs <board.json> <blockNumber> [a|b] [outBase]');
   process.exit(1);
 }
 const blockNum = Number(blockNumArg);
@@ -250,15 +252,36 @@ for (let y = 0; y < pxH; y++)
       if (y > by2) by2 = y;
     }
 bx2++; by2++; // exclusive
+
+// Some blocks are slivers — three of them are around 0.32:1, and an image
+// model will not go past about 1:2, so it hands back 0.60 and everything gets
+// squashed by 80-90% on the way in. Those blocks are painted in two halves
+// instead, split across the long axis, each half a shape a model can actually
+// produce. Pass `a` or `b` as the third argument.
+if (half) {
+  const tall = by2 - by1 >= bx2 - bx1;
+  if (tall) {
+    const mid = Math.round((by1 + by2) / 2);
+    if (half === 'a') by2 = mid; else by1 = mid;
+  } else {
+    const mid = Math.round((bx1 + bx2) / 2);
+    if (half === 'a') bx2 = mid; else bx1 = mid;
+  }
+}
 const bw = bx2 - bx1, bh = by2 - by1;
 const inMask = (px, py) => {
   const xi = Math.round(px), yi = Math.round(py);
   return xi >= 0 && yi >= 0 && xi < pxW && yi < pxH && maskBits[yi * pxW + xi] === 1;
 };
+// on this block — and, when painting a half, in this half of it
+const inThisPiece = (lat, lng) => {
+  const px = PXx(X({ lng })), py = PXy(Y({ lat }));
+  return pointIn(face.ring, X({ lng }), Y({ lat })) && px >= bx1 && px < bx2 && py >= by1 && py < by2;
+};
 const mPerPx = W / pxW; // base-canvas meters per pixel
 const mPerWorkPx = mPerPx / WORK_SCALE;
 const nn = String(blockNum).padStart(2, '0');
-const id = `block-${nn}`;
+const id = `block-${nn}${half ?? ''}`;
 // the three shareable files live together, ready to drag into a chat
 const kitDir = `art-prototype/kits/${id}`;
 mkdirSync(kitDir, { recursive: true });
@@ -374,7 +397,7 @@ for (const grp of ['pois', 'leisure']) {
     if (la == null || !e.tags?.name) continue;
     // test against the traced interior, not the street-centerline ring — nodes
     // sitting on the surrounding streets/sidewalks are not part of the art
-    if (inMask(PXx(X({ lng: lo })), PXy(Y({ lat: la })))) {
+    if (inMask(PXx(X({ lng: lo })), PXy(Y({ lat: la }))) && inThisPiece(la, lo)) {
       namedPois.push({
         name: e.tags.name,
         what: e.tags.amenity ?? e.tags.shop ?? e.tags.building ?? e.tags.leisure ?? '',
@@ -651,7 +674,7 @@ const POINTS_OF_INTEREST = [
 ];
 
 // which of them land on this block
-const onThisBlock = POINTS_OF_INTEREST.filter((p) => pointIn(face.ring, X({ lng: p.at[1] }), Y({ lat: p.at[0] })));
+const onThisBlock = POINTS_OF_INTEREST.filter((p) => inThisPiece(p.at[0], p.at[1]));
 
 // --- output 1: stencil canvas ----------------------------------------------
 const cw = bw * WORK_SCALE, ch = bh * WORK_SCALE;
@@ -1003,9 +1026,18 @@ and cannot move. What is missing is the land *between* the streets, so the city
 blocks are being illustrated one at a time and composited back onto the map at
 exact positions.
 
-**You are painting one city block: block ${blockNum}.** It is bounded by real streets,
+${
+  half
+    ? `**You are painting HALF of one city block — the ${half === 'a' ? 'first' : 'second'} half of block ${blockNum}.**
+That block is a long narrow strip, too long and thin to paint in one image, so
+it is being done in two pieces that will be joined edge to edge. Paint your
+half complete in itself and carry the detail right to every edge: whichever
+edge meets the other half must not fade out, stop short, or round off, because
+the join would show as a seam down the middle of the block.`
+    : `**You are painting one city block: block ${blockNum}.**`
+} It is bounded by real streets,
 it contains real buildings, and your painting drops into the hole where that
-block sits.
+${half ? 'piece' : 'block'} sits.
 
 ## What is attached
 

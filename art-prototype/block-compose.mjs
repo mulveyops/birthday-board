@@ -47,6 +47,11 @@ const warnings = [];
 
 // --- version store ----------------------------------------------------------
 const dirOf = (nn) => `${BLOCKS_DIR}/block-${nn}`;
+/** '21' -> '21', '21a' -> '21a'; sliver blocks are painted in two halves. */
+const blockId = (s) => {
+  const m = /^(d+)([ab])?$/.exec(String(s).trim());
+  return m ? String(Number(m[1])).padStart(2, '0') + (m[2] ?? '') : String(s);
+};
 const statTime = (p) => { try { return statSync(p).mtimeMs; } catch { return 0; } };
 /** Versions of a block, oldest first: ['v1','v2',...]. */
 function versionsOf(nn) {
@@ -88,7 +93,7 @@ for (const f of readdirSync(BLOCKS_DIR)) {
 
 const known = () =>
   readdirSync(BLOCKS_DIR)
-    .map((f) => /^block-(\d\d)$/.exec(f))
+    .map((f) => /^block-(\d\d[ab]?)$/.exec(f)) // sliver blocks come in halves: 21a, 21b
     .filter(Boolean)
     .map((m) => m[1])
     .filter((nn) => versionsOf(nn).length)
@@ -102,7 +107,7 @@ const usage = `usage:
   block-compose.mjs compare <N>      contact sheet of every version, in place`;
 
 if (mode === 'versions') {
-  const list = rest[0] ? [String(Number(rest[0])).padStart(2, '0')] : known();
+  const list = rest[0] ? [blockId(rest[0])] : known();
   for (const nn of list) {
     const sel = selectedOf(nn);
     console.log(
@@ -114,7 +119,7 @@ if (mode === 'versions') {
 }
 
 if (mode === 'use') {
-  const nn = String(Number(rest[0])).padStart(2, '0');
+  const nn = blockId(rest[0]);
   const v = rest[1];
   if (!rest[0] || !v) { console.error(usage); process.exit(1); }
   if (!versionsOf(nn).includes(v)) {
@@ -125,8 +130,7 @@ if (mode === 'use') {
   console.log(`block ${nn}: now using ${v}`);
   judgeBlock = nn;
 } else if (mode === 'add') {
-  const num = Number(rest[0]);
-  if (!num) { console.error(usage); process.exit(1); }
+  if (!rest[0]) { console.error(usage); process.exit(1); }
   let src = rest[1];
   if (!src) {
     const dl = join(homedir(), 'Downloads');
@@ -141,9 +145,9 @@ if (mode === 'use') {
     src = join(dl, cands[0].f);
     console.log(`using newest download: ${cands[0].f}`);
   }
-  const nn = String(num).padStart(2, '0');
+  const nn = blockId(rest[0]);
   if (!existsSync(KIT(nn).place)) {
-    console.error(`no kit for block ${num} — run: node art-prototype/block-kit.mjs <board.json> ${num}`);
+    console.error(`no kit for block ${rest[0]} — run: node art-prototype/block-kit.mjs <board.json> ${rest[0]}`);
     process.exit(1);
   }
   mkdirSync(dirOf(nn), { recursive: true });
@@ -179,7 +183,7 @@ if (mode === 'use') {
   console.log(`filed block ${nn} ${v} (${meta.width}×${meta.height}) — ${versionsOf(nn).length} version(s) kept`);
   judgeBlock = nn;
 } else if (mode === 'compare') {
-  await compareVersions(String(Number(rest[0])).padStart(2, '0'));
+  await compareVersions(blockId(rest[0]));
   process.exit(0);
 } else if (mode) {
   console.error(usage);

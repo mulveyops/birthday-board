@@ -3096,6 +3096,9 @@ export default function App({
                                   onChange={(e) => updatePoi(s, { task: e.target.value || undefined })}
                                 />
                               </label>
+                              <p className="hint" style={{ marginTop: -4 }}>
+                                🕶️ Blank = <b>black box</b> — the referee invents the game on site.
+                              </p>
                               <label className="field">
                                 <span>Reward for winning it (🪙)</span>
                                 <input
@@ -3300,6 +3303,10 @@ export default function App({
                                 onChange={(e) => updatePoi(selected, { task: e.target.value || undefined })}
                               />
                             </label>
+                            <p className="hint" style={{ marginTop: -4 }}>
+                              🕶️ Leave it blank for a <b>black box</b>: the referee invents the game on site and just
+                              reports the winner.
+                            </p>
                             <label className="field">
                               <span>Reward for winning it (🪙)</span>
                               <input
@@ -4704,11 +4711,18 @@ export default function App({
                   </div>
                   <div style={{ padding: '16px 18px' }}>
                     <p className="hint" style={{ marginTop: 0 }}>{sq.poi?.blurb || meta.blurb}</p>
-                    {sq.poi?.task && (sq.poi.encounter === 'h2h' || sq.poi.encounter === 'challenge' || sq.poi.encounter === 'boss') && (
-                      <p className="hint">
-                        🎯 <b>The play here:</b> {sq.poi.task}
-                        {sq.poi.reward ? ` (+${sq.poi.reward} 🪙)` : ''}
-                      </p>
+                    {sq.poi && (sq.poi.encounter === 'h2h' || sq.poi.encounter === 'challenge' || sq.poi.encounter === 'boss') && (
+                      sq.poi.task ? (
+                        <p className="hint">
+                          🎯 <b>The play here:</b> {sq.poi.task}
+                          {sq.poi.reward ? ` (+${sq.poi.reward} 🪙)` : ''}
+                        </p>
+                      ) : (
+                        <p className="hint">
+                          🕶️ <b>The game here is a secret</b> — the referee reveals it when you show up.
+                          {sq.poi.reward ? ` (+${sq.poi.reward} 🪙)` : ''}
+                        </p>
+                      )
                     )}
                     {ownerTeam && (
                       <p className="hint" style={{ display: 'flex', alignItems: 'center', gap: 7 }}>

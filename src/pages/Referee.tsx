@@ -225,9 +225,14 @@ export default function Referee() {
               {(ENC_META[poi.poi?.encounter ?? 'landmark'] ?? ENC_META.landmark).emoji} {poi.title}
             </h2>
             {poi.poi?.blurb && <p className="hint" style={{ marginTop: 0 }}>{poi.poi.blurb}</p>}
-            {poi.poi?.task && (
+            {poi.poi?.task ? (
               <p className="hint" style={{ background: 'rgba(240,195,60,0.14)', padding: '8px 10px', borderRadius: 8 }}>
                 🎯 <b>The game to run:</b> {poi.poi.task}
+              </p>
+            ) : (
+              <p className="hint" style={{ background: 'rgba(154,95,224,0.16)', padding: '8px 10px', borderRadius: 8 }}>
+                🕶️ <b>Black box:</b> no scripted game here — you invent the contest on the spot. Anything fair and fun.
+                When it's over, declare the winner below.
               </p>
             )}
             <label className="field">

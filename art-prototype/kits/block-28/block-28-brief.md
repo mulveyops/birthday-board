@@ -16,6 +16,11 @@ reference-blocks.png (this is block 28).
   road directly. Everything outside stays fully transparent. The roads, their
   dark outlines and the white game spots belong to the base map — never paint
   over them, never let art or shadows cross the stencil edge.
+- **Fill the stencil completely, right out to its edge.** Do not paint a
+  rounded card, a border, a drop shadow, or a margin of empty space inside the
+  shape — the block's corners are square and its edges are straight, and any
+  gap you leave shows up on the board as a bare strip between your art and the
+  road. Bleed the paving and grass all the way to the stencil boundary.
 - **The perimeter band of your painting is the sidewalk/terrace zone** (~6 m
   ≈ 42 px wide): paint your own sidewalk paving there, with the street
   trees in the grass terrace strip alongside it.
@@ -97,5 +102,6 @@ windows.
 - No roads, crosswalks, cars-on-the-road, or game spots — the road surface and
   its dark outline are the base map's.
 - Nothing outside the stencil. No drop shadows past the polygon edge.
+- No rounded corners, no inset border, no empty margin inside the stencil.
 - No invented store names, street names, or readable text (exceptions above).
 - Don't relocate or mirror the landmark.

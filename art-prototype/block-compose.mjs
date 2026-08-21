@@ -97,6 +97,55 @@ if (!filed.length) {
   console.log('nothing filed in art-prototype/blocks/ yet');
   process.exit(0);
 }
+/**
+ * Grow the delivered art outward into any stencil area it left bare.
+ *
+ * Image models hand back a rounded "card" with a margin rather than a shape
+ * filled corner to corner, which would leave a strip of bare base map between
+ * the art and the road — the exact moat the stencil was widened to remove. So
+ * push the outermost painted pixels outward, one ring per pass, until the
+ * stencil is covered. It only ever repeats colour already at the edge (grass,
+ * sidewalk, hedge), so it reads as the art continuing to the kerb.
+ */
+async function bleedToStencil(artPng, maskPng, w, h, nn) {
+  const art = await sharp(artPng).ensureAlpha().raw().toBuffer();
+  const mask = await sharp(maskPng).ensureAlpha().raw().toBuffer();
+  const inStencil = (i) => mask[i * 4 + 3] >= 128;
+  const painted = new Uint8Array(w * h);
+  let bare = 0;
+  for (let i = 0; i < w * h; i++) {
+    painted[i] = art[i * 4 + 3] >= 128 ? 1 : 0;
+    if (inStencil(i) && !painted[i]) bare++;
+  }
+  if (!bare) return artPng;
+  const before = bare;
+  for (let pass = 0; pass < 40 && bare; pass++) {
+    const snapshot = painted.slice(); // sample last pass only, so growth stays even
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        const i = y * w + x;
+        if (painted[i] || !inStencil(i)) continue;
+        for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+          const nx = x + dx, ny = y + dy;
+          if (nx < 0 || ny < 0 || nx >= w || ny >= h) continue;
+          const q = ny * w + nx;
+          if (!snapshot[q]) continue;
+          art[i * 4] = art[q * 4];
+          art[i * 4 + 1] = art[q * 4 + 1];
+          art[i * 4 + 2] = art[q * 4 + 2];
+          art[i * 4 + 3] = 255;
+          painted[i] = 1;
+          bare--;
+          break;
+        }
+      }
+    }
+  }
+  const pct = ((before / (w * h)) * 100).toFixed(1);
+  console.log(`  block ${nn}: art left ${before}px (${pct}% of bbox) of the stencil bare — bled to fill${bare ? `, ${bare}px still bare` : ''}`);
+  return sharp(art, { raw: { width: w, height: h, channels: 4 } }).png().toBuffer();
+}
+
 const layers = [];
 for (const nn of filed) {
   const kit = KIT(nn);
@@ -107,7 +156,8 @@ for (const nn of filed) {
   const place = JSON.parse(readFileSync(kit.place, 'utf8'));
   const art = await sharp(`${BLOCKS_DIR}/block-${nn}.png`).resize(place.w, place.h).png().toBuffer();
   const mask = await sharp(kit.stencil).resize(place.w, place.h, { kernel: 'nearest' }).png().toBuffer();
-  const clipped = await sharp(art).composite([{ input: mask, blend: 'dest-in' }]).png().toBuffer();
+  const bled = await bleedToStencil(art, mask, place.w, place.h, nn);
+  const clipped = await sharp(bled).composite([{ input: mask, blend: 'dest-in' }]).png().toBuffer();
   layers.push({ input: clipped, left: place.x, top: place.y });
 }
 const painted = await sharp(`${OUT}/reference.png`).composite(layers).png().toBuffer();

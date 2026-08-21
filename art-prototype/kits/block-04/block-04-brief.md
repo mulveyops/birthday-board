@@ -45,14 +45,45 @@ Bounded by:
 See `block-04-context.png` — your block outlined in red dashes on the actual base
 map (shown at 2×), so you can see the street geometry your edges meet.
 
-## Hard constraints — must be exactly here, exactly this
+## The landmark — paint this first, and paint it BIG
 
-1. **WOLSKI'S** — anchor at canvas px **(411, 598)** (the ground point of its entrance/front). **Wolski's Tavern** (1908 bar in an 1895 front-gabled wood house) — a house that became a bar. White/cream clapboard, dark roof, WOLSKI'S signboard band across the first floor (readable text allowed). Modest scale — do not monumentalize. Reference: art-prototype/out/wolskis-crop.png.
+This is a game board. This is a place players physically walk to,
+so it has to be the thing the eye lands on first — not one building among many.
+**Deliberately exaggerate it.** Real-world proportions are the wrong
+instinct here; a landmark painted at its true size vanishes into the houses.
+
+### 1. WOLSKI'S
+
+- **Ground anchor: canvas px (411, 598)** — its main entrance meets the sidewalk here.
+- **Paint it about 196 × 141 px** — that is 1.6× its real 18 × 13 m
+  footprint, and roughly 16% of the block's width. Oversized on purpose.
+- **It must be the biggest, tallest, most detailed and most saturated thing on
+  the block**, by an obvious margin. If it does not dominate, it is wrong.
+- **Clear a halo of ~139 px (20 m) around it** — inside that halo only its own
+  grounds belong: steps, entry walks, foundation planting, a little plaza or
+  yard. No houses, no garages, no fences crowding it.
+- Give it real vertical presence even from this top-down camera: a tall
+  element (tower, spire, parapet, chimney mass) that clearly rises above every
+  roof around it, catching light on top.
+
+**Wolski's Tavern** (a 1908 bar in an 1895 front-gabled wood house) — a house that became a tavern, and the most beloved dive in the neighbourhood. White/cream clapboard, dark roof, a painted WOLSKI'S signboard band across the first floor (readable text allowed), warm amber windows. Its charm is that it is small and wooden where everything else is brick — keep that character while still making it dominate the block.
+
+**Identity reference: `block-04-wolskis-reference.png`** (attached) — our own
+approved painting of this exact building. Match its materials, colour and
+character. **Do NOT match its camera**: that reference is drawn from a lower
+three-quarter angle, while this block is strongly top-down. Same building,
+your camera.
+
+## Everything else is supporting cast
+
+That one building is the focal point of this block — nothing else competes
+with it. The rest of the block is deliberately **quieter**: ordinary houses,
+simpler roofs, less saturated colours, no second attention-grabber. Thin the
+fabric rather than packing buildings in — the landmark has earned the space.
 
 Named real places on this block (get the buildings right, no signage needed
 unless noted above):
 
-- **Wolski's Tavern** (bar) — around (356, 602)
 - **East Village Historic District** — around (944, 410)
 
 ## Texture guidance — paint the vibe, counts are approximate
@@ -80,6 +111,8 @@ Property details (real):
 - 1 × wall
 - 6 × walk
 
+Counts are a vibe, not a checklist — and the landmark outranks all of it. Drop houses if they crowd it.
+
 Composition rules of thumb: street trees live in the terrace band just inside
 each street edge; houses front their street with small setbacks and entry
 walks; garages and sheds hide mid-block along the alley side; commercial
@@ -93,4 +126,7 @@ windows.
   its dark outline are the base map's.
 - Nothing outside the stencil. No drop shadows past the polygon edge.
 - No invented store names, street names, or readable text (exceptions above).
-- Don't relocate, resize, or mirror the hard-constraint landmarks.
+- Don't relocate or mirror the landmark.
+- **Don't paint the landmark at realistic size.** Undersized is the one failure
+  that makes the whole block useless to us — when in doubt, go bigger.
+- Don't give a plain house a feature interesting enough to compete with it.

@@ -45,20 +45,49 @@ Bounded by:
 See `block-11-context.png` — your block outlined in red dashes on the actual base
 map (shown at 2×), so you can see the street geometry your edges meet.
 
-## Hard constraints — must be exactly here, exactly this
+## The landmark — paint this first, and paint it BIG
 
-1. **ST. HEDWIG'S** — anchor at canvas px **(50, 846)** (the ground point of its entrance/front). **Saint Hedwig Catholic Church** (1886, Henry Messmer) — THE landmark of this block and the visual crest of Brady Street.
+This is a game board. This is a place players physically walk to,
+so it has to be the thing the eye lands on first — not one building among many.
+**Deliberately exaggerate it.** Real-world proportions are the wrong
+instinct here; a landmark painted at its true size vanishes into the houses.
+
+### 1. ST. HEDWIG'S
+
+- **Ground anchor: canvas px (50, 846)** — its main entrance meets the sidewalk here.
+- **Paint it about 464 × 249 px** — that is 1.4× its real 48 × 26 m
+  footprint, and roughly 82% of the block's width. Oversized on purpose.
+- **It must be the biggest, tallest, most detailed and most saturated thing on
+  the block**, by an obvious margin. If it does not dominate, it is wrong.
+- **Clear a halo of ~208 px (30 m) around it** — inside that halo only its own
+  grounds belong: steps, entry walks, foundation planting, a little plaza or
+  yard. No houses, no garages, no fences crowding it.
+- Give it real vertical presence even from this top-down camera: a tall
+  element (tower, spire, parapet, chimney mass) that clearly rises above every
+  roof around it, catching light on top.
+
+**Saint Hedwig Catholic Church** (1886, Henry Messmer) — THE landmark of this block and the visual crest of Brady Street.
    - **Cream City brick** body (pale warm cream — NOT red brick), stone trim, Romanesque round-arched windows.
    - Single tall central tower with a **copper-patina-green spire** (162 ft) — slightly bulbous Eastern-European transition at its base. The spire is the tallest thing on the whole board; let it read over everything.
-   - Tall gabled nave runs EAST behind the tower; **facade + main doors face WEST onto Humboldt Ave**.
-   - Real footprint 48 × 26 m — at this canvas scale ≈ **333 × 181 px, long axis east–west**, tower + doors at the west end of that footprint.
+   - **Long axis runs east–west**: the tower and main doors at the WEST end, the tall gabled nave stretching back EAST behind it.
    - Palette: cream body, patina-green spire, brown-gray slate nave roof, pale stone trim, dark wood doors, stained-glass blue-purple.
-   - Match the look of our approved hero sprite (reference: art-prototype/out/st-hedwig-v2.webp) — same building, your painting.
+
+**Identity reference: `block-11-st-hedwigs-reference.png`** (attached) — our own
+approved painting of this exact building. Match its materials, colour and
+character. **Do NOT match its camera**: that reference is drawn from a lower
+three-quarter angle, while this block is strongly top-down. Same building,
+your camera.
+
+## Everything else is supporting cast
+
+That one building is the focal point of this block — nothing else competes
+with it. The rest of the block is deliberately **quieter**: ordinary houses,
+simpler roofs, less saturated colours, no second attention-grabber. Thin the
+fabric rather than packing buildings in — the landmark has earned the space.
 
 Named real places on this block (get the buildings right, no signage needed
 unless noted above):
 
-- **Saint Hedwig Catholic Church** (place_of_worship) — around (156, 876)
 - **Three Holy Women Parish Offices** (commercial) — around (84, 682)
 - **Hedwig House Apartments** (social_facility) — around (115, 563)
 - **Tamarack Waldorf Elementary School** (school) — around (475, 794)
@@ -86,6 +115,8 @@ Property details (real):
 - 1 × retaining wall
 - 2 × walk
 
+Counts are a vibe, not a checklist — and the landmark outranks all of it. Drop houses if they crowd it.
+
 Composition rules of thumb: street trees live in the terrace band just inside
 each street edge; houses front their street with small setbacks and entry
 walks; garages and sheds hide mid-block along the alley side; commercial
@@ -99,4 +130,7 @@ windows.
   its dark outline are the base map's.
 - Nothing outside the stencil. No drop shadows past the polygon edge.
 - No invented store names, street names, or readable text (exceptions above).
-- Don't relocate, resize, or mirror the hard-constraint landmarks.
+- Don't relocate or mirror the landmark.
+- **Don't paint the landmark at realistic size.** Undersized is the one failure
+  that makes the whole block useless to us — when in doubt, go bigger.
+- Don't give a plain house a feature interesting enough to compete with it.

@@ -45,9 +45,35 @@ Bounded by:
 See `block-02-context.png` — your block outlined in red dashes on the actual base
 map (shown at 2×), so you can see the street geometry your edges meet.
 
-## Hard constraints — must be exactly here, exactly this
+## The landmark — paint this first, and paint it BIG
 
-1. **Jamo's** — anchor at canvas px **(24, 1055)** (the ground point of its entrance/front). Corner tavern — real Brady-area bar. Paint as a 2-story corner tavern with a modest sign band reading "Jamo's" (readable text allowed for this name).
+This is a game board. This is a place players physically walk to,
+so it has to be the thing the eye lands on first — not one building among many.
+**Deliberately exaggerate it.** Real-world proportions are the wrong
+instinct here; a landmark painted at its true size vanishes into the houses.
+
+### 1. Jamo's
+
+- **Ground anchor: canvas px (24, 1055)** — its main entrance meets the sidewalk here.
+- **Paint it about 200 × 150 px** — that is 1.8× its real 16 × 12 m
+  footprint, and roughly 38% of the block's width. Oversized on purpose.
+- **It must be the biggest, tallest, most detailed and most saturated thing on
+  the block**, by an obvious margin. If it does not dominate, it is wrong.
+- **Clear a halo of ~125 px (18 m) around it** — inside that halo only its own
+  grounds belong: steps, entry walks, foundation planting, a little plaza or
+  yard. No houses, no garages, no fences crowding it.
+- Give it real vertical presence even from this top-down camera: a tall
+  element (tower, spire, parapet, chimney mass) that clearly rises above every
+  roof around it, catching light on top.
+
+Corner tavern — a real Brady-area bar and a place people on this board actually walk into. Two-story corner building, tavern front at street level, warm lit windows, and a painted sign band reading "Jamo's" (readable text allowed for this name). Give it more character than anything around it: a bolder colour, an awning, a corner entrance cut across the corner.
+
+## Everything else is supporting cast
+
+That one building is the focal point of this block — nothing else competes
+with it. The rest of the block is deliberately **quieter**: ordinary houses,
+simpler roofs, less saturated colours, no second attention-grabber. Thin the
+fabric rather than packing buildings in — the landmark has earned the space.
 
 Named real places on this block (get the buildings right, no signage needed
 unless noted above):
@@ -73,6 +99,8 @@ Property details (real):
 - 1 × fence
 - 3 × walk
 
+Counts are a vibe, not a checklist — and the landmark outranks all of it. Drop houses if they crowd it.
+
 Composition rules of thumb: street trees live in the terrace band just inside
 each street edge; houses front their street with small setbacks and entry
 walks; garages and sheds hide mid-block along the alley side; commercial
@@ -86,4 +114,7 @@ windows.
   its dark outline are the base map's.
 - Nothing outside the stencil. No drop shadows past the polygon edge.
 - No invented store names, street names, or readable text (exceptions above).
-- Don't relocate, resize, or mirror the hard-constraint landmarks.
+- Don't relocate or mirror the landmark.
+- **Don't paint the landmark at realistic size.** Undersized is the one failure
+  that makes the whole block useless to us — when in doubt, go bigger.
+- Don't give a plain house a feature interesting enough to compete with it.

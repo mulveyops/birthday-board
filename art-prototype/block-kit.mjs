@@ -26,7 +26,7 @@
 // street names; regenerate with the Overpass query in the error hint below.
 // Frame math mirrors reference-render.mjs / block-segment.mjs.
 
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
+import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync, rmSync } from 'fs';
 import sharp from 'sharp';
 
 const ISLAND_BLOB = { x0: 0.085, x1: 0.943, y0: 0.154, y1: 0.91 };
@@ -255,6 +255,9 @@ const id = `block-${nn}`;
 // the three shareable files live together, ready to drag into a chat
 const kitDir = `art-prototype/kits/${id}`;
 mkdirSync(kitDir, { recursive: true });
+// clear old landmark references — a renamed slug would otherwise leave a stale
+// image in the folder and get handed to ChatGPT alongside the current one
+for (const f of readdirSync(kitDir)) if (f.endsWith('-reference.png')) rmSync(`${kitDir}/${f}`);
 const share = (suffix) => `${kitDir}/${id}-${suffix}`;
 // local work-canvas coords (WORK_SCALE× the bbox, origin at bbox top-left)
 const LX = (v) => (PXx(v) - bx1) * WORK_SCALE;
@@ -375,6 +378,74 @@ for (const grp of ['pois', 'leisure']) {
   }
 }
 
+// --- landmark prominence ----------------------------------------------------
+// A landmark painted at its real size disappears into the fabric — which is
+// exactly what happened on the block 11 pilot. So the brief asks for it
+// OVERSIZED: the true OSM footprint (measured below) times a factor, with a
+// cleared halo around it and every neighbour deliberately quieter. One focal
+// point per block.
+const HERO_EVICT_M = { "ST. HEDWIG'S": 30, "GLORIOSO'S": 24, "WOLSKI'S": 20 };
+const DEFAULT_EVICT_M = 18;
+
+/** Real footprint of the building at a point: the smallest oriented box that
+ * contains its OSM polygon, in metres. Falls back to the nearest building
+ * centroid within 30 m (POI nodes often sit just off their outline). */
+function footprintAt(lat, lng) {
+  const px = X({ lng }), py = Y({ lat });
+  let best = null, bestD = Infinity;
+  for (const w of osm.buildings?.elements ?? []) {
+    if (!w.geometry?.length) continue;
+    const ring = w.geometry.map((g) => [X({ lng: g.lon }), Y({ lat: g.lat })]);
+    if (pointIn(ring, px, py)) { best = ring; bestD = 0; break; }
+    let cx = 0, cy = 0;
+    for (const p of ring) { cx += p[0]; cy += p[1]; }
+    const d = Math.hypot(cx / ring.length - px, cy / ring.length - py);
+    if (d < bestD) { bestD = d; best = ring; }
+  }
+  if (!best || bestD > 30) return null;
+  let min = null;
+  for (let deg = 0; deg < 90; deg += 5) {
+    const t = (deg * Math.PI) / 180, cs = Math.cos(t), sn = Math.sin(t);
+    const xs = best.map((p) => p[0] * cs + p[1] * sn);
+    const ys = best.map((p) => -p[0] * sn + p[1] * cs);
+    const w = Math.max(...xs) - Math.min(...xs), h = Math.max(...ys) - Math.min(...ys);
+    if (!min || w * h < min.w * min.h) min = { w, h };
+  }
+  // long side first — that is the dimension the brief quotes as "wide"
+  return { wM: Math.max(min.w, min.h), hM: Math.min(min.w, min.h) };
+}
+
+/** How big to paint a landmark, in work-canvas px, plus its cleared halo. */
+function prominence(name, lat, lng, isHero, poiCount) {
+  const fallback = { wM: isHero ? 40 : 16, hM: isHero ? 25 : 12 };
+  let fp = footprintAt(lat, lng) ?? fallback;
+  // A POI node can sit nearer a garage or a porch than its own building. Any
+  // "footprint" too small or too sliver-shaped to be the real thing is a bad
+  // match, not a tiny landmark — quoting it would ask for a shed.
+  if (fp.wM * fp.hM < 60 || fp.hM < 5 || fp.wM / fp.hM > 4) fp = fallback;
+  const base = isHero ? 1.4 : 1.8; // small corner buildings need the bigger push
+  const cap = isHero ? 1.6 : 2.2; // past this a building stops looking like itself
+  const blockWm = bw * mPerPx;
+  // A lone landmark spanning less than a third of its block won't read as the
+  // focal point, so push it there — but never past the cap: Wolski's is a
+  // little wood cottage, and blown up 3× it reads as a different building.
+  const floorFactor = poiCount === 1 ? (blockWm * 0.32) / fp.wM : 0;
+  const scale = Math.min(cap, Math.max(base, floorFactor));
+  const wantM = fp.wM * scale;
+  const toPx = (m) => Math.round(m / mPerWorkPx);
+  const evictM = HERO_EVICT_M[name] ?? DEFAULT_EVICT_M;
+  return {
+    trueW: Math.round(fp.wM),
+    trueH: Math.round(fp.hM),
+    factor: scale.toFixed(1),
+    pxW: toPx(wantM),
+    pxH: toPx(fp.hM * scale),
+    haloPx: toPx(evictM),
+    evictM,
+    pctBlock: Math.round((wantM / blockWm) * 100),
+  };
+}
+
 // --- landmark identity notes (the "POI descriptions") -----------------------
 // Keyed by hero/label name; blocks whose landmarks aren't written up yet get a
 // TODO line in the brief. Full source: art-prototype/HERO_PACKETS.md +
@@ -394,12 +465,17 @@ const POI_NOTES = {
   "ST. HEDWIG'S": `**Saint Hedwig Catholic Church** (1886, Henry Messmer) — THE landmark of this block and the visual crest of Brady Street.
    - **Cream City brick** body (pale warm cream — NOT red brick), stone trim, Romanesque round-arched windows.
    - Single tall central tower with a **copper-patina-green spire** (162 ft) — slightly bulbous Eastern-European transition at its base. The spire is the tallest thing on the whole board; let it read over everything.
-   - Tall gabled nave runs EAST behind the tower; **facade + main doors face WEST onto Humboldt Ave**.
-   - Real footprint 48 × 26 m — at this canvas scale ≈ **333 × 181 px, long axis east–west**, tower + doors at the west end of that footprint.
-   - Palette: cream body, patina-green spire, brown-gray slate nave roof, pale stone trim, dark wood doors, stained-glass blue-purple.
-   - Match the look of our approved hero sprite (reference: art-prototype/out/st-hedwig-v2.webp) — same building, your painting.`,
-  "WOLSKI'S": `**Wolski's Tavern** (1908 bar in an 1895 front-gabled wood house) — a house that became a bar. White/cream clapboard, dark roof, WOLSKI'S signboard band across the first floor (readable text allowed). Modest scale — do not monumentalize. Reference: art-prototype/out/wolskis-crop.png.`,
-  "GLORIOSO'S": `**Glorioso's Italian Market** in the former Astor Theatre (1907–13) — wide low theatre block, tall flat parapet, light stucco, long storefront glass on Brady, GLORIOSO'S signage band + Italian tricolor cues (readable text allowed). Reference: art-prototype/out/gloriosos-crop.png.`,
+   - **Long axis runs east–west**: the tower and main doors at the WEST end, the tall gabled nave stretching back EAST behind it.
+   - Palette: cream body, patina-green spire, brown-gray slate nave roof, pale stone trim, dark wood doors, stained-glass blue-purple.`,
+  "WOLSKI'S": `**Wolski's Tavern** (a 1908 bar in an 1895 front-gabled wood house) — a house that became a tavern, and the most beloved dive in the neighbourhood. White/cream clapboard, dark roof, a painted WOLSKI'S signboard band across the first floor (readable text allowed), warm amber windows. Its charm is that it is small and wooden where everything else is brick — keep that character while still making it dominate the block.`,
+  "GLORIOSO'S": `**Glorioso's Italian Market**, in the former Astor Theatre (1907–13) — a wide, low theatre block with a tall flat parapet, light stucco body, a long run of storefront glass along Brady, a bold GLORIOSO'S signage band and Italian tricolour (green/white/red) awnings. It should read instantly as "old movie house turned Italian grocery".`,
+};
+// Our own approved painting of a landmark, shipped with the kit as a visual
+// identity reference. Camera differs on purpose — see the wording in the brief.
+const POI_REFERENCE = {
+  "ST. HEDWIG'S": 'art-prototype/heroes/st-hedwig-v2.png',
+  "WOLSKI'S": 'art-prototype/heroes/wolskis-v2.png',
+  "GLORIOSO'S": 'art-prototype/heroes/gloriosos-v1.png',
 };
 
 // --- output 1: stencil canvas ----------------------------------------------
@@ -460,6 +536,7 @@ await sharp(annotated).resize((cx2 - cx1) * 2).png().toFile(share('context.png')
 
 // --- output 3: the brief ----------------------------------------------------
 const sideLine = (dir) => (sides[dir].length ? sides[dir].join(' / ') : '(no named street — board edge or alley)');
+const poiCount = heroes.length + labeled.length;
 const hardPois = [];
 for (const h of heroes) {
   const name = HERO_FILE_NAME[Object.keys(HERO_FILE_NAME).find((k) => (h.href || '').includes(k))] ?? 'HERO';
@@ -467,12 +544,29 @@ for (const h of heroes) {
     name,
     // clamp: a hero anchored at its door can sit a hair outside the stencil
     px: [Math.max(0, Math.min(cw, Math.round(LX(X(h))))), Math.max(0, Math.min(ch, Math.round(LY(Y(h)))))],
+    size: prominence(name, h.lat, h.lng, true, poiCount),
     note: POI_NOTES[name] ?? '_TODO: identity notes not written yet._',
+    ref: POI_REFERENCE[name],
   });
 }
 for (const e of labeled) {
   const full = LABEL_FULL[e.label] ?? e.label;
-  hardPois.push({ name: full, px: [Math.round(LX(X(e))), Math.round(LY(Y(e)))], note: POI_NOTES[full] ?? `Corner tavern — real Brady-area bar. Paint as a 2-story corner tavern with a modest sign band reading "${full}" (readable text allowed for this name).` });
+  hardPois.push({
+    name: full,
+    px: [Math.round(LX(X(e))), Math.round(LY(Y(e)))],
+    size: prominence(full, e.lat, e.lng, false, poiCount),
+    note:
+      POI_NOTES[full] ??
+      `Corner tavern — a real Brady-area bar and a place people on this board actually walk into. Two-story corner building, tavern front at street level, warm lit windows, and a painted sign band reading "${full}" (readable text allowed for this name). Give it more character than anything around it: a bolder colour, an awning, a corner entrance cut across the corner.`,
+  });
+}
+// ship the approved landmark painting alongside the brief, downscaled — it is
+// an identity reference, not an asset to trace
+for (const p of hardPois) {
+  if (!p.ref || !existsSync(p.ref)) { p.ref = null; continue; }
+  // drop apostrophes before slugging, so ST. HEDWIG'S → st-hedwigs not st-hedwig-s
+  p.slug = p.name.toLowerCase().replace(/['’]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  await sharp(p.ref).resize(700, null, { withoutEnlargement: true }).png().toFile(share(`${p.slug}-reference.png`));
 }
 const fabricLines = Object.entries(fabric)
   .sort((a, b) => b[1] - a[1])
@@ -481,9 +575,29 @@ const fabricLines = Object.entries(fabric)
 const propLines = Object.entries(propCounts)
   .map(([k, v]) => `- ${v} × ${k.replace(/_/g, ' ')}`)
   .join('\n');
-const poiLines = namedPois.length
-  ? namedPois.map((p) => `- **${p.name}**${p.what ? ` (${p.what})` : ''} — around (${p.px[0]}, ${p.px[1]})`).join('\n')
-  : '- (none mapped)';
+// A landmark already has its own section above; listing it again here as a
+// plain "named place" reads like a second, ordinary building.
+// match on name AND position: "Hedwig House Apartments" shares a word with
+// St. Hedwig's but is a different building 40 m up the block, and belongs here
+const distinctive = (s) =>
+  s
+    .toLowerCase()
+    .replace(/['’]/g, '')
+    .split(/[^a-z0-9]+/)
+    .map((w) => w.replace(/s$/, '')) // hedwigs → hedwig
+    .filter((w) => w.length >= 4 && !['saint', 'tavern', 'lounge', 'street', 'house'].includes(w));
+const SAME_PLACE_M = 25;
+const otherPois = namedPois.filter((p) => {
+  const words = distinctive(p.name);
+  return !hardPois.some((h) => {
+    const shares = distinctive(h.name).some((w) => words.includes(w));
+    const near = Math.hypot(p.px[0] - h.px[0], p.px[1] - h.px[1]) * mPerWorkPx <= SAME_PLACE_M;
+    return shares && near;
+  });
+});
+const poiLines = otherPois.length
+  ? otherPois.map((p) => `- **${p.name}**${p.what ? ` (${p.what})` : ''} — around (${p.px[0]}, ${p.px[1]})`).join('\n')
+  : '- (none besides the above)';
 
 const brief = `# ${id} — art brief
 
@@ -532,11 +646,64 @@ ${'Bounded by:'}
 See \`${id}-context.png\` — your block outlined in red dashes on the actual base
 map (shown at 2×), so you can see the street geometry your edges meet.
 
-## Hard constraints — must be exactly here, exactly this
+## The landmark${hardPois.length > 1 ? 's' : ''} — paint ${hardPois.length > 1 ? 'these' : 'this'} first, and paint ${hardPois.length > 1 ? 'them' : 'it'} BIG
 
-${hardPois.length ? hardPois.map((p, i) => `${i + 1}. **${p.name}** — anchor at canvas px **(${p.px[0]}, ${p.px[1]})** (the ground point of its entrance/front). ${p.note}`).join('\n\n') : '_No named landmarks on this block._'}
+${
+  hardPois.length
+    ? `This is a game board. ${hardPois.length > 1 ? 'These are places' : 'This is a place'} players physically walk to,
+so ${hardPois.length > 1 ? 'they have' : 'it has'} to be the thing the eye lands on first — not one building among many.
+**Deliberately exaggerate ${hardPois.length > 1 ? 'them' : 'it'}.** Real-world proportions are the wrong
+instinct here; a landmark painted at its true size vanishes into the houses.
 
-Named real places on this block (get the buildings right, no signage needed
+${hardPois
+  .map(
+    (p, i) => `### ${i + 1}. ${p.name}
+
+- **Ground anchor: canvas px (${p.px[0]}, ${p.px[1]})** — its main entrance meets the sidewalk here.
+- **Paint it about ${p.size.pxW} × ${p.size.pxH} px** — that is ${p.size.factor}× its real ${p.size.trueW} × ${p.size.trueH} m
+  footprint, and roughly ${p.size.pctBlock}% of the block's width. Oversized on purpose.
+- **It must be the biggest, tallest, most detailed and most saturated thing on
+  the block**, by an obvious margin. If it does not dominate, it is wrong.
+- **Clear a halo of ~${p.size.haloPx} px (${p.size.evictM} m) around it** — inside that halo only its own
+  grounds belong: steps, entry walks, foundation planting, a little plaza or
+  yard. No houses, no garages, no fences crowding it.
+- Give it real vertical presence even from this top-down camera: a tall
+  element (tower, spire, parapet, chimney mass) that clearly rises above every
+  roof around it, catching light on top.
+
+${p.note}${
+      p.ref
+        ? `
+
+**Identity reference: \`${id}-${p.slug}-reference.png\`** (attached) — our own
+approved painting of this exact building. Match its materials, colour and
+character. **Do NOT match its camera**: that reference is drawn from a lower
+three-quarter angle, while this block is strongly top-down. Same building,
+your camera.`
+        : ''
+    }`,
+  )
+  .join('\n\n')}`
+    : '_No named landmarks on this block — this one is pure neighborhood fabric, so let it be quiet and even._'
+}
+
+## Everything else is supporting cast
+
+${
+  hardPois.length
+    ? `${
+        hardPois.length > 1
+          ? `Those ${hardPois.length} are the focal points of this block — nothing else competes with
+them.`
+          : `That one building is the focal point of this block — nothing else competes
+with it.`
+      } The rest of the block is deliberately **quieter**: ordinary houses,
+simpler roofs, less saturated colours, no second attention-grabber. Thin the
+fabric rather than packing buildings in — the landmark${hardPois.length > 1 ? 's have' : ' has'} earned the space.
+
+`
+    : ''
+}Named real places on this block (get the buildings right, no signage needed
 unless noted above):
 
 ${poiLines}
@@ -548,6 +715,8 @@ What's really on this block (from city data):
 ${fabricLines || '- (empty block)'}
 
 ${propLines ? `Property details (real): \n${propLines}` : ''}
+
+Counts are a vibe, not a checklist${hardPois.length ? ' — and the landmark outranks all of it. Drop houses if they crowd it' : ''}.
 
 Composition rules of thumb: street trees live in the terrace band just inside
 each street edge; houses front their street with small setbacks and entry
@@ -562,7 +731,14 @@ windows.
   its dark outline are the base map's.
 - Nothing outside the stencil. No drop shadows past the polygon edge.
 - No invented store names, street names, or readable text (exceptions above).
-- Don't relocate, resize, or mirror the hard-constraint landmarks.
+- Don't relocate or mirror the landmark${hardPois.length > 1 ? 's' : ''}.${
+    hardPois.length
+      ? `
+- **Don't paint the landmark${hardPois.length > 1 ? 's' : ''} at realistic size.** Undersized is the one failure
+  that makes the whole block useless to us — when in doubt, go bigger.
+- Don't give a plain house a feature interesting enough to compete with it.`
+      : ''
+  }
 `;
 writeFileSync(share('brief.md'), brief);
 // placement manifest for block-compose.mjs

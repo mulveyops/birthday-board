@@ -45,14 +45,16 @@ Bounded by:
 See `block-09-context.png` — your block outlined in red dashes on the actual base
 map (shown at 2×), so you can see the street geometry your edges meet.
 
-## Hard constraints — must be exactly here, exactly this
+## The landmark — paint this first, and paint it BIG
 
-_No named landmarks on this block._
+_No named landmarks on this block — this one is pure neighborhood fabric, so let it be quiet and even._
+
+## Everything else is supporting cast
 
 Named real places on this block (get the buildings right, no signage needed
 unless noted above):
 
-- (none mapped)
+- (none besides the above)
 
 ## Texture guidance — paint the vibe, counts are approximate
 
@@ -71,6 +73,8 @@ What's really on this block (from city data):
 Property details (real): 
 - 4 × walk
 
+Counts are a vibe, not a checklist.
+
 Composition rules of thumb: street trees live in the terrace band just inside
 each street edge; houses front their street with small setbacks and entry
 walks; garages and sheds hide mid-block along the alley side; commercial
@@ -84,4 +88,4 @@ windows.
   its dark outline are the base map's.
 - Nothing outside the stencil. No drop shadows past the polygon edge.
 - No invented store names, street names, or readable text (exceptions above).
-- Don't relocate, resize, or mirror the hard-constraint landmarks.
+- Don't relocate or mirror the landmark.

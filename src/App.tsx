@@ -2245,6 +2245,40 @@ export default function App({
     setSelectedId(null);
   }
 
+  // --- the real POI roster (one-click seed) ----------------------------------
+  // Wolski's is the only TYPE 'bar' (custom-art rule: bars join the ⭐ rotation
+  // as bespoke art lands); everything else starts as a POI to be authored.
+  const POI_ROSTER: { name: string; lat: number; lng: number; type: SquareType; artRef?: string }[] = [
+    { name: "Wolski's", lat: 43.05523, lng: -87.89651, type: 'bar', artRef: 'hero_wolskis' },
+    { name: "Fink's", lat: 43.05599, lng: -87.8983, type: 'poi' },
+    { name: "Scaffidi's Hideout", lat: 43.05535, lng: -87.89831, type: 'poi' },
+    { name: 'The Standard', lat: 43.05419, lng: -87.89652, type: 'poi' },
+    { name: "Pete's Pub", lat: 43.05314, lng: -87.89553, type: 'poi' },
+    { name: 'Hi Hat', lat: 43.05314, lng: -87.89528, type: 'poi' },
+    { name: "Jamo's", lat: 43.05459, lng: -87.89474, type: 'poi' },
+    { name: "Angelo's", lat: 43.05284, lng: -87.90311, type: 'poi' },
+    { name: "St. Hedwig's", lat: 43.05322, lng: -87.89788, type: 'poi', artRef: 'st-hedwig' },
+    { name: "Glorioso's", lat: 43.05269, lng: -87.89927, type: 'poi', artRef: 'gloriosos' },
+    { name: 'Cass St Playground', lat: 43.0508, lng: -87.9017, type: 'poi' },
+    { name: 'Pulaski Playfield', lat: 43.0553, lng: -87.8959, type: 'poi' },
+    { name: '811 E Pleasant', lat: 43.05038, lng: -87.90173, type: 'poi' },
+  ];
+  const rosterMissing = POI_ROSTER.filter(
+    (p) => !board.squares.some((s) => s.title.trim().toLowerCase() === p.name.toLowerCase()),
+  );
+  /** Seed every roster POI not already on the board (matched by title). */
+  function addRosterPois() {
+    setBoard((b) => {
+      const have = new Set(b.squares.map((s) => s.title.trim().toLowerCase()));
+      const add = POI_ROSTER.filter((p) => !have.has(p.name.toLowerCase())).map((p) => {
+        const sq = makeSquare(p.type, p.name, p.lat, p.lng);
+        sq.poi = { encounter: p.type === 'bar' ? 'star-bar' : 'landmark', artRef: p.artRef };
+        return sq;
+      });
+      return add.length ? { ...b, squares: [...b.squares, ...add] } : b;
+    });
+  }
+
   // --- real bars (suggested from OSM scenery) --------------------------------
   // De-duped list of real bars pulled from OSM; the designer adds/removes them.
   const realBars = useMemo(() => {
@@ -2896,6 +2930,11 @@ export default function App({
                   </button>
                 ))}
               </div>
+              {rosterMissing.length > 0 && (
+                <button className="btn" onClick={addRosterPois}>
+                  📍 Add the real POIs ({rosterMissing.length} missing)
+                </button>
+              )}
               {board.squares.some((s) => s.type !== 'blank') && (
                 <button className="btn btn--danger" onClick={clearSpots}>
                   Clear all spots

@@ -128,9 +128,8 @@ instinct here; a landmark painted at its true size vanishes into the houses.
 - **Clear a halo of ~139 px (20 m) around it** — inside that halo only its own
   grounds belong: steps, entry walks, foundation planting, a little plaza or
   yard. No houses, no garages, no fences crowding it.
-- Give it real vertical presence even from this top-down camera: a tall
-  element (tower, spire, parapet, chimney mass) that clearly rises above every
-  roof around it, catching light on top.
+- Give it real vertical presence even from this top-down camera: a steep front gable and a brick chimney, riding above the houses beside it,
+  clearly taller than every roof around it and catching light on top.
 
 **Wolski's Tavern** (a 1908 bar in an 1895 front-gabled wood house) — a house that became a tavern, and the most beloved dive in the neighbourhood. White/cream clapboard, dark roof, a painted WOLSKI'S signboard band across the first floor (readable text allowed), warm amber windows. Its charm is that it is small and wooden where everything else is brick — keep that character while still making it dominate the block.
 
@@ -197,9 +196,9 @@ windows.
   no white circular game markers. If you find yourself writing a street name,
   something has gone wrong — reread this brief.
 - Nothing from the neighbouring blocks: paint your block, not its surroundings.
-- **Nothing from the style sample.** Not its buildings, not its layout, not a
-  church or any other landmark that appears in it. It shows brushwork only;
-  every building on your block is listed in this brief and nowhere else.
+- **Nothing from the style sample** — not its buildings, not its layout, not
+  any structure that appears in it. It shows brushwork only; every building on
+  your block is listed in this brief and nowhere else.
 - Nothing outside the stencil. No drop shadows past the polygon edge.
 - No rounded corners, no inset border, no empty margin inside the stencil.
 - **Don't change the canvas shape.** 1224 × 1632 (0.75 : 1, portrait) — a

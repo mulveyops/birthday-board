@@ -156,9 +156,9 @@ windows.
   no white circular game markers. If you find yourself writing a street name,
   something has gone wrong — reread this brief.
 - Nothing from the neighbouring blocks: paint your block, not its surroundings.
-- **Nothing from the style sample.** Not its buildings, not its layout, not a
-  church or any other landmark that appears in it. It shows brushwork only;
-  every building on your block is listed in this brief and nowhere else.
+- **Nothing from the style sample** — not its buildings, not its layout, not
+  any structure that appears in it. It shows brushwork only; every building on
+  your block is listed in this brief and nowhere else.
 - Nothing outside the stencil. No drop shadows past the polygon edge.
 - No rounded corners, no inset border, no empty margin inside the stencil.
 - **Don't change the canvas shape.** 600 × 408 (1.47 : 1, landscape) — a

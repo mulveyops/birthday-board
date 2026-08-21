@@ -134,9 +134,8 @@ off before you finish.
 - **Clear a halo of ~125 px (18 m) around it** — inside that halo only its own
   grounds belong: steps, entry walks, foundation planting, a little plaza or
   yard. No houses, no garages, no fences crowding it.
-- Give it real vertical presence even from this top-down camera: a tall
-  element (tower, spire, parapet, chimney mass) that clearly rises above every
-  roof around it, catching light on top.
+- Give it real vertical presence even from this top-down camera: a bolder, taller roofline than anything beside it — a raised corner, a deep sign band, a chimney,
+  clearly taller than every roof around it and catching light on top.
 
 Corner tavern — a real Brady-area bar and a place people on this board actually walk into. Two-story corner building, tavern front at street level, warm lit windows, and a painted sign band reading "The Standard Tavern" (readable text allowed for this name). Give it more character than anything around it: a bolder colour, an awning, a corner entrance cut across the corner.
 
@@ -150,9 +149,8 @@ Corner tavern — a real Brady-area bar and a place people on this board actuall
 - **Clear a halo of ~125 px (18 m) around it** — inside that halo only its own
   grounds belong: steps, entry walks, foundation planting, a little plaza or
   yard. No houses, no garages, no fences crowding it.
-- Give it real vertical presence even from this top-down camera: a tall
-  element (tower, spire, parapet, chimney mass) that clearly rises above every
-  roof around it, catching light on top.
+- Give it real vertical presence even from this top-down camera: a bolder, taller roofline than anything beside it — a raised corner, a deep sign band, a chimney,
+  clearly taller than every roof around it and catching light on top.
 
 Corner tavern — a real Brady-area bar and a place people on this board actually walk into. Two-story corner building, tavern front at street level, warm lit windows, and a painted sign band reading "Pete's Pub" (readable text allowed for this name). Give it more character than anything around it: a bolder colour, an awning, a corner entrance cut across the corner.
 
@@ -166,9 +164,8 @@ Corner tavern — a real Brady-area bar and a place people on this board actuall
 - **Clear a halo of ~125 px (18 m) around it** — inside that halo only its own
   grounds belong: steps, entry walks, foundation planting, a little plaza or
   yard. No houses, no garages, no fences crowding it.
-- Give it real vertical presence even from this top-down camera: a tall
-  element (tower, spire, parapet, chimney mass) that clearly rises above every
-  roof around it, catching light on top.
+- Give it real vertical presence even from this top-down camera: a bolder, taller roofline than anything beside it — a raised corner, a deep sign band, a chimney,
+  clearly taller than every roof around it and catching light on top.
 
 Corner tavern — a real Brady-area bar and a place people on this board actually walk into. Two-story corner building, tavern front at street level, warm lit windows, and a painted sign band reading "Hi Hat Garage" (readable text allowed for this name). Give it more character than anything around it: a bolder colour, an awning, a corner entrance cut across the corner.
 
@@ -226,9 +223,9 @@ windows.
   no white circular game markers. If you find yourself writing a street name,
   something has gone wrong — reread this brief.
 - Nothing from the neighbouring blocks: paint your block, not its surroundings.
-- **Nothing from the style sample.** Not its buildings, not its layout, not a
-  church or any other landmark that appears in it. It shows brushwork only;
-  every building on your block is listed in this brief and nowhere else.
+- **Nothing from the style sample** — not its buildings, not its layout, not
+  any structure that appears in it. It shows brushwork only; every building on
+  your block is listed in this brief and nowhere else.
 - Nothing outside the stencil. No drop shadows past the polygon edge.
 - No rounded corners, no inset border, no empty margin inside the stencil.
 - **Don't change the canvas shape.** 868 × 948 (0.92 : 1, portrait) — a

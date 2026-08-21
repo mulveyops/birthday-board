@@ -386,6 +386,18 @@ for (const grp of ['pois', 'leisure']) {
 // point per block.
 const HERO_EVICT_M = { "ST. HEDWIG'S": 30, "GLORIOSO'S": 24, "WOLSKI'S": 20 };
 const DEFAULT_EVICT_M = 18;
+// What makes each landmark stand tall — phrased in ITS OWN vocabulary. A
+// generic list mentioning a "spire" was enough to grow a church on the tavern
+// block, three times over: the word is the instruction, and negations ("not a
+// church") plant it just as firmly. Never name a building type a block hasn't
+// got.
+const VERTICAL_CUE = {
+  "ST. HEDWIG'S": 'its tower and spire, the tallest thing for blocks around',
+  "GLORIOSO'S": 'the tall flat parapet of the old theatre, standing above its neighbours',
+  "WOLSKI'S": 'a steep front gable and a brick chimney, riding above the houses beside it',
+};
+const DEFAULT_CUE =
+  'a bolder, taller roofline than anything beside it — a raised corner, a deep sign band, a chimney';
 
 /** Real footprint of the building at a point: the smallest oriented box that
  * contains its OSM polygon, in metres. Falls back to the nearest building
@@ -608,6 +620,7 @@ for (const h of heroes) {
   hardPois.push({
     name,
     ...placeLandmark(h, size0),
+    cue: VERTICAL_CUE[name] ?? DEFAULT_CUE,
     note: POI_NOTES[name] ?? '_TODO: identity notes not written yet._',
     ref: POI_REFERENCE[name],
   });
@@ -618,6 +631,7 @@ for (const e of labeled) {
   hardPois.push({
     name: full,
     ...placeLandmark(e, size0),
+    cue: VERTICAL_CUE[full] ?? DEFAULT_CUE,
     note:
       POI_NOTES[full] ??
       `Corner tavern — a real Brady-area bar and a place people on this board actually walk into. Two-story corner building, tavern front at street level, warm lit windows, and a painted sign band reading "${full}" (readable text allowed for this name). Give it more character than anything around it: a bolder colour, an awning, a corner entrance cut across the corner.`,
@@ -829,9 +843,8 @@ ${hardPois
 - **Clear a halo of ~${p.size.haloPx} px (${p.size.evictM} m) around it** — inside that halo only its own
   grounds belong: steps, entry walks, foundation planting, a little plaza or
   yard. No houses, no garages, no fences crowding it.
-- Give it real vertical presence even from this top-down camera: a tall
-  element (tower, spire, parapet, chimney mass) that clearly rises above every
-  roof around it, catching light on top.
+- Give it real vertical presence even from this top-down camera: ${p.cue},
+  clearly taller than every roof around it and catching light on top.
 
 ${p.note}${
       p.ref
@@ -910,9 +923,9 @@ windows.
 - Nothing from the neighbouring blocks: paint your block, not its surroundings.${
     shipStyleRef
       ? `
-- **Nothing from the style sample.** Not its buildings, not its layout, not a
-  church or any other landmark that appears in it. It shows brushwork only;
-  every building on your block is listed in this brief and nowhere else.`
+- **Nothing from the style sample** — not its buildings, not its layout, not
+  any structure that appears in it. It shows brushwork only; every building on
+  your block is listed in this brief and nowhere else.`
       : ''
   }
 - Nothing outside the stencil. No drop shadows past the polygon edge.

@@ -128,9 +128,8 @@ instinct here; a landmark painted at its true size vanishes into the houses.
 - **Clear a halo of ~167 px (24 m) around it** — inside that halo only its own
   grounds belong: steps, entry walks, foundation planting, a little plaza or
   yard. No houses, no garages, no fences crowding it.
-- Give it real vertical presence even from this top-down camera: a tall
-  element (tower, spire, parapet, chimney mass) that clearly rises above every
-  roof around it, catching light on top.
+- Give it real vertical presence even from this top-down camera: the tall flat parapet of the old theatre, standing above its neighbours,
+  clearly taller than every roof around it and catching light on top.
 
 **Glorioso's Italian Market**, in the former Astor Theatre (1907–13) — a wide, low theatre block with a tall flat parapet, light stucco body, a long run of storefront glass along Brady, a bold GLORIOSO'S signage band and Italian tricolour (green/white/red) awnings. It should read instantly as "old movie house turned Italian grocery".
 
@@ -195,9 +194,9 @@ windows.
   no white circular game markers. If you find yourself writing a street name,
   something has gone wrong — reread this brief.
 - Nothing from the neighbouring blocks: paint your block, not its surroundings.
-- **Nothing from the style sample.** Not its buildings, not its layout, not a
-  church or any other landmark that appears in it. It shows brushwork only;
-  every building on your block is listed in this brief and nowhere else.
+- **Nothing from the style sample** — not its buildings, not its layout, not
+  any structure that appears in it. It shows brushwork only; every building on
+  your block is listed in this brief and nowhere else.
 - Nothing outside the stencil. No drop shadows past the polygon edge.
 - No rounded corners, no inset border, no empty margin inside the stencil.
 - **Don't change the canvas shape.** 664 × 772 (0.86 : 1, portrait) — a

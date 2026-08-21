@@ -118,9 +118,8 @@ instinct here; a landmark painted at its true size vanishes into the houses.
 - **Clear a halo of ~208 px (30 m) around it** — inside that halo only its own
   grounds belong: steps, entry walks, foundation planting, a little plaza or
   yard. No houses, no garages, no fences crowding it.
-- Give it real vertical presence even from this top-down camera: a tall
-  element (tower, spire, parapet, chimney mass) that clearly rises above every
-  roof around it, catching light on top.
+- Give it real vertical presence even from this top-down camera: its tower and spire, the tallest thing for blocks around,
+  clearly taller than every roof around it and catching light on top.
 
 **Saint Hedwig Catholic Church** (1886, Henry Messmer) — THE landmark of this block and the visual crest of Brady Street.
    - **Cream City brick** body (pale warm cream — NOT red brick), stone trim, Romanesque round-arched windows.

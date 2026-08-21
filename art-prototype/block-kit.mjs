@@ -415,6 +415,37 @@ function footprintAt(lat, lng) {
   return { wM: Math.max(min.w, min.h), hM: Math.min(min.w, min.h) };
 }
 
+/**
+ * Nudge a landmark's anchor until its exaggerated footprint fits inside the
+ * block. Real anchors sit at the entrance, often metres from a kerb, and a
+ * building painted 1.8× at that exact spot hangs over the street edge and gets
+ * sliced off by the stencil — which is what happened to the tavern on the
+ * narrow corner of block 13. Returns the nearest anchor that fits, in base px.
+ */
+function fitAnchor(px, py, boxW, boxH, maxR = 14) {
+  const halfW = boxW / 2, halfH = boxH / 2;
+  const fits = (x, y) => {
+    for (let sx = -1; sx <= 1; sx++) {
+      for (let sy = -1; sy <= 1; sy++) {
+        if (!inMask(x + sx * halfW * 0.85, y + sy * halfH * 0.85)) return false;
+      }
+    }
+    return true;
+  };
+  if (fits(px, py)) return { x: px, y: py, moved: 0 };
+  // deliberately a short leash (~8 m): these are corner businesses, and a
+  // landmark shuffled to the middle of the block is a worse lie than a
+  // landmark painted a size smaller. Shrinking is tried first by the caller.
+  for (let r = 2; r <= maxR; r += 2) {
+    for (let a = 0; a < 24; a++) {
+      const t = (a / 24) * Math.PI * 2;
+      const x = px + Math.cos(t) * r, y = py + Math.sin(t) * r;
+      if (fits(x, y)) return { x, y, moved: r };
+    }
+  }
+  return { x: px, y: py, moved: -1 }; // block genuinely too tight — brief says so
+}
+
 /** How big to paint a landmark, in work-canvas px, plus its cleared halo. */
 function prominence(name, lat, lng, isHero, poiCount) {
   const fallback = { wM: isHero ? 40 : 16, hM: isHero ? 25 : 12 };
@@ -538,23 +569,55 @@ await sharp(annotated).resize((cx2 - cx1) * 2).png().toFile(share('context.png')
 const sideLine = (dir) => (sides[dir].length ? sides[dir].join(' / ') : '(no named street — board edge or alley)');
 const poiCount = heroes.length + labeled.length;
 const hardPois = [];
+/**
+ * Place a landmark: nudge the anchor inward so the exaggerated building fits
+ * inside the block, and if the block is simply too tight for it (a tavern on a
+ * narrow wedge corner), walk the exaggeration back until it does fit. Better to
+ * quote a size that works than to hand over one that must be sliced.
+ */
+function placeLandmark(e, size) {
+  const toLocal = (v, origin) => Math.max(0, Math.round((v - origin) * WORK_SCALE));
+  const MIN_FACTOR = 1.2; // still visibly bigger than life — the whole point
+  const scaleTo = (shrink) =>
+    shrink === 1
+      ? size
+      : {
+          ...size,
+          pxW: Math.round(size.pxW * shrink),
+          pxH: Math.round(size.pxH * shrink),
+          factor: (Number(size.factor) * shrink).toFixed(1),
+          pctBlock: Math.round(size.pctBlock * shrink),
+        };
+  let last = 1;
+  for (const shrink of [1, 0.9, 0.8, 0.7, 0.6]) {
+    if (Number(size.factor) * shrink < MIN_FACTOR) break; // never shrink it below life-size-plus
+    last = shrink;
+    const fit = fitAnchor(PXx(X(e)), PXy(Y(e)), (size.pxW * shrink) / WORK_SCALE, (size.pxH * shrink) / WORK_SCALE);
+    if (fit.moved >= 0) {
+      return { px: [toLocal(fit.x, bx1), toLocal(fit.y, by1)], moved: fit.moved, size: scaleTo(shrink), tight: shrink < 1 };
+    }
+  }
+  // genuinely tight corner: keep it exaggerated at the floor, keep it where it
+  // belongs, and let the brief tell the painter to fit it to the space
+  const fit = fitAnchor(PXx(X(e)), PXy(Y(e)), 0, 0);
+  return { px: [toLocal(fit.x, bx1), toLocal(fit.y, by1)], moved: -1, size: scaleTo(last), tight: true };
+}
 for (const h of heroes) {
   const name = HERO_FILE_NAME[Object.keys(HERO_FILE_NAME).find((k) => (h.href || '').includes(k))] ?? 'HERO';
+  const size0 = prominence(name, h.lat, h.lng, true, poiCount);
   hardPois.push({
     name,
-    // clamp: a hero anchored at its door can sit a hair outside the stencil
-    px: [Math.max(0, Math.min(cw, Math.round(LX(X(h))))), Math.max(0, Math.min(ch, Math.round(LY(Y(h)))))],
-    size: prominence(name, h.lat, h.lng, true, poiCount),
+    ...placeLandmark(h, size0),
     note: POI_NOTES[name] ?? '_TODO: identity notes not written yet._',
     ref: POI_REFERENCE[name],
   });
 }
 for (const e of labeled) {
   const full = LABEL_FULL[e.label] ?? e.label;
+  const size0 = prominence(full, e.lat, e.lng, false, poiCount);
   hardPois.push({
     name: full,
-    px: [Math.round(LX(X(e))), Math.round(LY(Y(e)))],
-    size: prominence(full, e.lat, e.lng, false, poiCount),
+    ...placeLandmark(e, size0),
     note:
       POI_NOTES[full] ??
       `Corner tavern — a real Brady-area bar and a place people on this board actually walk into. Two-story corner building, tavern front at street level, warm lit windows, and a painted sign band reading "${full}" (readable text allowed for this name). Give it more character than anything around it: a bolder colour, an awning, a corner entrance cut across the corner.`,
@@ -602,6 +665,40 @@ const poiLines = otherPois
 
 const brief = `# ${id} — art brief
 
+**This is a complete, standalone request.** Everything needed is in this
+document and its attachments; it assumes no earlier conversation, and nothing
+you may have painted before applies to it. If you have attempted this block
+before, ignore that attempt entirely and work only from what is written here.
+
+## What we are making
+
+An illustrated top-down map of a real Milwaukee neighbourhood — the Lower East
+Side, around Brady Street — used as the board for a city-wide game that people
+play on foot. The map's streets, sidewalks and game spaces are already drawn
+and cannot move. What is missing is the land *between* the streets, so the city
+blocks are being illustrated one at a time and composited back onto the map at
+exact positions.
+
+**You are painting one city block: block ${blockNum}.** It is bounded by real streets,
+it contains real buildings, and your painting drops into the hole where that
+block sits.
+
+## What is attached
+
+- \`${id}-canvas.png\` — **the stencil.** The white shape is the real block:
+  the part of your painting we keep. Everything outside it is cut away. It is
+  the exact size your painting must be.
+- \`${id}-context.png\` — where this block sits on the map, its paintable area
+  washed red, with the surrounding streets labelled. Reference only: do not
+  paint anything you see in it.${hardPois
+    .filter((p) => p.ref)
+    .map(
+      (p) => `
+- \`${id}-${p.slug}-reference.png\` — our approved painting of ${p.name}, for
+  identity only (see its section below).`,
+    )
+    .join('')}
+
 > ## ⚠ OUTPUT SIZE: **${cw} × ${ch} px — ${cw < ch ? 'PORTRAIT, taller than it is wide' : cw > ch ? 'LANDSCAPE, wider than it is tall' : 'SQUARE'}**
 >
 > Identical in size and shape to the attached \`${id}-canvas.png\`. This is not a
@@ -611,44 +708,56 @@ const brief = `# ${id} — art brief
 > **same ratio (${(cw / ch).toFixed(2)} : 1)** and the same orientation. Never a default 4:3 or
 > 16:9 canvas, and never the other orientation.
 
-One block of the board, painted by you, composited by us. Numbering matches
-reference-blocks.png (this is block ${blockNum}).
-
 ## Deliverable
 
-- **One transparent PNG, exactly ${cw} × ${ch} px.** That is ${WORK_SCALE}× the block's
+- **One PNG, exactly ${cw} × ${ch} px, painted edge to edge.** That is ${WORK_SCALE}× the block's
   final size on the board canvas (${bw} × ${bh} px at position x ${bx1}, y ${by1} on the
   1875 × 2048 base) — we downscale and place it; paint at this working size so
   detail survives.
-- **Paint only inside the white area of the stencil.** The attached
-  \`${id}-canvas.png\` (same ${cw} × ${ch}) is the paintable region, traced
-  pixel-exact from the rendered base map: the full block INCLUDING its sidewalk
-  apron, running right up to the street's dark outline — your art borders the
-  road directly. Everything outside stays fully transparent. The roads, their
-  dark outlines and the white game spots belong to the base map — never paint
-  over them, never let art or shadows cross the stencil edge.
-- **Fill the stencil completely, right out to its edge.** Do not paint a
-  rounded card, a border, a drop shadow, or a margin of empty space inside the
-  shape — the block's corners are square and its edges are straight, and any
-  gap you leave shows up on the board as a bare strip between your art and the
-  road. Bleed the paving and grass all the way to the stencil boundary.
+- **Paint the whole rectangle, corner to corner — no transparency, no
+  margin, no rounded card.** Do not try to reproduce the block's outline
+  yourself. We cut the exact shape out afterwards with the stencil, and we can
+  only cut away what you painted: any bare pixel you leave becomes a hole in
+  the map.
+- **The stencil says which part of your painting will be SEEN.** In the
+  attached \`${id}-canvas.png\` (same ${cw} × ${ch}), the white area is the real
+  block — its true shape, traced from the map, including the sidewalk that
+  runs to the kerb. Everything outside the white gets discarded.
+  - **Every building, tree and detail you care about must sit inside the
+    white area**, comfortably clear of its edge. Anything crossing that edge
+    is sliced in half on the finished map.
+  - **Outside the white, paint plain ground only** — grass, paving, nothing
+    with a shape worth losing. It is there so the cut has something to bite
+    into, and you will never see it again.
+- The roads, their dark outlines and the white game spots belong to the base
+  map — do not draw them.
 - **The perimeter band of your painting is the sidewalk/terrace zone** (~6 m
   ≈ ${Math.round(6 / (mPerPx / WORK_SCALE))} px wide): paint your own sidewalk paving there, with the street
   trees in the grass terrace strip alongside it.
 - **North is up.** Scale: **1 px = ${mPerWorkPx.toFixed(3)} m** (a typical 17 × 8 m Polish
   flat ≈ ${Math.round(17 / mPerWorkPx)} × ${Math.round(8 / mPerWorkPx)} px; a street tree canopy ~8 m ≈ ${Math.round(8 / mPerWorkPx)} px across).
 
-## Style (locked)
+## Style
 
-Style C, matching the island base map and our existing sprites: **strongly
-top-down camera — roofs dominant, walls vertically compressed**, thick friendly
-dark outlines, bright flat colors with simple 2-tone shading, cartoony
-board-game warmth. Ground between buildings is yard/garden texture in greens
-that sit naturally on the base grass **#cad7a1**. Your edges meet the road's
-dark outline (#8a7452) directly; the road surface beyond it is sand **#eeddab**
-— sidewalk tones near #d8c78f blend well at the boundary.
-Backyards: fences, garden patches, paths — quiet, low-contrast. **No invented
-readable text anywhere** — real names only where this brief explicitly allows.
+Warm, cartoony **board-game illustration** — the look of a modern tabletop map
+or a cosy city-builder, not a satellite photo and not a technical drawing.
+
+- **Camera: strongly top-down.** Roofs dominate; walls are visible but
+  vertically compressed. Every building on the block uses the same camera —
+  this is the rule most easily broken, and a building drawn from a lower angle
+  than its neighbours immediately looks pasted on.
+- Thick, friendly dark outlines. Bright but controlled colours, flat fills with
+  simple two-tone shading. Charm over realism; readable at small size.
+- Shadows soft and consistent, all falling the same way, none of them long.
+
+**Palette anchors** (the map around your block uses these, so matching them
+makes your edges disappear into it): grass **#cad7a1**, road surface
+**#eeddab**, the dark road outline **#8a7452**, sidewalk paving near
+**#d8c78f**. Garden greens a little richer than the base grass; backyards
+quiet and low-contrast — fences, vegetable patches, paths.
+
+**No invented readable text anywhere** — no shop names, no street signs, no
+house numbers. Real names appear only where this brief explicitly allows them.
 
 ## Where you are
 
@@ -684,7 +793,14 @@ ${hardPois
   .map(
     (p, i) => `### ${i + 1}. ${p.name}
 
-- **Ground anchor: canvas px (${p.px[0]}, ${p.px[1]})** — its main entrance meets the sidewalk here.
+- **Centre it on canvas px (${p.px[0]}, ${p.px[1]})**, facing its street.${
+      p.moved === -1
+        ? ` This is a tight corner of the block — turn the building to follow its
+  street and tuck it into the space. Trim its length if you must, but keep the
+  whole of it inside the white area: a landmark sliced in half by a street is
+  the worst thing that can happen on this map.`
+        : ' The whole building must sit inside the white area of the stencil: nothing on the finished map is worse than a landmark sliced in half by a street.'
+    }
 - **Paint it about ${p.size.pxW} × ${p.size.pxH} px** — that is ${p.size.factor}× its real ${p.size.trueW} × ${p.size.trueH} m
   footprint, and roughly ${p.size.pctBlock}% of the block's width. Oversized on purpose.
 - **It must be the biggest, tallest, most detailed and most saturated thing on

@@ -16,12 +16,20 @@ exact positions.
 
 **You are painting HALF of one city block — the first half of block 1.**
 That block is a long narrow strip, too long and thin to paint in one image, so
-it is being done in two pieces that will be joined edge to edge. Paint your
-half complete in itself and carry the detail right to every edge: whichever
-edge meets the other half must not fade out, stop short, or round off, because
-the join would show as a seam down the middle of the block. It is bounded by real streets,
-it contains real buildings, and your painting drops into the hole where that
-piece sits.
+it is being done in two pieces that get joined edge to edge.
+
+> **Your joining edge is NOT a street.** It is the cut through the middle of the
+> block, and the other half continues from it. Along that edge there is **no
+> sidewalk, no kerb, no fence, no rounded corner, no fading out** — gardens,
+> paths, hedges and even buildings simply run off it mid-stride, exactly as
+> they would if the picture were bigger. The other three edges face real
+> streets and do get the sidewalk band described below.
+>
+> If you put a pavement along the joining edge, the finished block ends up with a
+> double pavement running down its middle and no houses behind it.
+
+It contains real buildings, and your painting drops into the hole where that
+piece of the block sits.
 
 ## What is attached
 

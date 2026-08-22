@@ -324,14 +324,19 @@ bx2++; by2++; // exclusive
 // squashed by 80-90% on the way in. Those blocks are painted in two halves
 // instead, split across the long axis, each half a shape a model can actually
 // produce. Pass `a` or `b` as the third argument.
+// Which edge of a half is the cut rather than a street. The brief has to say
+// so: told only that its perimeter is a sidewalk band, a half paints a kerb on
+// all four sides and the two pieces meet as a double pavement down the middle
+// of the block.
+let joinSide = null;
 if (half && !SPLIT_PIECES) {
   const tall = by2 - by1 >= bx2 - bx1;
   if (tall) {
     const mid = Math.round((by1 + by2) / 2);
-    if (half === 'a') by2 = mid; else by1 = mid;
+    if (half === 'a') { by2 = mid; joinSide = 'bottom'; } else { by1 = mid; joinSide = 'top'; }
   } else {
     const mid = Math.round((bx1 + bx2) / 2);
-    if (half === 'a') bx2 = mid; else bx1 = mid;
+    if (half === 'a') { bx2 = mid; joinSide = 'right'; } else { bx1 = mid; joinSide = 'left'; }
   }
 }
 const bw = bx2 - bx1, bh = by2 - by1;
@@ -825,7 +830,17 @@ const annotated = await sharp(ctx)
 await sharp(annotated).resize((cx2 - cx1) * 2).png().toFile(share('context.png'));
 
 // --- output 3: the brief ----------------------------------------------------
-const sideLine = (dir) => (sides[dir].length ? sides[dir].join(' / ') : '(no named street — board edge or alley)');
+// The compass sides come from the whole block's ring, so on a half the joining
+// side would still name the street at the far end — contradicting the notice
+// that says that edge is a cut, not a street.
+const JOIN_TO_COMPASS = { top: 'North', bottom: 'South', left: 'West', right: 'East' };
+const joinCompass = joinSide ? JOIN_TO_COMPASS[joinSide] : null;
+const sideLine = (dir) =>
+  dir === joinCompass
+    ? '**not a street** — this is the cut through the block, and the other half carries on from it'
+    : sides[dir].length
+      ? sides[dir].join(' / ')
+      : '(no named street — board edge or alley)';
 const poiCount = onThisBlock.length;
 const hardPois = [];
 /**
@@ -1126,14 +1141,24 @@ ${
   half
     ? `**You are painting HALF of one city block — the ${half === 'a' ? 'first' : 'second'} half of block ${blockNum}.**
 That block is a long narrow strip, too long and thin to paint in one image, so
-it is being done in two pieces that will be joined edge to edge. Paint your
-half complete in itself and carry the detail right to every edge: whichever
-edge meets the other half must not fade out, stop short, or round off, because
-the join would show as a seam down the middle of the block.`
-    : `**You are painting one city block: block ${blockNum}.**`
-} It is bounded by real streets,
-it contains real buildings, and your painting drops into the hole where that
-${half ? 'piece' : 'block'} sits.
+it is being done in two pieces that get joined edge to edge.
+
+> **Your ${joinSide ?? 'joining'} edge is NOT a street.** It is the cut through the middle of the
+> block, and the other half continues from it. Along that edge there is **no
+> sidewalk, no kerb, no fence, no rounded corner, no fading out** — gardens,
+> paths, hedges and even buildings simply run off it mid-stride, exactly as
+> they would if the picture were bigger. The other three edges face real
+> streets and do get the sidewalk band described below.
+>
+> If you put a pavement along the ${joinSide ?? 'joining'} edge, the finished block ends up with a
+> double pavement running down its middle and no houses behind it.
+
+It contains real buildings, and your painting drops into the hole where that
+piece of the block sits.`
+    : `**You are painting one city block: block ${blockNum}.** It is bounded by real
+streets, it contains real buildings, and your painting drops into the hole
+where that block sits.`
+}
 
 ## What is attached
 
@@ -1210,7 +1235,7 @@ ${half ? 'piece' : 'block'} sits.
   spill, leave the canvas empty.
 - **The perimeter band of your painting is the sidewalk/terrace zone** (~6 m
   ≈ ${Math.round(6 / (mPerPx / WORK_SCALE))} px wide): paint your own sidewalk paving there, with the street
-  trees in the grass terrace strip alongside it.
+  trees in the grass terrace strip alongside it.${joinSide ? ` **Except along the ${joinSide} edge** — that one is the cut through the block, not a street, and gets no pavement at all.` : ''}
 - **North is up. Scale: 1 px = ${mPerWorkPx.toFixed(3)} m**, and this is not negotiable —
   the site plan shows you what that means. A typical Milwaukee two-flat is
   17 × 8 m ≈ **${Math.round(17 / mPerWorkPx)} × ${Math.round(8 / mPerWorkPx)} px**; a big street tree's canopy is 8 m ≈ **${Math.round(8 / mPerWorkPx)} px**
@@ -1427,13 +1452,15 @@ ${hardPois
 - [ ] Buildings match the grey outlines on the site plan in size and number — not bigger, not fewer.
 - [ ] **Every part of the white stencil area is painted** — a bare patch becomes a hole in the map.
 - [ ] The canvas is ${cw} × ${ch} px.
-- [ ] No streets, no lettering other than the name${hardPois.length > 1 ? 's' : ''} above, no map markers.`
+${joinSide ? `- [ ] **No pavement, kerb or rounded corner along the ${joinSide} edge** — that edge is the cut through the block; the art runs straight off it.
+` : ''}- [ ] No streets, no lettering other than the name${hardPois.length > 1 ? 's' : ''} above, no map markers.`
       : `
 
 ## Before you call it finished
 
 - [ ] Buildings match the grey outlines on the site plan in size and number — not bigger, not fewer.
-- [ ] **Every part of the white stencil area is painted** — a bare patch becomes a hole in the map.
+- [ ] **Every part of the white stencil area is painted** — a bare patch becomes a hole in the map.${joinSide ? `
+- [ ] **No pavement, kerb or rounded corner along the ${joinSide} edge** — that edge is the cut through the block; the art runs straight off it.` : ''}
 - [ ] The canvas is ${cw} × ${ch} px.
 - [ ] No streets, no lettering anywhere, no map markers, no invented centrepiece.`
   }

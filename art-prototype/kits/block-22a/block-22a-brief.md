@@ -16,12 +16,20 @@ exact positions.
 
 **You are painting HALF of one city block — the first half of block 22.**
 That block is a long narrow strip, too long and thin to paint in one image, so
-it is being done in two pieces that will be joined edge to edge. Paint your
-half complete in itself and carry the detail right to every edge: whichever
-edge meets the other half must not fade out, stop short, or round off, because
-the join would show as a seam down the middle of the block. It is bounded by real streets,
-it contains real buildings, and your painting drops into the hole where that
-piece sits.
+it is being done in two pieces that get joined edge to edge.
+
+> **Your bottom edge is NOT a street.** It is the cut through the middle of the
+> block, and the other half continues from it. Along that edge there is **no
+> sidewalk, no kerb, no fence, no rounded corner, no fading out** — gardens,
+> paths, hedges and even buildings simply run off it mid-stride, exactly as
+> they would if the picture were bigger. The other three edges face real
+> streets and do get the sidewalk band described below.
+>
+> If you put a pavement along the bottom edge, the finished block ends up with a
+> double pavement running down its middle and no houses behind it.
+
+It contains real buildings, and your painting drops into the hole where that
+piece of the block sits.
 
 ## What is attached
 
@@ -83,7 +91,7 @@ piece sits.
   spill, leave the canvas empty.
 - **The perimeter band of your painting is the sidewalk/terrace zone** (~6 m
   ≈ 42 px wide): paint your own sidewalk paving there, with the street
-  trees in the grass terrace strip alongside it.
+  trees in the grass terrace strip alongside it. **Except along the bottom edge** — that one is the cut through the block, not a street, and gets no pavement at all.
 - **North is up. Scale: 1 px = 0.144 m**, and this is not negotiable —
   the site plan shows you what that means. A typical Milwaukee two-flat is
   17 × 8 m ≈ **118 × 56 px**; a big street tree's canopy is 8 m ≈ **56 px**
@@ -122,7 +130,7 @@ house numbers. Real names appear only where this brief explicitly allows them.
 Bounded by:
 - **North:** East Brady Street
 - **East:** North Franklin Place
-- **South:** East Pleasant Street
+- **South:** **not a street** — this is the cut through the block, and the other half carries on from it
 - **West:** North Humboldt Avenue
 
 See `block-22a-context.png` — your block outlined in red dashes on the actual base
@@ -244,4 +252,5 @@ most common way these come back wrong.
 - [ ] Buildings match the grey outlines on the site plan in size and number — not bigger, not fewer.
 - [ ] **Every part of the white stencil area is painted** — a bare patch becomes a hole in the map.
 - [ ] The canvas is 580 × 856 px.
+- [ ] **No pavement, kerb or rounded corner along the bottom edge** — that edge is the cut through the block; the art runs straight off it.
 - [ ] No streets, no lettering other than the name above, no map markers.

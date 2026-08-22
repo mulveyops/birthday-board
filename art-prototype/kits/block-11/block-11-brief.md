@@ -14,9 +14,9 @@ and cannot move. What is missing is the land *between* the streets, so the city
 blocks are being illustrated one at a time and composited back onto the map at
 exact positions.
 
-**You are painting one city block: block 11.** It is bounded by real streets,
-it contains real buildings, and your painting drops into the hole where that
-block sits.
+**You are painting one city block: block 11.** It is bounded by real
+streets, it contains real buildings, and your painting drops into the hole
+where that block sits.
 
 ## What is attached
 

@@ -1210,9 +1210,11 @@ export default function App({
     });
     setCamFile(f);
   }
-  function openCam(tab: 'gallery' | 'post') {
+  /** `drinks` seeds the stepper: tapping 🍻 Beers means you're claiming one. */
+  function openCam(tab: 'gallery' | 'post', drinks = 0) {
     setCamTab(tab);
     setCamNote('');
+    setCamDrinks(drinks);
     setCamOpen(true);
   }
   function closeCam() {
@@ -1448,6 +1450,30 @@ export default function App({
     const mine = new Set(Object.entries(territoryMap).filter(([, t]) => t === membership.teamId).map(([s]) => s));
     return longestRun(mine, turfAdj);
   }, [territoryMap, turfAdj, membership]);
+  // --- Player HUD: standings that rotate, a feed that ticks ----------------
+  // ~8 teams will never fit across a phone, so the strip shows ONE team at a
+  // time and cycles every 5s; tapping opens the whole board. The activity feed
+  // works the same way — one line, tap for the log. Both live in the dead space
+  // above the board, which the letterboxed map wasn't using anyway.
+  const allRuns = useMemo(() => computeRuns(territoryMap, turfAdj), [territoryMap, turfAdj]);
+  const standings = useMemo(() => [...teams].sort((a, b) => b.stars - a.stars || b.coins - a.coins), [teams]);
+  const [standOpen, setStandOpen] = useState(false);
+  const [feedOpen, setFeedOpen] = useState(false);
+  const [rotIdx, setRotIdx] = useState(0);
+  const [tickIdx, setTickIdx] = useState(0);
+  // Hold still while someone's reading the expanded view.
+  useEffect(() => {
+    if (standOpen || standings.length < 2) return;
+    const iv = setInterval(() => setRotIdx((i) => (i + 1) % standings.length), 5000);
+    return () => clearInterval(iv);
+  }, [standOpen, standings.length]);
+  useEffect(() => {
+    if (feedOpen || events.length < 2) return;
+    const iv = setInterval(() => setTickIdx((i) => (i + 1) % Math.min(events.length, 8)), 4000);
+    return () => clearInterval(iv);
+  }, [feedOpen, events.length]);
+  // A new event jumps the line to the front — that's the whole point of a feed.
+  useEffect(() => setTickIdx(0), [events.length]);
   // Corner paint for the map: spot → team color (thicker ring for our own,
   // 🧱 badge when reinforced).
   const turfPaint = useMemo(() => {
@@ -4104,6 +4130,94 @@ export default function App({
             💬{msgUnread > 0 && <span className="msg-badge">{msgUnread}</span>}
           </button>
         )}
+        {variant === 'player' && appMode === 'online' && membership && (
+          <div className="hud-strip">
+            <button className="hud-row" onClick={() => setStandOpen(true)}>
+              {standings.length === 0 ? (
+                <span className="hud-dim">Waiting for teams…</span>
+              ) : (
+                (() => {
+                  const t = standings[Math.min(rotIdx, standings.length - 1)];
+                  const place = standings.indexOf(t) + 1;
+                  return (
+                    <>
+                      <span className="hud-place">{place === 1 ? '🏆' : `${place}.`}</span>
+                      <span className="hud-name">
+                        {t.emoji} {t.name}
+                        {t.id === membership.teamId && <em className="hud-you">you</em>}
+                      </span>
+                      <span className="hud-stats">
+                        ⭐{t.stars} 🪙{t.coins} 🔗{allRuns[t.id] ?? 0}
+                      </span>
+                    </>
+                  );
+                })()
+              )}
+              <span className="hud-more">▾</span>
+            </button>
+            <button className="hud-row hud-row--feed" onClick={() => setFeedOpen(true)}>
+              <span className="hud-feed">
+                {events.length
+                  ? events[Math.min(tickIdx, events.length - 1)]?.payload?.text ?? '…'
+                  : 'Nothing has happened yet — go take a corner.'}
+              </span>
+              <span className="hud-more">▾</span>
+            </button>
+          </div>
+        )}
+        {standOpen && (
+          <div className="msg-scrim msg-scrim--cam" onClick={() => setStandOpen(false)}>
+            <div className="msg-panel" onClick={(e) => e.stopPropagation()}>
+              <div className="msg-head">
+                <span className="msg-head__pad" />
+                <span>🏆 Standings</span>
+                <button onClick={() => setStandOpen(false)} aria-label="Close">
+                  ✕
+                </button>
+              </div>
+              <div className="stand-list">
+                {standings.map((t, i) => (
+                  <div key={t.id} className={`stand-row${t.id === membership?.teamId ? ' is-me' : ''}`}>
+                    <span className="stand-place">{i === 0 ? '🏆' : `${i + 1}.`}</span>
+                    <span className="stand-name">
+                      {t.emoji} {t.name}
+                      {t.id === membership?.teamId && <em className="hud-you">you</em>}
+                    </span>
+                    <span className="stand-stats">
+                      <b>⭐{t.stars}</b> <b>🪙{t.coins}</b> <b>🔗{allRuns[t.id] ?? 0}</b>
+                    </span>
+                  </div>
+                ))}
+                {standings.length === 0 && <p className="msg-empty">No teams have joined yet.</p>}
+              </div>
+              <p className="hint stand-key">⭐ stars · 🪙 coins · 🔗 longest chain of corners (pays out every tick)</p>
+            </div>
+          </div>
+        )}
+        {feedOpen && (
+          <div className="msg-scrim msg-scrim--cam" onClick={() => setFeedOpen(false)}>
+            <div className="msg-panel" onClick={(e) => e.stopPropagation()}>
+              <div className="msg-head">
+                <span className="msg-head__pad" />
+                <span>📣 Activity</span>
+                <button onClick={() => setFeedOpen(false)} aria-label="Close">
+                  ✕
+                </button>
+              </div>
+              <div className="feed-list">
+                {events.length === 0 && <p className="msg-empty">Nothing has happened yet.</p>}
+                {events.map((e) => (
+                  <div key={e.id} className="feed-row">
+                    <span className="feed-time">
+                      {new Date(e.ts).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
+                    </span>
+                    <span>{e.payload?.text ?? e.type}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
         {appMode === 'online' && membership && (
           <button
             className="cam-fab"
@@ -5776,15 +5890,25 @@ export default function App({
                   {(myTeam?.reinforcements ?? 0) > 0 && <span>🧱 {myTeam?.reinforcements}</span>}
                 </div>
               </div>
-              <button className="player-bar__btn player-bar__btn--icon" onClick={() => (camOpen ? closeCam() : openCam('gallery'))}>
-                📸{photos.length > 0 && <span className="cam-count">{photos.length}</span>}
-              </button>
-              <button className="player-bar__btn player-bar__btn--icon" onClick={() => (msgOpen ? setMsgOpen(false) : openMsgPanel())}>
-                💬{msgUnread > 0 && <span className="msg-badge">{msgUnread}</span>}
-              </button>
-              <button className="player-bar__btn player-bar__btn--menu" onClick={() => setPanelOpen((o) => !o)}>
-                {panelOpen ? '✕ Close' : '☰ Menu'}
-              </button>
+              <div className="player-bar__acts">
+                {/* Beers is its own button, not a tab inside the album: it's the
+                    one you tap with a drink already in your other hand. */}
+                <button className="player-bar__btn player-bar__btn--beer" onClick={() => openCam('post', 1)}>
+                  🍻<em>Beers</em>
+                </button>
+                <button className="player-bar__btn" onClick={() => (camOpen ? closeCam() : openCam('gallery'))}>
+                  📸<em>Album</em>
+                  {photos.length > 0 && <span className="cam-count">{photos.length}</span>}
+                </button>
+                <button className="player-bar__btn" onClick={() => (msgOpen ? setMsgOpen(false) : openMsgPanel())}>
+                  💬<em>Chat</em>
+                  {msgUnread > 0 && <span className="msg-badge">{msgUnread}</span>}
+                </button>
+                <button className="player-bar__btn player-bar__btn--menu" onClick={() => setPanelOpen((o) => !o)}>
+                  {panelOpen ? '✕' : '☰'}
+                  <em>{panelOpen ? 'Close' : 'Menu'}</em>
+                </button>
+              </div>
             </footer>
           );
         })()}

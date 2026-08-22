@@ -1,24 +1,31 @@
-// Referee console — a trusted friend runs a REAL-LIFE game at a POI (bags,
-// relay, trivia bee, whatever the encounter says) and reports the result.
-// The app can't see the game itself; the ref IS the sensor: they pick the
-// POI they're standing at, declare the winner, and the app pays out and
-// announces it. Deliberately lightweight — game code + a shared password,
-// no team, no GPS.
+// Referee console — the whole game, run from one screen.
+//
+// This began as "declare a winner at a POI" and has become the operations desk:
+// land stars, watch duels and overrule them, check drink photos, see where
+// everyone is, fix a team's numbers, call last orders, hand out the ceremony
+// awards, end the night. One scrolling page and no board builder attached — the
+// person holding this is standing in a bar, not designing anything.
 import { useEffect, useMemo, useState } from 'react';
 import { navigate } from '../Root';
 import {
   getGameByCode,
   getBoard,
   listTeams,
+  listPositions,
+  listAllClaims,
   adjustCoins,
   adjustStars,
+  transferCoins,
   logEvent,
+  sendMessage,
+  updateGameStatus,
   dropStar,
   listStarSpawns,
   subscribeStarSpawns,
   listStarClaims,
-  type StarSpawnRow,
-  type StarClaimRow,
+  listDuels,
+  subscribeDuels,
+  overrideDuel,
   listPhotos,
   subscribePhotos,
   vetoPhoto,
@@ -26,22 +33,27 @@ import {
   deletePhoto,
   type PhotoRow,
   type TeamRow,
+  type Position,
+  type StarSpawnRow,
+  type StarClaimRow,
+  type DuelRow,
 } from '../net';
 import type { Board, Square } from '../types';
 
 const REF_PASSWORD = 'iclosedwolskis';
 
-const ENC_META: Record<string, { emoji: string; label: string }> = {
-  'star-bar': { emoji: '⭐', label: 'Star bar' },
-  h2h: { emoji: '⚔️', label: 'Head-to-head' },
-  challenge: { emoji: '🎯', label: 'Challenge' },
-  boss: { emoji: '🔥', label: 'Boss' },
-  landmark: { emoji: '📍', label: 'Landmark' },
-};
-
 interface RefSession {
   gameId: string;
   code: string;
+}
+
+/** "4 min ago" — this gets read while somebody talks at you. */
+function ago(ts: string | undefined | null, now: number): string {
+  if (!ts) return 'never';
+  const s = Math.max(0, Math.floor((now - Date.parse(ts)) / 1000));
+  if (s < 60) return `${s}s ago`;
+  if (s < 3600) return `${Math.floor(s / 60)} min ago`;
+  return `${Math.floor(s / 3600)}h ago`;
 }
 
 export default function Referee() {
@@ -55,24 +67,23 @@ export default function Referee() {
   const [code, setCode] = useState('');
   const [pw, setPw] = useState('');
   const [err, setErr] = useState('');
+  const [done, setDone] = useState('');
   const [busy, setBusy] = useState(false);
+  const [now, setNow] = useState(() => Date.now());
 
   const [board, setBoard] = useState<Board | null>(null);
   const [teams, setTeams] = useState<TeamRow[]>([]);
-  const [poiId, setPoiId] = useState<string | null>(null);
-  const [winnerId, setWinnerId] = useState('');
-  const [loserId, setLoserId] = useState('');
-  const [amount, setAmount] = useState(25);
-  const [giveStar, setGiveStar] = useState(false);
-  const [done, setDone] = useState('');
-  // Drink checks pay on submit; the ref is the veto on a photo that clearly
-  // isn't what it claimed. Same powers as the host console.
+  const [positions, setPositions] = useState<Position[]>([]);
+  const [allClaims, setAllClaims] = useState<{ spot_id: string; team_id: string }[]>([]);
   const [photos, setPhotos] = useState<PhotoRow[]>([]);
-  // Stars already waiting, so a ref doesn't stack three on one bar without
-  // meaning to — a bar with one sitting on it doesn't need another.
+  const [duels, setDuels] = useState<DuelRow[]>([]);
   const [spawns, setSpawns] = useState<StarSpawnRow[]>([]);
   const [claims, setClaims] = useState<StarClaimRow[]>([]);
   const [starBusy, setStarBusy] = useState('');
+  const [showWhere, setShowWhere] = useState(false);
+  const [endArmed, setEndArmed] = useState(false);
+  const [note, setNote] = useState('');
+  const [awarded, setAwarded] = useState<Record<string, boolean>>({});
 
   async function enter() {
     setErr('');
@@ -98,72 +109,83 @@ export default function Referee() {
   }
 
   useEffect(() => {
+    const iv = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(iv);
+  }, []);
+
+  useEffect(() => {
     if (!sess) return;
     let alive = true;
-    getBoard(sess.gameId)
+    const gid = sess.gameId;
+    getBoard(gid)
       .then((b) => alive && setBoard(b))
       .catch(() => alive && setErr('Could not load the board — check your connection.'));
-    const load = () => listTeams(sess.gameId).then((t) => alive && setTeams(t)).catch(() => {});
-    load();
-    const iv = setInterval(load, 15000);
-    const loadPhotos = () => listPhotos(sess.gameId).then((p) => alive && setPhotos(p)).catch(() => {});
-    loadPhotos();
-    const unsubPhotos = subscribePhotos(sess.gameId, loadPhotos);
-    const loadStars = () => {
-      listStarSpawns(sess.gameId).then((r) => alive && setSpawns(r)).catch(() => {});
-      listStarClaims(sess.gameId).then((r) => alive && setClaims(r)).catch(() => {});
+    const load = () => {
+      listTeams(gid).then((t) => alive && setTeams(t)).catch(() => {});
+      listPositions(gid).then((p) => alive && setPositions(p)).catch(() => {});
+      listAllClaims(gid).then((c) => alive && setAllClaims(c)).catch(() => {});
+      listStarSpawns(gid).then((r) => alive && setSpawns(r)).catch(() => {});
+      listStarClaims(gid).then((r) => alive && setClaims(r)).catch(() => {});
     };
-    loadStars();
-    const unsubStars = subscribeStarSpawns(sess.gameId, loadStars);
+    load();
+    const iv = setInterval(load, 10000);
+    const loadPhotos = () => listPhotos(gid).then((p) => alive && setPhotos(p)).catch(() => {});
+    const loadDuels = () => listDuels(gid).then((d) => alive && setDuels(d)).catch(() => {});
+    loadPhotos();
+    loadDuels();
+    const unsubPhotos = subscribePhotos(gid, loadPhotos);
+    const unsubDuels = subscribeDuels(gid, loadDuels);
+    const unsubStars = subscribeStarSpawns(gid, load);
     return () => {
       alive = false;
       clearInterval(iv);
       unsubPhotos();
+      unsubDuels();
       unsubStars();
     };
   }, [sess]);
 
-  const pois = useMemo(
+  const bars = useMemo(
     () =>
       (board?.squares ?? [])
-        .filter((s) => s.type === 'poi' || s.type === 'bar')
+        .filter((s) => s.type === 'bar')
         .sort((a, b) => (a.title || '').localeCompare(b.title || '')),
     [board],
   );
-  const poi: Square | null = pois.find((p) => p.id === poiId) ?? null;
+  const teamName = (id: string | null | undefined) => teams.find((t) => t.id === id)?.name ?? 'a team';
+  const teamEmoji = (id: string | null | undefined) => teams.find((t) => t.id === id)?.emoji ?? '🎲';
+  const spotName = (id: string | null | undefined) =>
+    board?.squares.find((s) => s.id === id)?.title || 'somewhere';
 
-  function pickPoi(p: Square) {
-    setPoiId(p.id);
-    setAmount(p.poi?.reward || 25);
-    setWinnerId('');
-    setLoserId('');
-    setGiveStar((p.poi?.encounter ?? '') === 'boss');
-    setDone('');
-    setErr('');
+  function starsWaiting(spotId: string): number {
+    const landed = spawns.filter((s) => s.bar_spot_id === spotId).length;
+    const taken = claims.filter((c) => c.bar_spot_id === spotId && c.status !== 'lost').length;
+    return Math.max(0, landed - taken);
   }
 
-  /**
-   * Land a star on the bar you're sitting in. The organic drop lands one
-   * somewhere every twenty minutes; this is the one you fire because the room
-   * you're in has gone quiet and you'd like some company.
-   */
-  async function landStar(spotId: string, name: string) {
+  /** Where an unprompted drop would land next. Same rule the game itself uses. */
+  function nextStarBars(n: number): string[] {
+    const out: string[] = [];
+    for (const p of [...bars].sort((a, b) => a.id.localeCompare(b.id))) {
+      if (out.length >= n) break;
+      if (starsWaiting(p.id) === 0) out.push(p.title || 'a bar');
+    }
+    return out;
+  }
+
+  async function landStar(spot: Square) {
     if (!sess || starBusy) return;
-    setStarBusy(spotId);
+    setStarBusy(spot.id);
     setErr('');
     try {
-      const ok = await dropStar(sess.gameId, spotId, null);
+      const ok = await dropStar(sess.gameId, spot.id, null);
       if (!ok) {
         setErr('That one did not take — try again.');
         return;
       }
-      await logEvent(
-        sess.gameId,
-        'star',
-        `⭐ A star just landed at ${name} — first team to buy a round claims it!`,
-      );
-      setDone(`⭐ Star landed at ${name} — go tell them it's here.`);
-      listStarSpawns(sess.gameId).then(setSpawns).catch(() => {});
+      const name = spot.title || 'a bar';
+      await logEvent(sess.gameId, 'star', `⭐ A star just landed at ${name} — first team to buy a round claims it!`);
+      setDone(`⭐ Star landed at ${name}.`);
     } catch (e) {
       setErr('Could not land it: ' + (e as Error).message);
     } finally {
@@ -171,52 +193,79 @@ export default function Referee() {
     }
   }
 
-  /** Stars sitting unclaimed at a bar right now. */
-  function starsWaiting(spotId: string): number {
-    const landed = spawns.filter((s) => s.bar_spot_id === spotId).length;
-    const taken = claims.filter((c) => c.bar_spot_id === spotId && c.status !== 'lost').length;
-    return Math.max(0, landed - taken);
-  }
-
-  /** Where an unprompted drop would land, in order. Same rule the game uses:
-   * the first bar, by id, with no star waiting and no claim running. */
-  function nextStarBars(n: number): string[] {
-    const out: string[] = [];
-    for (const p of [...pois].filter((x) => x.type === 'bar').sort((a, b) => a.id.localeCompare(b.id))) {
-      if (out.length >= n) break;
-      if (starsWaiting(p.id) === 0) out.push(p.title || 'a bar');
-    }
-    return out;
-  }
-
-  async function declare() {
-
-    if (!sess || !poi || !winnerId || busy) return;
+  /**
+   * Overrule a duel, including one already settled — which is the whole point.
+   * If coins moved on the wrong call, move TWICE the stake: the team that was
+   * paid gives back what they took and hands over what they owed.
+   */
+  async function overrule(d: DuelRow, winner: string) {
+    if (!sess || busy) return;
     setBusy(true);
     setErr('');
     try {
-      if (amount > 0) await adjustCoins(winnerId, amount);
-      if (giveStar) await adjustStars(winnerId, 1);
-      const w = teams.find((t) => t.id === winnerId);
-      const l = teams.find((t) => t.id === loserId);
+      const wasPaid = d.status === 'done' && !!d.winner && d.winner !== winner && d.stake > 0;
+      await overrideDuel(d.id, winner);
+      if (wasPaid) await transferCoins(d.winner as string, winner, d.stake * 2);
       await logEvent(
         sess.gameId,
         'battle',
-        `🧑‍⚖️ ${poi.title}: ${w?.emoji ?? ''} ${w?.name ?? 'A team'}${l ? ` defeated ${l.name}` : ' won the challenge'}!` +
-          `${amount > 0 ? ` +${amount} 🪙` : ''}${giveStar ? ' +⭐' : ''}`,
+        `🧑‍⚖️ Referee call: ${teamName(winner)} takes the ${d.prompt}${wasPaid ? ` — ${d.stake} 🪙 moved` : ''}`,
       );
-      setDone(`✅ Sent — ${w?.name ?? 'winner'} gets ${amount > 0 ? `+${amount} 🪙` : ''}${giveStar ? ' +⭐' : ''}`);
-      setWinnerId('');
-      setLoserId('');
-      listTeams(sess.gameId).then(setTeams).catch(() => {});
+      setDone(`Called for ${teamName(winner)}.`);
     } catch (e) {
-      setErr('Failed to send: ' + (e as Error).message);
+      setErr('Could not overrule: ' + (e as Error).message);
     } finally {
       setBusy(false);
     }
   }
 
-  /** Veto (or un-veto) a drink check — the RPC does the coin math both ways. */
+  async function nudge(teamId: string, coins: number, stars: number) {
+    if (!sess || busy) return;
+    setBusy(true);
+    try {
+      if (coins) await adjustCoins(teamId, coins);
+      if (stars) await adjustStars(teamId, stars);
+      listTeams(sess.gameId).then(setTeams).catch(() => {});
+      setDone(
+        `${teamName(teamId)}: ${coins ? `${coins > 0 ? '+' : ''}${coins} 🪙 ` : ''}${stars ? `${stars > 0 ? '+' : ''}${stars} ⭐` : ''}`,
+      );
+    } catch (e) {
+      setErr('Failed: ' + (e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function announce(text: string) {
+    if (!sess || !text.trim()) return;
+    setBusy(true);
+    try {
+      await sendMessage(sess.gameId, null, null, text.trim(), 'all');
+      await logEvent(sess.gameId, 'announce', `📣 ${text.trim()}`);
+      setDone('Sent to every phone.');
+      setNote('');
+    } catch (e) {
+      setErr('Could not send: ' + (e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function endGame() {
+    if (!sess) return;
+    setBusy(true);
+    try {
+      await updateGameStatus(sess.gameId, 'ended');
+      await logEvent(sess.gameId, 'star', '🏁 Game over!');
+      setDone('Game ended — every phone is showing final standings.');
+      setEndArmed(false);
+    } catch (e) {
+      setErr('Could not end it: ' + (e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function refVeto(p: PhotoRow) {
     setErr('');
     try {
@@ -227,12 +276,89 @@ export default function Referee() {
   }
   async function refDelete(p: PhotoRow) {
     if (!confirm('Delete this photo from the album?')) return;
-    setErr('');
     try {
       await deletePhoto(p.id);
       setPhotos((rows) => rows.filter((r) => r.id !== p.id));
     } catch (e) {
       setErr('Delete failed: ' + (e as Error).message);
+    }
+  }
+
+  // --- the three ceremony awards -------------------------------------------
+  // Each is counted from what the game already recorded, so nobody has to have
+  // kept score all afternoon.
+  const wolskis = useMemo(
+    () => (board?.squares ?? []).find((s) => /wolski/i.test(s.title || '') || s.poi?.artRef === 'wolskis'),
+    [board],
+  );
+  const hosed = useMemo(
+    () => (board?.squares ?? []).find((s) => /hosed/i.test(s.title || '') || s.poi?.artRef === 'hosed'),
+    [board],
+  );
+  const nomad = useMemo(
+    () => (board?.squares ?? []).find((s) => /nomad/i.test(s.title || '') || s.poi?.artRef === 'nomad'),
+    [board],
+  );
+
+  const awards = useMemo(() => {
+    const spaces = new Map<string, number>();
+    for (const c of allClaims) spaces.set(c.team_id, (spaces.get(c.team_id) ?? 0) + 1);
+    const drinks = new Map<string, number>();
+    for (const p of photos) {
+      if (p.vetoed || p.drinks <= 0 || !p.team_id) continue;
+      drinks.set(p.team_id, (drinks.get(p.team_id) ?? 0) + p.drinks);
+    }
+    const top = (m: Map<string, number>) =>
+      [...m.entries()].sort((a, b) => b[1] - a[1])[0] ?? null;
+
+    // "I closed Wolski's" — whoever checked in there most recently. A team's
+    // position row is its LAST check-in, so this is only true while they're
+    // still sitting there, which is exactly the award.
+    const atWolskis = wolskis
+      ? [...positions]
+          .filter((p) => p.spot_id === wolskis.id)
+          .sort((a, b) => Date.parse(b.updated_at ?? '') - Date.parse(a.updated_at ?? ''))[0] ?? null
+      : null;
+
+    return [
+      {
+        key: 'nomad',
+        title: `${nomad?.title ?? 'Nomad'} award`,
+        forWhat: 'most spaces claimed',
+        winner: top(spaces)?.[0] ?? null,
+        detail: top(spaces) ? `${top(spaces)![1]} spaces` : 'nobody has claimed anything',
+      },
+      {
+        key: 'hosed',
+        title: `${hosed?.title ?? 'Hosed on Brady'} award`,
+        forWhat: 'most drinks put away',
+        winner: top(drinks)?.[0] ?? null,
+        detail: top(drinks) ? `${top(drinks)![1]} drinks` : 'nobody has posted a drink',
+      },
+      {
+        key: 'wolskis',
+        title: "I closed Wolski's award",
+        forWhat: 'last team to check in at Wolski’s',
+        winner: atWolskis?.team_id ?? null,
+        detail: atWolskis ? `checked in ${ago(atWolskis.updated_at, now)}` : 'nobody has been in yet',
+      },
+    ];
+  }, [allClaims, photos, positions, wolskis, hosed, nomad, now]);
+
+  async function giveAward(key: string, teamId: string, title: string) {
+    if (!sess || busy) return;
+    setBusy(true);
+    try {
+      await adjustStars(teamId, 1);
+      await logEvent(sess.gameId, 'star', `🏅 ${title}: ${teamEmoji(teamId)} ${teamName(teamId)} — +⭐`);
+      await sendMessage(sess.gameId, null, null, `🏅 ${title} goes to ${teamName(teamId)}!`, 'all');
+      setAwarded((a) => ({ ...a, [key]: true }));
+      listTeams(sess.gameId).then(setTeams).catch(() => {});
+      setDone(`🏅 ${title} → ${teamName(teamId)}`);
+    } catch (e) {
+      setErr('Could not award it: ' + (e as Error).message);
+    } finally {
+      setBusy(false);
     }
   }
 
@@ -242,7 +368,7 @@ export default function Referee() {
         <div className="site-card">
           <div className="site-hero">
             <h1>🧑‍⚖️ Referee</h1>
-            <p className="site-date">Run a real-life game at a spot and report the winner.</p>
+            <p className="site-date">Run the game from here.</p>
           </div>
           <div className="join-form">
             <label className="field">
@@ -277,9 +403,14 @@ export default function Referee() {
     );
   }
 
+  const openDuels = duels.filter((d) => d.status === 'open');
+  const recentDuels = duels.filter((d) => d.status !== 'open').slice(0, 6);
+  const standings = [...teams].sort((a, b) => b.stars - a.stars || b.coins - a.coins);
+  const liveDrinkClaims = photos.filter((p) => p.drinks > 0 && !p.vetoed).length;
+
   return (
     <div className="site">
-      <div className="site-card" style={{ maxWidth: 480 }}>
+      <div className="site-card ref-card">
         <div className="site-hero">
           <h1>🧑‍⚖️ Referee</h1>
           <p className="site-date">
@@ -290,7 +421,6 @@ export default function Referee() {
                 localStorage.removeItem('mke-ref-v1');
                 setSess(null);
                 setBoard(null);
-                setPoiId(null);
               }}
             >
               switch game
@@ -298,162 +428,262 @@ export default function Referee() {
           </p>
         </div>
 
-        {!board ? (
-          <p className="hint" style={{ textAlign: 'center' }}>Loading the board…</p>
-        ) : !poi ? (
-          <div className="join-form">
-            {/* Refs pull people in. One lands somewhere on its own every twenty
-                minutes; this is the one you fire because the room you're in has
-                gone quiet and you'd like some company. */}
-            <div style={{ marginBottom: 12, borderBottom: '2px solid rgba(0,0,0,0.12)', paddingBottom: 10 }}>
-              <p className="hint" style={{ marginTop: 0 }}>
-                <b>⭐ Land a star</b> — drop one on the bar you're sitting in and watch them come to
-                you. Everyone gets told the moment it lands.
-              </p>
-              <p className="hint" style={{ marginTop: 0 }}>
-                Left alone, the next one lands at <b>{nextStarBars(1)[0] ?? 'nowhere — every bar has one'}</b>
-                {nextStarBars(2)[1] ? <>, then <b>{nextStarBars(2)[1]}</b></> : null}. Keep it to
-                yourself.
-              </p>
-              {pois
-                .filter((p) => p.type === 'bar')
-                .map((p) => {
-                  const waiting = starsWaiting(p.id);
-                  return (
-                    <button
-                      key={`star-${p.id}`}
-                      className="site-btn"
-                      style={{ textAlign: 'left', opacity: waiting ? 0.55 : 1 }}
-                      disabled={!!starBusy}
-                      onClick={() => void landStar(p.id, p.title || 'a bar')}
-                    >
-                      ⭐ {p.title || '(untitled)'}
-                      {waiting > 0 && (
-                        <span style={{ opacity: 0.75, fontSize: '0.8em' }}>
-                          {' '}
-                          · {waiting} already waiting
-                        </span>
-                      )}
-                    </button>
-                  );
-                })}
-            </div>
-            <p className="hint" style={{ marginTop: 0 }}>
-              <b>Where are you standing?</b> Pick the spot you're refereeing.
-            </p>
+        {err && <p className="ref-flash ref-flash--bad">{err}</p>}
+        {done && <p className="ref-flash">{done}</p>}
 
-            {pois.map((p) => {
-              const em = ENC_META[p.poi?.encounter ?? (p.type === 'bar' ? 'star-bar' : 'landmark')] ?? ENC_META.landmark;
+        {/* ---- duels ------------------------------------------------------ */}
+        <section className="ref-block">
+          <h2 className="ref-h">
+            ⚔️ Duels {openDuels.length > 0 && <em className="ref-count">{openDuels.length} live</em>}
+          </h2>
+          {openDuels.length === 0 && recentDuels.length === 0 && (
+            <p className="hint">Nothing running. They appear here the moment one starts.</p>
+          )}
+          {openDuels.map((d) => (
+            <div key={d.id} className="ref-duel is-live">
+              <div className="ref-duel__head">
+                <b>{d.prompt}</b>
+                <span className="ref-duel__age">{ago(d.created_at, now)}</span>
+              </div>
+              <div className="hint">
+                {teamEmoji(d.challenger)} {teamName(d.challenger)} vs {teamEmoji(d.opponent)} {teamName(d.opponent)}
+                {d.stake > 0 ? ` · ${d.stake} 🪙` : ''} · {spotName(d.spot_id)}
+              </div>
+              <div className="ref-duel__acts">
+                <button className="site-btn" disabled={busy} onClick={() => void overrule(d, d.challenger)}>
+                  {teamName(d.challenger)} won
+                </button>
+                <button className="site-btn" disabled={busy} onClick={() => void overrule(d, d.opponent)}>
+                  {teamName(d.opponent)} won
+                </button>
+              </div>
+            </div>
+          ))}
+          {recentDuels.map((d) => (
+            <div key={d.id} className="ref-duel">
+              <div className="ref-duel__head">
+                <b>{d.prompt}</b>
+                <span className="ref-duel__age">{ago(d.resolved_at ?? d.created_at, now)}</span>
+              </div>
+              <div className="hint">
+                {d.status === 'cancelled'
+                  ? 'called off'
+                  : `${teamEmoji(d.winner)} ${teamName(d.winner)} took it${d.stake > 0 ? ` · ${d.stake} 🪙` : ''}`}
+              </div>
+              <div className="ref-duel__acts">
+                <button className="site-btn" disabled={busy || d.winner === d.challenger} onClick={() => void overrule(d, d.challenger)}>
+                  Overrule → {teamName(d.challenger)}
+                </button>
+                <button className="site-btn" disabled={busy || d.winner === d.opponent} onClick={() => void overrule(d, d.opponent)}>
+                  Overrule → {teamName(d.opponent)}
+                </button>
+              </div>
+            </div>
+          ))}
+        </section>
+
+        {/* ---- stars ------------------------------------------------------ */}
+        <section className="ref-block">
+          <h2 className="ref-h">⭐ Land a star</h2>
+          <p className="hint" style={{ marginTop: 0 }}>
+            Drop one on the bar you're sitting in and watch them come to you. Left alone, the next
+            lands at <b>{nextStarBars(1)[0] ?? 'nowhere — every bar has one'}</b>
+            {nextStarBars(2)[1] ? <>, then <b>{nextStarBars(2)[1]}</b></> : null}. Keep that to yourself.
+          </p>
+          <div className="ref-bars">
+            {bars.map((p) => {
+              const waiting = starsWaiting(p.id);
               return (
-                <button key={p.id} className="site-btn" style={{ textAlign: 'left' }} onClick={() => pickPoi(p)}>
-                  {em.emoji} {p.title || '(untitled)'} <span style={{ opacity: 0.65, fontSize: '0.8em' }}>· {em.label}</span>
+                <button
+                  key={p.id}
+                  className="site-btn"
+                  style={{ opacity: waiting ? 0.55 : 1 }}
+                  disabled={!!starBusy}
+                  onClick={() => void landStar(p)}
+                >
+                  ⭐ {p.title || '(untitled)'}
+                  {waiting > 0 && <span style={{ opacity: 0.7, fontSize: '0.8em' }}> · {waiting} waiting</span>}
                 </button>
               );
             })}
-            {pois.length === 0 && <p className="hint">This game's board has no points of interest.</p>}
           </div>
-        ) : (
-          <div className="join-form">
-            <button className="linkbtn" onClick={() => setPoiId(null)}>
-              ← all spots
-            </button>
-            <h2 style={{ margin: '6px 0 2px' }}>
-              {(ENC_META[poi.poi?.encounter ?? 'landmark'] ?? ENC_META.landmark).emoji} {poi.title}
-            </h2>
-            {poi.poi?.blurb && <p className="hint" style={{ marginTop: 0 }}>{poi.poi.blurb}</p>}
-            {poi.poi?.task ? (
-              <p className="hint" style={{ background: 'rgba(240,195,60,0.14)', padding: '8px 10px', borderRadius: 8 }}>
-                🎯 <b>The game to run:</b> {poi.poi.task}
-              </p>
-            ) : (
-              <p className="hint" style={{ background: 'rgba(154,95,224,0.16)', padding: '8px 10px', borderRadius: 8 }}>
-                🕶️ <b>Black box:</b> no scripted game here — you invent the contest on the spot. Anything fair and fun.
-                When it's over, declare the winner below.
-              </p>
-            )}
-            <label className="field">
-              <span>Winner</span>
-              <select value={winnerId} onChange={(e) => setWinnerId(e.target.value)}>
-                <option value="">— pick the winning team —</option>
-                {teams.map((t) => (
-                  <option key={t.id} value={t.id}>
-                    {t.emoji} {t.name} ({t.coins} 🪙 · {t.stars} ⭐)
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="field">
-              <span>Defeated team (optional — for the announcement)</span>
-              <select value={loserId} onChange={(e) => setLoserId(e.target.value)}>
-                <option value="">— none / open challenge —</option>
-                {teams
-                  .filter((t) => t.id !== winnerId)
-                  .map((t) => (
-                    <option key={t.id} value={t.id}>
-                      {t.emoji} {t.name}
-                    </option>
-                  ))}
-              </select>
-            </label>
-            <label className="field">
-              <span>Coin prize (🪙)</span>
-              <input type="number" value={amount} onChange={(e) => setAmount(Math.max(0, Number(e.target.value) || 0))} />
-            </label>
-            <label className="field" style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-              <input type="checkbox" checked={giveStar} onChange={(e) => setGiveStar(e.target.checked)} />
-              <span>Also award a ⭐ (big set-piece wins)</span>
-            </label>
-            {err && <p className="hint" style={{ color: '#e0533a', fontWeight: 700 }}>{err}</p>}
-            {done && <p className="hint" style={{ color: '#2fa05a', fontWeight: 700 }}>{done}</p>}
-            <button className="site-btn site-btn--primary" disabled={busy || !winnerId} onClick={() => void declare()}>
-              {busy ? 'Sending…' : '📣 Declare the winner'}
-            </button>
-            <p className="hint">
-              This pays the prize and announces the result in every player's feed. Wrong tap? Declare a correction or
-              grab Steven/Abby.
-            </p>
-          </div>
-        )}
+        </section>
 
-        {!poi && (
-          <div style={{ marginTop: 12, borderTop: '2px solid rgba(0,0,0,0.12)', paddingTop: 10 }}>
-            <p className="hint" style={{ marginTop: 0 }}>
-              <b>📸 Drink checks</b> — teams get paid the second they post. Veto a photo that isn't what it claimed and
-              the coins come straight back off. Any drink counts.
-            </p>
-            <div className="cam-review">
-              {photos.length === 0 && <p className="hint">Nothing posted yet.</p>}
-              {photos.map((p) => (
-                <div key={p.id} className={`cam-review__row${p.vetoed ? ' is-vetoed' : ''}`}>
-                  <a href={p.url} target="_blank" rel="noreferrer">
-                    <img src={p.url} alt={p.caption || 'party photo'} loading="lazy" />
-                  </a>
-                  <div className="cam-review__body">
-                    <b>
-                      {p.team_emoji} {p.team_name}
-                    </b>
-                    <span className="hint">
-                      {p.drinks > 0
-                        ? `🍻 ${p.drinks} · ${p.vetoed ? `−${p.coins} taken back` : `+${p.coins} 🪙`}`
-                        : '📸 just a photo'}
-                      {p.caption ? ` · ${p.caption}` : ''}
-                    </span>
-                  </div>
-                  <div className="cam-review__acts">
-                    {p.drinks > 0 && (
-                      <button className="site-btn" onClick={() => void refVeto(p)}>
-                        {p.vetoed ? '↩ Undo' : '🚫 Veto'}
-                      </button>
-                    )}
-                    <button className="site-btn" onClick={() => void refDelete(p)} aria-label="Delete">
-                      🗑
+        {/* ---- where everyone is ------------------------------------------ */}
+        <section className="ref-block">
+          <h2 className="ref-h">
+            📍 Where everyone is{' '}
+            <button className="linkbtn" onClick={() => setShowWhere((v) => !v)}>
+              {showWhere ? 'hide' : 'show'}
+            </button>
+          </h2>
+          {showWhere &&
+            (positions.length === 0 ? (
+              <p className="hint">Nobody has checked in yet.</p>
+            ) : (
+              <div className="ref-where">
+                {[...positions]
+                  .sort((a, b) => Date.parse(b.updated_at ?? '') - Date.parse(a.updated_at ?? ''))
+                  .map((p) => (
+                    <div key={p.team_id} className="ref-where__row">
+                      <span className="ref-where__team">
+                        {teamEmoji(p.team_id)} {teamName(p.team_id)}
+                      </span>
+                      <span className="ref-where__spot">{spotName(p.spot_id)}</span>
+                      <span className="ref-where__age">{ago(p.updated_at, now)}</span>
+                    </div>
+                  ))}
+                <p className="hint" style={{ margin: '6px 0 0' }}>
+                  That's each team's last check-in, not a live position — a team sitting still goes stale.
+                </p>
+              </div>
+            ))}
+        </section>
+
+        {/* ---- drink checks ------------------------------------------------ */}
+        <section className="ref-block">
+          <h2 className="ref-h">
+            📸 Drink checks {liveDrinkClaims > 0 && <em className="ref-count">{liveDrinkClaims}</em>}
+          </h2>
+          <p className="hint" style={{ marginTop: 0 }}>
+            Teams are paid the moment they post. Veto anything that isn't what it claimed and the coins
+            come straight back off.
+          </p>
+          {photos.length === 0 && <p className="hint">Nothing posted yet.</p>}
+          {photos.map((p) => (
+            <div key={p.id} className={`ref-photo${p.vetoed ? ' is-vetoed' : ''}`}>
+              <a href={p.url} target="_blank" rel="noreferrer" className="ref-photo__thumb">
+                <img src={p.url} alt={p.caption || 'party photo'} loading="lazy" />
+              </a>
+              <div className="ref-photo__body">
+                <b>
+                  {p.team_emoji} {p.team_name}
+                </b>
+                <span className="hint" style={{ margin: 0 }}>
+                  {p.drinks > 0
+                    ? `🍻 ${p.drinks} · ${p.vetoed ? `−${p.coins} taken back` : `+${p.coins} 🪙`}`
+                    : '📸 just a photo'}
+                </span>
+                {p.caption && <span className="ref-photo__cap">{p.caption}</span>}
+                <div className="ref-photo__acts">
+                  {p.drinks > 0 && (
+                    <button className="site-btn" onClick={() => void refVeto(p)}>
+                      {p.vetoed ? '↩ Undo' : '🚫 Veto'}
                     </button>
-                  </div>
+                  )}
+                  <button className="site-btn" onClick={() => void refDelete(p)}>
+                    🗑 Delete
+                  </button>
                 </div>
-              ))}
+              </div>
             </div>
+          ))}
+        </section>
+
+        {/* ---- teams ------------------------------------------------------- */}
+        <section className="ref-block">
+          <h2 className="ref-h">🏆 Teams</h2>
+          {standings.map((t, i) => (
+            <div key={t.id} className="ref-team">
+              <span className="ref-team__name">
+                {i === 0 ? '🏆' : `${i + 1}.`} {t.emoji} {t.name}
+              </span>
+              <span className="ref-team__score">
+                ⭐{t.stars} 🪙{t.coins}
+              </span>
+              <span className="ref-team__acts">
+                <button className="site-btn" disabled={busy} onClick={() => void nudge(t.id, 0, 1)}>+⭐</button>
+                <button className="site-btn" disabled={busy} onClick={() => void nudge(t.id, 0, -1)}>−⭐</button>
+                <button className="site-btn" disabled={busy} onClick={() => void nudge(t.id, 25, 0)}>+25</button>
+                <button className="site-btn" disabled={busy} onClick={() => void nudge(t.id, -25, 0)}>−25</button>
+              </span>
+            </div>
+          ))}
+        </section>
+
+        {/* ---- the ceremony ------------------------------------------------ */}
+        <section className="ref-block">
+          <h2 className="ref-h">🏅 Star ceremony</h2>
+          <p className="hint" style={{ marginTop: 0 }}>
+            Three final stars, counted from what the game already recorded. Read them out at Nomad.
+          </p>
+          {awards.map((a) => (
+            <div key={a.key} className="ref-award">
+              <div className="ref-award__title">{a.title}</div>
+              <div className="hint" style={{ margin: 0 }}>{a.forWhat}</div>
+              <div className="ref-award__winner">
+                {a.winner ? (
+                  <>
+                    {teamEmoji(a.winner)} <b>{teamName(a.winner)}</b> — {a.detail}
+                  </>
+                ) : (
+                  <em>{a.detail}</em>
+                )}
+              </div>
+              <button
+                className="site-btn site-btn--primary"
+                style={{ width: '100%' }}
+                disabled={busy || !a.winner || awarded[a.key]}
+                onClick={() => a.winner && void giveAward(a.key, a.winner, a.title)}
+              >
+                {awarded[a.key] ? '🏅 Awarded' : `Award ⭐ to ${a.winner ? teamName(a.winner) : '—'}`}
+              </button>
+            </div>
+          ))}
+        </section>
+
+        {/* ---- announce, last call, and the end ---------------------------- */}
+        <section className="ref-block">
+          <h2 className="ref-h">📣 Tell everyone</h2>
+          <div className="row">
+            <input
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              placeholder="Say something to every phone…"
+              onKeyDown={(e) => e.key === 'Enter' && void announce(note)}
+              style={{ flex: 1 }}
+            />
+            <button
+              className="site-btn"
+              style={{ flex: 'none' }}
+              disabled={busy || !note.trim()}
+              onClick={() => void announce(note)}
+            >
+              Send
+            </button>
           </div>
-        )}
+          <button
+            className="site-btn site-btn--primary"
+            style={{ width: '100%', marginTop: 8 }}
+            disabled={busy}
+            onClick={() =>
+              void announce(
+                `🏁 LAST CALL — ${nomad?.title ?? 'Nomad World Pub'} is open. Twenty minutes to get there for the final stars!`,
+              )
+            }
+          >
+            🏁 Last call — send everyone to Nomad
+          </button>
+
+          {!endArmed ? (
+            <button className="ref-end" disabled={busy} onClick={() => setEndArmed(true)}>
+              🛑 End the game
+            </button>
+          ) : (
+            <div className="ref-end-confirm">
+              <p>Are you sure you want to end the game?</p>
+              <p className="hint">
+                Every phone flips to final standings and nothing more can be earned. There is no undo.
+              </p>
+              <button className="ref-end" disabled={busy} onClick={() => void endGame()}>
+                Yes — end it now
+              </button>
+              <button className="site-btn" style={{ width: '100%', marginTop: 8 }} onClick={() => setEndArmed(false)}>
+                No, keep playing
+              </button>
+            </div>
+          )}
+        </section>
       </div>
     </div>
   );

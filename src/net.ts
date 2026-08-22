@@ -1996,3 +1996,33 @@ export async function seenQuestionIds(gameId: string, teamId: string): Promise<s
   if (error) return []; // analytics table; never block a play on it
   return [...new Set((data ?? []).map((r) => (r as { question_id: string }).question_id))];
 }
+
+/**
+ * A referee overruling a duel, including one already settled. Unlike
+ * resolveDuel this is not guarded on the duel still being open — the whole
+ * point is to correct a call after the fact, when the wrong team tapped first
+ * or somebody fat-fingered it in a loud bar.
+ */
+export async function overrideDuel(id: string, winner: string): Promise<void> {
+  assertConfigured();
+  const { error } = await supabase
+    .from('duels')
+    .update({ status: 'done', winner, resolved_at: new Date().toISOString() })
+    .eq('id', id);
+  if (error) throw error;
+}
+
+/**
+ * Every space each team has cleared, for the end-of-night awards. One row per
+ * team per space, so the count is "spaces claimed all night" and nothing a
+ * rival steals later takes it away.
+ */
+export async function listAllClaims(gameId: string): Promise<{ spot_id: string; team_id: string }[]> {
+  assertConfigured();
+  const { data, error } = await supabase
+    .from('spot_claims')
+    .select('spot_id, team_id')
+    .eq('game_id', gameId);
+  if (error) throw error;
+  return (data ?? []) as { spot_id: string; team_id: string }[];
+}

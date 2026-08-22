@@ -2597,3 +2597,227 @@ body {
 .duel-material__list li {
   margin: 3px 0;
 }
+
+/* --- Referee console ------------------------------------------------------
+   One scrolling page, read one-handed in a loud room. Blocks are separated by
+   rule rather than card so the whole thing scans as a single desk. */
+.ref-card {
+  max-width: 560px;
+}
+.ref-block {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 2px solid rgba(0, 0, 0, 0.12);
+}
+.ref-h {
+  margin: 0 0 8px;
+  font-size: 1.05rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ref-count {
+  font-style: normal;
+  font-size: 0.72rem;
+  font-weight: 800;
+  background: #dc2626;
+  color: #fff;
+  border-radius: 999px;
+  padding: 2px 8px;
+}
+.ref-flash {
+  margin: 8px 0 0;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: #dcfce7;
+  border: 1px solid #86efac;
+  font-weight: 600;
+  font-size: 0.88rem;
+}
+.ref-flash--bad {
+  background: #fee2e2;
+  border-color: #fca5a5;
+}
+.ref-duel {
+  margin: 8px 0;
+  padding: 9px 11px;
+  border: 2px solid #cfc7b5;
+  border-radius: 12px;
+  background: #fffdf5;
+}
+.ref-duel.is-live {
+  border-color: #dc2626;
+  background: #fff5f5;
+}
+.ref-duel__head {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: baseline;
+}
+.ref-duel__age {
+  font-size: 0.74rem;
+  opacity: 0.6;
+  white-space: nowrap;
+}
+.ref-duel__acts,
+.ref-bars {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-top: 8px;
+}
+.ref-where__row {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  padding: 5px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  font-size: 0.88rem;
+}
+.ref-where__team {
+  flex: 1;
+  min-width: 0;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ref-where__spot {
+  flex: 1;
+  min-width: 0;
+  opacity: 0.8;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ref-where__age {
+  flex: none;
+  font-size: 0.74rem;
+  opacity: 0.6;
+}
+/* The photo review. The thumbnail and the words each get their own column so
+   the buttons can never end up on top of either. */
+.ref-photo {
+  display: flex;
+  gap: 10px;
+  padding: 9px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+.ref-photo.is-vetoed {
+  opacity: 0.5;
+}
+.ref-photo__thumb {
+  flex: none;
+}
+.ref-photo__thumb img {
+  width: 76px;
+  height: 76px;
+  object-fit: cover;
+  border: 2px solid #2b2b3a;
+  border-radius: 10px;
+  display: block;
+}
+.ref-photo__body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.88rem;
+}
+.ref-photo__cap {
+  font-size: 0.82rem;
+  opacity: 0.75;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ref-photo__acts {
+  display: flex;
+  gap: 6px;
+  margin-top: 4px;
+}
+.ref-photo__acts .site-btn {
+  padding: 6px 10px;
+  font-size: 0.78rem;
+  width: auto;
+}
+.ref-team {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  font-size: 0.88rem;
+}
+.ref-team__name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ref-team__score {
+  flex: none;
+  font-weight: 700;
+  font-size: 0.82rem;
+}
+.ref-team__acts {
+  flex: none;
+  display: flex;
+  gap: 4px;
+}
+.ref-team__acts .site-btn {
+  padding: 5px 7px;
+  font-size: 0.72rem;
+  width: auto;
+}
+.ref-award {
+  margin: 8px 0;
+  padding: 10px 12px;
+  border: 2px solid #f0c33c;
+  border-radius: 12px;
+  background: #fffbeb;
+}
+.ref-award__title {
+  font-weight: 800;
+  font-size: 1rem;
+}
+.ref-award__winner {
+  margin: 6px 0 8px;
+  font-size: 0.94rem;
+}
+/* The one button nobody should hit by accident. */
+.ref-end {
+  width: 100%;
+  margin-top: 14px;
+  padding: 15px;
+  border: 3px solid #7f1d1d;
+  border-radius: 12px;
+  background: #dc2626;
+  color: #fff;
+  font-family: 'Fredoka', system-ui, sans-serif;
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  cursor: pointer;
+  box-shadow: 0 4px 0 #7f1d1d;
+}
+.ref-end:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 #7f1d1d;
+}
+.ref-end-confirm {
+  margin-top: 14px;
+  padding: 12px;
+  border: 3px solid #dc2626;
+  border-radius: 12px;
+  background: #fef2f2;
+}
+.ref-end-confirm p:first-child {
+  margin: 0 0 4px;
+  font-weight: 800;
+  font-size: 1.05rem;
+  color: #7f1d1d;
+}

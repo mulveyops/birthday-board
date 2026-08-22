@@ -1426,7 +1426,9 @@ export default function BoardCanvas({
       deg.set(e.from, (deg.get(e.from) ?? 0) + 1);
       deg.set(e.to, (deg.get(e.to) ?? 0) + 1);
     }
-    return board.squares.filter((sq) => (deg.get(sq.id) ?? 0) >= 3 || sq.type !== 'blank');
+    // Corners count, same rule as deriveSpots in App: a bend where two
+    // streets meet is a place you can stand, so it gets a space.
+    return board.squares.filter((sq) => (deg.get(sq.id) ?? 0) >= 2 || sq.type !== 'blank');
   }, [board.edges, board.squares]);
 
   const X = (p: LatLng | [number, number]) => {
@@ -1761,7 +1763,9 @@ export default function BoardCanvas({
               })}
           <g filter="url(#track-shadow)">
           {intersections.map((sq) => {
-            if (sq.type === 'bar') return null; // bars render as custom SVG POIs below
+            // A named landmark is the painting plus its floating name — a disc
+            // on top of it is just a dot on a picture of a tavern.
+            if (sq.type === 'bar' || sq.poi?.footM) return null;
             if (!inCull(X(sq), Y(sq), 40)) return null;
             const done = clearedSet.has(sq.id);
             // Explicit type wins (design + play); a blank intersection uses its

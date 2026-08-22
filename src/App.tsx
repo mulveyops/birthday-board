@@ -185,7 +185,10 @@ function deriveSpots(board: Board): Square[] {
     deg.set(e.from, (deg.get(e.from) ?? 0) + 1);
     deg.set(e.to, (deg.get(e.to) ?? 0) + 1);
   }
-  return board.squares.filter((s) => (deg.get(s.id) ?? 0) >= 3 || s.type !== 'blank');
+  // Every junction is a space, corners included: a bend where two streets
+  // meet is somewhere you can stand, so it's somewhere you can claim. Only
+  // dead ends (degree 1) and pure waypoints stay off the board.
+  return board.squares.filter((s) => (deg.get(s.id) ?? 0) >= 2 || s.type !== 'blank');
 }
 /** Explicit type wins; blank intersections get a deterministic coin/chance mix. */
 function deriveNodeType(spots: Square[]): Record<string, SpotType> {

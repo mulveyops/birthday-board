@@ -31,6 +31,10 @@ const SIDEWALK_M = 38, CASING_M = 26, FILL_M = 20; // sync: BoardCanvas widths
 const TARGET_PX = 2048; // long edge of the baked PNG
 
 const [, , boardPath, outBase = 'art-prototype/out/reference'] = process.argv;
+// `nomarks`: leave the spot dots and landmark labels OFF the base. The live app
+// draws its own spaces and names on top, so baking them in put a red dot and a
+// stale title permanently under the game's own markers.
+const NO_MARKS = process.argv.includes('nomarks');
 if (!boardPath) {
   console.error('usage: node art-prototype/reference-render.mjs <board.json> [outBase]');
   process.exit(1);
@@ -83,7 +87,7 @@ const spots = board.squares.filter((s) => (deg.get(s.id) ?? 0) >= 3 || s.type !=
 const islandPng = await sharp('public/art/backdrops/island.webp').png().toBuffer();
 const stroke = (cls, w, color) =>
   edgeLines.map((pts) => `<polyline points="${pts}" fill="none" stroke="${color}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"/>`).join('');
-const spotMarks = spots
+const spotMarks = NO_MARKS ? '' : spots
   .map((s) => {
     const x = X(s).toFixed(1), y = Y(s).toFixed(1);
     if (s.type === 'bar' || s.type === 'poi') {

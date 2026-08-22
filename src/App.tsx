@@ -1498,6 +1498,22 @@ export default function App({
   const standings = useMemo(() => [...teams].sort((a, b) => b.stars - a.stars || b.coins - a.coins), [teams]);
   const [standOpen, setStandOpen] = useState(false);
   const [feedOpen, setFeedOpen] = useState(false);
+  /**
+   * The feed answers "is there anything I should do about this?" — a camp
+   * sitting on a pile of coins, a star landing, someone taking your corner,
+   * a challenge in progress. Bookkeeping ('income', 'coin', 'photo') is real
+   * and worth logging, but reading it off a ticker mid-walk tells you nothing
+   * you can act on, and it buries the lines that do.
+   */
+  const FEED_TYPES = new Set(['announce', 'star', 'battle', 'camp', 'spawn']);
+  // Rows logged before those types were split still say 'star', so the
+  // bookkeeping ones are recognised by what they open with. New rows carry the
+  // right type and never reach this.
+  const LEDGER = /^[{1F517}{1F340}{1F4B8}]/u;
+  const feed = useMemo(
+    () => events.filter((e) => FEED_TYPES.has(e.type) && !LEDGER.test(String(e.payload?.text ?? ''))),
+    [events],
+  );
   const [rotIdx, setRotIdx] = useState(0);
   const [tickIdx, setTickIdx] = useState(0);
   // Hold still while someone's reading the expanded view.
@@ -1507,12 +1523,12 @@ export default function App({
     return () => clearInterval(iv);
   }, [standOpen, standings.length]);
   useEffect(() => {
-    if (feedOpen || events.length < 2) return;
-    const iv = setInterval(() => setTickIdx((i) => (i + 1) % Math.min(events.length, 8)), 4000);
+    if (feedOpen || feed.length < 2) return;
+    const iv = setInterval(() => setTickIdx((i) => (i + 1) % Math.min(feed.length, 8)), 4000);
     return () => clearInterval(iv);
-  }, [feedOpen, events.length]);
+  }, [feedOpen, feed.length]);
   // A new event jumps the line to the front — that's the whole point of a feed.
-  useEffect(() => setTickIdx(0), [events.length]);
+  useEffect(() => setTickIdx(0), [feed.length]);
   // Corner paint for the map: spot → team color (thicker ring for our own,
   // 🧱 badge when reinforced).
   const turfPaint = useMemo(() => {
@@ -1697,7 +1713,7 @@ export default function App({
           }
         }
         if (parts.length) {
-          logEvent(membership.gameId, 'star', `🔗 Turf income paid: ${parts.join(' · ')} 🪙`).catch(() => {});
+          logEvent(membership.gameId, 'income', `🔗 Turf income paid: ${parts.join(' · ')} 🪙`).catch(() => {});
         }
       } catch {
         /* another phone will cover the next tick */
@@ -1934,6 +1950,13 @@ export default function App({
         return;
       }
       setSpotSheet(null);
+      // A hunt in progress is the most actionable thing on the board: the camper
+      // needs to know, and everyone else needs to know that pile is contested.
+      logEvent(
+        membership.gameId,
+        'camp',
+        `⚔️ ${myTeam?.name ?? 'A team'} is hunting ${teams.find((t) => t.id === camp.team_id)?.name ?? 'a team'} at ${name} — ${stake} 🪙 on the line`,
+      ).catch(() => {});
       sendMessage(
         membership.gameId,
         null,
@@ -2311,12 +2334,12 @@ export default function App({
         await adjustCoins(membership.teamId, card.amount);
         setChanceText(`${card.text} +${card.amount} 🪙`);
         setChanceOutcome('gain');
-        await logEvent(membership.gameId, 'star', `🍀 ${myTeam?.name ?? 'A team'} drew a lucky card (+${card.amount} 🪙)`);
+        await logEvent(membership.gameId, 'coin', `🍀 ${myTeam?.name ?? 'A team'} drew a lucky card (+${card.amount} 🪙)`);
       } else if (card.effect === 'lose') {
         await adjustCoins(membership.teamId, -card.amount);
         setChanceText(`${card.text} −${card.amount} 🪙`);
         setChanceOutcome('lose');
-        await logEvent(membership.gameId, 'star', `💸 ${myTeam?.name ?? 'A team'} drew an unlucky card (−${card.amount} 🪙)`);
+        await logEvent(membership.gameId, 'coin', `💸 ${myTeam?.name ?? 'A team'} drew an unlucky card (−${card.amount} 🪙)`);
       } else {
         setChanceText(card.text || '😐 Nothing happens.');
         setChanceOutcome('nothing');
@@ -3148,9 +3171,6 @@ export default function App({
             </button>
             <p className="hint" style={{ opacity: 0.6, fontSize: '0.7rem' }}>build {__BUILD_SHA__}</p>
             {gpsTest && <p className="hint">{gpsTest}</p>}
-            <button className="btn" onClick={bumpCage}>
-              🎯 Recenter board
-            </button>
             <p className="hint" style={{ marginTop: 8 }}>Scoreboard</p>
             <div style={{ maxHeight: 128, overflowY: 'auto' }}>
               {[...teams]
@@ -3164,18 +3184,6 @@ export default function App({
                     {t.emoji} {t.name} — 🪙 {t.coins} · ⭐ {t.stars}
                   </div>
                 ))}
-            </div>
-            <p className="hint" style={{ marginTop: 8 }}>Activity</p>
-            <div style={{ maxHeight: 128, overflowY: 'auto' }}>
-              {events.length === 0 ? (
-                <div className="hint">Nothing yet…</div>
-              ) : (
-                events.map((e) => (
-                  <div key={e.id} className="hint" style={{ margin: '2px 0' }}>
-                    {e.payload?.text ?? e.type}
-                  </div>
-                ))
-              )}
             </div>
             <button
               className="btn btn--ghost"
@@ -4429,8 +4437,8 @@ export default function App({
                 </button>
               </div>
               <div className="feed-list">
-                {events.length === 0 && <p className="msg-empty">Nothing has happened yet.</p>}
-                {events.map((e) => (
+                {feed.length === 0 && <p className="msg-empty">Nothing worth reporting yet.</p>}
+                {feed.map((e) => (
                   <div key={e.id} className="feed-row">
                     <span className="feed-time">
                       {new Date(e.ts).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}

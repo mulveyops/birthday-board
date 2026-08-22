@@ -3,7 +3,7 @@ import QRCode from 'qrcode';
 import BoardCanvas, { type Mode } from './BoardCanvas';
 import type { Board, ChanceCard, Edge, LatLng, Phase, PoiProps, Square, SquareType, TriviaQuestion } from './types';
 import { SQUARE_TYPES, TYPE_ORDER, PLACE_ORDER } from './squareTypes';
-import { DUELS, AMBUSH_DUELS, duelByName, randomDuel } from './duels';
+import { DUELS, AMBUSH_DUELS, duelByName, randomDuel, duelMaterial } from './duels';
 import { loadBoard, saveBoard, makeSquare, defaultBoard } from './boardStore';
 import { metersBetween, simplify, snapToStreetsFollowing, routeAlongStreets } from './snap';
 import { generateStreetBoard, buildScenery, buildStreetLabels, closeStreetGaps, shiftPathEnd } from './generate';
@@ -5067,6 +5067,21 @@ export default function App({
                   {duelByName(myDuel.prompt) && (
                     <p className="duel-rule">{duelByName(myDuel.prompt)!.rule}</p>
                   )}
+                  {(() => {
+                    const mat = duelMaterial(myDuel.id, myDuel.prompt);
+                    if (!mat) return null;
+                    return (
+                      <div className="duel-material">
+                        <div className="duel-material__label">{mat.label}</div>
+                        <ol className="duel-material__list">
+                          {mat.items.map((it, i) => (
+                            <li key={i}>{it}</li>
+                          ))}
+                        </ol>
+                      </div>
+                    );
+                  })()}
+
                   {myDuel.stake > 0 && (
                     <p className="hint duel-stake">
                       {myDuel.stake} 🪙 on the line{myDuel.kind === 'camp' ? ' from the camp' : ''}.

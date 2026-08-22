@@ -41,35 +41,35 @@ export const DUELS: Duel[] = [
   {
     key: 'rps',
     name: 'Rock paper scissors',
-    rule: 'One player each, best of three. Shoot on three, not after three.',
+    rule: 'One player each, best of seven. One, two, three, SHOOT.',
     objective: true,
     solo: true,
   },
   {
     key: 'math',
     name: 'Speed math',
-    rule: 'One player each. Somebody neutral calls out a two-digit sum — 23 × 7, that sort of thing. First correct answer wins. Wrong answer and the other side gets it.',
+    rule: 'One player each. Somebody else reads off the numbers from the game for both players at once. First correct answer wins. Wrong answer and the other side has a chance to steal.  First to 3 wins',
     objective: true,
     solo: true,
   },
   {
     key: 'spell',
     name: 'Spelling bee',
-    rule: 'One player each. The other team picks the word and says it once. Spell it out loud. Get it wrong and your opponent may steal it with the correct spelling.',
+    rule: 'One player each. One at a time, spell it out loud. Get it wrong and your opponent may steal it with the correct spelling.  First to 3 correct answers wins',
     objective: true,
     solo: true,
   },
   {
     key: 'trivia',
     name: 'Trivia flash',
-    rule: 'Anyone neutral reads a question from the party trivia and both teams race to shout the answer. First correct voice wins it. Shout before you’ve heard the whole question at your own risk.',
+    rule: 'Anyone neutral reads a question from the party trivia and both teams race to shout the answer. First correct voice wins it, if you are wrong the other team gets it. Shout before you’ve heard the whole question at your own risk.  First to 3 wins',
     objective: true,
     solo: false,
   },
   {
     key: 'counting',
     name: 'Count to twenty',
-    rule: 'Your whole team, no order agreed in advance. Count to twenty out loud. Any two people speaking at once and you start again. First team to reach twenty wins.',
+    rule: 'Your whole team, no order agreed in advance.  Cannot go after someone directly next to you. Count to twenty out loud. Any two people speaking at once and you start again. First team to reach twenty wins.',
     objective: true,
     solo: false,
   },
@@ -90,21 +90,21 @@ export const DUELS: Duel[] = [
   {
     key: 'charades',
     name: 'Charades',
-    rule: 'The other team gives your actor something to act out. Sixty seconds, no talking, no pointing at real objects, no spelling in the air. Both teams get a turn; whoever guessed theirs faster wins.',
+    rule: 'The other team gives your actor something to act out. Thirty seconds, no talking, no pointing at real objects, no spelling in the air. Both teams take a turn until someone cannot get it.  If the team who goes first cannot get it the second team must get theirs to win',
     objective: false,
     solo: false,
   },
   {
     key: 'fishbowl',
     name: 'Fishbowl',
-    rule: 'The other team gives your describer a word. Thirty seconds to get your team to say it — without using the word, any part of it, or a rhyme. Both teams take a turn.',
+    rule: 'The other team gives your describer a word. Thirty seconds to get your team to say it — without using the word, any part of it, or a rhyme. Both teams take a turn until someone cannot get it.  If the team who goes first cannot get it the second team must get theirs to win',
     objective: false,
     solo: false,
   },
   {
     key: 'majority',
     name: 'Majority rules',
-    rule: 'Somebody asks a question with no right answer — best pizza topping, worst Brady Street bar. Everyone but your captain answers quietly, then your captain guesses what most of them said. Match the majority and you win. Both teams go.',
+    rule: 'Somebody asks a question with no right answer — best pizza topping, worst Brady Street bar. Everyone but the 1 player tells the other team their answers secretly, then your captain guesses what most of them said. Match the majority and you win. Both teams go, one at a time, until someone is wrong.',
     objective: false,
     solo: false,
   },
@@ -121,3 +121,66 @@ export function duelByName(name: string): Duel | undefined {
 export function randomDuel(): Duel {
   return DUELS[Math.floor(Math.random() * DUELS.length)];
 }
+
+// ---------------------------------------------------------------------------
+// Duels the app supplies the material for.
+//
+// Both phones derive it from the duel's own id rather than one phone rolling
+// and telling the other, so the words and the sums come out identical on both
+// screens with nothing stored and nothing to fall out of sync.
+//
+// A LIST, not one item: these are first-to-three, and with steals a round can
+// run past five. Whoever is reading works down it; the two competitors are not
+// supposed to be looking at a phone at all.
+// ---------------------------------------------------------------------------
+
+function hash01(s: string): number {
+  let h = 2166136261;
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return ((h >>> 0) % 100000) / 100000;
+}
+
+/** Sayable out loud, awkward to spell, mostly local. */
+const SPELLING_WORDS = [
+  'kielbasa', 'bratwurst', 'Milwaukee', 'Kosciuszko', 'Pulaski', 'Wisconsin',
+  'Menomonee', 'Oconomowoc', 'Kinnickinnic', 'Wauwatosa', 'Sheboygan', 'Manitowoc',
+  'Waukesha', 'sauerkraut', 'pilsner', 'hefeweizen', 'Riverwest', 'Glorioso',
+  'cheddar', 'custard', 'accordion', 'polka', 'anniversary', 'restaurant',
+  'definitely', 'necessary', 'rhythm', 'liaison', 'bureaucracy', 'conscience',
+  'maintenance', 'occurrence', 'embarrassed', 'connoisseur', 'silhouette',
+];
+
+const ROUNDS = 9; // first to three, with steals — plenty of room
+
+/** What the reader reads out, in order. Empty for duels that need nothing. */
+export function duelMaterial(duelId: string, duelName: string): { label: string; items: string[] } | null {
+  const d = duelByName(duelName);
+  if (!d) return null;
+
+  if (d.key === 'spell') {
+    const pool = [...SPELLING_WORDS]
+      .map((w, i) => ({ w, k: hash01(`${duelId}:w${i}`) }))
+      .sort((a, b) => a.k - b.k)
+      .map((x) => x.w);
+    return { label: 'Read these out one at a time — spellers look away', items: pool.slice(0, ROUNDS) };
+  }
+
+  if (d.key === 'math') {
+    const items: string[] = [];
+    for (let i = 0; i < ROUNDS; i++) {
+      const r1 = hash01(`${duelId}:a${i}`);
+      const r2 = hash01(`${duelId}:b${i}`);
+      const r3 = hash01(`${duelId}:c${i}`);
+      if (r3 < 0.45) items.push(`${12 + Math.floor(r1 * 88)} × ${3 + Math.floor(r2 * 7)}`);
+      else if (r3 < 0.75) items.push(`${24 + Math.floor(r1 * 76)} + ${17 + Math.floor(r2 * 60)}`);
+      else items.push(`${60 + Math.floor(r1 * 140)} − ${11 + Math.floor(r2 * 40)}`);
+    }
+    return { label: 'Read these out one at a time — players look away', items };
+  }
+
+  return null;
+}
+

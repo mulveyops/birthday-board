@@ -2567,3 +2567,33 @@ body {
   font-size: 0.86rem;
   line-height: 1.35;
 }
+/* The reader's list. Deliberately plain and numbered — someone is working down
+   it out loud while two people who mustn't see it stand opposite. */
+.duel-material {
+  margin: 10px 0 4px;
+  border: 2px solid #7c3aed;
+  border-radius: 12px;
+  background: #f5f3ff;
+  overflow: hidden;
+}
+.duel-material__label {
+  background: #7c3aed;
+  color: #fff;
+  padding: 6px 10px;
+  font-family: 'Fredoka', system-ui, sans-serif;
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+.duel-material__list {
+  margin: 0;
+  padding: 8px 10px 10px 30px;
+  font-family: 'Fredoka', system-ui, sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #2b2b3a;
+}
+.duel-material__list li {
+  margin: 3px 0;
+}

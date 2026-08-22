@@ -1473,7 +1473,9 @@ export default function BoardCanvas({
           setBake(bakeUrls(cached));
           return;
         }
-        if (board.artUnderlay) {
+        // The painted board doesn't use the sprite scene, so don't load it and
+        // then sit through the five-second wait for sprites that never arrive.
+        if (board.artUnderlay && !board.paintedBoard) {
           await loadScene();
           // The scene layer flips its own state after loading — wait until
           // its sprites are really in the DOM before cloning.
@@ -1963,10 +1965,11 @@ export default function BoardCanvas({
               const C = 2 * Math.PI * R;
               return (
                 <Fragment key={`bar${sq.id}`}>
-                  {/* On art-underlay boards the baked building IS the bar's
-                      visual — no generic tavern stamped on top of custom art.
-                      The live layer only adds the dynamic star/claim state. */}
-                  {!board.artUnderlay && (
+                  {/* Where the board carries its own art — sprite city or the
+                      painted blocks — that building IS the bar, so no generic
+                      tavern gets stamped on top of it. The live layer still
+                      adds the dynamic star/claim state either way. */}
+                  {!board.artUnderlay && !board.paintedBoard && (
                     <g opacity={dim ? 0.5 : 1}>
                       <B x={cx} y={cy} s={2} />
                     </g>

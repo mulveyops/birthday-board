@@ -127,7 +127,11 @@ function framePads(board: Board, bWm: number, bHm: number) {
 // POI-only board: the road is one clean path (single fill, no per-tile colors or
 // dividers). The "spaces" are the intersections, drawn as nodes on top.
 const ROAD_FILL = '#e9e4d7';
-const NODE_FILL = '#f4efe4';
+const NODE_FILL = '#fffdf6';
+/** The only spots that still show what they are. Start and finish are
+ * waypoints you navigate by, and Bowser is a threat you're meant to see
+ * coming — everything else is a blank disc until you're standing on it. */
+const ICON_TYPES = new Set(['start', 'finish', 'bowser']);
 
 // ---- Stylized art sprites (drawn in world meters, outlined flat style) ----
 
@@ -1534,12 +1538,6 @@ export default function BoardCanvas({
           {!backdropFit?.blob && (
             <polygon points={ptsOf(groundRing)} fill={board.artUnderlay || board.paintedBoard ? '#a9d476' : GRASS} />
           )}
-          {/* The painted board: one image, mounted full-frame. Its projection is
-              this same equirectangular frame, so it needs no placement — and it
-              already contains the buildings, so the sprite city stays off. */}
-          {board.paintedBoard && (
-            <image href="/art/board-blocks.webp" x={0} y={0} width={geo.W} height={geo.H} preserveAspectRatio="none" />
-          )}
           {board.artUnderlay && !board.paintedBoard && <SceneGround X={X} Y={Y} cull={cullRect} />}
           {SHOW_BLOCK_TINTS &&
             board.scenery?.blocks.map((b, i) => {
@@ -1718,6 +1716,14 @@ export default function BoardCanvas({
           })}
       </>
     ) : null;
+  /** The painted board, mounted full-frame under everything. It lives OUTSIDE
+   * the bake on purpose: the rasterizer serializes the SVG, and an external
+   * image href is not guaranteed to come back with it. One image costs nothing
+   * to keep live, and it's the one layer that must never go missing. */
+  const paintedLayer =
+    geo && board.paintedBoard ? (
+      <image href="/art/board-blocks.webp" x={0} y={0} width={geo.W} height={geo.H} preserveAspectRatio="none" />
+    ) : null;
   const sceneNodes =
     placingSquares && geo ? (
       <>
@@ -1753,58 +1759,6 @@ export default function BoardCanvas({
                   />
                 );
               })}
-          {/* LANDMARK RINGS — on the painted board every real place is already
-              in the art, so the game outlines the building's true footprint in
-              gold instead of dropping a sprite on top of the painting of it. */}
-          {board.paintedBoard &&
-            board.squares
-              .filter((sq) => (sq.type === 'poi' || sq.type === 'bar') && sq.poi?.footM)
-              .map((sq) => {
-                const [fw, fh] = sq.poi!.footM!;
-                const x = X(sq);
-                const y = Y(sq);
-                const held = turf?.[sq.id];
-                const stroke = held ? held.color : '#f5c542';
-                return (
-                  <g key={`lm${sq.id}`} pointerEvents="none">
-                    <rect
-                      x={x - fw / 2}
-                      y={y - fh / 2}
-                      width={fw}
-                      height={fh}
-                      rx={Math.min(fw, fh) * 0.16}
-                      fill="none"
-                      stroke="#2b2b3a"
-                      strokeWidth={5.5}
-                      opacity={0.5}
-                    />
-                    <rect
-                      x={x - fw / 2}
-                      y={y - fh / 2}
-                      width={fw}
-                      height={fh}
-                      rx={Math.min(fw, fh) * 0.16}
-                      fill="none"
-                      stroke={stroke}
-                      strokeWidth={3}
-                    />
-                    <text
-                      x={x}
-                      y={y - fh / 2 - 7}
-                      fontSize={13}
-                      fontWeight={800}
-                      fontFamily="'Trebuchet MS', Verdana, sans-serif"
-                      textAnchor="middle"
-                      fill="#fffdf4"
-                      stroke="#2b2b3a"
-                      strokeWidth={3.5}
-                      style={{ paintOrder: 'stroke' }}
-                    >
-                      {sq.title}
-                    </text>
-                  </g>
-                );
-              })}
           <g filter="url(#track-shadow)">
           {intersections.map((sq) => {
             if (sq.type === 'bar') return null; // bars render as custom SVG POIs below
@@ -1813,7 +1767,10 @@ export default function BoardCanvas({
             // Explicit type wins (design + play); a blank intersection uses its
             // resolved play type (coin/chance) or stays a plain node in design.
             const t = sq.type !== 'blank' ? sq.type : playActive ? nodeType?.[sq.id] : undefined;
-            const Icon = t ? SPOT_SPRITE[t] : undefined;
+            // Every ordinary space is a blank disc now: coin, question or
+            // challenge, you don't find out until you check in. Only the
+            // one-of-a-kind waypoints keep a face.
+            const Icon = t && ICON_TYPES.has(t) ? SPOT_SPRITE[t] : undefined;
             const own = turf?.[sq.id];
             if (Icon) {
               // Start/finish are one-of-a-kind waypoints — give them a halo so
@@ -2231,7 +2188,62 @@ export default function BoardCanvas({
       >
         {({ scale, wasDrag }) => (
           <svg ref={playSvgRef} width={geo.W} height={geo.H} viewBox={`0 0 ${geo.W.toFixed(1)} ${geo.H.toFixed(1)}`}>
+            {paintedLayer}
             {sceneSvg}
+            {/* LANDMARK NAMES — the places are already painted into the board,
+                so the game only names them. Drawn here rather than in the scene
+                because this layer knows the zoom: the text and its tap target
+                are sized in SCREEN pixels, so the name stays readable and the
+                target stays thumb-sized however far out you are. */}
+            {board.paintedBoard && (
+              <g>
+                {board.squares
+                  .filter((sq) => (sq.type === 'poi' || sq.type === 'bar') && sq.poi?.footM)
+                  .filter((sq) => inCull(X(sq), Y(sq), 120))
+                  .map((sq) => {
+                    const [fw, fh] = sq.poi!.footM!;
+                    const x = X(sq);
+                    const y = Y(sq);
+                    const fs = 14 / scale; // constant on screen at any zoom
+                    // Generous: at least a thumb, and never smaller than the
+                    // building itself on a big place like the playfield.
+                    const hx = Math.max(fw / 2 + 6, 30 / scale);
+                    const hy = Math.max(fh / 2 + 6, 30 / scale);
+                    const held = turf?.[sq.id];
+                    const top = y - hy - fs * 0.5;
+                    return (
+                      <g key={`lm${sq.id}`}>
+                        {playActive && (
+                          <rect
+                            x={x - hx}
+                            y={top - fs}
+                            width={hx * 2}
+                            height={hy * 2 + fs * 1.5}
+                            fill="transparent"
+                            style={{ pointerEvents: 'all', cursor: 'pointer' }}
+                            onClick={() => !wasDrag() && onCheckIn?.(sq.id)}
+                          />
+                        )}
+                        <text
+                          x={x}
+                          y={top}
+                          fontSize={fs}
+                          fontWeight={800}
+                          fontFamily="'Trebuchet MS', Verdana, sans-serif"
+                          textAnchor="middle"
+                          fill={held ? held.color : '#fffdf4'}
+                          stroke="#2b2b3a"
+                          strokeWidth={fs * 0.3}
+                          style={{ paintOrder: 'stroke' }}
+                          pointerEvents="none"
+                        >
+                          {sq.title}
+                        </text>
+                      </g>
+                    );
+                  })}
+              </g>
+            )}
             {playActive && (
               <g>
                 {intersections.map((sq) => (
@@ -2369,6 +2381,7 @@ export default function BoardCanvas({
           ]}
           attributes={{ viewBox: `0 0 ${geo.W.toFixed(1)} ${geo.H.toFixed(1)}` }}
         >
+          {paintedLayer}
           {sceneSvg}
         </SVGOverlay>
       )}

@@ -2452,3 +2452,55 @@ body {
   font-weight: 700;
   margin: 8px 0;
 }
+
+/* --- Side quests ---------------------------------------------------------- */
+/* The hunt sits in the bar beside the camp row: same shelf, different colour,
+   so a glance tells you which kind of clock is running. */
+.quest-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border: 1px solid #4c1d95;
+  border-radius: 11px;
+  background: #241436;
+  color: #ddd6fe;
+  font-family: 'Fredoka', system-ui, sans-serif;
+  font-size: 0.84rem;
+}
+.quest-row__what {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.quest-row__clock {
+  flex: none;
+  font-weight: 800;
+  color: #c4b5fd;
+  font-variant-numeric: tabular-nums;
+}
+.quest-panel {
+  max-width: 380px;
+}
+.quest-body {
+  padding: 12px 14px 16px;
+}
+.quest-kind {
+  margin-bottom: 8px;
+  padding: 10px;
+  border: 3px dashed #7c3aed;
+  border-radius: 12px;
+  background: #f5f3ff;
+  text-align: center;
+  font-family: 'Luckiest Guy', 'Fredoka', cursive;
+  font-size: 1.5rem;
+  letter-spacing: 2px;
+  color: #4c1d95;
+}
+.quest-brief {
+  font-family: 'Fredoka', system-ui, sans-serif;
+  font-size: 0.94rem;
+  margin: 0 0 8px;
+}

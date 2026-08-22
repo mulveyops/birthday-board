@@ -943,6 +943,11 @@ export interface GameConfig {
   campMaxStep: number; // ...until an interval is worth this much
   campBankCap: number; // the bank stops growing here, so a quiet corner can't win it
   campRaidPct: number; // share of the bank a successful raider takes
+  questChance: number; // 0-100: how often a plain space offers a side quest
+  tagWindowSec: number; // how close behind your mark you have to check in
+  tagQuestSec: number; // how long a hunt stays open before they've evaded you
+  tagSteal: number; // coins taken off the mark when you land it
+  tagEvade: number; // coins the mark collects for never being caught
 }
 
 /** Config value with a fallback (older published games lack newer fields). */
@@ -967,6 +972,11 @@ export const cfg = {
   campMaxStep: (c: Partial<GameConfig> | undefined) => c?.campMaxStep ?? 20,
   campBankCap: (c: Partial<GameConfig> | undefined) => c?.campBankCap ?? 100,
   campRaidPct: (c: Partial<GameConfig> | undefined) => c?.campRaidPct ?? 50,
+  questChance: (c: Partial<GameConfig> | undefined) => c?.questChance ?? 18,
+  tagWindowSec: (c: Partial<GameConfig> | undefined) => c?.tagWindowSec ?? 120,
+  tagQuestSec: (c: Partial<GameConfig> | undefined) => c?.tagQuestSec ?? 900,
+  tagSteal: (c: Partial<GameConfig> | undefined) => c?.tagSteal ?? 50,
+  tagEvade: (c: Partial<GameConfig> | undefined) => c?.tagEvade ?? 25,
 };
 
 export const PARTY_CONFIG: GameConfig = {
@@ -997,6 +1007,11 @@ export const PARTY_CONFIG: GameConfig = {
   campMaxStep: 20,
   campBankCap: 100,
   campRaidPct: 50,
+  questChance: 18,
+  tagWindowSec: 120,
+  tagQuestSec: 900,
+  tagSteal: 50,
+  tagEvade: 25,
 };
 export const TEST_CONFIG: GameConfig = {
   starCost: 40,
@@ -1026,6 +1041,11 @@ export const TEST_CONFIG: GameConfig = {
   campMaxStep: 20,
   campBankCap: 100,
   campRaidPct: 50,
+  questChance: 18,
+  tagWindowSec: 120,
+  tagQuestSec: 900,
+  tagSteal: 50,
+  tagEvade: 25,
 };
 
 export interface GameFull {
@@ -1806,4 +1826,112 @@ export function subscribeCamps(gameId: string, onChange: () => void) {
   return () => {
     supabase.removeChannel(ch);
   };
+}
+
+// ---------------------------------------------------------------------------
+// Side quests. One per team at a time — see supabase/quests.sql. A quest runs
+// alongside normal play rather than blocking it: TAG can't work otherwise,
+// since tagging someone IS a check-in.
+// ---------------------------------------------------------------------------
+
+export type QuestKind = 'tag' | 'explorer' | 'ambush' | 'recon' | 'wanted';
+
+export interface QuestRow {
+  id: string;
+  game_id: string;
+  team_id: string;
+  kind: QuestKind;
+  target_team: string | null;
+  target_spot: string | null;
+  from_spot: string | null;
+  status: 'active' | 'done' | 'failed';
+  reward: number;
+  expires_at: string;
+  created_at: string;
+  resolved_at: string | null;
+}
+
+/** Take the job. Returns null if this team already has one running. */
+export async function acceptQuest(args: {
+  gameId: string;
+  teamId: string;
+  kind: QuestKind;
+  targetTeam?: string | null;
+  targetSpot?: string | null;
+  fromSpot?: string | null;
+  reward: number;
+  seconds: number;
+}): Promise<QuestRow | null> {
+  assertConfigured();
+  const { data, error } = await supabase
+    .from('quests')
+    .insert({
+      game_id: args.gameId,
+      team_id: args.teamId,
+      kind: args.kind,
+      target_team: args.targetTeam ?? null,
+      target_spot: args.targetSpot ?? null,
+      from_spot: args.fromSpot ?? null,
+      reward: args.reward,
+      expires_at: new Date(Date.now() + args.seconds * 1000).toISOString(),
+    })
+    .select('*')
+    .single();
+  if (error) {
+    if (error.code === '23505') return null; // the slot's taken
+    throw error;
+  }
+  return data as QuestRow;
+}
+
+export async function listQuests(gameId: string): Promise<QuestRow[]> {
+  assertConfigured();
+  const { data, error } = await supabase
+    .from('quests')
+    .select('*')
+    .eq('game_id', gameId)
+    .order('created_at', { ascending: false })
+    .limit(120);
+  if (error) throw error;
+  return (data ?? []) as QuestRow[];
+}
+
+export function subscribeQuests(gameId: string, onChange: () => void) {
+  const ch = supabase
+    .channel(`quests:${gameId}`)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'quests', filter: `game_id=eq.${gameId}` }, onChange)
+    .subscribe();
+  return () => {
+    supabase.removeChannel(ch);
+  };
+}
+
+/**
+ * Close a quest out. Guarded on it still being active, so the hunter's phone
+ * and the target's can both notice the clock ran out without paying twice.
+ * Returns false if someone else got there first.
+ */
+export async function closeQuest(id: string, status: 'done' | 'failed'): Promise<boolean> {
+  assertConfigured();
+  const { data, error } = await supabase
+    .from('quests')
+    .update({ status, resolved_at: new Date().toISOString() })
+    .eq('id', id)
+    .eq('status', 'active')
+    .select('id');
+  if (error) throw error;
+  return !!data && data.length > 0;
+}
+
+/** Where a team last checked in, read fresh — a tag turns on seconds. */
+export async function getPosition(gameId: string, teamId: string): Promise<Position | null> {
+  assertConfigured();
+  const { data, error } = await supabase
+    .from('positions')
+    .select('team_id, lat, lng, spot_id, updated_at')
+    .eq('game_id', gameId)
+    .eq('team_id', teamId)
+    .maybeSingle();
+  if (error) throw error;
+  return (data as Position) ?? null;
 }

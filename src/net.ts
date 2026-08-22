@@ -944,7 +944,8 @@ export interface GameConfig {
   campBankCap: number; // the bank stops growing here, so a quiet corner can't win it
   campRaidPct: number; // share of the bank a successful raider takes
   questChance: number; // 0-100 share of a plain space's outcomes that are a side quest
-  chanceShare: number; // 0-100 share that draws a chance card; the rest is coins
+  chanceShare: number; // 0-100 share that draws a chance card. Retired to 0: a card
+                        // was a side quest you didn't get to play.
   tagWindowSec: number; // how close behind your mark you have to check in
   tagQuestSec: number; // how long a hunt stays open before they've evaded you
   tagSteal: number; // coins taken off the mark when you land it
@@ -981,8 +982,8 @@ export const cfg = {
   campMaxStep: (c: Partial<GameConfig> | undefined) => c?.campMaxStep ?? 20,
   campBankCap: (c: Partial<GameConfig> | undefined) => c?.campBankCap ?? 100,
   campRaidPct: (c: Partial<GameConfig> | undefined) => c?.campRaidPct ?? 50,
-  questChance: (c: Partial<GameConfig> | undefined) => c?.questChance ?? 20,
-  chanceShare: (c: Partial<GameConfig> | undefined) => c?.chanceShare ?? 25,
+  questChance: (c: Partial<GameConfig> | undefined) => c?.questChance ?? 25,
+  chanceShare: (c: Partial<GameConfig> | undefined) => c?.chanceShare ?? 0,
   tagWindowSec: (c: Partial<GameConfig> | undefined) => c?.tagWindowSec ?? 120,
   tagQuestSec: (c: Partial<GameConfig> | undefined) => c?.tagQuestSec ?? 900,
   tagSteal: (c: Partial<GameConfig> | undefined) => c?.tagSteal ?? 50,
@@ -1027,8 +1028,8 @@ export const PARTY_CONFIG: GameConfig = {
   campMaxStep: 20,
   campBankCap: 100,
   campRaidPct: 50,
-  questChance: 20,
-  chanceShare: 25,
+  questChance: 25,
+  chanceShare: 0,
   tagWindowSec: 120,
   tagQuestSec: 900,
   tagSteal: 50,
@@ -1070,8 +1071,8 @@ export const TEST_CONFIG: GameConfig = {
   campMaxStep: 20,
   campBankCap: 100,
   campRaidPct: 50,
-  questChance: 20,
-  chanceShare: 25,
+  questChance: 25,
+  chanceShare: 0,
   tagWindowSec: 120,
   tagQuestSec: 900,
   tagSteal: 50,

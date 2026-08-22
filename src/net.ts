@@ -955,6 +955,7 @@ export interface GameConfig {
   ambushSec: number; // how long a trap stays armed
   ambushTake: number; // coins taken off whoever walks into it
   ambushBackfire: number; // coins you forfeit if they beat you instead
+  duelTimeoutSec: number; // an unanswered duel gives up rather than haunting two phones
   explorerSec: number; // how long you get to reach the place in the photo
   explorerReward: number; // coins for getting there clean
   explorerMinM: number; // never send someone somewhere they can already see
@@ -993,6 +994,7 @@ export const cfg = {
   ambushSec: (c: Partial<GameConfig> | undefined) => c?.ambushSec ?? 600,
   ambushTake: (c: Partial<GameConfig> | undefined) => c?.ambushTake ?? 75,
   ambushBackfire: (c: Partial<GameConfig> | undefined) => c?.ambushBackfire ?? 25,
+  duelTimeoutSec: (c: Partial<GameConfig> | undefined) => c?.duelTimeoutSec ?? 600,
   explorerSec: (c: Partial<GameConfig> | undefined) => c?.explorerSec ?? 900,
   explorerReward: (c: Partial<GameConfig> | undefined) => c?.explorerReward ?? 50,
   explorerMinM: (c: Partial<GameConfig> | undefined) => c?.explorerMinM ?? 250,
@@ -1039,6 +1041,7 @@ export const PARTY_CONFIG: GameConfig = {
   ambushSec: 600,
   ambushTake: 75,
   ambushBackfire: 25,
+  duelTimeoutSec: 600,
   explorerSec: 900,
   explorerReward: 50,
   explorerMinM: 250,
@@ -1082,6 +1085,7 @@ export const TEST_CONFIG: GameConfig = {
   ambushSec: 600,
   ambushTake: 75,
   ambushBackfire: 25,
+  duelTimeoutSec: 600,
   explorerSec: 900,
   explorerReward: 50,
   explorerMinM: 250,
@@ -1977,4 +1981,18 @@ export async function getPosition(gameId: string, teamId: string): Promise<Posit
     .maybeSingle();
   if (error) throw error;
   return (data as Position) ?? null;
+}
+
+/** Question ids this team has already been asked, so a steal can prefer ones
+ * they haven't seen. A repeat is a free correct answer, and steals draw two. */
+export async function seenQuestionIds(gameId: string, teamId: string): Promise<string[]> {
+  assertConfigured();
+  const { data, error } = await supabase
+    .from('trivia_answers')
+    .select('question_id')
+    .eq('game_id', gameId)
+    .eq('team_id', teamId)
+    .not('question_id', 'is', null);
+  if (error) return []; // analytics table; never block a play on it
+  return [...new Set((data ?? []).map((r) => (r as { question_id: string }).question_id))];
 }

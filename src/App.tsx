@@ -3,6 +3,7 @@ import QRCode from 'qrcode';
 import BoardCanvas, { type Mode } from './BoardCanvas';
 import type { Board, ChanceCard, Edge, LatLng, Phase, PoiProps, Square, SquareType, TriviaQuestion } from './types';
 import { SQUARE_TYPES, TYPE_ORDER, PLACE_ORDER } from './squareTypes';
+import { DUELS, AMBUSH_DUELS, duelByName, randomDuel } from './duels';
 import { loadBoard, saveBoard, makeSquare, defaultBoard } from './boardStore';
 import { metersBetween, simplify, snapToStreetsFollowing, routeAlongStreets } from './snap';
 import { generateStreetBoard, buildScenery, buildStreetLabels, closeStreetGaps, shiftPathEnd } from './generate';
@@ -78,6 +79,7 @@ import {
   uploadTriviaPhoto,
   uploadPartyPhoto,
   startDuel,
+  seenQuestionIds,
   acceptQuest,
   listQuests,
   subscribeQuests,
@@ -159,9 +161,8 @@ const STAR_COST = 150;
 const ONLINE_STAR_COST = 40;
 const ONLINE_METER_MS = 15000;
 // Battle = app-as-toolbox: it picks the round type; teams play physically & report.
-const ROUND_TYPES = ['Charades', 'Fishbowl', 'Couple Trivia', 'Speed Puzzle'];
 function pickRound() {
-  return ROUND_TYPES[Math.floor(Math.random() * ROUND_TYPES.length)];
+  return randomDuel().name;
 }
 /** Turf paint per team — assigned by join order (listTeams sorts by created_at),
  * so every phone derives the same colors without storing them. */
@@ -1369,6 +1370,8 @@ export default function App({
   const [stealPicks, setStealPicks] = useState<Record<number, number>>({});
   const [stealResult, setStealResult] = useState<'won' | 'lost' | 'gone' | null>(null);
   const [stealBusy, setStealBusy] = useState(false);
+  /** Questions we've already been asked this game — refreshed after each play. */
+  const [seenQs, setSeenQs] = useState<string[]>([]);
   const [stealForfeited, setStealForfeited] = useState(0); // coins lost on a failed 🧱 hit
   // Tapping a corner you own: reinforce it / set a trap.
   const [myCornerModal, setMyCornerModal] = useState<{ spotId: string; name: string } | null>(null);
@@ -1625,6 +1628,10 @@ export default function App({
     const loadDuels = () => listDuels(gid).then((d) => alive && setDuels(d)).catch(() => {});
     const loadCamps = () => listCamps(gid).then((c) => alive && setCamps(c)).catch(() => {});
     const loadQuests = () => listQuests(gid).then((q) => alive && setQuests(q)).catch(() => {});
+    const loadSeen = () =>
+      membership
+        ? seenQuestionIds(gid, membership.teamId).then((q) => alive && setSeenQs(q)).catch(() => {})
+        : undefined;
     const loadAmbushes = () => listAmbushes(gid).then((a) => alive && setAmbushes(a)).catch(() => {});
     const loadTurf = () =>
       listTerritory(gid)
@@ -1651,6 +1658,7 @@ export default function App({
     loadDuels();
     loadCamps();
     loadQuests();
+    void loadSeen();
     loadAmbushes();
     loadTurf();
     loadRaids();
@@ -2028,6 +2036,39 @@ export default function App({
     if (myDuel) setDuelOpen(true);
   }, [myDuel?.id]);
 
+  /**
+   * A duel nobody answers shouldn't haunt two phones for the rest of the party.
+   * Somebody springs a trap, wanders into a bar, and the other team is left
+   * with a banner they can't clear — only the challenger can call one off. So
+   * after a while it gives up: nobody pays, and any quest riding on it closes.
+   */
+  useEffect(() => {
+    if (!myDuel || !membership) return;
+    const ttl = cfg.duelTimeoutSec(onlineConfig) * 1000;
+    const dead = Date.parse(myDuel.created_at) + ttl <= nowTs;
+    if (!dead) return;
+    let alive = true;
+    (async () => {
+      await cancelDuel(myDuel.id).catch(() => {});
+      const q = quests.find((x) => x.status === 'active' && x.target_spot === myDuel.spot_id);
+      if (q) await closeQuest(q.id, 'failed').catch(() => {});
+      if (!alive) return;
+      setDuelOpen(false);
+      setGpsPopup({ emoji: '🕰️', title: 'Challenge expired', body: 'Nobody called it, so nothing changes hands.' });
+    })();
+    return () => {
+      alive = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [myDuel?.id, nowTs >= (myDuel ? Date.parse(myDuel.created_at) + cfg.duelTimeoutSec(onlineConfig) * 1000 : Infinity)]);
+
+  /** Either side can walk away now — it was the challenger's call alone, which
+   * is exactly backwards when they're the one who might wander off. */
+  async function doCallOffDuel(id: string) {
+    await cancelDuel(id).catch(() => {});
+    setDuelOpen(false);
+  }
+
   /** Either phone can call it; the guard decides who actually pays out. */
   // --- Side quests: TAG ------------------------------------------------------
   // A quest occupies the one slot a team has; it does NOT freeze normal play,
@@ -2048,7 +2089,7 @@ export default function App({
   /** The trapper names the game — they're the one lying in wait, so they get to
    * pick the ground. Stored on the quest because the VICTIM's phone is what
    * builds the duel when it springs. */
-  const [ambushPick, setAmbushPick] = useState<string>(ROUND_TYPES[0]);
+  const [ambushPick, setAmbushPick] = useState<string>(AMBUSH_DUELS[0].name);
   const questLeft = myQuest ? Math.max(0, Math.floor((Date.parse(myQuest.expires_at) - nowTs) / 1000)) : 0;
   const questMark = myQuest?.target_team ? teams.find((t) => t.id === myQuest.target_team) : undefined;
   const questSpotName =
@@ -2526,7 +2567,14 @@ export default function App({
   function dealStealQuestions(n: number): TriviaQuestion[] {
     const bank = onlineBoard?.triviaBank ?? [];
     if (bank.length) {
-      const shuffled = [...bank].sort(() => Math.random() - 0.5);
+      // Questions this team has already been asked go to the back. Being asked
+      // one twice is a free right answer, and steals draw two of them.
+      const fresh = bank.filter((q) => !q.id || !seenQs.includes(q.id));
+      const rest = bank.filter((q) => q.id && seenQs.includes(q.id));
+      const shuffled = [
+        ...fresh.sort(() => Math.random() - 0.5),
+        ...rest.sort(() => Math.random() - 0.5),
+      ];
       return shuffled.slice(0, Math.min(n, shuffled.length));
     }
     return Array.from({ length: n }, () => ({
@@ -2583,6 +2631,7 @@ export default function App({
     const defName = teams.find((t) => t.id === defenderId)?.name ?? 'a team';
     const allRight = questions.every((q, i) => stealPicks[i] === q.correct);
     logTriviaAnswers(membership.gameId, membership.teamId, 'steal', spotId, questions, stealPicks).catch(() => {});
+    setSeenQs((prev) => [...new Set([...prev, ...questions.map((q) => q.id).filter(Boolean) as string[]])]);
     setStealBusy(true);
     try {
       if (allRight) {
@@ -5001,7 +5050,7 @@ export default function App({
         {myDuel && duelOpen && (() => {
           const ch = teams.find((t) => t.id === myDuel.challenger);
           const op = teams.find((t) => t.id === myDuel.opponent);
-          const iStarted = myDuel.challenger === membership?.teamId;
+          // (both sides may now call a duel off, so who started it no longer matters)
           return (
             <div className="msg-scrim msg-scrim--cam">
               <div className="msg-panel duel-panel">
@@ -5015,6 +5064,9 @@ export default function App({
                     {ch?.emoji} {ch?.name} <em>vs</em> {op?.emoji} {op?.name}
                   </p>
                   <div className="duel-prompt">{myDuel.prompt}</div>
+                  {duelByName(myDuel.prompt) && (
+                    <p className="duel-rule">{duelByName(myDuel.prompt)!.rule}</p>
+                  )}
                   {myDuel.stake > 0 && (
                     <p className="hint duel-stake">
                       {myDuel.stake} 🪙 on the line{myDuel.kind === 'camp' ? ' from the camp' : ''}.
@@ -5032,15 +5084,13 @@ export default function App({
                   <button className="btn btn--ghost" style={{ width: '100%', marginTop: 8 }} onClick={() => setDuelOpen(false)}>
                     Not yet — hide this
                   </button>
-                  {iStarted && (
-                    <button
-                      className="btn btn--ghost"
-                      style={{ width: '100%', marginTop: 6 }}
-                      onClick={() => { void cancelDuel(myDuel.id); setDuelOpen(false); }}
-                    >
-                      Call it off
-                    </button>
-                  )}
+                  <button
+                    className="btn btn--ghost"
+                    style={{ width: '100%', marginTop: 6 }}
+                    onClick={() => void doCallOffDuel(myDuel.id)}
+                  >
+                    Call it off
+                  </button>
                 </div>
               </div>
             </div>
@@ -5125,13 +5175,14 @@ export default function App({
                       <b>You pick the game</b> — you're the one lying in wait.
                     </p>
                     <div className="ambush-picks">
-                      {ROUND_TYPES.map((t) => (
+                      {AMBUSH_DUELS.map((d) => (
                         <button
-                          key={t}
-                          className={`ambush-pick${ambushPick === t ? ' is-on' : ''}`}
-                          onClick={() => setAmbushPick(t)}
+                          key={d.key}
+                          className={`ambush-pick${ambushPick === d.name ? ' is-on' : ''}`}
+                          onClick={() => setAmbushPick(d.name)}
+                          title={d.rule}
                         >
-                          {t}
+                          {d.name}
                         </button>
                       ))}
                     </div>

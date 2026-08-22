@@ -165,11 +165,30 @@ const ONLINE_METER_MS = 15000;
 function pickRound() {
   return randomDuel().name;
 }
-/** Turf paint per team — assigned by join order (listTeams sorts by created_at),
- * so every phone derives the same colors without storing them. */
+/**
+ * Turf paint per team. Colour is the ONLY thing separating one team's corners
+ * from another's on the map, so teams now choose it at the door and it's stored
+ * with them (team_color.sql).
+ *
+ * The join-order fallback stays for teams that joined before that column
+ * existed — every phone derives the same one by counting teams, so an
+ * in-progress game doesn't repaint itself mid-party.
+ */
 const TEAM_COLORS = ['#e0533a', '#2f7fe0', '#2fa05a', '#e6a817', '#9a5fe0', '#e05fa0', '#17b0b8', '#8a6d3b'];
-function teamColorOf(teams: { id: string }[], teamId: string): string {
+const COLOR_NAMES: Record<string, string> = {
+  '#e0533a': 'Red',
+  '#2f7fe0': 'Blue',
+  '#2fa05a': 'Green',
+  '#e6a817': 'Gold',
+  '#9a5fe0': 'Purple',
+  '#e05fa0': 'Pink',
+  '#17b0b8': 'Teal',
+  '#8a6d3b': 'Brown',
+};
+function teamColorOf(teams: { id: string; color?: string | null }[], teamId: string): string {
   const i = teams.findIndex((t) => t.id === teamId);
+  const chosen = i >= 0 ? teams[i]?.color : null;
+  if (chosen) return chosen;
   return TEAM_COLORS[(i >= 0 ? i : 0) % TEAM_COLORS.length];
 }
 /** Encounter kinds shown in the POI editor (emoji + short label). */
@@ -871,6 +890,40 @@ export default function App({
   const [joinCode, setJoinCode] = useState((initialCode ?? '').toUpperCase());
   const [joinName, setJoinName] = useState('');
   const [joinEmoji, setJoinEmoji] = useState('🎲');
+  const [joinColor, setJoinColor] = useState(TEAM_COLORS[0]);
+  /** Colours already spoken for in the game they're joining, so two teams can't
+   *  paint the map the same shade — which is exactly what happened in testing. */
+  const [takenColors, setTakenColors] = useState<string[]>([]);
+  // Once there's a plausible code, find out what the teams already in that game
+  // are wearing — including the join-order colours of any who joined before
+  // teams could choose. Then move off a clash rather than making them notice it.
+  useEffect(() => {
+    const code = joinCode.trim().toUpperCase();
+    if (code.length < 4) {
+      setTakenColors([]);
+      return;
+    }
+    let alive = true;
+    const t = setTimeout(() => {
+      void (async () => {
+        try {
+          const g = await getGameByCode(code);
+          if (!g || !alive) return;
+          const rows = await listTeams(g.id);
+          if (!alive) return;
+          const used = rows.map((r, i) => r.color || TEAM_COLORS[i % TEAM_COLORS.length]);
+          setTakenColors(used);
+          setJoinColor((cur) => (used.includes(cur) ? TEAM_COLORS.find((c) => !used.includes(c)) ?? cur : cur));
+        } catch {
+          /* bad code or offline — leave every colour on offer */
+        }
+      })();
+    }, 400);
+    return () => {
+      alive = false;
+      clearTimeout(t);
+    };
+  }, [joinCode]);
   const [netBusy, setNetBusy] = useState(false);
 
   const activeGameId = hostGame?.id ?? membership?.gameId ?? null;
@@ -1118,7 +1171,7 @@ export default function App({
     }
     setNetBusy(true);
     try {
-      setMembership(await joinGame(joinCode, joinName, joinEmoji));
+      setMembership(await joinGame(joinCode, joinName, joinEmoji, joinColor));
     } catch (e) {
       alert('Join failed: ' + (e as Error).message);
     } finally {
@@ -3615,6 +3668,31 @@ export default function App({
                   </button>
                 ))}
               </div>
+            </div>
+            <div className="field">
+              <span>Team colour</span>
+              <div className="color-picker">
+                {TEAM_COLORS.map((c) => {
+                  const taken = takenColors.includes(c) && c !== joinColor;
+                  return (
+                    <button
+                      key={c}
+                      type="button"
+                      className={`color-pick${joinColor === c ? ' color-pick--on' : ''}${taken ? ' color-pick--taken' : ''}`}
+                      style={{ background: c }}
+                      disabled={taken}
+                      title={taken ? `${COLOR_NAMES[c]} — already taken` : COLOR_NAMES[c]}
+                      aria-label={COLOR_NAMES[c]}
+                      onClick={() => setJoinColor(c)}
+                    />
+                  );
+                })}
+              </div>
+              <p className="hint" style={{ margin: '4px 0 0' }}>
+                {takenColors.includes(joinColor)
+                  ? 'Another team already has this one — pick a different colour.'
+                  : `This is how your corners are painted on the map. ${COLOR_NAMES[joinColor]}.`}
+              </p>
             </div>
             <button className="site-btn site-btn--primary" onClick={doJoin} disabled={netBusy}>
               {netBusy ? '…' : 'Join game'}

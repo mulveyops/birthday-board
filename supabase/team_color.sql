@@ -1,0 +1,11 @@
+-- Teams pick their own colour. Run once in the Supabase SQL editor.
+--
+-- Colour used to be assigned by join order and never stored — every phone
+-- derived the same one by counting teams, which worked but meant nobody chose
+-- it and nobody could tell you what theirs was going to be. On the map, colour
+-- is the ONLY thing separating one team's corners from another's, so it's the
+-- most important thing a team owns after its name.
+--
+-- Nullable on purpose: teams that joined before this keep falling back to the
+-- join-order colour, so an in-progress game doesn't repaint itself mid-party.
+alter table public.teams add column if not exists color text;

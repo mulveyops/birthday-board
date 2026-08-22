@@ -2926,3 +2926,48 @@ body {
   font-weight: 800;
   color: #15803d;
 }
+
+/* --- Team colour picker (join screen) ------------------------------------
+   Colour is the only thing separating one team's corners from another's on
+   the map, so it gets swatches big enough to hit with a thumb. */
+.color-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+.color-pick {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 3px solid rgba(0, 0, 0, 0.28);
+  cursor: pointer;
+  padding: 0;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+.color-pick:hover:not(:disabled) {
+  transform: scale(1.08);
+}
+.color-pick--on {
+  border-color: #1f2937;
+  box-shadow: 0 0 0 3px #fff, 0 0 0 6px #1f2937;
+  transform: scale(1.06);
+}
+/* Taken: dimmed and struck through, so it reads as spoken-for rather than
+   broken — you can still see which colour it was. */
+.color-pick--taken {
+  opacity: 0.3;
+  cursor: not-allowed;
+  position: relative;
+}
+.color-pick--taken::after {
+  content: '';
+  position: absolute;
+  inset: 46% -2px auto -2px;
+  height: 3px;
+  background: #1f2937;
+  transform: rotate(-45deg);
+}
+.color-pick:focus-visible {
+  outline: 3px solid #2563eb;
+  outline-offset: 3px;
+}

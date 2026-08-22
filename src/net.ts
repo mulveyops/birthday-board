@@ -19,6 +19,8 @@ export interface TeamRow {
   coins: number;
   stars: number;
   items: number;
+  /** The colour this team chose (team_color.sql). Absent → join-order fallback. */
+  color?: string | null;
   /** 🧱 unspent reinforcement charges (reinforce.sql; absent pre-upgrade). */
   reinforcements?: number;
 }
@@ -1199,15 +1201,21 @@ export async function getBoard(gameId: string): Promise<Board> {
 }
 
 /** A player joins a game with a code + team name; creates the team, remembers it. */
-export async function joinGame(code: string, teamName: string, emoji: string): Promise<Membership> {
+export async function joinGame(code: string, teamName: string, emoji: string, color?: string): Promise<Membership> {
   assertConfigured();
   const game = await getGameByCode(code);
   if (!game) throw new Error('No game with that code.');
-  const { data, error } = await supabase
+  const row = { game_id: game.id, name: teamName.trim(), emoji, device: deviceId() };
+  let { data, error } = await supabase
     .from('teams')
-    .insert({ game_id: game.id, name: teamName.trim(), emoji, device: deviceId() })
+    .insert({ ...row, color: color ?? null })
     .select('id, name')
     .single();
+  // 42703 = no such column: team_color.sql hasn't been run. Joining a party is
+  // not the moment to fail over a colour, so drop it and let them in.
+  if (error?.code === '42703') {
+    ({ data, error } = await supabase.from('teams').insert(row).select('id, name').single());
+  }
   if (error) {
     // Name already exists → ATTACH this phone to that team (multi-phone teams:
     // several phones share one team + coin pot; joining by the same team name
@@ -1238,7 +1246,7 @@ export async function listTeams(gameId: string): Promise<TeamRow[]> {
   // `reinforcements` arrives with reinforce.sql; fall back for a pre-upgrade DB.
   const { data, error } = await supabase
     .from('teams')
-    .select('id, game_id, name, emoji, coins, stars, items, reinforcements')
+    .select('id, game_id, name, emoji, coins, stars, items, color, reinforcements')
     .eq('game_id', gameId)
     .order('created_at');
   if (!error) return (data as TeamRow[]) ?? [];

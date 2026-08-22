@@ -1173,7 +1173,17 @@ export default function BoardCanvas({
     for (const ref of refs) {
       const im = new Image();
       im.onload = () => alive && setPoiArtOk((m) => (m[ref] ? m : { ...m, [ref]: true }));
-      im.onerror = () => alive && setPoiArtOk((m) => (ref in m ? m : { ...m, [ref]: false }));
+      // A transient failure shouldn't cost a bar its art for the session:
+      // try once more before believing it.
+      let tried = 0;
+      im.onerror = () => {
+        if (!alive) return;
+        if (tried++ < 1) {
+          im.src = `/art/poi/${ref}.png?retry=1`;
+          return;
+        }
+        setPoiArtOk((m) => (ref in m ? m : { ...m, [ref]: false }));
+      };
       im.src = `/art/poi/${ref}.png`;
     }
     return () => {
@@ -2020,7 +2030,11 @@ export default function BoardCanvas({
                 const y = Y(sq) + (nudge?.dy ?? 0);
                 const glow = campGlow?.[sq.id];
                 const ref = artKeyFor(sq);
-                const art = ref && poiArtOk[ref];
+                // Optimistic: draw the building unless the probe has actually
+                // come back MISSING. Waiting for a yes meant a phone that was
+                // slow to answer showed a seven-pixel dot instead of a tavern,
+                // and a single hiccup cached that answer for the session.
+                const art = !!ref && poiArtOk[ref] !== false;
                 return (
                   <g key={`lm${sq.id}`} pointerEvents="none">
                     {/* Someone is camped here. It has to be loud — a camp is a
@@ -2056,16 +2070,28 @@ export default function BoardCanvas({
                         preserveAspectRatio="xMidYMax meet"
                       />
                     ) : (
-                      // Only ever seen if a file goes missing. A landmark with
-                      // no art and no marker would be an invisible place.
-                      <circle
-                        cx={x}
-                        cy={y - m * 0.2}
-                        r={m * 0.2}
-                        fill="#fffdf4"
-                        stroke="#2b2b3a"
-                        strokeWidth={m * 0.05}
-                      />
+                      // Only seen if a file really is missing. Big enough to
+                      // be noticed as a problem — an invisible bar is worse than
+                      // an ugly one, because nobody reports it.
+                      <>
+                        <circle
+                          cx={x}
+                          cy={y - m * 0.34}
+                          r={m * 0.32}
+                          fill="#fffdf4"
+                          stroke="#2b2b3a"
+                          strokeWidth={m * 0.06}
+                        />
+                        <text
+                          x={x}
+                          y={y - m * 0.34}
+                          fontSize={m * 0.36}
+                          textAnchor="middle"
+                          dominantBaseline="central"
+                        >
+                          🍺
+                        </text>
+                      </>
                     )}
                   </g>
                 );

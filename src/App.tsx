@@ -4163,41 +4163,6 @@ export default function App({
             💬{msgUnread > 0 && <span className="msg-badge">{msgUnread}</span>}
           </button>
         )}
-        {variant === 'player' && appMode === 'online' && membership && (
-          <div className="hud-strip">
-            <button className="hud-row" onClick={() => setStandOpen(true)}>
-              {standings.length === 0 ? (
-                <span className="hud-dim">Waiting for teams…</span>
-              ) : (
-                (() => {
-                  const t = standings[Math.min(rotIdx, standings.length - 1)];
-                  const place = standings.indexOf(t) + 1;
-                  return (
-                    <>
-                      <span className="hud-place">{place === 1 ? '🏆' : `${place}.`}</span>
-                      <span className="hud-name">
-                        {t.emoji} {t.name}
-                        {t.id === membership.teamId && <em className="hud-you">you</em>}
-                      </span>
-                      <span className="hud-stats">
-                        ⭐{t.stars} 🪙{t.coins} 🔗{allRuns[t.id] ?? 0}
-                      </span>
-                    </>
-                  );
-                })()
-              )}
-              <span className="hud-more">▾</span>
-            </button>
-            <button className="hud-row hud-row--feed" onClick={() => setFeedOpen(true)}>
-              <span className="hud-feed">
-                {events.length
-                  ? events[Math.min(tickIdx, events.length - 1)]?.payload?.text ?? '…'
-                  : 'Nothing has happened yet — go take a corner.'}
-              </span>
-              <span className="hud-more">▾</span>
-            </button>
-          </div>
-        )}
         {standOpen && (
           <div className="msg-scrim msg-scrim--cam" onClick={() => setStandOpen(false)}>
             <div className="msg-panel" onClick={(e) => e.stopPropagation()}>
@@ -5907,6 +5872,41 @@ export default function App({
           const clock = `${Math.floor(meterSecs / 60)}:${String(meterSecs % 60).padStart(2, '0')}`;
           return (
             <footer className="player-bar">
+              {/* Everything the player reads lives in this bar. Splitting it
+                  across the top and bottom of the board made you hunt. */}
+              <div className="hud-strip">
+                <button className="hud-row" onClick={() => setStandOpen(true)}>
+                  {standings.length === 0 ? (
+                    <span className="hud-dim">Waiting for teams…</span>
+                  ) : (
+                    (() => {
+                      const t = standings[Math.min(rotIdx, standings.length - 1)];
+                      const place = standings.indexOf(t) + 1;
+                      return (
+                        <>
+                          <span className="hud-place">{place === 1 ? '🏆' : `${place}.`}</span>
+                          <span className="hud-name">
+                            {t.emoji} {t.name}
+                            {t.id === membership.teamId && <em className="hud-you">you</em>}
+                          </span>
+                          <span className="hud-stats">
+                            ⭐{t.stars} 🪙{t.coins} 🔗{allRuns[t.id] ?? 0}
+                          </span>
+                        </>
+                      );
+                    })()
+                  )}
+                  <span className="hud-more">▾</span>
+                </button>
+                <button className="hud-row hud-row--feed" onClick={() => setFeedOpen(true)}>
+                  <span className="hud-feed">
+                    {events.length
+                      ? events[Math.min(tickIdx, events.length - 1)]?.payload?.text ?? '…'
+                      : 'Nothing has happened yet — go take a corner.'}
+                  </span>
+                  <span className="hud-more">▾</span>
+                </button>
+              </div>
               <div className="player-bar__info">
                 <div className="player-bar__team">
                   <span className="player-bar__emoji">{myTeam?.emoji ?? '🎲'}</span>

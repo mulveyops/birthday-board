@@ -257,6 +257,56 @@ const maskBits = new Uint8Array(pxW * pxH);
   }
   for (let p = 0; p < maskBits.length; p++) if (!maskBits[p] && !outside[p]) maskBits[p] = 1;
 }
+
+// A "block" in the street graph can turn out to be two or more real blocks with
+// a road between them — block 1 is a wedge and a rectangle either side of North
+// Marshall, and tracing them as one asked for a canvas whose middle is a street.
+// Split the traced area into its separate pieces so each is painted on its own.
+const pieces = [];
+{
+  const seen = new Uint8Array(pxW * pxH);
+  for (let p = 0; p < maskBits.length; p++) {
+    if (!maskBits[p] || seen[p]) continue;
+    const cells = [p];
+    seen[p] = 1;
+    const stack = [p];
+    while (stack.length) {
+      const q = stack.pop();
+      const x = q % pxW, y = (q / pxW) | 0;
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const nx = x + dx, ny = y + dy;
+        if (nx < 0 || ny < 0 || nx >= pxW || ny >= pxH) continue;
+        const r = ny * pxW + nx;
+        if (maskBits[r] && !seen[r]) { seen[r] = 1; cells.push(r); stack.push(r); }
+      }
+    }
+    if (cells.length > 400) pieces.push(cells); // ignore specks
+  }
+  // left-to-right, then top-to-bottom, so the letters are stable between runs
+  pieces.sort((A, B) => {
+    const ax = A.reduce((s, i) => s + (i % pxW), 0) / A.length, bx = B.reduce((s, i) => s + (i % pxW), 0) / B.length;
+    const ay = A.reduce((s, i) => s + ((i / pxW) | 0), 0) / A.length, by = B.reduce((s, i) => s + ((i / pxW) | 0), 0) / B.length;
+    return ax - bx || ay - by;
+  });
+}
+const SPLIT_PIECES = pieces.length > 1;
+if (SPLIT_PIECES) {
+  if (!half) {
+    console.error(
+      `block ${blockNum} is really ${pieces.length} separate blocks with a road between them — ` +
+        `generate them individually: ${pieces.map((_, i) => `${blockNum}${'ab'[i] ?? i}`).join(', ')}`,
+    );
+    process.exit(1);
+  }
+  const keep = pieces['ab'.indexOf(half)];
+  if (!keep) {
+    console.error(`block ${blockNum} has no piece "${half}" — it has ${pieces.length}`);
+    process.exit(1);
+  }
+  const only = new Uint8Array(pxW * pxH);
+  for (const i of keep) only[i] = 1;
+  maskBits.set(only);
+}
 let bx1 = pxW, by1 = pxH, bx2 = 0, by2 = 0, maskArea = 0;
 for (let y = 0; y < pxH; y++)
   for (let x = 0; x < pxW; x++)
@@ -274,7 +324,7 @@ bx2++; by2++; // exclusive
 // squashed by 80-90% on the way in. Those blocks are painted in two halves
 // instead, split across the long axis, each half a shape a model can actually
 // produce. Pass `a` or `b` as the third argument.
-if (half) {
+if (half && !SPLIT_PIECES) {
   const tall = by2 - by1 >= bx2 - bx1;
   if (tall) {
     const mid = Math.round((by1 + by2) / 2);

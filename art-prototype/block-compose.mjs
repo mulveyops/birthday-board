@@ -49,7 +49,7 @@ const warnings = [];
 const dirOf = (nn) => `${BLOCKS_DIR}/block-${nn}`;
 /** '21' -> '21', '21a' -> '21a'; sliver blocks are painted in two halves. */
 const blockId = (s) => {
-  const m = /^(d+)([ab])?$/.exec(String(s).trim());
+  const m = /^(\d+)([ab])?$/.exec(String(s).trim());
   return m ? String(Number(m[1])).padStart(2, '0') + (m[2] ?? '') : String(s);
 };
 const statTime = (p) => { try { return statSync(p).mtimeMs; } catch { return 0; } };

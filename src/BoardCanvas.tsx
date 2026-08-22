@@ -1143,7 +1143,19 @@ export default function BoardCanvas({
    * ground layer renders it, and that memo runs before this line otherwise. */
   const paintedLayer =
     geo && board.paintedBoard ? (
-      <image href="/art/board-blocks.webp" x={0} y={0} width={geo.W} height={geo.H} preserveAspectRatio="none" />
+      <image
+        // JPEG, not WebP: iOS Safari renders WebP in an <img> but is unreliable
+        // with it inside an SVG <image>, which is why the board came up empty on
+        // a phone and fine on a desktop. xlinkHref rides along for the same
+        // reason — older WebKit ignores a bare href here.
+        href="/art/board-blocks.jpg"
+        xlinkHref="/art/board-blocks.jpg"
+        x={0}
+        y={0}
+        width={geo.W}
+        height={geo.H}
+        preserveAspectRatio="none"
+      />
     ) : null;
 
   // Bars and POIs become storefront art snapped to face the nearest street,

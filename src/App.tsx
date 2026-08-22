@@ -1830,6 +1830,14 @@ export default function App({
     for (const c of camps) if (c.status === 'active') out[c.spot_id] = c;
     return out;
   }, [camps]);
+  /** Bars with someone camped at them, for the map: spot -> that team's colour.
+   * A camp is a visible pile of coins and hunting one is a real play, so it has
+   * to be findable from across the board, not only by tapping the spot. */
+  const campGlow = useMemo(() => {
+    const out: Record<string, string> = {};
+    for (const c of camps) if (c.status === 'active') out[c.spot_id] = teamColorOf(teams, c.team_id);
+    return out;
+  }, [camps, teams]);
   const campTick = cfg.campTickSec(onlineConfig) * 1000;
   /** Seconds until this camp's next payout is claimable (0 = tap it now). */
   const campDue = myCamp ? Math.max(0, Math.ceil((Date.parse(myCamp.last_ping) + campTick - nowTs) / 1000)) : 0;
@@ -4761,6 +4769,7 @@ export default function App({
           flat={variant === 'player' && !classicMap}
           turf={appMode === 'online' ? turfPaint : undefined}
           runEdges={appMode === 'online' ? runEdges : undefined}
+          campGlow={appMode === 'online' ? campGlow : undefined}
         />
         {((phase === 'area' && mode === 'boundary') || (phase === 'squares' && mode === 'add')) && (
           <div className="add-banner">

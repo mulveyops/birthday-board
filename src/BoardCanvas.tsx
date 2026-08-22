@@ -1006,6 +1006,8 @@ interface Props {
   /** Street segments along each team's longest run, keyed by edge id — the
    * chain drawn on the road itself. */
   runEdges?: Record<string, { color: string; mine: boolean }>;
+  /** Bars a team is camped at, spot id -> that team's colour. */
+  campGlow?: Record<string, string>;
   /** Player engine: render the board in the flat PanZoom viewport (no Leaflet). */
   flat?: boolean;
 }
@@ -1083,6 +1085,7 @@ export default function BoardCanvas({
   tokens,
   turf,
   runEdges,
+  campGlow,
   flat = false,
 }: Props) {
   const clearedSet = useMemo(() => new Set(cleared ?? []), [cleared]);
@@ -2015,10 +2018,32 @@ export default function BoardCanvas({
                 const nudge = barInset[sq.id];
                 const x = X(sq) + (nudge?.dx ?? 0);
                 const y = Y(sq) + (nudge?.dy ?? 0);
+                const glow = campGlow?.[sq.id];
                 const ref = artKeyFor(sq);
                 const art = ref && poiArtOk[ref];
                 return (
                   <g key={`lm${sq.id}`} pointerEvents="none">
+                    {/* Someone is camped here. It has to be loud — a camp is a
+                        pile of coins sitting in the open, and the whole mechanic
+                        depends on rivals spotting it from across the map. */}
+                    {glow && (
+                      <>
+                        <ellipse cx={x} cy={y} rx={m * 0.62} ry={m * 0.26} fill={glow} opacity={0.3}>
+                          <animate attributeName="rx" values={`${m * 0.5};${m * 0.78};${m * 0.5}`} dur="1.9s" repeatCount="indefinite" />
+                          <animate attributeName="opacity" values="0.42;0.12;0.42" dur="1.9s" repeatCount="indefinite" />
+                        </ellipse>
+                        <ellipse cx={x} cy={y} rx={m * 0.38} ry={m * 0.15} fill={glow} opacity={0.75} />
+                        <ellipse
+                          cx={x}
+                          cy={y}
+                          rx={m * 0.38}
+                          ry={m * 0.15}
+                          fill="none"
+                          stroke={glow}
+                          strokeWidth={m * 0.05}
+                        />
+                      </>
+                    )}
                     <ellipse cx={x} cy={y + 2} rx={m * 0.34} ry={m * 0.12} fill="#2b2b3a" opacity={0.28} />
                     {art ? (
                       <image
@@ -2418,22 +2443,28 @@ export default function BoardCanvas({
             {sceneSvg}
             {playActive && (
               <g>
-                {intersections.map((sq) => (
+                {intersections.map((sq) => {
+                  // A bar's marker is nudged onto its lot and stands up from
+                  // there, so its target has to follow the building rather than
+                  // stay on the square the building was derived from.
+                  const bar = sq.type === 'bar' || sq.type === 'poi';
+                  const nudge = bar ? barInset[sq.id] : undefined;
+                  const mm = sq.poi?.markerM ?? 70;
+                  const hx = X(sq) + (nudge?.dx ?? 0);
+                  const hy = Y(sq) + (nudge?.dy ?? 0) - (bar ? mm * 0.42 : 0);
+                  return (
                   <circle
                     key={`hit${sq.id}`}
-                    cx={X(sq)}
-                    cy={Y(sq)}
-                    // A landmark's marker stands up off its anchor, so its
-                    // target is the roomier one whatever the square's type.
-                    r={(() => {
-                      const big = sq.type === 'bar' || !!sq.poi?.footM;
-                      return Math.min(big ? 60 : 45, (big ? 30 : 22) / scale);
-                    })()}
+                    cx={hx}
+                    cy={hy}
+                    // Big enough to cover the whole building at any zoom.
+                    r={bar ? Math.max(mm * 0.5, Math.min(60, 30 / scale)) : Math.min(45, 22 / scale)}
                     fill="transparent"
                     style={{ pointerEvents: 'all', cursor: 'pointer' }}
                     onClick={() => !wasDrag() && onCheckIn?.(sq.id)}
                   />
-                ))}
+                  );
+                })}
                 {spawns?.map((sp) => (
                   <circle
                     key={`hitspawn${sp.id}`}

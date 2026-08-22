@@ -147,6 +147,11 @@ instinct here; a landmark painted at its true size vanishes into the houses.
   yard. No houses, no garages, no fences crowding it.
 - Give it real vertical presence even from this top-down camera: a two-storey brick corner beside a low flat-roofed garage — tall and squat together,
   clearly taller than every roof around it and catching light on top.
+- **If it is a business, the business has to be visible from above** — its
+  shopfront, its awning, its sign, its lit windows, tables on the pavement.
+  Painting the building it lives in and leaving the business out is the most
+  common way these come back wrong: the block then has a plain house or a
+  plain apartment block where a place people walk to should be.
 
 **The Hi Hat** — one bar living in **two adjoining buildings**, and the contrast between them is the whole picture. On the corner, the **Hi Hat Lounge**: two storeys of **cream city brick**, apartment windows above, a dark painted bar front below. Attached to it, the **Hi Hat Garage**: a low **single-storey concrete** garage from 1922 (once Zawatski Garage) that kept every bit of the garage about it — wide door openings glazed and thrown open to the street, flat roofline, plain parapet. A **HI HAT** sign band (readable text allowed), sidewalk tables under awnings, warm light spilling from both. Paint them together as one venue.
 

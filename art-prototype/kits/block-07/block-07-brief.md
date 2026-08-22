@@ -144,6 +144,11 @@ instinct here; a landmark painted at its true size vanishes into the houses.
   yard. No houses, no garages, no fences crowding it.
 - Give it real vertical presence even from this top-down camera: a shaped parapet over wide garage bays, low and broad,
   clearly taller than every roof around it and catching light on top.
+- **If it is a business, the business has to be visible from above** — its
+  shopfront, its awning, its sign, its lit windows, tables on the pavement.
+  Painting the building it lives in and leaving the business out is the most
+  common way these come back wrong: the block then has a plain house or a
+  plain apartment block where a place people walk to should be.
 
 **Eagle Park Brewing Company** — a 1920s tannery garage turned brewery taproom (it was the **Gallun Tanneries Garage**). Low, wide, **single-storey brick** industrial building with Mediterranean Revival touches: a shaped parapet, arched openings, tile accents. Big **garage-door bays** along the front, opened up with glass. An outdoor patio with picnic benches and string lights. Industrial bones, friendly use.
 

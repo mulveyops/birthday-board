@@ -144,6 +144,11 @@ instinct here; a landmark painted at its true size vanishes into the houses.
   yard. No houses, no garages, no fences crowding it.
 - Give it real vertical presence even from this top-down camera: a decorated gable end and porch roof standing a little above the houses beside it,
   clearly taller than every roof around it and catching light on top.
+- **If it is a business, the business has to be visible from above** — its
+  shopfront, its awning, its sign, its lit windows, tables on the pavement.
+  Painting the building it lives in and leaving the business out is the most
+  common way these come back wrong: the block then has a plain house or a
+  plain apartment block where a place people walk to should be.
 
 **1680 North Cass Street — the blue house.** An 1890 Queen Anne two-flat, narrow and deep on its lot in the classic Milwaukee proportion. **Painted blue** siding — the blue is what identifies it, and it should be the one clearly blue house on its block. A front porch with steps up, tall narrow windows, a pitched roof with a modest decorative gable. Homely and friendly.
 

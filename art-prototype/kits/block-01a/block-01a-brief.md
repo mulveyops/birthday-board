@@ -152,6 +152,11 @@ instinct here; a landmark painted at its true size vanishes into the houses.
   yard. No houses, no garages, no fences crowding it.
 - Give it real vertical presence even from this top-down camera: a long flat brick roofline, wider than anything else on the block,
   clearly taller than every roof around it and catching light on top.
+- **If it is a business, the business has to be visible from above** — its
+  shopfront, its awning, its sign, its lit windows, tables on the pavement.
+  Painting the building it lives in and leaving the business out is the most
+  common way these come back wrong: the block then has a plain house or a
+  plain apartment block where a place people walk to should be.
 
 **The Red Lion Pub on Tannery Row** — a long two-storey **brick** commercial block from 1890, by far the widest building here at 43 m, shopfront below and apartments above. It was the **Gettleman Brewery** in 1911 and still looks it: nineteenth-century brewery-era masonry, flat roofline, regular window rhythm, stone sills. A British pub at street level — dark painted shopfront, a hanging **RED LION** sign (readable text allowed), warm windows, a few pavement tables.
 

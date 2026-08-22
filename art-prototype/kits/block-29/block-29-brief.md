@@ -144,6 +144,11 @@ instinct here; a landmark painted at its true size vanishes into the houses.
   yard. No houses, no garages, no fences crowding it.
 - Give it real vertical presence even from this top-down camera: a steep decorated gable over pale brick, brighter and better kept than its neighbours,
   clearly taller than every roof around it and catching light on top.
+- **If it is a business, the business has to be visible from above** — its
+  shopfront, its awning, its sign, its lit windows, tables on the pavement.
+  Painting the building it lives in and leaving the business out is the most
+  common way these come back wrong: the block then has a plain house or a
+  plain apartment block where a place people walk to should be.
 
 **811 East Pleasant Street — this is the house the whole party is at**, so it has to be findable at a glance. An 1888 Queen Anne **cream city brick** two-flat (architect James Douglas) — pale, warm, buttery yellow-cream masonry where its neighbours are painted timber, and **the brick is what makes it recognisable**. Two storeys over a raised basement, front steps up to the entrance, tall narrow Victorian windows with stone sills, a steep roof with decorative gable trim. Make it feel warm and lived-in and celebrated: lit windows, flowers, something festive at the door.
 

@@ -149,6 +149,11 @@ instinct here; a landmark painted at its true size vanishes into the houses.
   yard. No houses, no garages, no fences crowding it.
 - Give it real vertical presence even from this top-down camera: the tall flat parapet of the old theatre, standing above its neighbours,
   clearly taller than every roof around it and catching light on top.
+- **If it is a business, the business has to be visible from above** — its
+  shopfront, its awning, its sign, its lit windows, tables on the pavement.
+  Painting the building it lives in and leaving the business out is the most
+  common way these come back wrong: the block then has a plain house or a
+  plain apartment block where a place people walk to should be.
 
 **Glorioso's Italian Market**, in the former **Astor Theatre** (1913, architect Myers E. Becongia) — an old movie house turned Italian grocery, and the biggest commercial mass on Brady Street. Wide, low theatre massing with a tall flat parapet, clearly bigger and flatter-topped than its neighbours. Light **stucco** body, a long run of storefront glass along Brady, a bold horizontal **GLORIOSO'S** sign band (readable text allowed), and Italian tricolour — green, white, red — in the awnings.
 

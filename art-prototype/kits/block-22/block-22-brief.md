@@ -147,6 +147,11 @@ instinct here; a landmark painted at its true size vanishes into the houses.
   yard. No houses, no garages, no fences crowding it.
 - Give it real vertical presence even from this top-down camera: a flat raised false front squaring off the roof, taller than the building behind it,
   clearly taller than every roof around it and catching light on top.
+- **If it is a business, the business has to be visible from above** — its
+  shopfront, its awning, its sign, its lit windows, tables on the pavement.
+  Painting the building it lives in and leaving the business out is the most
+  common way these come back wrong: the block then has a plain house or a
+  plain apartment block where a place people walk to should be.
 
 **Hosed on Brady** — a two-storey **brick** corner tavern whose signature is its **boomtown false front**: a flat, raised parapet squaring off the roof and making the building look taller than it really is. Corner entrance, warm lit windows, a painted sign band (readable text allowed). A century of beer-hall history in a small footprint — Ziegler Brewing in 1938, Schlitz's Krueger's in 1954, Franklin Place until 2009.
 

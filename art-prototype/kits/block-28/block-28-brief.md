@@ -147,8 +147,16 @@ instinct here; a landmark painted at its true size vanishes into the houses.
   yard. No houses, no garages, no fences crowding it.
 - Give it real vertical presence even from this top-down camera: three storeys of brick with a low tiled roof, rising over its corner,
   clearly taller than every roof around it and catching light on top.
+- **If it is a business, the business has to be visible from above** — its
+  shopfront, its awning, its sign, its lit windows, tables on the pavement.
+  Painting the building it lives in and leaving the business out is the most
+  common way these come back wrong: the block then has a plain house or a
+  plain apartment block where a place people walk to should be.
 
-**Y-Not II** — a dark, beloved corner dive, open since 1968, on the ground floor of a handsome **three-storey Spanish Colonial brick apartment building**: the tall one on its corner, low-pitched tile-look roof, arched detailing and balconies above. The bar takes the corner at street level — painted shopfront, neon in the window, a small **Y-NOT II** sign (readable text allowed). Tall building, small bar.
+**Y-Not II is a BAR, and the bar is what has to be visible.** A dark, beloved corner dive, open since 1968.
+   - At street level, wrapping the corner: a **dark painted shopfront** with big windows, **neon glowing inside**, a door cut across the corner itself, and a **Y-NOT II** sign (readable text allowed and wanted here).
+   - Above it — and only as backdrop — rise three storeys of handsome Spanish Colonial brick apartments: low-pitched tile-look roof, arched detail, small balconies.
+   - The apartments are easy and the bar is the point. **A previous attempt painted the apartment block with a tidy residential entrance and no bar at all; that version was useless to us.** If someone glancing at this block cannot tell there is a bar on that corner, it has failed.
 
 ## Everything else is supporting cast
 
@@ -231,7 +239,7 @@ this list — this is a real place people walk to in this game, and a block
 missing it is unusable to us however good the rest looks. It is by far the
 most common way these come back wrong.
 
-- [ ] **Y-Not II** — the corner dive bar under three storeys of apartments — is in the bottom-left corner, roughly 210 × 183 px, and looks like what it is: not grander, not more civic, not a different kind of building.
+- [ ] **Y-Not II** — the neon-lit corner bar at street level, apartments above — is in the bottom-left corner, roughly 210 × 183 px, and looks like what it is: not grander, not more civic, not a different kind of building.
 - [ ] Nothing in a red box on the layout plan has been left out.
 - [ ] Buildings match the grey outlines on the site plan in size and number — not bigger, not fewer.
 - [ ] **Every part of the white stencil area is painted** — a bare patch becomes a hole in the map.

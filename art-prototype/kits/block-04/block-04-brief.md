@@ -154,6 +154,11 @@ off before you finish.
   yard. No houses, no garages, no fences crowding it.
 - Give it real vertical presence even from this top-down camera: a steep front gable and a brick chimney, riding above the houses beside it,
   clearly taller than every roof around it and catching light on top.
+- **If it is a business, the business has to be visible from above** — its
+  shopfront, its awning, its sign, its lit windows, tables on the pavement.
+  Painting the building it lives in and leaving the business out is the most
+  common way these come back wrong: the block then has a plain house or a
+  plain apartment block where a place people walk to should be.
 
 **Wolski's Tavern** (a bar since 1908 in an 1895 house) — a house that became a tavern, and the most beloved dive in the neighbourhood. Front-gabled two-storey **wood** building, light clapboard siding, dark roof, domestic proportions — small and wooden where everything near it is brick. A painted **WOLSKI'S** signboard band across the first floor (readable text allowed), warm amber windows, a couple of sidewalk picnic tables. Its charm is its modesty: characterful, not grand.
 

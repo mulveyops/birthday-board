@@ -133,6 +133,11 @@ instinct here; a landmark painted at its true size vanishes into the houses.
   yard. No houses, no garages, no fences crowding it.
 - Give it real vertical presence even from this top-down camera: its tower and spire, the tallest thing for blocks around,
   clearly taller than every roof around it and catching light on top.
+- **If it is a business, the business has to be visible from above** — its
+  shopfront, its awning, its sign, its lit windows, tables on the pavement.
+  Painting the building it lives in and leaving the business out is the most
+  common way these come back wrong: the block then has a plain house or a
+  plain apartment block where a place people walk to should be.
 
 **Saint Hedwig Catholic Church** (1888, Henry Messmer) — the visual crest of Brady Street.
    - **Cream city brick** body (pale, warm, buttery yellow-cream — NOT red brick), stone trim, round-arched Romanesque windows.

@@ -149,6 +149,11 @@ instinct here; a landmark painted at its true size vanishes into the houses.
   yard. No houses, no garages, no fences crowding it.
 - Give it real vertical presence even from this top-down camera: a bold painted gable front standing up over the sidewalk,
   clearly taller than every roof around it and catching light on top.
+- **If it is a business, the business has to be visible from above** — its
+  shopfront, its awning, its sign, its lit windows, tables on the pavement.
+  Painting the building it lives in and leaving the business out is the most
+  common way these come back wrong: the block then has a plain house or a
+  plain apartment block where a place people walk to should be.
 
 **Fink's** — a small **single-storey front-gabled** corner bar, long and narrow, sitting right up on the sidewalk. The building dates to 1894 and has been six other taverns since (Listwan's, Al Hauke's, Baldy's, Mama Roux, the Red Room). Modest and neighbourly rather than grand: a painted **FINK'S** sign board across the gable front (readable text allowed), warm lit windows, a door on the corner.
 

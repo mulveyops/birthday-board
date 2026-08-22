@@ -2795,35 +2795,64 @@ body {
   font-size: 0.78rem;
   width: auto;
 }
+/* Name and score on one line, controls on their own beneath. They used to
+   share a single row, and once Remove joined the four nudge buttons the
+   controls took the whole width and squeezed the team name down to an
+   ellipsis — which is the one thing a referee is scanning this list for. */
 .ref-team {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
-  padding: 6px 0;
+  gap: 6px 8px;
+  padding: 8px 0;
   border-bottom: 1px solid rgba(0, 0, 0, 0.08);
   font-size: 0.88rem;
 }
 .ref-team__name {
-  flex: 1;
+  flex: 1 1 auto;
   min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+/* The colour they chose, so the list matches the paint on the map. */
+.ref-team__dot {
+  flex: 0 0 auto;
+  width: 13px;
+  height: 13px;
+  border-radius: 4px;
+  border: 1.5px solid rgba(0, 0, 0, 0.45);
 }
 .ref-team__score {
   flex: none;
   font-weight: 700;
-  font-size: 0.82rem;
+  font-size: 0.86rem;
+  font-variant-numeric: tabular-nums;
 }
+/* Full-width second line, equal columns, so the controls always fit a phone
+   without wrapping into a ragged pile. */
 .ref-team__acts {
-  flex: none;
-  display: flex;
+  flex: 1 0 100%;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
   gap: 4px;
 }
 .ref-team__acts .site-btn {
-  padding: 5px 7px;
+  padding: 6px 2px;
   font-size: 0.72rem;
-  width: auto;
+  width: 100%;
+  min-width: 0;
+  white-space: nowrap;
+}
+/* Armed to remove: the confirm and its escape take the whole line, so the
+   thing you are about to delete is named in the button you are pressing. */
+.ref-team__acts.is-arming {
+  grid-template-columns: 3fr 1fr;
 }
 .ref-award {
   margin: 8px 0;

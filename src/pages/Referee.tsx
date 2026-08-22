@@ -166,6 +166,11 @@ export default function Referee() {
     [board],
   );
   const teamName = (id: string | null | undefined) => teams.find((t) => t.id === id)?.name ?? 'a team';
+  /** The colour a team paints its corners — what they chose, or the join-order
+   *  fallback for teams that signed up before colours could be picked. */
+  const TEAM_COLORS = ['#e0533a', '#2f7fe0', '#2fa05a', '#e6a817', '#9a5fe0', '#e05fa0', '#17b0b8', '#8a6d3b'];
+  const teamColor = (t: TeamRow, i: number) =>
+    t.color || TEAM_COLORS[teams.findIndex((x) => x.id === t.id) % TEAM_COLORS.length] || TEAM_COLORS[i % TEAM_COLORS.length];
   const teamEmoji = (id: string | null | undefined) => teams.find((t) => t.id === id)?.emoji ?? '🎲';
   const spotName = (id: string | null | undefined) =>
     board?.squares.find((s) => s.id === id)?.title || 'somewhere';
@@ -731,12 +736,15 @@ export default function Referee() {
           {standings.map((t, i) => (
             <div key={t.id} className="ref-team">
               <span className="ref-team__name">
-                {i === 0 ? '🏆' : `${i + 1}.`} {t.emoji} {t.name}
+                <span>{i === 0 ? '🏆' : `${i + 1}.`}</span>
+                <span className="ref-team__dot" style={{ background: teamColor(t, i) }} />
+                <span>{t.emoji}</span>
+                <span>{t.name}</span>
               </span>
               <span className="ref-team__score">
                 ⭐{t.stars} 🪙{t.coins}
               </span>
-              <span className="ref-team__acts">
+              <span className={`ref-team__acts${dropArmed === t.id ? ' is-arming' : ''}`}>
                 <button className="site-btn" disabled={busy} onClick={() => void nudge(t.id, 0, 1)}>+⭐</button>
                 <button className="site-btn" disabled={busy} onClick={() => void nudge(t.id, 0, -1)}>−⭐</button>
                 <button className="site-btn" disabled={busy} onClick={() => void nudge(t.id, 25, 0)}>+25</button>

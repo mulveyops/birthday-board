@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import QRCode from 'qrcode';
 import BoardCanvas, { type Mode } from './BoardCanvas';
 import type { Board, ChanceCard, Edge, LatLng, Phase, PoiProps, Square, SquareType, TriviaQuestion } from './types';
-import { SQUARE_TYPES, TYPE_ORDER } from './squareTypes';
+import { SQUARE_TYPES, TYPE_ORDER, PLACE_ORDER } from './squareTypes';
 import { loadBoard, saveBoard, makeSquare, defaultBoard } from './boardStore';
 import { metersBetween, simplify, snapToStreetsFollowing, routeAlongStreets } from './snap';
 import { generateStreetBoard, buildScenery, buildStreetLabels, closeStreetGaps, shiftPathEnd } from './generate';
@@ -285,7 +285,9 @@ export default function App({
 }) {
   const [board, setBoard] = useState<Board>(() => loadBoard());
   const [mode, setMode] = useState<Mode>('select');
-  const [addType, setAddType] = useState<SquareType>('bar');
+  // A plain space: the only thing the palette places by default now that a
+  // space no longer advertises what it does.
+  const [addType, setAddType] = useState<SquareType>('blank');
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedVertex, setSelectedVertex] = useState<number | null>(null);
   const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null);
@@ -3324,7 +3326,7 @@ export default function App({
                   : 'Click a spot to edit it (type, name, reward, trivia) · click a path to edit it.'}
               </p>
               <div className="palette">
-                {TYPE_ORDER.map((t) => (
+                {PLACE_ORDER.map((t) => (
                   <button
                     key={t}
                     className={`chip ${mode === 'add' && addType === t ? 'chip--on' : ''}`}
@@ -3607,7 +3609,9 @@ export default function App({
                     value={selected.type}
                     onChange={(e) => updateSquare(selected.id, { type: e.target.value as SquareType })}
                   >
-                    {TYPE_ORDER.map((t) => (
+                    {/* a retired type stays listed while a square still has
+                        one, so it can be converted instead of stranded */}
+                    {(TYPE_ORDER.includes(selected.type) ? TYPE_ORDER : [...TYPE_ORDER, selected.type]).map((t) => (
                       <option key={t} value={t}>
                         {SQUARE_TYPES[t].emoji} {SQUARE_TYPES[t].label}
                       </option>

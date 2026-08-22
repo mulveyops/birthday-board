@@ -64,15 +64,17 @@ export const SQUARE_TYPES: Record<SquareType, SquareTypeMeta> = {
   },
 };
 
-/** Display order for palettes and dropdowns. */
-export const TYPE_ORDER: SquareType[] = [
-  'blank',
-  'bar',
-  'challenge',
-  'coin',
-  'chance',
-  'poi',
-  'bowser',
-  'start',
-  'finish',
-];
+/**
+ * What you can PLACE. Every ordinary space is the same thing now — the board
+ * doesn't advertise what a space does, so there's nothing to choose between.
+ * Coins, chance and challenge are resolved at play time, not authored.
+ */
+export const PLACE_ORDER: SquareType[] = ['blank', 'start', 'finish'];
+
+/**
+ * What a selected square can be CHANGED to. Landmarks are here and not in the
+ * palette because they're placed on a real building, not dropped on a corner.
+ * A square already carrying a retired type keeps it listed (see the editor) so
+ * it can be seen and converted rather than silently stranded.
+ */
+export const TYPE_ORDER: SquareType[] = ['blank', 'bar', 'poi', 'bowser', 'start', 'finish'];

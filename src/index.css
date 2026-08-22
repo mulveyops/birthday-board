@@ -2869,3 +2869,27 @@ body {
   font-size: 1.05rem;
   color: #7f1d1d;
 }
+
+/* --- The coin ------------------------------------------------------------
+   🪙 is a real gold coin on Apple and a flat grey disc on Android and Windows,
+   so the same number looked like a different currency depending on whose phone
+   you were holding. This is the coin instead: drawn by us, gold everywhere,
+   and it sits on the text baseline so it works mid-sentence as well as on a
+   button. Matches the coin sprite painted on the board. */
+.coin {
+  display: inline-block;
+  width: 0.92em;
+  height: 0.92em;
+  vertical-align: -0.11em;
+  margin: 0 0.06em;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 34% 30%, #fdf0b8 0%, #f2c94c 46%, #d8a52a 78%, #b5831c 100%);
+  box-shadow: inset 0 0 0 0.085em #c8901a;
+  flex: 0 0 auto;
+}
+/* Hide the popup glyph slot entirely when there's nothing in it, so a message
+   with no icon doesn't sit under a wagging empty box. */
+.wag-finger:empty {
+  display: none;
+}

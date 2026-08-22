@@ -70,8 +70,6 @@ import {
   subscribeTerritory,
   claimTerritory,
   stealTerritory,
-  reinforceCorner,
-  grantReinforcement,
   listRaidLocks,
   subscribeRaidLocks,
   setRaidLock,
@@ -141,6 +139,7 @@ import {
   computeRunPaths,
 } from './territory';
 import { navigate } from './Root';
+import { Coin, coinify } from './coin';
 
 const PHASES: { key: Phase; label: string }[] = [
   { key: 'area', label: 'Area' },
@@ -176,8 +175,8 @@ function teamColorOf(teams: { id: string }[], teamId: string): string {
 /** Encounter kinds shown in the POI editor (emoji + short label). */
 const ENC_META: Record<string, { emoji: string; label: string }> = {
   'star-bar': { emoji: '⭐', label: 'Star bar' },
-  h2h: { emoji: '⚔️', label: 'Head-to-head' },
-  challenge: { emoji: '🎯', label: 'Challenge' },
+  h2h: { emoji: '', label: 'Head-to-head' },
+  challenge: { emoji: '', label: 'Challenge' },
   boss: { emoji: '🔥', label: 'Boss' },
   landmark: { emoji: '📍', label: 'Landmark' },
 };
@@ -257,7 +256,11 @@ function questionsForSpot(board: Board, seed: string, spotId: string): TriviaQue
     .map((q, i) => ({ q, k: strHash01(`${seed}:${i}`) }))
     .sort((a, b) => a.k - b.k)
     .map((x) => x.q);
-  const per = Math.max(1, Math.min(4, Math.floor(pool.length / Math.max(1, spotIds.length)) || 1));
+  // Two, never four. With ~50 questions spread over ~13 trivia spaces the old
+  // cap handed out the full four every time, which is a long stop for one
+  // ordinary street corner. A steal is two questions; a corner should not ask
+  // more than a steal does.
+  const per = Math.max(1, Math.min(2, Math.floor(pool.length / Math.max(1, spotIds.length)) || 1));
   const out: TriviaQuestion[] = [];
   for (let k = 0; k < Math.min(per, pool.length); k++) out.push(order[(idx * per + k) % pool.length]);
   return out;
@@ -265,11 +268,11 @@ function questionsForSpot(board: Board, seed: string, spotId: string): TriviaQue
 /** Fallback chance deck for games published before decks existed — mirrors the
  * old hardcoded roll weights (35% rob / 20% claim / 23% gain / 15% lose / 7% dud). */
 const DEFAULT_CHANCE_DECK: ChanceCard[] = [
-  { id: 'd-rob1', text: '🦹 Stick-em-up! Rob a rival team.', effect: 'rob', amount: 0 },
-  { id: 'd-rob2', text: '🦹 Pickpocket! Rob a rival team.', effect: 'rob', amount: 0 },
-  { id: 'd-rob3', text: '🦹 Heist time! Rob a rival team.', effect: 'rob', amount: 0 },
-  { id: 'd-rob4', text: '🦹 Smash and grab! Rob a rival team.', effect: 'rob', amount: 0 },
-  { id: 'd-rob5', text: '🦹 The perfect crime! Rob a rival team.', effect: 'rob', amount: 0 },
+  { id: 'd-rob1', text: 'Stick-em-up! Rob a rival team.', effect: 'rob', amount: 0 },
+  { id: 'd-rob2', text: 'Pickpocket! Rob a rival team.', effect: 'rob', amount: 0 },
+  { id: 'd-rob3', text: 'Heist time! Rob a rival team.', effect: 'rob', amount: 0 },
+  { id: 'd-rob4', text: 'Smash and grab! Rob a rival team.', effect: 'rob', amount: 0 },
+  { id: 'd-rob5', text: 'The perfect crime! Rob a rival team.', effect: 'rob', amount: 0 },
   { id: 'd-claim1', text: '🎺 A brass band follows you down Brady. Tips!', effect: 'gain', amount: 20 },
   { id: 'd-claim2', text: '🌭 You win a hot dog eating contest nobody entered.', effect: 'gain', amount: 25 },
   { id: 'd-claim3', text: '🎩 You find a twenty in a coat you swear is yours.', effect: 'gain', amount: 20 },
@@ -749,7 +752,7 @@ export default function App({
       text = `🍀 Lucky! +${dc} 🪙`;
     } else if (r < 0.62) {
       di = 1;
-      text = '🎒 Found an item!';
+      text = 'Found an item!';
     } else if (r < 0.82) {
       text = '😐 Nothing here…';
     } else {
@@ -1152,9 +1155,9 @@ export default function App({
   // Messaging: shared row store + composer state for whichever surface is active.
   const [messages, setMessages] = useState<MessageRow[]>([]);
   // --- Messaging: three layers, keyed by channel ---------------------------
-  //   'all'            the Party room (everyone posts; host posts also banner)
-  //   'host:<teamId>'  that team's private line to the hosts
-  //   'dm:<a>:<b>'     team ↔ team (ids sorted) — hidden from the host UI
+  //   'all'the Party room (everyone posts; host posts also banner)
+  //   'host:<teamId>'that team's private line to the hosts
+  //   'dm:<a>:<b>'team ↔ team (ids sorted) — hidden from the host UI
   const [msgOpen, setMsgOpen] = useState(false);
   const [msgThread, setMsgThread] = useState<string | null>(null); // null = thread list
   const [msgPick, setMsgPick] = useState(false); // "message a team" picker
@@ -1386,13 +1389,13 @@ export default function App({
   const [chanceBusy, setChanceBusy] = useState(false);
   const [chanceDrawing, setChanceDrawing] = useState(false); // card-flip animation running
   const [chanceCardText, setChanceCardText] = useState(''); // drawn card's flavor text (rob/claim pickers)
-  // Turf: painted corners (owner + 🧱 flag; runs pay coins per tick).
+  // Turf: painted corners (owner + flag; runs pay coins per tick).
   const [territoryRows, setTerritoryRows] = useState<TerritoryRow[]>([]);
   const territoryMap = useMemo(
     () => Object.fromEntries(territoryRows.map((r) => [r.spot_id, r.team_id])),
     [territoryRows],
   );
-  // 🧱 is retired — a corner is just a corner now, and one fewer rule to
+  // is retired — a corner is just a corner now, and one fewer rule to
   // explain while standing on a pavement. The column stays in the database so
   // older games still load; nothing reads it to make a decision any more.
   const reinforcedSet = useMemo(
@@ -1401,8 +1404,8 @@ export default function App({
   );
   // Failed-steal cooldowns (attacker→defender pairs, whole game — filtered to us).
   const [raidLocks, setRaidLocks] = useState<RaidLockRow[]>([]);
-  // Steal play: 1 question normally; 2 (all right) vs a 🧱 or home-turf defense.
-  // Failing a 🧱 corner also forfeits coins to the defender.
+  // Steal play: 1 question normally; 2 (all right) vs a or home-turf defense.
+  // Failing a corner also forfeits coins to the defender.
   const [stealModal, setStealModal] = useState<{
     spotId: string;
     name: string;
@@ -1417,10 +1420,8 @@ export default function App({
   const [stealBusy, setStealBusy] = useState(false);
   /** Questions we've already been asked this game — refreshed after each play. */
   const [seenQs, setSeenQs] = useState<string[]>([]);
-  const [stealForfeited, setStealForfeited] = useState(0); // coins lost on a failed 🧱 hit
+  const [stealForfeited, setStealForfeited] = useState(0); // coins lost on a failed hit
   // Tapping a corner you own: reinforce it / set a trap.
-  const [myCornerModal, setMyCornerModal] = useState<{ spotId: string; name: string } | null>(null);
-  const [cornerBusy, setCornerBusy] = useState(false);
   // Game start time — the turf-income tick counter is anchored to it.
   const [onlineStartedAt, setOnlineStartedAt] = useState<string | null>(null);
   const tickTried = useRef<Set<number>>(new Set());
@@ -1633,7 +1634,7 @@ export default function App({
   // A new event jumps the line to the front — that's the whole point of a feed.
   useEffect(() => setTickIdx(0), [feed.length]);
   // Corner paint for the map: spot → team color (thicker ring for our own,
-  // 🧱 badge when reinforced).
+  // badge when reinforced).
   const turfPaint = useMemo(() => {
     const out: Record<string, { color: string; mine: boolean; reinforced?: boolean }> = {};
     for (const r of territoryRows) {
@@ -1988,12 +1989,12 @@ export default function App({
     try {
       const row = await startCamp(membership.gameId, membership.teamId, spotId);
       if (!row) {
-        setGpsPopup({ emoji: '🏕️', title: 'Already camped', body: "Your team is set up somewhere else — collect that first." });
+        setGpsPopup({ emoji: '', title: 'Already camped', body: "Your team is set up somewhere else — collect that first." });
         return;
       }
       setSpotSheet(null);
       setGpsPopup({
-        emoji: '🏕️',
+        emoji: '',
         title: `Camped at ${name}`,
         body: `Tap "still here" every ${Math.round(cfg.campTickSec(onlineConfig) / 60) || 1} min to keep earning. Check in somewhere else to bank it.`,
       });
@@ -2029,7 +2030,7 @@ export default function App({
                     title: `Bank full — 🪙${cap}`,
                     body: "That's as much as a camp will hold. Sitting here earns nothing now — check in somewhere else to carry it out before someone takes half.",
                   }
-                : { emoji: '🏕️', title: `+${campNext} banked`, body: `🪙${row.banked} waiting. Check in elsewhere to carry it out.` },
+                : { emoji: '', title: `+${campNext} banked`, body: `🪙${row.banked} waiting. Check in elsewhere to carry it out.` },
           );
         })
         .catch((e) => alert('Ping failed: ' + (e as Error).message))
@@ -2044,8 +2045,8 @@ export default function App({
       const coins = await collectCamp(myCamp.id);
       if (coins <= 0) return;
       await adjustCoins(membership.teamId, coins);
-      logEvent(membership.gameId, 'camp', `🏕️ ${myTeam?.name ?? 'A team'} cashed out ${coins} 🪙 from camp`).catch(() => {});
-      setGpsPopup({ emoji: '💰', title: `Banked ${coins} 🪙`, body: 'Carried it out clean.' });
+      logEvent(membership.gameId, 'camp', `${myTeam?.name ?? 'A team'} cashed out ${coins} 🪙 from camp`).catch(() => {});
+      setGpsPopup({ emoji: '', title: `Banked ${coins} 🪙`, body: 'Carried it out clean.' });
     } catch {
       /* the bank survives — they can try again at the next spot */
     }
@@ -2056,7 +2057,7 @@ export default function App({
     if (!membership || campBusy) return;
     const stake = Math.floor((camp.banked * cfg.campRaidPct(onlineConfig)) / 100);
     if (stake <= 0) {
-      setGpsPopup({ emoji: '🪹', title: 'Nothing to take', body: "They haven't banked anything yet." });
+      setGpsPopup({ emoji: '', title: 'Nothing to take', body: "They haven't banked anything yet." });
       return;
     }
     setCampBusy(true);
@@ -2071,7 +2072,7 @@ export default function App({
         spotId: camp.spot_id,
       });
       if (!duel) {
-        setGpsPopup({ emoji: '⚔️', title: 'Already on', body: 'A challenge with this team is already running.' });
+        setGpsPopup({ emoji: '', title: 'Already on', body: 'A challenge with this team is already running.' });
         return;
       }
       setSpotSheet(null);
@@ -2080,13 +2081,13 @@ export default function App({
       logEvent(
         membership.gameId,
         'camp',
-        `⚔️ ${myTeam?.name ?? 'A team'} is hunting ${teams.find((t) => t.id === camp.team_id)?.name ?? 'a team'} at ${name} — ${stake} 🪙 on the line`,
+        `${myTeam?.name ?? 'A team'} is hunting ${teams.find((t) => t.id === camp.team_id)?.name ?? 'a team'} at ${name} — ${stake} 🪙 on the line`,
       ).catch(() => {});
       sendMessage(
         membership.gameId,
         null,
         camp.team_id,
-        `⚔️ ${myTeam?.name ?? 'A team'} found your camp at ${name} — ${stake} 🪙 on the line!`,
+        `${myTeam?.name ?? 'A team'} found your camp at ${name} — ${stake} 🪙 on the line!`,
       ).catch(() => {});
     } catch (e) {
       alert('Challenge failed: ' + (e as Error).message);
@@ -2127,7 +2128,7 @@ export default function App({
       if (q) await closeQuest(q.id, 'failed').catch(() => {});
       if (!alive) return;
       setDuelOpen(false);
-      setGpsPopup({ emoji: '🕰️', title: 'Challenge expired', body: 'Nobody called it, so nothing changes hands.' });
+      setGpsPopup({ emoji: '', title: 'Challenge expired', body: 'Nobody called it, so nothing changes hands.' });
     })();
     return () => {
       alive = false;
@@ -2266,11 +2267,11 @@ export default function App({
         });
         setQuestOffer(null);
         if (!row) {
-          setGpsPopup({ emoji: '🧭', title: 'Already on a job', body: 'Finish the one you have first.' });
+          setGpsPopup({ emoji: '', title: 'Already on a job', body: 'Finish the one you have first.' });
           return;
         }
         setGpsPopup({
-          emoji: '🧭',
+          emoji: '',
           title: 'Find this place',
           body: `Work out where the photo was taken and check in there — and nowhere else on the way. You have ${Math.round(cfg.explorerSec(onlineConfig) / 60)} minutes.`,
         });
@@ -2290,19 +2291,19 @@ export default function App({
       });
       setQuestOffer(null);
       if (!row) {
-        setGpsPopup({ emoji: '🎯', title: 'Already on a job', body: 'Finish the one you have first.' });
+        setGpsPopup({ emoji: '', title: 'Already on a job', body: 'Finish the one you have first.' });
         return;
       }
       const mins = Math.round(secs / 60);
       setGpsPopup(
         kind === 'recon'
           ? {
-              emoji: '🔭',
+              emoji: '',
               title: `Holding ${spotName}`,
               body: `Stay put ${mins} min. Anyone who turns up can challenge you — beat them, or last it out, and you'll know where the next stars land.`,
             }
           : {
-              emoji: '🪤',
+              emoji: '',
               title: `Trap set at ${spotName}`,
               body: `Armed for ${mins} min. The next team to check in here walks into it — win and you take ${cfg.ambushTake(onlineConfig)} 🪙.`,
             },
@@ -2311,8 +2312,8 @@ export default function App({
         membership.gameId,
         'battle',
         kind === 'recon'
-          ? `🔭 ${myTeam?.name ?? 'A team'} is holding ${spotName} — go challenge them`
-          : `🪤 Something's set up somewhere. Watch your step.`,
+          ? `${myTeam?.name ?? 'A team'} is holding ${spotName} — go challenge them`
+          : `Something's set up somewhere. Watch your step.`,
       ).catch(() => {});
     } catch (e) {
       alert('Could not accept: ' + (e as Error).message);
@@ -2348,7 +2349,7 @@ export default function App({
       logEvent(
         membership.gameId,
         'battle',
-        `🪤 ${teams.find((t) => t.id === trap.team_id)?.name ?? 'A team'} sprang a trap on ${myTeam?.name ?? 'a team'} at ${sq?.title || 'a space'}!`,
+        `${teams.find((t) => t.id === trap.team_id)?.name ?? 'A team'} sprang a trap on ${myTeam?.name ?? 'a team'} at ${sq?.title || 'a space'}!`,
       ).catch(() => {});
     } catch {
       /* already running */
@@ -2372,11 +2373,11 @@ export default function App({
       });
       setQuestOffer(null);
       if (!row) {
-        setGpsPopup({ emoji: '🎯', title: 'Already on a job', body: 'Finish the one you have first.' });
+        setGpsPopup({ emoji: '', title: 'Already on a job', body: 'Finish the one you have first.' });
         return;
       }
       setGpsPopup({
-        emoji: '🎯',
+        emoji: '',
         title: `Hunt ${mark.name}`,
         body: `Find them on the map, then check in where they check in — within ${Math.round(cfg.tagWindowSec(onlineConfig) / 60)} min of them. Don't let on.`,
       });
@@ -2406,12 +2407,12 @@ export default function App({
       logEvent(
         membership.gameId,
         'battle',
-        `🧭 ${myTeam?.name ?? 'A team'} found the place in the photo — +${prize} 🪙`,
+        `${myTeam?.name ?? 'A team'} found the place in the photo — +${prize} 🪙`,
       ).catch(() => {});
-      setGpsPopup({ emoji: '🧭', title: 'This is the place', body: `Nicely read. +${prize} 🪙.` });
+      setGpsPopup({ emoji: '', title: 'This is the place', body: `Nicely read. +${prize} 🪙.` });
     } else {
       setGpsPopup({
-        emoji: '🧭',
+        emoji: '',
         title: 'Off the trail',
         body: 'You checked in somewhere else, so the job is off. The photo was somewhere else entirely.',
       });
@@ -2435,15 +2436,15 @@ export default function App({
       logEvent(
         membership.gameId,
         'battle',
-        `🎯 ${myTeam?.name ?? 'A team'} tagged ${markName} — ${steal} 🪙 lifted`,
+        `${myTeam?.name ?? 'A team'} tagged ${markName} — ${steal} 🪙 lifted`,
       ).catch(() => {});
       sendMessage(
         membership.gameId,
         null,
         myQuest.target_team,
-        `🎯 You were tagged by ${myTeam?.name ?? 'a team'} — they followed you in and took ${steal} 🪙.`,
+        `You were tagged by ${myTeam?.name ?? 'a team'} — they followed you in and took ${steal} 🪙.`,
       ).catch(() => {});
-      setGpsPopup({ emoji: '🎯', title: 'Tagged!', body: `You caught ${markName} — +${steal} 🪙.` });
+      setGpsPopup({ emoji: '', title: 'Tagged!', body: `You caught ${markName} — +${steal} 🪙.` });
     } catch {
       /* a missed tag is not worth interrupting the check-in for */
     }
@@ -2460,7 +2461,7 @@ export default function App({
         if (!alive) return;
         const bars = nextStarBars(2);
         setGpsPopup({
-          emoji: '🔭',
+          emoji: '',
           title: 'Nobody came',
           body: bars.length
             ? `Word is the next stars land at: ${bars.join(', then ')}.`
@@ -2471,13 +2472,13 @@ export default function App({
       if (myQuest.kind === 'explorer') {
         if (!(await closeQuest(myQuest.id, 'failed').catch(() => false))) return;
         if (!alive) return;
-        setGpsPopup({ emoji: '🧭', title: 'Out of time', body: 'The trail went cold. Somebody else will find it.' });
+        setGpsPopup({ emoji: '', title: 'Out of time', body: 'The trail went cold. Somebody else will find it.' });
         return;
       }
       if (myQuest.kind === 'ambush') {
         if (!(await closeQuest(myQuest.id, 'failed').catch(() => false))) return;
         if (!alive) return;
-        setGpsPopup({ emoji: '🪤', title: 'Trap went cold', body: 'Nobody walked into it. Try somewhere busier.' });
+        setGpsPopup({ emoji: '', title: 'Trap went cold', body: 'Nobody walked into it. Try somewhere busier.' });
         return;
       }
       if (!(await closeQuest(myQuest.id, 'failed').catch(() => false))) return;
@@ -2487,9 +2488,9 @@ export default function App({
       if (myQuest.target_team && evade > 0) {
         await adjustCoins(myQuest.target_team, evade).catch(() => {});
         const markName = teams.find((t) => t.id === myQuest.target_team)?.name ?? 'a team';
-        logEvent(membership.gameId, 'battle', `🫥 ${markName} shook off a tail — +${evade} 🪙`).catch(() => {});
+        logEvent(membership.gameId, 'battle', `${markName} shook off a tail — +${evade} 🪙`).catch(() => {});
       }
-      setGpsPopup({ emoji: '🫥', title: 'They got away', body: 'Your mark is clear. Better luck at the next space.' });
+      setGpsPopup({ emoji: '', title: 'They got away', body: 'Your mark is clear. Better luck at the next space.' });
     })();
     return () => {
       alive = false;
@@ -2515,17 +2516,17 @@ export default function App({
             // transfer_coins moves only what the loser actually has, so report
             // what MOVED rather than what was asked for.
             const moved = amt > 0 ? await transferCoins(from, to, amt) : 0;
-            logEvent(duel.game_id, 'battle', `🪤 ${wq} came out of the trap ${moved} 🪙 up`).catch(() => {});
+            logEvent(duel.game_id, 'battle', `${wq} came out of the trap ${moved} 🪙 up`).catch(() => {});
           } else if (winner !== q.team_id) {
             // Recon broken up: the challenger lifts coins off the watcher.
             const took = await transferCoins(q.team_id, winner, cfg.reconSteal(onlineConfig));
-            logEvent(duel.game_id, 'battle', `🔭 ${wq} broke up a recon — ${took} 🪙`).catch(() => {});
+            logEvent(duel.game_id, 'battle', `${wq} broke up a recon — ${took} 🪙`).catch(() => {});
           } else {
-            logEvent(duel.game_id, 'battle', `🔭 ${wq} held their ground`).catch(() => {});
+            logEvent(duel.game_id, 'battle', `${wq} held their ground`).catch(() => {});
             if (q.team_id === membership?.teamId) {
               const bars = nextStarBars(2);
               setGpsPopup({
-                emoji: '🔭',
+                emoji: '',
                 title: 'You held it',
                 body: bars.length ? `Next stars land at: ${bars.join(', then ')}.` : 'Every bar has a star waiting.',
               });
@@ -2538,11 +2539,11 @@ export default function App({
         if (camp && (await raidCamp(camp, duel.stake))) {
           await adjustCoins(duel.challenger, duel.stake);
         }
-        logEvent(duel.game_id, 'camp', `⚔️ ${wName} raided a camp for ${duel.stake} 🪙!`).catch(() => {});
+        logEvent(duel.game_id, 'camp', `${wName} raided a camp for ${duel.stake} 🪙!`).catch(() => {});
       } else if (duel.kind === 'camp') {
-        logEvent(duel.game_id, 'camp', `🛡️ ${wName} defended their camp!`).catch(() => {});
+        logEvent(duel.game_id, 'camp', `${wName} defended their camp!`).catch(() => {});
       } else {
-        logEvent(duel.game_id, 'battle', `⚔️ ${wName} won the challenge!`).catch(() => {});
+        logEvent(duel.game_id, 'battle', `${wName} won the challenge!`).catch(() => {});
       }
     } catch (e) {
       alert('Could not report: ' + (e as Error).message);
@@ -2578,12 +2579,14 @@ export default function App({
         setOnlineBarModal({ spotId, name: sq.title || 'Bar' });
         return;
       }
-      // A painted corner (recurring; bypasses the cleared gate): a rival's →
-      // a steal play; your own → the corner menu (reinforce / set a trap).
+      // A painted corner: a rival's is a steal play. Your own is nothing at
+      // all — say so and get out of the way. It used to open a menu offering
+      // reinforcement and traps, neither of which exists any more, so tapping
+      // your own corner promised something the game can't deliver.
       const turfOwner = territoryMap[spotId];
       if (turfOwner && turfIds.has(spotId)) {
         if (turfOwner !== membership.teamId) openSteal(spotId, sq, turfOwner);
-        else setMyCornerModal({ spotId, name: sq.title || 'Your corner' });
+        else sayAlreadyYours(spotId, sq);
         return;
       }
       // The pool said this one's a job. Same gate as the other outcomes: a
@@ -2598,7 +2601,7 @@ export default function App({
       }
       if (type === 'chance') {
         if (onlineCleared.includes(spotId)) {
-          openArmOnCleared(spotId, sq);
+          sayAlreadyYours(spotId, sq);
           return;
         }
         setChanceOutcome(null);
@@ -2610,7 +2613,7 @@ export default function App({
         return;
       }
       if (onlineCleared.includes(spotId)) {
-        openArmOnCleared(spotId, sq);
+        sayAlreadyYours(spotId, sq);
         return;
       }
       // A challenge → deal trivia (pinned questions, else the shared bank).
@@ -2668,7 +2671,7 @@ export default function App({
     return fresh && metersBetween({ lat: pos.lat, lng: pos.lng }, sq) <= cfg.defendRadiusM(onlineConfig);
   }
   /** Land on a rival corner: locked out → bounce; otherwise deal the play.
-   * 🧱 reinforced or defender-on-site → hard mode (2 questions, all right). */
+   * reinforced or defender-on-site → hard mode (2 questions, all right). */
   function openSteal(spotId: string, sq: Square, defenderId: string) {
     if (!membership || onlineStatus !== 'live') return;
     const lock = raidLocks.find(
@@ -2700,7 +2703,7 @@ export default function App({
     });
   }
   /** Resolve the play: ALL right = flip the corner; any wrong = lockout vs
-   * that team, plus a coin forfeit to them if the corner was 🧱 reinforced. */
+   * that team, plus a coin forfeit to them if the corner was reinforced. */
   async function resolveSteal() {
     if (!membership || !stealModal || stealBusy) return;
     const { spotId, name, defenderId, questions, reinforced } = stealModal;
@@ -2726,8 +2729,8 @@ export default function App({
           setStealTook(took);
           const sq = onlineBoard?.squares.find((s) => s.id === spotId);
           if (sq) checkInSpot(membership.gameId, membership.teamId, spotId, sq.lat, sq.lng, 0, claimCooldown).catch(() => {});
-          logEvent(membership.gameId, 'battle', `🏴 ${myTeam?.name ?? 'A team'} stole ${name} from ${defName}${took > 0 ? ` — +${took} 🪙` : ''}`).catch(() => {});
-          sendMessage(membership.gameId, null, defenderId, `🏴 ${myTeam?.name ?? 'A team'} took your corner at ${name}${took > 0 ? ` and ${took} 🪙` : ''} — your run may be cut!`).catch(() => {});
+          logEvent(membership.gameId, 'battle', `${myTeam?.name ?? 'A team'} stole ${name} from ${defName}${took > 0 ? ` — +${took} 🪙` : ''}`).catch(() => {});
+          sendMessage(membership.gameId, null, defenderId, `${myTeam?.name ?? 'A team'} took your corner at ${name}${took > 0 ? ` and ${took} 🪙` : ''} — your run may be cut!`).catch(() => {});
         } else {
           setStealResult('gone'); // ownership changed under us — map will refresh
         }
@@ -2742,8 +2745,8 @@ export default function App({
           setStealForfeited(moved);
           extra = ` and forfeited ${moved} 🪙 to the wall`;
         }
-        logEvent(membership.gameId, 'battle', `🛡 ${defName} held ${name} — ${myTeam?.name ?? 'a team'} fumbled the steal${extra}`).catch(() => {});
-        sendMessage(membership.gameId, null, defenderId, `🛡 ${myTeam?.name ?? 'A team'} tried to steal your corner at ${name} and blew it${extra}!`).catch(() => {});
+        logEvent(membership.gameId, 'battle', `${defName} held ${name} — ${myTeam?.name ?? 'a team'} fumbled the steal${extra}`).catch(() => {});
+        sendMessage(membership.gameId, null, defenderId, `${myTeam?.name ?? 'A team'} tried to steal your corner at ${name} and blew it${extra}!`).catch(() => {});
       }
     } catch (e) {
       alert('Steal failed: ' + (e as Error).message);
@@ -2752,34 +2755,28 @@ export default function App({
       setStealBusy(false);
     }
   }
-  /** Spend a 🧱 charge on the corner you're standing on. */
-  async function doReinforce() {
-    if (!membership || !myCornerModal || cornerBusy) return;
-    setCornerBusy(true);
-    try {
-      const r = await reinforceCorner(membership.gameId, myCornerModal.spotId, membership.teamId);
-      if (r === 'ok') {
-        setTerritoryRows((rows) =>
-          rows.map((row) => (row.spot_id === myCornerModal.spotId ? { ...row, reinforced: true } : row)),
-        );
-        flash('🧱 Reinforced!');
-        logEvent(membership.gameId, 'battle', `🧱 ${myTeam?.name ?? 'A team'} reinforced a corner`).catch(() => {});
-        setMyCornerModal(null);
-      } else if (r === 'nocharge') {
-        alert('No 🧱 charges — win one from a chance card.');
-      } else {
-        alert('This corner just changed — refresh and try again.');
-        setMyCornerModal(null);
-      }
-    } catch (e) {
-      alert('Reinforce failed: ' + (e as Error).message);
-    } finally {
-      setCornerBusy(false);
-    }
-  }
 
   // --- Ambush handlers -------------------------------------------------------
   /** Re-tapping a spot you've cleared → set (or inspect) a trap there. */
+  /**
+   * You're standing on something you already took. Say that plainly and close.
+   * A spot goes cold again after the cooldown, so tell them when — "nothing
+   * here" reads like a bug, "back in 20 minutes" reads like a rule.
+   */
+  function sayAlreadyYours(spotId: string, sq: Square) {
+    const at = claimTimes[spotId];
+    const left = at && claimCooldown > 0 ? claimCooldown * 1000 - (Date.now() - at) : 0;
+    const mins = Math.ceil(left / 60000);
+    setSpotSheet(null);
+    setGpsPopup({
+      emoji: '',
+      title: 'You already claimed this',
+      body:
+        left > 0
+          ? `${sq.title || 'This space'} is yours. It's worth coins again in ${mins} min${mins === 1 ? '' : 's'}.`
+          : `${sq.title || 'This space'} is yours — go take something that isn't.`,
+    });
+  }
   function openArmOnCleared(spotId: string, sq: Square) {
     if (onlineStatus !== 'live') return;
     setArmAllyId('');
@@ -2792,8 +2789,8 @@ export default function App({
     if (!won) return;
     const spot = sq.title || 'a spot';
     setAmbushedName(spot);
-    const alertText = `🪤 Your trap at ${spot} caught ${myTeam?.name ?? 'a team'} — get there for the showdown!`;
-    logEvent(membership.gameId, 'battle', `🪤 An ambush was sprung at ${spot}!`).catch(() => {});
+    const alertText = `Your trap at ${spot} caught ${myTeam?.name ?? 'a team'} — get there for the showdown!`;
+    logEvent(membership.gameId, 'battle', `An ambush was sprung at ${spot}!`).catch(() => {});
     sendMessage(membership.gameId, null, a.initiator, alertText).catch(() => {});
     sendMessage(membership.gameId, null, a.ally, alertText).catch(() => {});
   }
@@ -2809,7 +2806,7 @@ export default function App({
           membership.gameId,
           null,
           armAllyId,
-          `🪤 ${myTeam?.name ?? 'A team'} proposes an ambush at ${ambushArmModal.name} — accept in your game to stake ${stake} 🪙.`,
+          `${myTeam?.name ?? 'A team'} proposes an ambush at ${ambushArmModal.name} — accept in your game to stake ${stake} 🪙.`,
         ).catch(() => {});
         setAmbushArmModal(null);
       }
@@ -2847,8 +2844,8 @@ export default function App({
           membership.gameId,
           'battle',
           ambushersWon
-            ? `🪤 ${nameOfTeam(myShowdown.initiator)} & ${nameOfTeam(myShowdown.ally)} won their ambush on ${nameOfTeam(myShowdown.victim)}!`
-            : `🛡 ${nameOfTeam(myShowdown.victim)} fought off ${nameOfTeam(myShowdown.initiator)} & ${nameOfTeam(myShowdown.ally)} and took the pot!`,
+            ? `${nameOfTeam(myShowdown.initiator)} & ${nameOfTeam(myShowdown.ally)} won their ambush on ${nameOfTeam(myShowdown.victim)}!`
+            : `${nameOfTeam(myShowdown.victim)} fought off ${nameOfTeam(myShowdown.initiator)} & ${nameOfTeam(myShowdown.ally)} and took the pot!`,
         ).catch(() => {});
       }
       setShowdownOpen(false);
@@ -2890,17 +2887,11 @@ export default function App({
       return;
     }
     try {
-      // 'claim' cards (the old land-grab) now award a 🧱 reinforcement charge.
+      // 'claim' cards used to hand out a reinforcement charge. Reinforcement is
+      // gone, so they pay coins like every other good card.
       if (card.effect === 'claim') {
-        try {
-          await grantReinforcement(membership.teamId);
-          setChanceText(`${card.text} +1 🧱 — check in at a corner you own to fortify it.`);
-          await logEvent(membership.gameId, 'star', `🧱 ${myTeam?.name ?? 'A team'} picked up a reinforcement`);
-        } catch {
-          // reinforce.sql not applied yet — degrade to a small coin prize.
-          await adjustCoins(membership.teamId, 20);
-          setChanceText(`${card.text} …the armory is closed — +20 🪙 instead.`);
-        }
+        await adjustCoins(membership.teamId, 20);
+        setChanceText(`${card.text} +20 🪙.`);
         setChanceOutcome('gain');
         markChanceCleared(sq);
         setChanceBusy(false);
@@ -2936,12 +2927,12 @@ export default function App({
     try {
       const amount = cfg.robAmount(onlineConfig);
       const moved = await transferCoins(victim.id, membership.teamId, amount);
-      setChanceText(`🦹 Robbed ${victim.name} for ${moved} 🪙!`);
+      setChanceText(`Robbed ${victim.name} for ${moved} 🪙!`);
       setChanceOutcome('gain');
       await logEvent(
         membership.gameId,
         'battle',
-        `🦹 ${myTeam?.name ?? 'A team'} robbed ${victim.name} of ${moved} 🪙`,
+        `${myTeam?.name ?? 'A team'} robbed ${victim.name} of ${moved} 🪙`,
       );
       markChanceCleared(sq);
     } catch (e) {
@@ -3027,10 +3018,10 @@ export default function App({
     try {
       if (attackerWon) {
         const ok = await stealStarClaim(bm.claimId, membership.teamId, onlineConfig.meterSec * 1000);
-        if (ok) await logEvent(membership.gameId, 'battle', `⚔️ ${myTeam?.name ?? 'A team'} beat ${bm.defenderName} and took ${bm.barName}`);
+        if (ok) await logEvent(membership.gameId, 'battle', `${myTeam?.name ?? 'A team'} beat ${bm.defenderName} and took ${bm.barName}`);
         else alert('That claim already resolved.');
       } else {
-        await logEvent(membership.gameId, 'battle', `⚔️ ${myTeam?.name ?? 'A team'} challenged ${bm.defenderName} at ${bm.barName} and lost`);
+        await logEvent(membership.gameId, 'battle', `${myTeam?.name ?? 'A team'} challenged ${bm.defenderName} at ${bm.barName} and lost`);
       }
     } catch (e) {
       alert('Battle failed: ' + (e as Error).message);
@@ -3669,10 +3660,10 @@ export default function App({
             <h2>▶ Play — desktop sim</h2>
             <p className="hint">Click a node to check in · grab 🎁 drops · claim ⭐ at bars.</p>
             <p style={{ fontSize: '1.5rem', fontWeight: 700, margin: '10px 0 2px' }}>
-              🪙 {play.coins} &nbsp;·&nbsp; ⭐ {play.stars}
+              <Coin /> {play.coins} &nbsp;·&nbsp; ⭐ {play.stars}
             </p>
             <p className="hint">
-              {play.cleared.length} / {spots.length} spots · 🎒 {play.items} items
+              {play.cleared.length} / {spots.length} spots · {play.items} items
             </p>
             {claim && (
               <p className="hint">
@@ -3700,7 +3691,7 @@ export default function App({
               {onlineBoard ? '' : ' · loading board…'}
             </p>
             <p style={{ fontSize: '1.5rem', fontWeight: 700, margin: '8px 0 2px' }}>
-              🪙 {myTeam?.coins ?? 0} &nbsp;·&nbsp; ⭐ {myTeam?.stars ?? 0}
+              <Coin /> {myTeam?.coins ?? 0} &nbsp;·&nbsp; ⭐ {myTeam?.stars ?? 0}
             </p>
             {onlineStatus === 'lobby' && (
               <p
@@ -3751,7 +3742,7 @@ export default function App({
                     className="hint"
                     style={{ margin: '2px 0', fontWeight: t.id === membership?.teamId ? 700 : 400 }}
                   >
-                    {t.emoji} {t.name} — 🪙 {t.coins} · ⭐ {t.stars}
+                    {t.emoji} {t.name} — <Coin /> {t.coins} · ⭐ {t.stars}
                   </div>
                 ))}
             </div>
@@ -3847,8 +3838,8 @@ export default function App({
                   : board.locked && board.squares.length
                     ? '🔒 Layout locked'
                     : board.squares.length
-                      ? '🧭 Redraw from streets'
-                      : '🧭 Draw board from streets'}
+                      ? 'Redraw from streets'
+                      : 'Draw board from streets'}
               </button>
               {board.squares.length > 0 && (
                 <label className="toggle">
@@ -4036,8 +4027,8 @@ export default function App({
                             <span>Encounter</span>
                             <select value={enc} onChange={(e) => updatePoi(s, { encounter: e.target.value as PoiProps['encounter'] })}>
                               <option value="star-bar">⭐ Star bar (in the rotation)</option>
-                              <option value="h2h">⚔️ Head-to-head vs another team</option>
-                              <option value="challenge">🎯 Specific challenge to undertake</option>
+                              <option value="h2h">Head-to-head vs another team</option>
+                              <option value="challenge">Specific challenge to undertake</option>
                               <option value="boss">🔥 Boss / set-piece</option>
                               <option value="landmark">📍 Landmark (flavor only)</option>
                             </select>
@@ -4069,10 +4060,10 @@ export default function App({
                                 />
                               </label>
                               <p className="hint" style={{ marginTop: -4 }}>
-                                🕶️ Blank = <b>black box</b> — the referee invents the game on site.
+                                Blank = <b>black box</b> — the referee invents the game on site.
                               </p>
                               <label className="field">
-                                <span>Reward for winning it (🪙)</span>
+                                <span>Reward for winning it (<Coin />)</span>
                                 <input
                                   type="number"
                                   value={s.poi?.reward ?? 0}
@@ -4247,8 +4238,8 @@ export default function App({
                           <span>Encounter</span>
                           <select value={enc} onChange={(e) => updatePoi(selected, { encounter: e.target.value as PoiProps['encounter'] })}>
                             <option value="star-bar">⭐ Star bar (in the rotation)</option>
-                            <option value="h2h">⚔️ Head-to-head vs another team</option>
-                            <option value="challenge">🎯 Specific challenge to undertake</option>
+                            <option value="h2h">Head-to-head vs another team</option>
+                            <option value="challenge">Specific challenge to undertake</option>
                             <option value="boss">🔥 Boss / set-piece</option>
                             <option value="landmark">📍 Landmark (flavor only)</option>
                           </select>
@@ -4278,11 +4269,11 @@ export default function App({
                               />
                             </label>
                             <p className="hint" style={{ marginTop: -4 }}>
-                              🕶️ Leave it blank for a <b>black box</b>: the referee invents the game on site and just
+                              Leave it blank for a <b>black box</b>: the referee invents the game on site and just
                               reports the winner.
                             </p>
                             <label className="field">
-                              <span>Reward for winning it (🪙)</span>
+                              <span>Reward for winning it (<Coin />)</span>
                               <input
                                 type="number"
                                 value={selected.poi?.reward ?? 0}
@@ -4727,7 +4718,7 @@ export default function App({
                   </p>
 
                   <p className="hint" style={{ marginTop: 8 }}>
-                    📸 Party Cam — {cfg.drinkCoins(hostConfig)} 🪙 a drink, paid on post. Veto anything bogus.
+                    📸 Party Cam — {cfg.drinkCoins(hostConfig)} <Coin /> a drink, paid on post. Veto anything bogus.
                   </p>
                   <div className="cam-review">
                     {photos.length === 0 && <div className="hint">No photos yet.</div>}
@@ -4772,7 +4763,7 @@ export default function App({
                     <div key={t.id}>
                       <div className="hint" style={{ margin: '2px 0', display: 'flex', alignItems: 'center', gap: 6 }}>
                         <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                          {t.emoji} {t.name} — 🪙 {t.coins} · ⭐ {t.stars}
+                          {t.emoji} {t.name} — <Coin /> {t.coins} · ⭐ {t.stars}
                         </span>
                         <button className="fix-btn" onClick={() => void openFix(t.id)} title="Fix-it tools">
                           🔧
@@ -4864,7 +4855,7 @@ export default function App({
               {cfgField('Ambush reward (🪙)', 'ambushReward')}
               {cfgField('Turf income tick (sec)', 'territoryTickSec')}
               {cfgField('Failed-steal lockout (sec)', 'stealLockSec')}
-              {cfgField('🧱 fail forfeit (🪙)', 'reinforceForfeit')}
+              {cfgField('fail forfeit (🪙)', 'reinforceForfeit')}
               {cfgField('Home-turf radius (m)', 'defendRadiusM')}
               {cfgField('Coins per drink (🍻)', 'drinkCoins')}
               {cfgField('Chain pay multiplier', 'chainMultiplier')}
@@ -5018,13 +5009,13 @@ export default function App({
                       {t.id === membership?.teamId && <em className="hud-you">you</em>}
                     </span>
                     <span className="stand-stats">
-                      <b>⭐{t.stars}</b> <b>🪙{t.coins}</b> <b>🔗{allRuns[t.id] ?? 0}</b>
+                      <b>⭐{t.stars}</b> <b><Coin />{t.coins}</b> <b>🔗{allRuns[t.id] ?? 0}</b>
                     </span>
                   </div>
                 ))}
                 {standings.length === 0 && <p className="msg-empty">No teams have joined yet.</p>}
               </div>
-              <p className="hint stand-key">⭐ stars · 🪙 coins · 🔗 longest chain of corners (pays out every tick)</p>
+              <p className="hint stand-key">⭐ stars · <Coin /> coins · 🔗 longest chain of corners (pays out every tick)</p>
             </div>
           </div>
         )}
@@ -5045,7 +5036,7 @@ export default function App({
                     <span className="feed-time">
                       {new Date(e.ts).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
                     </span>
-                    <span>{e.payload?.text ?? e.type}</span>
+                    <span>{coinify(e.payload?.text ?? e.type)}</span>
                   </div>
                 ))}
               </div>
@@ -5067,14 +5058,14 @@ export default function App({
               <div className="wag-head">{gpsPopup.title}</div>
               <div className="wag-body">
                 <div className="wag-finger">{gpsPopup.emoji}</div>
-                <p className="wag-text">{gpsPopup.body}</p>
+                <p className="wag-text">{coinify(gpsPopup.body)}</p>
               </div>
             </div>
           </div>
         )}
         {appMode === 'online' && myShowdown && !showdownOpen && (
           <button className="showdown-banner" onClick={() => setShowdownOpen(true)}>
-            🪤 Ambush showdown — tap to report the result
+            Ambush showdown — tap to report the result
           </button>
         )}
         {appMode === 'online' && membership && camOpen && (
@@ -5158,7 +5149,7 @@ export default function App({
         )}
         {myDuel && !duelOpen && (
           <button className="showdown-banner" onClick={() => setDuelOpen(true)}>
-            ⚔️ Challenge running — tap to report who won
+            Challenge running — tap to report who won
           </button>
         )}
         {myDuel && duelOpen && (() => {
@@ -5170,7 +5161,7 @@ export default function App({
               <div className="msg-panel duel-panel">
                 <div className="msg-head">
                   <span className="msg-head__pad" />
-                  <span>⚔️ Challenge</span>
+                  <span>Challenge</span>
                   <span className="msg-head__pad" />
                 </div>
                 <div className="duel-body">
@@ -5242,7 +5233,7 @@ export default function App({
             <div className="msg-panel quest-panel" onClick={(e) => e.stopPropagation()}>
               <div className="msg-head">
                 <span className="msg-head__pad" />
-                <span>🎯 Side quest</span>
+                <span>Side quest</span>
                 <span className="msg-head__pad" />
               </div>
               <div className="quest-body">
@@ -5255,8 +5246,8 @@ export default function App({
                       <b>{Math.round(cfg.tagWindowSec(onlineConfig) / 60)} minutes</b> of them.
                     </p>
                     <p className="hint">
-                      Land it and you lift <b>{cfg.tagSteal(onlineConfig)} 🪙</b> off them. Let the clock
-                      run out and they pocket <b>{cfg.tagEvade(onlineConfig)} 🪙</b> for losing you. They
+                      Land it and you lift <b>{cfg.tagSteal(onlineConfig)} <Coin /></b> off them. Let the clock
+                      run out and they pocket <b>{cfg.tagEvade(onlineConfig)} <Coin /></b> for losing you. They
                       are never told they're being followed.
                     </p>
                   </>
@@ -5286,7 +5277,7 @@ export default function App({
                     </p>
                     <p className="hint">
                       Beat them, or last it out unchallenged, and you'll learn where the next two stars
-                      land. Lose and they take <b>{cfg.reconSteal(onlineConfig)} 🪙</b> off you.
+                      land. Lose and they take <b>{cfg.reconSteal(onlineConfig)} <Coin /></b> off you.
                     </p>
                   </>
                 ) : (
@@ -5296,8 +5287,8 @@ export default function App({
                       The next team to check in walks straight into it — no warning, no way out.
                     </p>
                     <p className="hint">
-                      Win the scrap and you take <b>{cfg.ambushTake(onlineConfig)} 🪙</b>. Lose and it
-                      backfires for <b>{cfg.ambushBackfire(onlineConfig)} 🪙</b>. Nobody comes, nothing
+                      Win the scrap and you take <b>{cfg.ambushTake(onlineConfig)} <Coin /></b>. Lose and it
+                      backfires for <b>{cfg.ambushBackfire(onlineConfig)} <Coin /></b>. Nobody comes, nothing
                       happens.
                     </p>
                     <p className="hint" style={{ marginBottom: 4 }}>
@@ -5352,7 +5343,7 @@ export default function App({
                   (lightbox.vetoed ? (
                     <span className="cam-vetoed"> · 🚫 vetoed</span>
                   ) : (
-                    <span> · 🍻 {lightbox.drinks} · +{lightbox.coins} 🪙</span>
+                    <span> · 🍻 {lightbox.drinks} · +{lightbox.coins} <Coin /></span>
                   ))}
                 {lightbox.caption && <p>{lightbox.caption}</p>}
               </div>
@@ -5770,7 +5761,7 @@ export default function App({
                           disabled={play.coins < STAR_COST || !!claim}
                           onClick={() => buyRound(modal.id, modal.name)}
                         >
-                          Buy a round ({STAR_COST} 🪙)
+                          Buy a round ({STAR_COST} <Coin />)
                         </button>
                       </>
                     ) : null}
@@ -5779,85 +5770,6 @@ export default function App({
                         Close
                       </button>
                     )}
-                  </div>
-                </div>
-              </div>
-            );
-          })()}
-        {myCornerModal &&
-          (() => {
-            const myColor = membership ? teamColorOf(teams, membership.teamId) : '#2fa05a';
-            const fortified = reinforcedSet.has(myCornerModal.spotId);
-            const charges = myTeam?.reinforcements ?? 0;
-            return (
-              <div
-                style={{
-                  position: 'absolute',
-                  inset: 0,
-                  background: 'rgba(20,16,12,0.42)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  zIndex: 1000,
-                }}
-                onClick={() => !cornerBusy && setMyCornerModal(null)}
-              >
-                <div
-                  style={{
-                    width: 340,
-                    maxWidth: '90%',
-                    background: '#fdfaf2',
-                    border: '2px solid #3f3b36',
-                    borderRadius: 14,
-                    // A long trivia list used to run straight off the bottom of the screen with
-                    // no way to reach the answers. Cap the sheet and let it scroll.
-                    maxHeight: '86vh',
-                    overflow: 'auto',
-                    boxShadow: '0 14px 44px rgba(0,0,0,0.38)',
-                    animation: 'pop-in 0.24s cubic-bezier(0.2,0.85,0.35,1.2)',
-                  }}
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <div style={{ background: myColor, color: '#fff', padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <span style={{ fontSize: '1.9rem', lineHeight: 1 }}>{fortified ? '🧱' : '🏴'}</span>
-                    <div style={{ minWidth: 0 }}>
-                      <div style={{ fontWeight: 800, fontSize: '1.05rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {myCornerModal.name}
-                      </div>
-                      <div style={{ fontSize: '0.7rem', opacity: 0.92, textTransform: 'uppercase', letterSpacing: 1.5 }}>
-                        Your corner{fortified ? ' · reinforced' : ''}
-                      </div>
-                    </div>
-                  </div>
-                  <div style={{ padding: '16px 18px' }}>
-                    {fortified ? (
-                      <p className="hint" style={{ marginTop: 0 }}>
-                        🧱 Fortified — a thief here faces a 2-question gauntlet and forfeits{' '}
-                        {cfg.reinforceForfeit(onlineConfig)} 🪙 to you if they miss.
-                      </p>
-                    ) : (
-                      <>
-                        <p className="hint" style={{ marginTop: 0 }}>
-                          Your paint holds this corner in your run. Anyone can take it off you by
-                          answering a question here — keep an eye on it.
-                        </p>
-                      </>
-                    )}
-                    <button
-                      className="btn"
-                      style={{ width: '100%', marginTop: 8 }}
-                      onClick={() => {
-                        const spotId = myCornerModal.spotId;
-                        const sq = onlineBoard?.squares.find((s) => s.id === spotId);
-                        setMyCornerModal(null);
-                        if (sq) openArmOnCleared(spotId, sq);
-                      }}
-                    >
-                      🪤 Set a trap here
-                    </button>
-                    <button className="btn btn--ghost" style={{ width: '100%', marginTop: 6 }} onClick={() => setMyCornerModal(null)}>
-                      Close
-                    </button>
                   </div>
                 </div>
               </div>
@@ -5897,7 +5809,7 @@ export default function App({
                   onClick={(e) => e.stopPropagation()}
                 >
                   <div style={{ background: defColor, color: '#fff', padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <span style={{ fontSize: '1.9rem', lineHeight: 1 }}>🏴</span>
+                    <span style={{ fontSize: '1.9rem', lineHeight: 1 }}></span>
                     <div style={{ minWidth: 0 }}>
                       <div style={{ fontWeight: 800, fontSize: '1.05rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {stealModal.name}
@@ -5911,11 +5823,11 @@ export default function App({
                     {stealResult === 'won' ? (
                       <>
                         <p className="chance-card-text" style={{ fontSize: '1.15rem', fontWeight: 800, textAlign: 'center', margin: '8px 0 14px' }}>
-                          🏴 Corner stolen! It's painted your color — {defName}'s run just took the hit.
+                          Corner stolen! It's painted your color — {defName}'s run just took the hit.
                         </p>
                         {stealTook > 0 && (
                           <p className="chance-card-text" style={{ fontSize: '1.35rem', fontWeight: 900, textAlign: 'center', margin: '0 0 14px', color: '#b45309' }}>
-                            +{stealTook} 🪙 off {defName}
+                            +{stealTook} <Coin /> off {defName}
                           </p>
                         )}
                         <button className="btn btn--go" style={{ width: '100%' }} onClick={() => setStealModal(null)}>
@@ -5925,12 +5837,12 @@ export default function App({
                     ) : stealResult === 'lost' ? (
                       <>
                         <p className="chance-card-text" style={{ fontSize: '1.15rem', fontWeight: 800, textAlign: 'center', margin: '8px 0 14px' }}>
-                          🛡 Blew it! {defName} holds the corner — you can't hit them again for{' '}
+                          Blew it! {defName} holds the corner — you can't hit them again for{' '}
                           {Math.ceil(cfg.stealLockSec(onlineConfig) / 60)} min
                           {stealForfeited > 0 && (
                             <>
                               {' '}
-                              — and the 🧱 wall cost you <b>{stealForfeited} 🪙</b>, paid to {defName}
+                              — and the wall cost you <b>{stealForfeited} <Coin /></b>, paid to {defName}
                             </>
                           )}
                           .
@@ -5942,7 +5854,7 @@ export default function App({
                     ) : stealResult === 'gone' ? (
                       <>
                         <p className="chance-card-text" style={{ fontWeight: 800, textAlign: 'center', margin: '8px 0 14px' }}>
-                          🤔 This corner just changed hands — someone beat you to it.
+                          This corner just changed hands — someone beat you to it.
                         </p>
                         <button className="btn" style={{ width: '100%' }} onClick={() => setStealModal(null)}>
                           Close
@@ -5958,7 +5870,7 @@ export default function App({
                         </p>
                         {stealModal.defenderNear && (
                           <p className="hint" style={{ background: '#3b1d1d', color: '#fecaca', borderRadius: 8, padding: '7px 10px' }}>
-                            ⚔️ <b>{defName} is right there</b> — home-turf defense makes this play harder.
+                            <b>{defName} is right there</b> — home-turf defense makes this play harder.
                           </p>
                         )}
                         {stealModal.questions.map((sq2, qi) => (
@@ -6013,9 +5925,9 @@ export default function App({
                 ? { emoji: '🍺', label: 'Star hub', color: '#f97316', blurb: `Buy a round here (${onlineConfig.starCost} 🪙) to claim a ⭐ for your team.` }
                 : type === 'poi'
                   ? sq.poi?.encounter === 'h2h'
-                    ? { emoji: '⚔️', label: 'Head-to-head', color: '#e0533a', blurb: 'Challenge another team to a showdown here.' }
+                    ? { emoji: '', label: 'Head-to-head', color: '#e0533a', blurb: 'Challenge another team to a showdown here.' }
                     : sq.poi?.encounter === 'challenge'
-                      ? { emoji: '🎯', label: 'Challenge site', color: '#2f7fe0', blurb: 'A specific task to take on at this spot.' }
+                      ? { emoji: '', label: 'Challenge site', color: '#2f7fe0', blurb: 'A specific task to take on at this spot.' }
                       : sq.poi?.encounter === 'boss'
                         ? { emoji: '🔥', label: 'Boss', color: '#dc2626', blurb: 'A set-piece showdown.' }
                         : { emoji: '📍', label: 'Point of interest', color: '#e05fa0', blurb: 'A neighborhood landmark.' }
@@ -6050,12 +5962,12 @@ export default function App({
             const actionLabel =
               type === 'bar'
                 ? claim && claim.status === 'claiming' && !claimMine
-                  ? "⚔️ I'm here — contest it"
+                  ? "I'm here — contest it"
                   : "🍺 I'm here — open the bar"
                 : owner && !ownerMine
-                  ? "⚔️ I'm here — make the steal"
+                  ? "I'm here — make the steal"
                   : owner && ownerMine
-                    ? "🧱 I'm here — corner options"
+                    ? "I'm here — corner options"
                     : type === 'chance'
                       ? "🎲 I'm here — draw a card"
                       : type === 'challenge'
@@ -6123,12 +6035,12 @@ export default function App({
                     {sq.poi && (sq.poi.encounter === 'h2h' || sq.poi.encounter === 'challenge' || sq.poi.encounter === 'boss') && (
                       sq.poi.task ? (
                         <p className="hint">
-                          🎯 <b>The play here:</b> {sq.poi.task}
+                          <b>The play here:</b> {sq.poi.task}
                           {sq.poi.reward ? ` (+${sq.poi.reward} 🪙)` : ''}
                         </p>
                       ) : (
                         <p className="hint">
-                          🕶️ <b>The game here is a secret</b> — the referee reveals it when you show up.
+                          <b>The game here is a secret</b> — the referee reveals it when you show up.
                           {sq.poi.reward ? ` (+${sq.poi.reward} 🪙)` : ''}
                         </p>
                       )
@@ -6148,16 +6060,14 @@ export default function App({
                         <span>
                           Held by <b>{ownerTeam.name}</b>
                           {ownerMine ? ' — that’s you!' : ''}
-                          {reinforced ? ' · 🧱 reinforced' : ''}
                         </span>
                       </p>
                     )}
+                    {/* A star that has been won is simply not here any more —
+                        'locked' described the database row, not anything a
+                        player standing outside a bar could act on. */}
                     {claim &&
-                      (claim.status === 'locked' ? (
-                        <p className="hint">
-                          ⭐ Star claimed by <b>{claimTeam?.name ?? 'another team'}</b> — locked in.
-                        </p>
-                      ) : (
+                      (claim.status === 'locked' ? null : (
                         <p className="hint">
                           ⭐ <b>{claimTeam?.name ?? 'A team'}</b> is buying a star — that ring is their meter, <b>{claimSecs}s</b> left.
                           {claimMine ? ' Hold on!' : ' Get there and contest it before it locks!'}
@@ -6170,7 +6080,7 @@ export default function App({
                           ⭐ <b>A star is sitting here, unclaimed</b> — first team to buy a round starts claiming it!
                         </p>
                       ) : (
-                        <p className="hint">😴 No star here right now — stars land at bars as the game goes on.</p>
+                        <p className="hint">No star here right now — stars land at bars as the game goes on.</p>
                       ))}
                     {cleared && !owner && <p className="hint">✅ Already cleared this game.</p>}
                     {sheetGps?.checking && <p className="hint">📡 Checking your location…</p>}
@@ -6241,10 +6151,10 @@ export default function App({
                       return (
                         <div className="camp-call">
                           <b>
-                            🔭 {holder?.emoji} {holder?.name} is holding this spot
+                            {holder?.emoji} {holder?.name} is holding this spot
                           </b>
                           <span className="hint">
-                            Challenge them and the winner takes {cfg.reconSteal(onlineConfig)} 🪙
+                            Challenge them and the winner takes {cfg.reconSteal(onlineConfig)} <Coin />
                           </span>
                           <button
                             className="btn btn--danger"
@@ -6262,7 +6172,7 @@ export default function App({
                               }).then(() => setSpotSheet(null))
                             }
                           >
-                            ⚔️ Challenge the watch
+                            Challenge the watch
                           </button>
                         </div>
                       );
@@ -6275,10 +6185,10 @@ export default function App({
                         return (
                           <div className="camp-call">
                             <b>
-                              🏕️ {camper?.emoji} {camper?.name} is camped here
+                              {camper?.emoji} {camper?.name} is camped here
                             </b>
                             <span className="hint">
-                              🪙{here.banked} banked · challenge them for {stake}
+                              <Coin />{here.banked} banked · challenge them for {stake}
                             </span>
                             <button
                               className="btn btn--danger"
@@ -6286,12 +6196,12 @@ export default function App({
                               disabled={campBusy || stake <= 0}
                               onClick={() => void doRaidCamp(here, sq.title || 'this spot')}
                             >
-                              ⚔️ Challenge for {stake} 🪙
+                              Challenge for {stake} <Coin />
                             </button>
                           </div>
                         );
                       }
-                      if (here) return <p className="hint">🏕️ Your camp is here — 🪙{here.banked} banked.</p>;
+                      if (here) return <p className="hint">Your camp is here — 🪙{here.banked} banked.</p>;
                       if (myCamp) return null; // one camp at a time
                       return (
                         <button
@@ -6300,7 +6210,7 @@ export default function App({
                           disabled={campBusy}
                           onClick={() => void doStartCamp(spotId, sq.title || 'this spot')}
                         >
-                          🏕️ Camp here
+                          Camp here
                         </button>
                       );
                     })()}
@@ -6370,18 +6280,20 @@ export default function App({
                           disabled={(myTeam?.coins ?? 0) < onlineConfig.starCost}
                           onClick={doBuyRound}
                         >
-                          Buy a round ({onlineConfig.starCost} 🪙)
+                          Buy a round ({onlineConfig.starCost} <Coin />)
                         </button>
                       </>
                       ) : (
                         <p className="hint" style={{ marginTop: 0 }}>
-                          😴 No star here right now. Stars land at bars as the game goes on — watch the feed for{' '}
+                          No star here right now. Stars land at bars as the game goes on — watch the feed for{' '}
                           <b>"a star just landed"</b> and get there first.
                         </p>
                       )
                     ) : claim.status === 'locked' ? (
+                      /* Won and gone. Same as a bar that never had one. */
                       <p className="hint" style={{ marginTop: 0 }}>
-                        ⭐ Claimed by <b>{claimTeam?.name ?? 'another team'}</b> — this star is locked.
+                        No star here right now. Stars land at bars as the game goes on — watch the feed and get
+                        there first.
                       </p>
                     ) : mine ? (
                       <p className="hint" style={{ marginTop: 0 }}>
@@ -6393,7 +6305,7 @@ export default function App({
                           <b>{claimTeam?.name ?? 'A rival'}</b> is claiming it ({secsLeft}s left). Contest to steal it.
                         </p>
                         <button className="btn btn--go" style={{ width: '100%' }} onClick={openBattle}>
-                          ⚔️ Contest
+                          Contest
                         </button>
                       </>
                     )}
@@ -6574,9 +6486,9 @@ export default function App({
                       </>
                     ) : chanceOutcome === 'rob' ? (
                       <>
-                        <p className="chance-card-text" style={{ fontWeight: 800, marginTop: 0 }}>{chanceCardText || '🦹 A robbery!'}</p>
+                        <p className="chance-card-text" style={{ fontWeight: 800, marginTop: 0 }}>{chanceCardText || 'A robbery!'}</p>
                         <p className="hint" style={{ marginTop: 4 }}>
-                          Pick a team to steal {robAmt} 🪙 from:
+                          Pick a team to steal {robAmt} <Coin /> from:
                         </p>
                         {others.map((t) => (
                           <button
@@ -6589,13 +6501,13 @@ export default function App({
                             <span>
                               {t.emoji} {t.name}
                             </span>
-                            <span>🪙 {t.coins}</span>
+                            <span><Coin /> {t.coins}</span>
                           </button>
                         ))}
                       </>
                     ) : (
                       <>
-                        <p className="hint" style={{ marginTop: 0 }}>Draw from the deck — coins, a robbery, a 🧱 reinforcement, or a bust.</p>
+                        <p className="hint" style={{ marginTop: 0 }}>Draw from the deck — coins, a robbery, a reinforcement, or a bust.</p>
                         <button
                           className="btn btn--go"
                           style={{ width: '100%', fontSize: '1.05rem' }}
@@ -6747,7 +6659,7 @@ export default function App({
                   onClick={(e) => e.stopPropagation()}
                 >
                   <div style={{ background: '#7c3aed', color: '#fff', padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <span style={{ fontSize: '1.9rem', lineHeight: 1 }}>🪤</span>
+                    <span style={{ fontSize: '1.9rem', lineHeight: 1 }}></span>
                     <div style={{ minWidth: 0 }}>
                       <div style={{ fontWeight: 800, fontSize: '1.05rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {ambushArmModal.name}
@@ -6762,12 +6674,12 @@ export default function App({
                           ⏳ Waiting for <b>{teams.find((t) => t.id === trap.ally)?.name ?? 'your ally'}</b> to accept…
                         </p>
                         <button className="btn" style={{ width: '100%' }} onClick={() => void doCancelAmbush(trap)}>
-                          Cancel & refund {stake} 🪙
+                          Cancel & refund {stake} <Coin />
                         </button>
                       </>
                     ) : mineArmed ? (
                       <p className="hint" style={{ marginTop: 0 }}>
-                        🤫 Your trap is armed here. First rival team to land on it triggers the showdown.
+                        Your trap is armed here. First rival team to land on it triggers the showdown.
                       </p>
                     ) : trap ? (
                       <p className="hint" style={{ marginTop: 0 }}>Someone is already plotting at this spot…</p>
@@ -6776,8 +6688,8 @@ export default function App({
                     ) : (
                       <>
                         <p className="hint" style={{ marginTop: 0 }}>
-                          Team up to trap this spot: you and an ally each stake {stake} 🪙. A rival landing here triggers a 2-v-1
-                          showdown — win and you each steal {reward} 🪙 from them; lose and they take the whole pot.
+                          Team up to trap this spot: you and an ally each stake {stake} <Coin />. A rival landing here triggers a 2-v-1
+                          showdown — win and you each steal {reward} <Coin /> from them; lose and they take the whole pot.
                         </p>
                         <select
                           value={armAllyId}
@@ -6797,7 +6709,7 @@ export default function App({
                           disabled={!armAllyId || (myTeam?.coins ?? 0) < stake}
                           onClick={() => void doProposeAmbush()}
                         >
-                          {(myTeam?.coins ?? 0) < stake ? `Need ${stake} 🪙` : `🪤 Propose ambush (stake ${stake} 🪙)`}
+                          {(myTeam?.coins ?? 0) < stake ? `Need ${stake} 🪙` : `Propose ambush (stake ${stake} 🪙)`}
                         </button>
                       </>
                     )}
@@ -6821,11 +6733,11 @@ export default function App({
                 <div
                   style={{ width: 340, maxWidth: '90%', background: '#fdfaf2', border: '2px solid #3f3b36', borderRadius: 14, maxHeight: '86vh', overflow: 'auto', boxShadow: '0 14px 44px rgba(0,0,0,0.38)', animation: 'pop-in 0.24s cubic-bezier(0.2,0.85,0.35,1.2)' }}
                 >
-                  <div style={{ background: '#7c3aed', color: '#fff', padding: '14px 18px', fontWeight: 800 }}>🪤 Ambush proposal</div>
+                  <div style={{ background: '#7c3aed', color: '#fff', padding: '14px 18px', fontWeight: 800 }}>Ambush proposal</div>
                   <div style={{ padding: '16px 18px' }}>
                     <p className="hint" style={{ marginTop: 0 }}>
                       <b>{from?.name ?? 'A team'}</b> wants to set a trap with you at <b>{spotName}</b>. Accepting stakes{' '}
-                      {stake} 🪙 of your coins into the pot.
+                      {stake} <Coin /> of your coins into the pot.
                     </p>
                     <div className="row">
                       <button
@@ -6851,7 +6763,7 @@ export default function App({
             <div
               style={{ width: 340, maxWidth: '90%', background: '#fdfaf2', border: '2px solid #3f3b36', borderRadius: 14, maxHeight: '86vh', overflow: 'auto', boxShadow: '0 14px 44px rgba(0,0,0,0.45)', animation: 'pop-in 0.24s cubic-bezier(0.2,0.85,0.35,1.2)' }}
             >
-              <div style={{ background: '#b91c1c', color: '#fff', padding: '14px 18px', fontWeight: 800, fontSize: '1.15rem' }}>🪤 AMBUSHED!</div>
+              <div style={{ background: '#b91c1c', color: '#fff', padding: '14px 18px', fontWeight: 800, fontSize: '1.15rem' }}>AMBUSHED!</div>
               <div style={{ padding: '16px 18px' }}>
                 <p className="hint" style={{ marginTop: 0 }}>
                   Two teams set a trap at <b>{ambushedName}</b> — and you walked right into it. They're on their way for a
@@ -6871,7 +6783,7 @@ export default function App({
               style={{ width: 340, maxWidth: '90%', background: '#fdfaf2', border: '2px solid #3f3b36', borderRadius: 14, maxHeight: '86vh', overflow: 'auto', boxShadow: '0 14px 44px rgba(0,0,0,0.38)', animation: 'pop-in 0.24s cubic-bezier(0.2,0.85,0.35,1.2)' }}
               onClick={(e) => e.stopPropagation()}
             >
-              <div style={{ background: '#7c3aed', color: '#fff', padding: '14px 18px', fontWeight: 800 }}>🪤 Showdown</div>
+              <div style={{ background: '#7c3aed', color: '#fff', padding: '14px 18px', fontWeight: 800 }}>Showdown</div>
               <div style={{ padding: '16px 18px' }}>
                 <p className="hint" style={{ marginTop: 0 }}>
                   <b>{teams.find((t) => t.id === myShowdown.initiator)?.name ?? '?'}</b> &{' '}
@@ -6882,10 +6794,10 @@ export default function App({
                 </p>
                 <div className="row">
                   <button className="btn btn--go" style={{ flex: 1 }} onClick={() => void doResolveAmbush(true)}>
-                    🪤 Ambushers won
+                    Ambushers won
                   </button>
                   <button className="btn" style={{ flex: 1 }} onClick={() => void doResolveAmbush(false)}>
-                    🛡 Defender won
+                    Defender won
                   </button>
                 </div>
                 <button className="btn btn--ghost" style={{ width: '100%', marginTop: 8 }} onClick={() => setShowdownOpen(false)}>
@@ -6926,7 +6838,7 @@ export default function App({
               onClick={(e) => e.stopPropagation()}
             >
               <div style={{ background: '#b23b3b', color: '#fff', padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 12 }}>
-                <span style={{ fontSize: '1.9rem', lineHeight: 1 }}>⚔️</span>
+                <span style={{ fontSize: '1.9rem', lineHeight: 1 }}></span>
                 <div style={{ minWidth: 0 }}>
                   <div style={{ fontWeight: 800, fontSize: '1.05rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     Battle vs {battleModal.defenderName}
@@ -6998,7 +6910,7 @@ export default function App({
                         {t.emoji} {t.name}
                         {t.id === membership?.teamId ? ' (you)' : ''}
                       </span>
-                      <span>⭐ {t.stars} · 🪙 {t.coins}</span>
+                      <span>⭐ {t.stars} · <Coin /> {t.coins}</span>
                     </div>
                   ))}
                 {/* The album is the keepsake — and the end of the game is when
@@ -7052,7 +6964,7 @@ export default function App({
                             {t.id === membership.teamId && <em className="hud-you">you</em>}
                           </span>
                           <span className="hud-stats">
-                            ⭐{t.stars} 🪙{t.coins} 🔗{allRuns[t.id] ?? 0}
+                            ⭐{t.stars} <Coin />{t.coins} 🔗{allRuns[t.id] ?? 0}
                           </span>
                         </>
                       );
@@ -7063,7 +6975,7 @@ export default function App({
                 <button className="hud-row hud-row--feed" onClick={() => setFeedOpen(true)}>
                   <span className="hud-feed">
                     {feed.length
-                      ? feed[Math.min(tickIdx, feed.length - 1)]?.payload?.text ?? '…'
+                      ? coinify(feed[Math.min(tickIdx, feed.length - 1)]?.payload?.text ?? '…')
                       : 'Nothing worth reporting yet.'}
                   </span>
                   <span className="hud-more">▾</span>
@@ -7071,7 +6983,7 @@ export default function App({
               </div>
               {myQuest && myQuest.kind === 'explorer' && (
                 <button className="quest-photo-btn" onClick={() => setQuestPhoto(true)}>
-                  🧭 Show me the photo again
+                  Show me the photo again
                 </button>
               )}
               {myQuest && (
@@ -7080,15 +6992,15 @@ export default function App({
                   <span className="quest-row__what">
                     {myQuest.kind === 'tag' ? (
                       <>
-                        🎯 Hunting <b>{questMark?.emoji} {questMark?.name ?? 'someone'}</b>
+                        Hunting <b>{questMark?.emoji} {questMark?.name ?? 'someone'}</b>
                       </>
                     ) : myQuest.kind === 'explorer' ? (
-                      <>🧭 Find the place in the photo</>
+                      <>Find the place in the photo</>
                     ) : myQuest.kind === 'recon' ? (
 
-                      <>🔭 Holding <b>{questSpotName}</b> — stay put</>
+                      <>Holding <b>{questSpotName}</b> — stay put</>
                     ) : (
-                      <>🪤 Trap armed at <b>{questSpotName}</b></>
+                      <>Trap armed at <b>{questSpotName}</b></>
                     )}
                   </span>
                   <span className="quest-row__clock">
@@ -7099,7 +7011,7 @@ export default function App({
               {myCamp && (
                 <div className={`camp-row${campDue === 0 ? ' is-due' : ''}`}>
                   <span className="camp-row__what">
-                    🏕️ <b>🪙{myCamp.banked}</b> banked
+                    <b><Coin />{myCamp.banked}</b> banked
                     {campFull && <em className="camp-row__full">FULL</em>}
                     {campLapsed && !campFull && <em className="camp-row__lapsed">streak lost</em>}
                   </span>
@@ -7124,7 +7036,7 @@ export default function App({
                   {onlineStatus !== 'live' && <span className="player-bar__paused">⏸ {onlineStatus}</span>}
                 </div>
                 <div className="player-bar__stats">
-                  <span>🪙 {myTeam?.coins ?? 0}</span>
+                  <span><Coin /> {myTeam?.coins ?? 0}</span>
                   <span>⭐ {myTeam?.stars ?? 0}</span>
                   <span>
                     🔗 {myRun}
@@ -7134,7 +7046,6 @@ export default function App({
                       </em>
                     )}
                   </span>
-                  {(myTeam?.reinforcements ?? 0) > 0 && <span>🧱 {myTeam?.reinforcements}</span>}
                 </div>
               </div>
               <div className="player-bar__acts">

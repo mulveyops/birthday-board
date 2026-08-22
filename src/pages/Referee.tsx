@@ -264,7 +264,7 @@ export default function Referee() {
       await logEvent(
         sess.gameId,
         'battle',
-        `🧑‍⚖️ Referee call: ${teamName(winner)} takes the ${d.prompt}${wasPaid ? ` — ${d.stake} 🪙 moved` : ''}`,
+        `Referee call: ${teamName(winner)} takes the ${d.prompt}${wasPaid ? ` — ${d.stake} 🪙 moved` : ''}`,
       );
       setDone(`Called for ${teamName(winner)}.`);
     } catch (e) {
@@ -425,7 +425,7 @@ export default function Referee() {
       <div className="site">
         <div className="site-card">
           <div className="site-hero">
-            <h1>🧑‍⚖️ Referee</h1>
+            <h1>Referee</h1>
             <p className="site-date">Run the game from here.</p>
           </div>
           <div className="join-form">
@@ -470,7 +470,7 @@ export default function Referee() {
     <div className="site">
       <div className="site-card ref-card">
         <div className="site-hero">
-          <h1>🧑‍⚖️ Referee</h1>
+          <h1>Referee</h1>
           <p className="site-date">
             Game {sess.code} ·{' '}
             <button
@@ -492,7 +492,7 @@ export default function Referee() {
         {/* ---- duels ------------------------------------------------------ */}
         <section className="ref-block">
           <h2 className="ref-h">
-            ⚔️ Duels {openDuels.length > 0 && <em className="ref-count">{openDuels.length} live</em>}
+            Duels {openDuels.length > 0 && <em className="ref-count">{openDuels.length} live</em>}
           </h2>
           {openDuels.length === 0 && recentDuels.length === 0 && (
             <p className="hint">Nothing running. They appear here the moment one starts.</p>

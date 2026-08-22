@@ -1283,9 +1283,8 @@ function boardSpots(board: Board) {
     deg.set(e.from, (deg.get(e.from) ?? 0) + 1);
     deg.set(e.to, (deg.get(e.to) ?? 0) + 1);
   }
-  // Same rule as deriveSpots/intersections: corners are spaces, so bonus
-  // drops can land on them too.
-  return board.squares.filter((s) => (deg.get(s.id) ?? 0) >= 2 || s.type !== 'blank');
+  // Same rule as deriveSpots/intersections: crossings only.
+  return board.squares.filter((s) => (deg.get(s.id) ?? 0) >= 3 || s.type !== 'blank');
 }
 
 /**

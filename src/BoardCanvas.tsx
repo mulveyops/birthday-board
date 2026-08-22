@@ -1426,9 +1426,9 @@ export default function BoardCanvas({
       deg.set(e.from, (deg.get(e.from) ?? 0) + 1);
       deg.set(e.to, (deg.get(e.to) ?? 0) + 1);
     }
-    // Corners count, same rule as deriveSpots in App: a bend where two
-    // streets meet is a place you can stand, so it gets a space.
-    return board.squares.filter((sq) => (deg.get(sq.id) ?? 0) >= 2 || sq.type !== 'blank');
+    // Crossings only, same rule as deriveSpots in App: three or more street
+    // ends meeting. Two is a bend partway down a street, not a junction.
+    return board.squares.filter((sq) => (deg.get(sq.id) ?? 0) >= 3 || sq.type !== 'blank');
   }, [board.edges, board.squares]);
 
   const X = (p: LatLng | [number, number]) => {

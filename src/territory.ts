@@ -20,8 +20,8 @@ function spotIds(board: Board): Set<string> {
   }
   const out = new Set<string>();
   for (const s of board.squares) {
-    // Matches deriveSpots: corners are spaces, so corners are claimable.
-    if ((deg.get(s.id) ?? 0) >= 2 || s.type !== 'blank') out.add(s.id);
+    // Matches deriveSpots: crossings are spaces, so crossings are claimable.
+    if ((deg.get(s.id) ?? 0) >= 3 || s.type !== 'blank') out.add(s.id);
   }
   return out;
 }

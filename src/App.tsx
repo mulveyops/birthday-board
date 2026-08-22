@@ -5776,7 +5776,10 @@ export default function App({
                   {(myTeam?.reinforcements ?? 0) > 0 && <span>🧱 {myTeam?.reinforcements}</span>}
                 </div>
               </div>
-              <button className="player-bar__btn" onClick={() => (msgOpen ? setMsgOpen(false) : openMsgPanel())}>
+              <button className="player-bar__btn player-bar__btn--icon" onClick={() => (camOpen ? closeCam() : openCam('gallery'))}>
+                📸{photos.length > 0 && <span className="cam-count">{photos.length}</span>}
+              </button>
+              <button className="player-bar__btn player-bar__btn--icon" onClick={() => (msgOpen ? setMsgOpen(false) : openMsgPanel())}>
                 💬{msgUnread > 0 && <span className="msg-badge">{msgUnread}</span>}
               </button>
               <button className="player-bar__btn player-bar__btn--menu" onClick={() => setPanelOpen((o) => !o)}>

@@ -1808,6 +1808,11 @@ body {
   font-weight: 800;
   cursor: pointer;
 }
+.player-bar__btn--icon {
+  /* Emoji-only buttons: trim the horizontal padding so three controls plus the
+     team readout still fit across a 375px phone. */
+  padding: 13px 12px;
+}
 .player-bar__btn--menu {
   background: #f59e0b;
   border-color: #b45309;
@@ -1815,6 +1820,7 @@ body {
 }
 /* The bar replaces the floating buttons in the player view… */
 .app--player .panel-toggle,
+.app--player .cam-fab,
 .app--player .msg-fab {
   display: none;
 }

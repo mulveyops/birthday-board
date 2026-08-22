@@ -2007,9 +2007,8 @@ export default function BoardCanvas({
               is the contact shadow, which is what sells it as an object
               standing on the board rather than printed into it.
               Sized in METRES, so markers scale with the map. */}
-          {board.paintedBoard &&
-            board.squares
-              .filter((sq) => sq.type === 'bar' || sq.type === 'poi')
+          {board.squares
+              .filter((sq) => (sq.type === 'bar' || sq.type === 'poi') && (board.paintedBoard || artKeyFor(sq)))
               .filter((sq) => inCull(X(sq), Y(sq), 200))
               .sort((a, b) => Y(a) - Y(b)) // nearer markers overlap farther ones
               .map((sq) => {
@@ -2235,7 +2234,13 @@ export default function BoardCanvas({
                       painted blocks — that building IS the bar, so no generic
                       tavern gets stamped on top of it. The live layer still
                       adds the dynamic star/claim state either way. */}
-                  {!board.artUnderlay && !board.paintedBoard && (
+                  {/* The generic/bespoke tavern sprite is the fallback for a
+                      bar with no art of its own. It draws its OWN name in neon,
+                      so leaving it under a painted marker labels the building
+                      twice — and it renders wherever a board lacks the painted
+                      flag, which is how a local copy ended up covered in names.
+                      If the bar has marker art, this stands down everywhere. */}
+                  {!board.artUnderlay && !board.paintedBoard && !artKeyFor(sq) && (
                     <g opacity={dim ? 0.5 : 1}>
                       <B x={cx} y={cy} s={2} />
                     </g>

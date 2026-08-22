@@ -143,17 +143,43 @@ function hash01(s: string): number {
   return ((h >>> 0) % 100000) / 100000;
 }
 
-/** Sayable out loud, awkward to spell, mostly local. */
+/**
+ * Words everyone knows and nobody can spell. Long-ish and commonly fumbled
+ * rather than obscure — the fun is watching someone confident get to the third
+ * syllable of "maintenance", not stumping them with a word they've never heard.
+ * Place names are out for that reason: Kosciuszko isn't a spelling test, it's a
+ * trick question.
+ */
 const SPELLING_WORDS = [
-  'kielbasa', 'bratwurst', 'Milwaukee', 'Kosciuszko', 'Pulaski', 'Wisconsin',
-  'Menomonee', 'Oconomowoc', 'Kinnickinnic', 'Wauwatosa', 'Sheboygan', 'Manitowoc',
-  'Waukesha', 'sauerkraut', 'pilsner', 'hefeweizen', 'Riverwest', 'Glorioso',
-  'cheddar', 'custard', 'accordion', 'polka', 'anniversary', 'restaurant',
-  'definitely', 'necessary', 'rhythm', 'liaison', 'bureaucracy', 'conscience',
-  'maintenance', 'occurrence', 'embarrassed', 'connoisseur', 'silhouette',
+  'accommodate', 'acknowledge', 'acquaintance', 'aggressive', 'anniversary',
+  'apparently', 'appropriate', 'argument', 'atmosphere', 'awkward',
+  'beginning', 'believable', 'broccoli', 'bureaucracy', 'calendar',
+  'camouflage', 'cemetery', 'colleague', 'commitment', 'committee',
+  'comparison', 'conscience', 'conscious', 'consensus', 'convenience',
+  'correspondence', 'definitely', 'dependent', 'desperate', 'deterrent',
+  'discipline', 'embarrassed', 'environment', 'equipment', 'exaggerate',
+  'excellent', 'existence', 'experience', 'familiar', 'fascinate',
+  'February', 'fluorescent', 'foreign', 'fulfillment', 'generally',
+  'gorgeous', 'grateful', 'guarantee', 'guidance', 'harassment',
+  'hierarchy', 'humorous', 'hypocrisy', 'immediately', 'independent',
+  'indispensable', 'intelligence', 'interrupt', 'irresistible', 'jewelry',
+  'judgment', 'knowledge', 'laboratory', 'leisure', 'liaison',
+  'library', 'license', 'lightning', 'maintenance', 'maneuver',
+  'marriage', 'mathematics', 'medieval', 'millennium', 'miniature',
+  'mischievous', 'misspell', 'necessary', 'neighbour', 'noticeable',
+  'occasion', 'occurrence', 'opportunity', 'parallel', 'particular',
+  'perseverance', 'personnel', 'persuade', 'playwright', 'possession',
+  'privilege', 'probably', 'professor', 'pronunciation', 'questionnaire',
+  'receipt', 'recommend', 'reference', 'relevant', 'religious',
+  'restaurant', 'rhythm', 'ridiculous', 'sacrifice', 'schedule',
+  'scissors', 'secretary', 'separate', 'sergeant', 'similar',
+  'sincerely', 'souvenir', 'specifically', 'strength', 'successful',
+  'sufficient', 'surprise', 'temperature', 'threshold', 'tomorrow',
+  'transferred', 'twelfth', 'unanimous', 'unfortunately', 'vacuum',
+  'vehicle', 'village', 'Wednesday', 'weird', 'wherever',
 ];
 
-const ROUNDS = 9; // first to three, with steals — plenty of room
+const ROUNDS = 14; // first to three, with steals on every miss — leave room
 
 /** What the reader reads out, in order. Empty for duels that need nothing. */
 export function duelMaterial(duelId: string, duelName: string): { label: string; items: string[] } | null {
@@ -169,14 +195,27 @@ export function duelMaterial(duelId: string, duelName: string): { label: string;
   }
 
   if (d.key === 'math') {
+    // Two digits by two digits, both factors small enough to hold in your head:
+    // 12 × 17 is a think, 94 × 7 is a slog, and long division is nobody's idea
+    // of a party. Nothing here needs a pen.
     const items: string[] = [];
     for (let i = 0; i < ROUNDS; i++) {
       const r1 = hash01(`${duelId}:a${i}`);
       const r2 = hash01(`${duelId}:b${i}`);
       const r3 = hash01(`${duelId}:c${i}`);
-      if (r3 < 0.45) items.push(`${12 + Math.floor(r1 * 88)} × ${3 + Math.floor(r2 * 7)}`);
-      else if (r3 < 0.75) items.push(`${24 + Math.floor(r1 * 76)} + ${17 + Math.floor(r2 * 60)}`);
-      else items.push(`${60 + Math.floor(r1 * 140)} − ${11 + Math.floor(r2 * 40)}`);
+      if (r3 < 0.7) {
+        const a = 11 + Math.floor(r1 * 9); // 11..19
+        const b = 12 + Math.floor(r2 * 17); // 12..28
+        items.push(`${a} × ${b}`);
+      } else if (r3 < 0.88) {
+        // an occasional square, which people either know instantly or don't
+        const a = 13 + Math.floor(r1 * 12); // 13..24
+        items.push(`${a} × ${a}`);
+      } else {
+        const a = 6 + Math.floor(r1 * 8); // 6..13
+        const b = 11 + Math.floor(r2 * 30); // 11..40
+        items.push(`${a} × ${b}`);
+      }
     }
     return { label: 'Read these out one at a time — players look away', items };
   }

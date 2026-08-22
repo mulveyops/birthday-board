@@ -936,6 +936,8 @@ export interface GameConfig {
   gpsRequired: boolean; // check-ins demand physical presence (HOST setting, not the player's)
   starIntervalSec: number; // a star lands at a bar this often (0 = admin drops only)
   drinkCoins: number; // coins per drink on a photo-verified drink check
+  chainMultiplier: number; // turf income = longest chain x this, per tick
+  stealBounty: number; // coins a successful turf steal takes off the loser
 }
 
 /** Config value with a fallback (older published games lack newer fields). */
@@ -953,6 +955,8 @@ export const cfg = {
   gpsRequired: (c: Partial<GameConfig> | undefined) => c?.gpsRequired ?? true,
   starIntervalSec: (c: Partial<GameConfig> | undefined) => c?.starIntervalSec ?? 1200,
   drinkCoins: (c: Partial<GameConfig> | undefined) => c?.drinkCoins ?? 5,
+  chainMultiplier: (c: Partial<GameConfig> | undefined) => c?.chainMultiplier ?? 2,
+  stealBounty: (c: Partial<GameConfig> | undefined) => c?.stealBounty ?? 10,
 };
 
 export const PARTY_CONFIG: GameConfig = {
@@ -976,6 +980,8 @@ export const PARTY_CONFIG: GameConfig = {
   gpsRequired: true,
   starIntervalSec: 1200,
   drinkCoins: 5,
+  chainMultiplier: 2,
+  stealBounty: 10,
 };
 export const TEST_CONFIG: GameConfig = {
   starCost: 40,
@@ -998,6 +1004,8 @@ export const TEST_CONFIG: GameConfig = {
   gpsRequired: false,
   starIntervalSec: 90,
   drinkCoins: 5,
+  chainMultiplier: 2,
+  stealBounty: 10,
 };
 
 export interface GameFull {

@@ -1657,7 +1657,9 @@ export default function App({
         for (const t of teams) {
           const n = runs[t.id] ?? 0;
           if (n > 0) {
-            await adjustCoins(t.id, n);
+            // A chain pays its LENGTH times the rate — holding six in a row is
+            // worth more than six scattered corners, which is the whole point.
+            await adjustCoins(t.id, n * cfg.chainMultiplier(onlineConfig));
             parts.push(`${t.emoji} +${n}`);
           }
         }
@@ -1910,10 +1912,14 @@ export default function App({
         const ok = await stealTerritory(membership.gameId, spotId, membership.teamId, defenderId);
         if (ok) {
           setStealResult('won');
+          // A flat bounty off the loser — zero-sum, so bouncing a corner back and
+          // forth can't farm the bank. The real damage is still the cut chain.
+          const bounty = cfg.stealBounty(onlineConfig);
+          if (bounty > 0) transferCoins(defenderId, membership.teamId, bounty).catch(() => {});
           const sq = onlineBoard?.squares.find((s) => s.id === spotId);
           if (sq) checkInSpot(membership.gameId, membership.teamId, spotId, sq.lat, sq.lng, 0).catch(() => {});
-          logEvent(membership.gameId, 'battle', `🏴 ${myTeam?.name ?? 'A team'} stole ${name} from ${defName}!`).catch(() => {});
-          sendMessage(membership.gameId, null, defenderId, `🏴 ${myTeam?.name ?? 'A team'} took your corner at ${name} — your run may be cut!`).catch(() => {});
+          logEvent(membership.gameId, 'battle', `🏴 ${myTeam?.name ?? 'A team'} stole ${name} from ${defName} — +${bounty} 🪙`).catch(() => {});
+          sendMessage(membership.gameId, null, defenderId, `🏴 ${myTeam?.name ?? 'A team'} took your corner at ${name} and ${bounty} 🪙 — your run may be cut!`).catch(() => {});
         } else {
           setStealResult('gone'); // ownership changed under us — map will refresh
         }
@@ -4057,6 +4063,8 @@ export default function App({
               {cfgField('🧱 fail forfeit (🪙)', 'reinforceForfeit')}
               {cfgField('Home-turf radius (m)', 'defendRadiusM')}
               {cfgField('Coins per drink (🍻)', 'drinkCoins')}
+              {cfgField('Chain pay multiplier', 'chainMultiplier')}
+              {cfgField('Steal bounty (🪙)', 'stealBounty')}
               {(hostStatus === 'live' || hostStatus === 'paused') && (
                 <button className="btn" onClick={doApplyConfig} disabled={netBusy}>
                   ⚙️ Apply settings now

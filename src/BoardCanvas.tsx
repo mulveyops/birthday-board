@@ -1892,91 +1892,52 @@ export default function BoardCanvas({
             );
           })}
           </g>
-          {/* LANDMARK MARKERS — a real place is already painted into the
-              board, so what goes on top has to read as a GAME PIECE rather
-              than more scenery: it stands up off the map, casts a shadow and
-              carries a name ribbon. Bespoke art when public/art/poi/<ref>.png
-              exists, an emoji badge until it does, so twelve landmarks can be
-              drawn one at a time without the board ever looking broken.
-              Sized in METRES, so markers scale with the map like everything
-              else and thin out naturally as you zoom away. */}
-          {board.paintedBoard && (
-            <g>
-              {board.squares
-                .filter((sq) => (sq.type === 'poi' || sq.type === 'bar') && sq.poi?.footM)
-                .filter((sq) => inCull(X(sq), Y(sq), 200))
-                .sort((a, b) => Y(a) - Y(b)) // nearer markers overlap farther ones
-                .map((sq) => {
-                  const p = sq.poi!;
-                  const m = p.markerM ?? 62;
-                  const x = X(sq);
-                  const y = Y(sq);
-                  const art = p.artRef && poiArtOk[p.artRef];
-                  const held = turf?.[sq.id];
-                  const label = 13;
-                  return (
-                    <g key={`lm${sq.id}`} pointerEvents="none">
-                      {/* contact shadow — the thing that sells "standing on it" */}
-                      <ellipse cx={x} cy={y + 2} rx={m * 0.34} ry={m * 0.12} fill="#2b2b3a" opacity={0.28} />
-                      {art ? (
-                        <image
-                          href={`/art/poi/${p.artRef}.png`}
-                          xlinkHref={`/art/poi/${p.artRef}.png`}
-                          x={x - m / 2}
-                          y={y - m * 0.92}
-                          width={m}
-                          height={m}
-                          preserveAspectRatio="xMidYMax meet"
-                        />
-                      ) : (
-                        <>
-                          <circle cx={x} cy={y - m * 0.42} r={m * 0.3} fill="#fffdf4" stroke="#2b2b3a" strokeWidth={m * 0.055} />
-                          <circle cx={x} cy={y - m * 0.42} r={m * 0.3} fill={held ? held.color : '#f5c542'} fillOpacity={0.35} />
-                          <text
-                            x={x}
-                            y={y - m * 0.42}
-                            fontSize={m * 0.34}
-                            textAnchor="middle"
-                            dominantBaseline="central"
-                          >
-                            {p.icon ?? '📍'}
-                          </text>
-                          <path
-                            d={`M ${x - m * 0.09} ${y - m * 0.16} L ${x + m * 0.09} ${y - m * 0.16} L ${x} ${y} Z`}
-                            fill="#fffdf4"
-                            stroke="#2b2b3a"
-                            strokeWidth={m * 0.045}
-                          />
-                        </>
-                      )}
-                      {/* name ribbon, drawn by the game so no asset has to spell */}
-                      <rect
-                        x={x - (sq.title.length * label * 0.31 + 8)}
-                        y={y + 3}
-                        width={sq.title.length * label * 0.62 + 16}
-                        height={label * 1.5}
-                        rx={label * 0.55}
-                        fill={held ? held.color : '#2b2b3a'}
-                        stroke="#fffdf4"
-                        strokeWidth={2}
+          {/* LANDMARK MARKERS — the artwork IS the marker. Each one is a
+              near-elevation building drawn to stand on a top-down map, signed
+              in its own paint, so a pin and a name ribbon on top of it were
+              labelling something that already says what it is. All that's left
+              is the contact shadow, which is what sells it as an object
+              standing on the board rather than printed into it.
+              Sized in METRES, so markers scale with the map. */}
+          {board.paintedBoard &&
+            board.squares
+              .filter((sq) => (sq.type === 'poi' || sq.type === 'bar') && sq.poi?.footM)
+              .filter((sq) => inCull(X(sq), Y(sq), 200))
+              .sort((a, b) => Y(a) - Y(b)) // nearer markers overlap farther ones
+              .map((sq) => {
+                const p = sq.poi!;
+                const m = p.markerM ?? 62;
+                const x = X(sq);
+                const y = Y(sq);
+                const art = p.artRef && poiArtOk[p.artRef];
+                return (
+                  <g key={`lm${sq.id}`} pointerEvents="none">
+                    <ellipse cx={x} cy={y + 2} rx={m * 0.34} ry={m * 0.12} fill="#2b2b3a" opacity={0.28} />
+                    {art ? (
+                      <image
+                        href={`/art/poi/${p.artRef}.png`}
+                        xlinkHref={`/art/poi/${p.artRef}.png`}
+                        x={x - m / 2}
+                        y={y - m * 0.92}
+                        width={m}
+                        height={m}
+                        preserveAspectRatio="xMidYMax meet"
                       />
-                      <text
-                        x={x}
-                        y={y + 3 + label * 0.78}
-                        fontSize={label}
-                        fontWeight={800}
-                        fontFamily="'Trebuchet MS', Verdana, sans-serif"
-                        textAnchor="middle"
-                        dominantBaseline="central"
+                    ) : (
+                      // Only ever seen if a file goes missing. A landmark with
+                      // no art and no marker would be an invisible place.
+                      <circle
+                        cx={x}
+                        cy={y - m * 0.2}
+                        r={m * 0.2}
                         fill="#fffdf4"
-                      >
-                        {sq.title}
-                      </text>
-                    </g>
-                  );
-                })}
-            </g>
-          )}
+                        stroke="#2b2b3a"
+                        strokeWidth={m * 0.05}
+                      />
+                    )}
+                  </g>
+                );
+              })}
       </>
     ) : null;
   const sceneFabric = useMemo(

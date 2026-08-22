@@ -1135,6 +1135,16 @@ export default function App({
   const [starClaimRows, setStarClaimRows] = useState<StarClaimRow[]>([]);
   const [starSpawnRows, setStarSpawnRows] = useState<StarSpawnRow[]>([]);
   const [events, setEvents] = useState<EventRow[]>([]);
+  /**
+   * Last call, read back out of the feed rather than stored anywhere. The
+   * referee's button logs one announcement and every phone already subscribes
+   * to that feed, so there's no column to add and no migration to run on the
+   * morning of the party — and it survives a refresh because the feed does.
+   */
+  const lastCallOpen = useMemo(
+    () => events.some((e) => /LAST CALL/i.test(e.payload?.text ?? '')),
+    [events],
+  );
   // Messaging: shared row store + composer state for whichever surface is active.
   const [messages, setMessages] = useState<MessageRow[]>([]);
   // --- Messaging: three layers, keyed by channel ---------------------------
@@ -5974,6 +5984,12 @@ export default function App({
             const claimSecs = claim?.status === 'claiming' ? Math.max(0, Math.ceil((Date.parse(claim.ends_at) - nowTs) / 1000)) : 0;
             const cleared = onlineCleared.includes(spotId);
             const live = onlineStatus === 'live';
+            // Nomad is on the map from the first minute on purpose — you can
+            // see where the night ends, you just can't go cash in there yet.
+            // Tapping it has to say so, or an visible-but-dead marker reads as
+            // a bug rather than as the finish line.
+            const isNomad = sq.poi?.artRef === 'nomad' || /nomad/i.test(sq.title ?? '');
+            const nomadLocked = isNomad && !lastCallOpen;
             const gated = cfg.gpsRequired(onlineConfig);
             const actionLabel =
               type === 'bar'
@@ -6040,6 +6056,11 @@ export default function App({
                   </div>
                   <div style={{ padding: '16px 18px' }}>
                     <p className="hint" style={{ marginTop: 0 }}>{sq.poi?.blurb || meta.blurb}</p>
+                    {nomadLocked && (
+                      <p className="hint" style={{ fontWeight: 700, color: '#b45309' }}>
+                        🔒 There's nothing here until last call.
+                      </p>
+                    )}
                     {sq.poi && (sq.poi.encounter === 'h2h' || sq.poi.encounter === 'challenge' || sq.poi.encounter === 'boss') && (
                       sq.poi.task ? (
                         <p className="hint">
@@ -6095,7 +6116,11 @@ export default function App({
                     {cleared && !owner && <p className="hint">✅ Already cleared this game.</p>}
                     {sheetGps?.checking && <p className="hint">📡 Checking your location…</p>}
                     {sheetGps?.msg && <p className="hint" style={{ color: '#b45309', fontWeight: 600 }}>☝️ {sheetGps.msg}</p>}
-                    {live ? (
+                    {nomadLocked ? (
+                      <button className="btn btn--go" style={{ width: '100%' }} disabled>
+                        🔒 There's nothing here until last call
+                      </button>
+                    ) : live ? (
                       <button className="btn btn--go" style={{ width: '100%' }} disabled={!!sheetGps?.checking} onClick={goHere}>
                         {actionLabel}
                       </button>
@@ -6104,7 +6129,7 @@ export default function App({
                         Game hasn't started yet
                       </button>
                     )}
-                    {gated && live && (
+                    {gated && live && !nomadLocked && (
                       <p className="hint" style={{ marginBottom: 0, fontSize: '0.72rem', opacity: 0.75 }}>
                         📍 Checks your GPS — you need to be within {onlineConfig.radiusM}m.
                       </p>
@@ -6115,7 +6140,7 @@ export default function App({
                     {/* Someone is holding this spot for a recon job. You can let
                         them have it, or take them on — beat them and you lift
                         coins, and they lose the intel they were waiting for. */}
-                    {live && (() => {
+                    {live && !nomadLocked && (() => {
                       const q = questHere(spotId);
                       if (!q || q.kind !== 'recon') return null;
                       const holder = teams.find((t) => t.id === q.team_id);
@@ -6148,7 +6173,7 @@ export default function App({
                         </div>
                       );
                     })()}
-                    {live && (type === 'bar' || type === 'poi') && (() => {
+                    {live && !nomadLocked && (type === 'bar' || type === 'poi') && (() => {
                       const here = campBySpot[spotId];
                       if (here && here.team_id !== membership.teamId) {
                         const camper = teams.find((t) => t.id === here.team_id);

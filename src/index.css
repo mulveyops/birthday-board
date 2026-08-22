@@ -2660,6 +2660,24 @@ body {
   opacity: 0.6;
   white-space: nowrap;
 }
+/* Where the fight is. A ref reading this may have to walk there, so it gets
+   its own line above the teams rather than trailing off the end of one. */
+.ref-duel__where {
+  margin-top: 4px;
+  font-size: 0.92rem;
+  color: #1f2937;
+}
+.ref-duel__where b {
+  font-weight: 800;
+}
+.ref-duel__where em {
+  font-style: normal;
+  font-size: 0.74rem;
+  opacity: 0.6;
+}
+.ref-duel.is-live .ref-duel__where {
+  color: #991b1b;
+}
 .ref-duel__acts,
 .ref-bars {
   display: grid;

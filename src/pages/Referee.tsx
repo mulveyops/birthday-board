@@ -157,6 +157,52 @@ export default function Referee() {
   const spotName = (id: string | null | undefined) =>
     board?.squares.find((s) => s.id === id)?.title || 'somewhere';
 
+  /**
+   * A place name a ref can actually walk to. Bars name themselves, but most of
+   * the board is squares titled "Space", and "the duel is at Space" tells
+   * nobody anything.
+   *
+   * So an unnamed square is described by the nearest bar. Not by street name:
+   * the board's street labels carry two anchor points each — enough to draw a
+   * label along, nowhere near enough to tell which corner you're on — whereas
+   * every bar is a real point at a real address, and a ref already knows where
+   * the bars are because that's where they've been standing all night.
+   */
+  function whereIs(spotId: string | null | undefined): string | null {
+    const sq = board?.squares.find((s) => s.id === spotId);
+    if (!sq) return null;
+    if (sq.title && sq.title.toLowerCase() !== 'space') return sq.title;
+    // Rough metres — flat-earth is fine across three city blocks.
+    const mLat = 111_320;
+    const mLng = 111_320 * Math.cos((sq.lat * Math.PI) / 180);
+    let best: { name: string; d: number } | null = null;
+    for (const b of bars) {
+      const d = Math.hypot((b.lng - sq.lng) * mLng, (b.lat - sq.lat) * mLat);
+      if (!best || d < best.d) best = { name: b.title || 'a bar', d };
+    }
+    if (!best) return sq.title || 'a space';
+    if (best.d < 60) return `outside ${best.name}`;
+    return `a space ${Math.round(best.d / 10) * 10}m from ${best.name}`;
+  }
+
+  /**
+   * Where a duel is being fought. A duel usually carries the square it was
+   * started on, but a challenge thrown from a quest may not have recorded one
+   * — so fall back to whichever of the two teams checked in most recently,
+   * which is the best guess anyone has and beats printing "somewhere".
+   */
+  function duelWhere(d: DuelRow): { place: string; guessed: boolean } {
+    const named = whereIs(d.spot_id);
+    if (named) return { place: named, guessed: false };
+    const last = [d.challenger, d.opponent]
+      .map((t) => positions.find((p) => p.team_id === t))
+      .filter((p): p is Position => !!p && !!p.spot_id)
+      .sort((a, b) => Date.parse(b.updated_at ?? '') - Date.parse(a.updated_at ?? ''))[0];
+    const guess = last ? whereIs(last.spot_id) : null;
+    if (guess) return { place: guess, guessed: true };
+    return { place: 'no location recorded', guessed: false };
+  }
+
   function starsWaiting(spotId: string): number {
     const landed = spawns.filter((s) => s.bar_spot_id === spotId).length;
     const taken = claims.filter((c) => c.bar_spot_id === spotId && c.status !== 'lost').length;
@@ -323,7 +369,10 @@ export default function Referee() {
     return [
       {
         key: 'nomad',
-        title: `${nomad?.title ?? 'Nomad'} award`,
+        // "Nomad", not "Nomad World Pub" — the joke is the word itself, a
+        // wanderer, for whoever covered the most ground. That it also happens
+        // to be where the ceremony is held is a bonus, not the name.
+        title: 'Nomad award',
         forWhat: 'most spaces claimed',
         winner: top(spaces)?.[0] ?? null,
         detail: top(spaces) ? `${top(spaces)![1]} spaces` : 'nobody has claimed anything',
@@ -445,9 +494,13 @@ export default function Referee() {
                 <b>{d.prompt}</b>
                 <span className="ref-duel__age">{ago(d.created_at, now)}</span>
               </div>
+              <div className="ref-duel__where">
+                📍 <b>{duelWhere(d).place}</b>
+                {duelWhere(d).guessed && <em> · last seen there</em>}
+              </div>
               <div className="hint">
                 {teamEmoji(d.challenger)} {teamName(d.challenger)} vs {teamEmoji(d.opponent)} {teamName(d.opponent)}
-                {d.stake > 0 ? ` · ${d.stake} 🪙` : ''} · {spotName(d.spot_id)}
+                {d.stake > 0 ? ` · ${d.stake} 🪙` : ''}
               </div>
               <div className="ref-duel__acts">
                 <button className="site-btn" disabled={busy} onClick={() => void overrule(d, d.challenger)}>
@@ -464,6 +517,10 @@ export default function Referee() {
               <div className="ref-duel__head">
                 <b>{d.prompt}</b>
                 <span className="ref-duel__age">{ago(d.resolved_at ?? d.created_at, now)}</span>
+              </div>
+              <div className="ref-duel__where">
+                📍 <b>{duelWhere(d).place}</b>
+                {duelWhere(d).guessed && <em> · last seen there</em>}
               </div>
               <div className="hint">
                 {d.status === 'cancelled'
@@ -529,7 +586,7 @@ export default function Referee() {
                       <span className="ref-where__team">
                         {teamEmoji(p.team_id)} {teamName(p.team_id)}
                       </span>
-                      <span className="ref-where__spot">{spotName(p.spot_id)}</span>
+                      <span className="ref-where__spot">{whereIs(p.spot_id) ?? 'somewhere'}</span>
                       <span className="ref-where__age">{ago(p.updated_at, now)}</span>
                     </div>
                   ))}

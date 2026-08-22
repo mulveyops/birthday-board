@@ -1470,9 +1470,28 @@ export default function BoardCanvas({
       deg.set(e.from, (deg.get(e.from) ?? 0) + 1);
       deg.set(e.to, (deg.get(e.to) ?? 0) + 1);
     }
-    // Crossings only, same rule as deriveSpots in App: three or more street
-    // ends meeting. Two is a bend partway down a street, not a junction.
+    // In PLAY, crossings only — same rule as deriveSpots in App: three or more
+    // street ends meeting, since a bend partway down a street isn't a junction.
+    //
+    // In the DESIGNER, everything shows. A square you just placed has no streets
+    // attached yet, so the play rule would hide it the instant you dropped it —
+    // and you can't connect a space you can't see.
+    if (!playActive) return board.squares;
     return board.squares.filter((sq) => (deg.get(sq.id) ?? 0) >= 3 || OFF_JUNCTION_OK.has(sq.type));
+  }, [board.edges, board.squares, playActive]);
+
+  /** Which squares would actually be spaces in play. The designer draws the
+   * rest faded, so a space that won't survive the junction rule is visible as
+   * a problem while you're authoring instead of a surprise once you publish. */
+  const playSpotIds = useMemo(() => {
+    const deg = new Map<string, number>();
+    for (const e of board.edges) {
+      deg.set(e.from, (deg.get(e.from) ?? 0) + 1);
+      deg.set(e.to, (deg.get(e.to) ?? 0) + 1);
+    }
+    return new Set(
+      board.squares.filter((sq) => (deg.get(sq.id) ?? 0) >= 3 || OFF_JUNCTION_OK.has(sq.type)).map((sq) => sq.id),
+    );
   }, [board.edges, board.squares]);
 
   const X = (p: LatLng | [number, number]) => {
@@ -1823,12 +1842,15 @@ export default function BoardCanvas({
             // one-of-a-kind waypoints keep a face.
             const Icon = t && ICON_TYPES.has(t) ? SPOT_SPRITE[t] : undefined;
             const own = turf?.[sq.id];
+            // Authoring only: a square that isn't a junction yet is faded, so an
+            // unconnected or mid-block space reads as unfinished on sight.
+            const willPlay = playActive || playSpotIds.has(sq.id);
             if (Icon) {
               // Start/finish are one-of-a-kind waypoints — give them a halo so
               // they pop against any background art.
               const halo = t === 'start' || t === 'finish';
               return (
-                <g key={`n${sq.id}`} opacity={done && !own ? 0.4 : 1}>
+                <g key={`n${sq.id}`} opacity={!willPlay ? 0.35 : done && !own ? 0.4 : 1}>
                   {halo && <circle cx={X(sq)} cy={Y(sq)} r={21} fill="#fffdf4" stroke="#3f3b36" strokeWidth={2.5} opacity={0.92} />}
                   {own && (
                     <circle
@@ -1851,7 +1873,7 @@ export default function BoardCanvas({
               );
             }
             return (
-              <g key={`n${sq.id}`}>
+              <g key={`n${sq.id}`} opacity={willPlay ? 1 : 0.35}>
                 <circle
                   cx={X(sq)}
                   cy={Y(sq)}

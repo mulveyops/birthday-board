@@ -115,3 +115,18 @@ SUBJECT: the cream-brick house dressed for a party.
 SUBJECT: the one clearly blue house.
 1680 North Cass Street — the blue house. An 1890 Queen Anne two-flat, narrow and deep on its lot in the classic Milwaukee proportion. Painted blue siding — the blue is what identifies it, and it should be the one clearly blue house on its block. A front porch with steps up, tall narrow windows, a pitched roof with a modest decorative gable. Homely and friendly.
 ```
+
+### Nomad World Pub  →  save as `nomad.png`
+
+```
+SUBJECT: the international soccer bar that ends the night.
+Nomad World Pub, 1401 E Brady St — a corner tavern that watches the world's
+football. Painted brick, a dark-timber storefront, and the thing that makes it
+itself: NATIONAL FLAGS. Strings of small international flags across the whole
+frontage and more hanging flat on the wall, a dozen countries at once, every
+colour going. Warm light spilling out of big front windows. A low awning over
+the door, a couple of scuffed outdoor tables, and a chalkboard.
+Make it feel like arriving somewhere rather than passing it — this is the last
+stop of the night, so give it the most light and the most colour of any building
+in the set. Bunting is welcome; a crowd is not.
+```

@@ -178,7 +178,19 @@ export default function Referee() {
     return Math.max(0, landed - taken);
   }
 
+  /** Where an unprompted drop would land, in order. Same rule the game uses:
+   * the first bar, by id, with no star waiting and no claim running. */
+  function nextStarBars(n: number): string[] {
+    const out: string[] = [];
+    for (const p of [...pois].filter((x) => x.type === 'bar').sort((a, b) => a.id.localeCompare(b.id))) {
+      if (out.length >= n) break;
+      if (starsWaiting(p.id) === 0) out.push(p.title || 'a bar');
+    }
+    return out;
+  }
+
   async function declare() {
+
     if (!sess || !poi || !winnerId || busy) return;
     setBusy(true);
     setErr('');
@@ -297,6 +309,11 @@ export default function Referee() {
               <p className="hint" style={{ marginTop: 0 }}>
                 <b>⭐ Land a star</b> — drop one on the bar you're sitting in and watch them come to
                 you. Everyone gets told the moment it lands.
+              </p>
+              <p className="hint" style={{ marginTop: 0 }}>
+                Left alone, the next one lands at <b>{nextStarBars(1)[0] ?? 'nowhere — every bar has one'}</b>
+                {nextStarBars(2)[1] ? <>, then <b>{nextStarBars(2)[1]}</b></> : null}. Keep it to
+                yourself.
               </p>
               {pois
                 .filter((p) => p.type === 'bar')

@@ -52,6 +52,7 @@ import {
   hostReleaseTurf,
   hostUnclearSpot,
   savedHostGame,
+  getGameByCode,
   saveHostGame,
   sendMessage,
   listMessages,
@@ -879,7 +880,36 @@ export default function App({
     };
   }, [activeGameId]);
 
+  /**
+   * Take over hosting from another device. The dashboard lives in whichever
+   * browser published, which is fine right up until you publish from a laptop
+   * and then spend the afternoon holding a phone. A code is enough — the admin
+   * password already got you into this screen.
+   */
+  const [takeoverCode, setTakeoverCode] = useState('');
+  async function doTakeOverHosting() {
+    const code = takeoverCode.trim().toUpperCase();
+    if (!code) return;
+    setNetBusy(true);
+    try {
+      const g = await getGameByCode(code);
+      if (!g) {
+        alert('No game with that code.');
+        return;
+      }
+      setHostGame(g);
+      saveHostGame(g);
+      setHostStatus(g.status as "lobby" | "live" | "paused" | "ended");
+      setTakeoverCode('');
+    } catch (e) {
+      alert('Could not pick it up: ' + (e as Error).message);
+    } finally {
+      setNetBusy(false);
+    }
+  }
+
   async function doPublish() {
+
     setNetBusy(true);
     try {
       const g = await publishGame(board.name || 'Birthday Game', board, hostConfig);
@@ -4636,6 +4666,14 @@ export default function App({
                   <button className="btn" onClick={doDropStar} disabled={netBusy}>
                     ⭐ Land a star at a bar now
                   </button>
+                  {/* Where the next one goes if nobody intervenes: the drop takes
+                      the first bar with no star waiting and no claim running, so
+                      it's readable off the board rather than a surprise. */}
+                  <p className="hint" style={{ marginTop: 4 }}>
+                    Next drop lands at <b>{nextStarBars(1)[0] ?? 'nowhere — every bar has one'}</b>
+                    {nextStarBars(2)[1] ? <>, then <b>{nextStarBars(2)[1]}</b></> : null}
+                  </p>
+
                   <p className="hint" style={{ marginTop: 8 }}>
                     📸 Party Cam — {cfg.drinkCoins(hostConfig)} 🪙 a drink, paid on post. Veto anything bogus.
                   </p>
@@ -4801,6 +4839,30 @@ export default function App({
               <button className="btn btn--go" onClick={doPublish} disabled={netBusy || !board.squares.length}>
                 {netBusy ? 'Publishing…' : '📡 Publish game'}
               </button>
+              {/* Or pick up one that's already running. The console lives in the
+                  browser that published, and today that browser is a laptop. */}
+              <p className="hint" style={{ marginTop: 10, marginBottom: 4 }}>
+                Already published somewhere else? Take the controls here:
+              </p>
+              <div className="row">
+                <input
+                  value={takeoverCode}
+                  onChange={(e) => setTakeoverCode(e.target.value.toUpperCase())}
+                  placeholder="GAME CODE"
+                  autoCapitalize="characters"
+                  autoCorrect="off"
+                  style={{ flex: 1 }}
+                />
+                <button
+                  className="btn"
+                  style={{ flex: 'none' }}
+                  disabled={netBusy || !takeoverCode.trim()}
+                  onClick={() => void doTakeOverHosting()}
+                >
+                  🎛️ Host it
+                </button>
+              </div>
+
               <p className="hint" style={{ marginTop: 12 }}>Player — join with a code:</p>
               <input
                 placeholder="GAME CODE"

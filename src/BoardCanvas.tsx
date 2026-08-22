@@ -1136,6 +1136,24 @@ export default function BoardCanvas({
     return { minLat, maxLat, minLng, maxLng, kx, ky, W: (maxLng - minLng) * kx, H: (maxLat - minLat) * ky };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [board.boundary, board.backdrop, board.phase]);
+  // Marker art is optional and lands one file at a time while the party is
+  // being built, so ask the browser whether each one exists rather than keeping
+  // a list in sync. A landmark shows its emoji badge until its file answers.
+  const [poiArtOk, setPoiArtOk] = useState<Record<string, boolean>>({});
+  useEffect(() => {
+    const refs = [...new Set(board.squares.map((s) => s.poi?.artRef).filter(Boolean) as string[])];
+    let alive = true;
+    for (const ref of refs) {
+      const im = new Image();
+      im.onload = () => alive && setPoiArtOk((m) => (m[ref] ? m : { ...m, [ref]: true }));
+      im.onerror = () => alive && setPoiArtOk((m) => (ref in m ? m : { ...m, [ref]: false }));
+      im.src = `/art/poi/${ref}.png`;
+    }
+    return () => {
+      alive = false;
+    };
+  }, [board.squares]);
+
   /** The painted board, mounted full-frame. It lives OUTSIDE
    * the bake on purpose: the rasterizer serializes the SVG, and an external
    * image href is not guaranteed to come back with it — and the bake is
@@ -2223,52 +2241,83 @@ export default function BoardCanvas({
         {({ scale, wasDrag }) => (
           <svg ref={playSvgRef} width={geo.W} height={geo.H} viewBox={`0 0 ${geo.W.toFixed(1)} ${geo.H.toFixed(1)}`}>
             {sceneSvg}
-            {/* LANDMARK NAMES — the places are already painted into the board,
-                so the game only names them. Drawn here rather than in the scene
-                because this layer knows the zoom: the text and its tap target
-                are sized in SCREEN pixels, so the name stays readable and the
-                target stays thumb-sized however far out you are. */}
+            {/* LANDMARK MARKERS — a real place is already painted into the
+                board, so what goes on top has to read as a GAME PIECE rather
+                than more scenery: it stands up off the map, casts a shadow and
+                carries a name ribbon. Bespoke art when public/art/poi/<ref>.png
+                exists, an emoji badge until it does, so twelve landmarks can be
+                drawn one at a time without the board ever looking broken.
+                Sized in METRES, so markers scale with the map like everything
+                else and thin out naturally as you zoom away. */}
             {board.paintedBoard && (
               <g>
                 {board.squares
                   .filter((sq) => (sq.type === 'poi' || sq.type === 'bar') && sq.poi?.footM)
-                  .filter((sq) => inCull(X(sq), Y(sq), 120))
+                  .filter((sq) => inCull(X(sq), Y(sq), 200))
+                  .sort((a, b) => Y(a) - Y(b)) // nearer markers overlap farther ones
                   .map((sq) => {
-                    const [fw, fh] = sq.poi!.footM!;
+                    const p = sq.poi!;
+                    const m = p.markerM ?? 62;
                     const x = X(sq);
                     const y = Y(sq);
-                    const fs = 14 / scale; // constant on screen at any zoom
-                    // Generous: at least a thumb, and never smaller than the
-                    // building itself on a big place like the playfield.
-                    const hx = Math.max(fw / 2 + 6, 30 / scale);
-                    const hy = Math.max(fh / 2 + 6, 30 / scale);
+                    const art = p.artRef && poiArtOk[p.artRef];
                     const held = turf?.[sq.id];
-                    const top = y - hy - fs * 0.5;
+                    const label = 13;
                     return (
-                      <g key={`lm${sq.id}`}>
-                        {playActive && (
-                          <rect
-                            x={x - hx}
-                            y={top - fs}
-                            width={hx * 2}
-                            height={hy * 2 + fs * 1.5}
-                            fill="transparent"
-                            style={{ pointerEvents: 'all', cursor: 'pointer' }}
-                            onClick={() => !wasDrag() && onCheckIn?.(sq.id)}
+                      <g key={`lm${sq.id}`} pointerEvents="none">
+                        {/* contact shadow — the thing that sells "standing on it" */}
+                        <ellipse cx={x} cy={y + 2} rx={m * 0.34} ry={m * 0.12} fill="#2b2b3a" opacity={0.28} />
+                        {art ? (
+                          <image
+                            href={`/art/poi/${p.artRef}.png`}
+                            xlinkHref={`/art/poi/${p.artRef}.png`}
+                            x={x - m / 2}
+                            y={y - m * 0.92}
+                            width={m}
+                            height={m}
+                            preserveAspectRatio="xMidYMax meet"
                           />
+                        ) : (
+                          <>
+                            <circle cx={x} cy={y - m * 0.42} r={m * 0.3} fill="#fffdf4" stroke="#2b2b3a" strokeWidth={m * 0.055} />
+                            <circle cx={x} cy={y - m * 0.42} r={m * 0.3} fill={held ? held.color : '#f5c542'} fillOpacity={0.35} />
+                            <text
+                              x={x}
+                              y={y - m * 0.42}
+                              fontSize={m * 0.34}
+                              textAnchor="middle"
+                              dominantBaseline="central"
+                            >
+                              {p.icon ?? '📍'}
+                            </text>
+                            <path
+                              d={`M ${x - m * 0.09} ${y - m * 0.16} L ${x + m * 0.09} ${y - m * 0.16} L ${x} ${y} Z`}
+                              fill="#fffdf4"
+                              stroke="#2b2b3a"
+                              strokeWidth={m * 0.045}
+                            />
+                          </>
                         )}
+                        {/* name ribbon, drawn by the game so no asset has to spell */}
+                        <rect
+                          x={x - (sq.title.length * label * 0.31 + 8)}
+                          y={y + 3}
+                          width={sq.title.length * label * 0.62 + 16}
+                          height={label * 1.5}
+                          rx={label * 0.55}
+                          fill={held ? held.color : '#2b2b3a'}
+                          stroke="#fffdf4"
+                          strokeWidth={2}
+                        />
                         <text
                           x={x}
-                          y={top}
-                          fontSize={fs}
+                          y={y + 3 + label * 0.78}
+                          fontSize={label}
                           fontWeight={800}
                           fontFamily="'Trebuchet MS', Verdana, sans-serif"
                           textAnchor="middle"
-                          fill={held ? held.color : '#fffdf4'}
-                          stroke="#2b2b3a"
-                          strokeWidth={fs * 0.3}
-                          style={{ paintOrder: 'stroke' }}
-                          pointerEvents="none"
+                          dominantBaseline="central"
+                          fill="#fffdf4"
                         >
                           {sq.title}
                         </text>
@@ -2284,7 +2333,12 @@ export default function BoardCanvas({
                     key={`hit${sq.id}`}
                     cx={X(sq)}
                     cy={Y(sq)}
-                    r={Math.min(sq.type === 'bar' ? 60 : 45, (sq.type === 'bar' ? 30 : 22) / scale)}
+                    // A landmark's marker stands up off its anchor, so its
+                    // target is the roomier one whatever the square's type.
+                    r={(() => {
+                      const big = sq.type === 'bar' || !!sq.poi?.footM;
+                      return Math.min(big ? 60 : 45, (big ? 30 : 22) / scale);
+                    })()}
                     fill="transparent"
                     style={{ pointerEvents: 'all', cursor: 'pointer' }}
                     onClick={() => !wasDrag() && onCheckIn?.(sq.id)}

@@ -62,6 +62,11 @@ export interface PoiProps {
    * is already IN the art, so the game rings that footprint instead of
    * dropping a sprite on top of it. */
   footM?: [number, number];
+  /** Emoji shown on the marker until (or instead of) bespoke art lands. */
+  icon?: string;
+  /** Marker size in metres. Markers scale with the map, so a landmark can be
+   * made to loom without redrawing anything. */
+  markerM?: number;
 }
 
 export interface Square extends LatLng {

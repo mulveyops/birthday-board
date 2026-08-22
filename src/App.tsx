@@ -1515,7 +1515,7 @@ export default function App({
   // Rows logged before those types were split still say 'star', so the
   // bookkeeping ones are recognised by what they open with. New rows carry the
   // right type and never reach this.
-  const LEDGER = /^[{1F517}{1F340}{1F4B8}]/u;
+  const LEDGER = /^(\u{1F517}|\u{1F340}|\u{1F4B8})/u; // 🔗 turf income · 🍀 lucky card · 💸 unlucky card
   const feed = useMemo(
     () => events.filter((e) => FEED_TYPES.has(e.type) && !LEDGER.test(String(e.payload?.text ?? ''))),
     [events],
@@ -6399,9 +6399,9 @@ export default function App({
                 </button>
                 <button className="hud-row hud-row--feed" onClick={() => setFeedOpen(true)}>
                   <span className="hud-feed">
-                    {events.length
-                      ? events[Math.min(tickIdx, events.length - 1)]?.payload?.text ?? '…'
-                      : 'Nothing has happened yet — go take a corner.'}
+                    {feed.length
+                      ? feed[Math.min(tickIdx, feed.length - 1)]?.payload?.text ?? '…'
+                      : 'Nothing worth reporting yet.'}
                   </span>
                   <span className="hud-more">▾</span>
                 </button>

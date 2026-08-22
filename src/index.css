@@ -814,8 +814,12 @@ body {
   justify-content: center;
   padding: 0 3px;
 }
+/* fixed, not absolute: these used to size against .map-wrap, so a panel
+   was capped at 88% of the MAP rather than of the screen — and the map got
+   shorter when the menu grew, which is what left tall quest panels unable to
+   show their own buttons. A modal belongs to the viewport. */
 .msg-scrim {
-  position: absolute;
+  position: fixed;
   inset: 0;
   z-index: 900;
   background: rgba(20, 16, 40, 0.4);
@@ -2892,4 +2896,33 @@ body {
    with no icon doesn't sit under a wagging empty box. */
 .wag-finger:empty {
   display: none;
+}
+
+/* The ticker's age stamp. Quiet — it's there to stop an old line reading as
+   news, not to be read for its own sake. */
+.hud-when {
+  flex: none;
+  font-size: 0.72rem;
+  opacity: 0.5;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Age stamp on the announcement banner — same job as .hud-when. */
+.announce-when {
+  font-style: normal;
+  font-size: 0.72rem;
+  opacity: 0.62;
+  margin-left: 8px;
+  white-space: nowrap;
+}
+
+/* The answer under a trivia-duel question. The reader needs it; the two people
+   competing are not supposed to be looking at this phone at all. */
+.duel-answer {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: #15803d;
 }

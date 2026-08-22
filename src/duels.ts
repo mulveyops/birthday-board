@@ -181,10 +181,47 @@ const SPELLING_WORDS = [
 
 const ROUNDS = 14; // first to three, with steals on every miss — leave room
 
-/** What the reader reads out, in order. Empty for duels that need nothing. */
-export function duelMaterial(duelId: string, duelName: string): { label: string; items: string[] } | null {
+/** A question the reader can actually read out. Shape matches the party bank. */
+/** The party bank calls them `choices`; kept identical so the bank drops
+ *  straight in without a mapping step that could go stale. */
+export interface DuelQuestion {
+  q: string;
+  choices?: string[];
+  correct?: number;
+}
+
+/** What the reader reads out, in order. Empty for duels that need nothing.
+ *
+ *  `bank` is the party's own trivia, passed in because this module has no idea
+ *  what game it's in. Trivia flash told people to "read a question from the
+ *  party trivia" and then showed them nothing to read, which made it the one
+ *  duel you couldn't actually run. */
+export function duelMaterial(
+  duelId: string,
+  duelName: string,
+  bank: DuelQuestion[] = [],
+): { label: string; items: string[]; answers?: string[] } | null {
   const d = duelByName(duelName);
   if (!d) return null;
+
+  if (d.key === 'trivia') {
+    if (!bank.length) return null;
+    // Same trick as the words and the sums: ordered by a hash of the duel's own
+    // id, so both phones list the same questions in the same order with nothing
+    // stored and nothing to fall out of sync.
+    const order = bank
+      .map((q, i) => ({ q, k: hash01(`${duelId}:t${i}`) }))
+      .sort((a, b) => a.k - b.k)
+      .map((x) => x.q)
+      .slice(0, ROUNDS);
+    return {
+      label: 'Read these out — answers below each one, keep them to yourself',
+      items: order.map((q) => q.q),
+      answers: order.map((q) =>
+        q.choices && typeof q.correct === 'number' ? q.choices[q.correct] ?? '' : '',
+      ),
+    };
+  }
 
   if (d.key === 'spell') {
     const pool = [...SPELLING_WORDS]

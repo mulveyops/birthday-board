@@ -238,6 +238,14 @@ function resolvePinnedQuestions(sq: Square | undefined, bank: TriviaQuestion[]):
  * spot gets its deterministic share of the unclaimed shared bank — seeded by
  * game id, so every phone deals the same questions at the same spot and spots
  * don't repeat a question until the bank runs out. */
+/** "just now" / "4 min ago" — the ticker is glanced at, so keep it to a word
+ *  or two. It exists so a line that is NOT new can't pretend to be. */
+function feedAge(ts: string, now: number): string {
+  const s = Math.max(0, Math.floor((now - Date.parse(ts)) / 1000));
+  if (s < 45) return 'just now';
+  if (s < 3600) return `${Math.floor(s / 60)} min ago`;
+  return `${Math.floor(s / 3600)}h ago`;
+}
 function questionsForSpot(board: Board, seed: string, spotId: string): TriviaQuestion[] {
   const bank = board.triviaBank ?? [];
   const sq = board.squares.find((s) => s.id === spotId);
@@ -1618,6 +1626,20 @@ export default function App({
     () => events.filter((e) => FEED_TYPES.has(e.type) && !LEDGER.test(String(e.payload?.text ?? ''))),
     [events],
   );
+  /**
+   * What the ticker is allowed to CYCLE through. A star landing ten minutes ago
+   * is history, but rotating it back onto the strip made it look like it had
+   * just happened — you'd set off across the neighbourhood for a star another
+   * team took while you were reading about it. Only fresh lines rotate.
+   *
+   * The strip never goes blank: with nothing fresh it holds the newest line,
+   * still stamped with its age, so the feed reads as quiet rather than broken.
+   */
+  const FEED_FRESH_MS = 5 * 60 * 1000;
+  const liveFeed = useMemo(
+    () => feed.filter((e) => nowTs - Date.parse(e.ts) < FEED_FRESH_MS),
+    [feed, nowTs],
+  );
   const [rotIdx, setRotIdx] = useState(0);
   const [tickIdx, setTickIdx] = useState(0);
   // Hold still while someone's reading the expanded view.
@@ -1627,12 +1649,12 @@ export default function App({
     return () => clearInterval(iv);
   }, [standOpen, standings.length]);
   useEffect(() => {
-    if (feedOpen || feed.length < 2) return;
-    const iv = setInterval(() => setTickIdx((i) => (i + 1) % Math.min(feed.length, 8)), FEED_TICK_MS);
+    if (feedOpen || liveFeed.length < 2) return;
+    const iv = setInterval(() => setTickIdx((i) => (i + 1) % Math.min(liveFeed.length, 8)), FEED_TICK_MS);
     return () => clearInterval(iv);
-  }, [feedOpen, feed.length]);
+  }, [feedOpen, liveFeed.length]);
   // A new event jumps the line to the front — that's the whole point of a feed.
-  useEffect(() => setTickIdx(0), [feed.length]);
+  useEffect(() => setTickIdx(0), [liveFeed.length]);
   // Corner paint for the map: spot → team color (thicker ring for our own,
   // badge when reinforced).
   const turfPaint = useMemo(() => {
@@ -4974,11 +4996,22 @@ export default function App({
         </button>
         {appMode === 'online' &&
           (() => {
+            // Same rule as the ticker: an announcement stops being news. This
+            // banner used to show the newest one forever, so somebody opening
+            // their phone an hour later got "LAST CALL" across the top as if it
+            // had just gone out. Fifteen minutes — longer than the ticker's
+            // window, because an announcement is worth interrupting for, and
+            // stamped with its age so even a fresh one can't mislead.
+            const ANNOUNCE_FRESH_MS = 15 * 60 * 1000;
             const latest = events.find((e) => e.type === 'announce');
             if (!latest || latest.id === dismissedAnnounceId) return null;
+            if (nowTs - Date.parse(latest.ts) > ANNOUNCE_FRESH_MS) return null;
             return (
               <div className="announce-banner">
-                <span>{latest.payload?.text ?? 'Announcement'}</span>
+                <span>
+                  {coinify(latest.payload?.text ?? 'Announcement')}
+                  <em className="announce-when">{feedAge(latest.ts, nowTs)}</em>
+                </span>
                 <button onClick={() => setDismissedAnnounceId(latest.id)} aria-label="Dismiss">
                   ✕
                 </button>
@@ -5173,14 +5206,19 @@ export default function App({
                     <p className="duel-rule">{duelByName(myDuel.prompt)!.rule}</p>
                   )}
                   {(() => {
-                    const mat = duelMaterial(myDuel.id, myDuel.prompt);
+                    // The party's own trivia feeds the trivia duel. Everything
+                    // else generates its own material from the duel id.
+                    const mat = duelMaterial(myDuel.id, myDuel.prompt, onlineBoard?.triviaBank ?? []);
                     if (!mat) return null;
                     return (
                       <div className="duel-material">
                         <div className="duel-material__label">{mat.label}</div>
                         <ol className="duel-material__list">
                           {mat.items.map((it, i) => (
-                            <li key={i}>{it}</li>
+                            <li key={i}>
+                              {it}
+                              {mat.answers?.[i] ? <b className="duel-answer">{mat.answers[i]}</b> : null}
+                            </li>
                           ))}
                         </ol>
                       </div>
@@ -5522,7 +5560,7 @@ export default function App({
             return (
               <div
                 style={{
-                  position: 'absolute',
+                  position: 'fixed',
                   inset: 0,
                   background: 'rgba(20,16,12,0.42)',
                   display: 'flex',
@@ -5782,7 +5820,7 @@ export default function App({
             return (
               <div
                 style={{
-                  position: 'absolute',
+                  position: 'fixed',
                   inset: 0,
                   background: 'rgba(20,16,12,0.42)',
                   display: 'flex',
@@ -5990,7 +6028,7 @@ export default function App({
             return (
               <div
                 style={{
-                  position: 'absolute',
+                  position: 'fixed',
                   inset: 0,
                   background: 'rgba(20,16,12,0.42)',
                   display: 'flex',
@@ -6231,7 +6269,7 @@ export default function App({
             return (
               <div
                 style={{
-                  position: 'absolute',
+                  position: 'fixed',
                   inset: 0,
                   background: 'rgba(20,16,12,0.42)',
                   display: 'flex',
@@ -6329,7 +6367,7 @@ export default function App({
             return (
               <div
                 style={{
-                  position: 'absolute',
+                  position: 'fixed',
                   inset: 0,
                   background: 'rgba(20,16,12,0.42)',
                   display: 'flex',
@@ -6438,7 +6476,7 @@ export default function App({
             return (
               <div
                 style={{
-                  position: 'absolute',
+                  position: 'fixed',
                   inset: 0,
                   background: 'rgba(20,16,12,0.42)',
                   display: 'flex',
@@ -6536,7 +6574,7 @@ export default function App({
             const answeredAll = qs.every((_, i) => quizPick[i] != null);
             return (
               <div
-                style={{ position: 'absolute', inset: 0, background: 'rgba(20,16,12,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}
+                style={{ position: 'fixed', inset: 0, background: 'rgba(20,16,12,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}
               >
                 <div
                   style={{
@@ -6651,7 +6689,7 @@ export default function App({
             const close = () => setAmbushArmModal(null);
             return (
               <div
-                style={{ position: 'absolute', inset: 0, background: 'rgba(20,16,12,0.42)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}
+                style={{ position: 'fixed', inset: 0, background: 'rgba(20,16,12,0.42)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}
                 onClick={close}
               >
                 <div
@@ -6729,7 +6767,7 @@ export default function App({
             const from = teams.find((t) => t.id === allyProposal.initiator);
             const spotName = onlineBoard?.squares.find((s) => s.id === allyProposal.spot_id)?.title || 'a spot';
             return (
-              <div style={{ position: 'absolute', inset: 0, background: 'rgba(20,16,12,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+              <div style={{ position: 'fixed', inset: 0, background: 'rgba(20,16,12,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
                 <div
                   style={{ width: 340, maxWidth: '90%', background: '#fdfaf2', border: '2px solid #3f3b36', borderRadius: 14, maxHeight: '86vh', overflow: 'auto', boxShadow: '0 14px 44px rgba(0,0,0,0.38)', animation: 'pop-in 0.24s cubic-bezier(0.2,0.85,0.35,1.2)' }}
                 >
@@ -6759,7 +6797,7 @@ export default function App({
           })()}
 
         {ambushedName && (
-          <div style={{ position: 'absolute', inset: 0, background: 'rgba(20,16,12,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+          <div style={{ position: 'fixed', inset: 0, background: 'rgba(20,16,12,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
             <div
               style={{ width: 340, maxWidth: '90%', background: '#fdfaf2', border: '2px solid #3f3b36', borderRadius: 14, maxHeight: '86vh', overflow: 'auto', boxShadow: '0 14px 44px rgba(0,0,0,0.45)', animation: 'pop-in 0.24s cubic-bezier(0.2,0.85,0.35,1.2)' }}
             >
@@ -6778,7 +6816,7 @@ export default function App({
         )}
 
         {appMode === 'online' && myShowdown && showdownOpen && (
-          <div style={{ position: 'absolute', inset: 0, background: 'rgba(20,16,12,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }} onClick={() => setShowdownOpen(false)}>
+          <div style={{ position: 'fixed', inset: 0, background: 'rgba(20,16,12,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }} onClick={() => setShowdownOpen(false)}>
             <div
               style={{ width: 340, maxWidth: '90%', background: '#fdfaf2', border: '2px solid #3f3b36', borderRadius: 14, maxHeight: '86vh', overflow: 'auto', boxShadow: '0 14px 44px rgba(0,0,0,0.38)', animation: 'pop-in 0.24s cubic-bezier(0.2,0.85,0.35,1.2)' }}
               onClick={(e) => e.stopPropagation()}
@@ -6811,7 +6849,7 @@ export default function App({
         {battleModal && (
           <div
             style={{
-              position: 'absolute',
+              position: 'fixed',
               inset: 0,
               background: 'rgba(20,16,12,0.42)',
               display: 'flex',
@@ -6869,7 +6907,7 @@ export default function App({
         {appMode === 'online' && onlineStatus === 'ended' && (
           <div
             style={{
-              position: 'absolute',
+              position: 'fixed',
               inset: 0,
               background: 'rgba(20,16,12,0.55)',
               display: 'flex',
@@ -6973,11 +7011,19 @@ export default function App({
                   <span className="hud-more">▾</span>
                 </button>
                 <button className="hud-row hud-row--feed" onClick={() => setFeedOpen(true)}>
-                  <span className="hud-feed">
-                    {feed.length
-                      ? coinify(feed[Math.min(tickIdx, feed.length - 1)]?.payload?.text ?? '…')
-                      : 'Nothing worth reporting yet.'}
-                  </span>
+                  {(() => {
+                    // Rotate the fresh lines. With none fresh, hold the newest
+                    // one and let its age say so, rather than flashing old news
+                    // back onto the strip as if it had just happened.
+                    const row = liveFeed.length ? liveFeed[Math.min(tickIdx, liveFeed.length - 1)] : feed[0];
+                    if (!row) return <span className="hud-feed">Nothing worth reporting yet.</span>;
+                    return (
+                      <>
+                        <span className="hud-feed">{coinify(row.payload?.text ?? '…')}</span>
+                        <span className="hud-when">{feedAge(row.ts, nowTs)}</span>
+                      </>
+                    );
+                  })()}
                   <span className="hud-more">▾</span>
                 </button>
               </div>

@@ -2515,3 +2515,22 @@ body {
   margin-left: 6px;
   letter-spacing: 0.5px;
 }
+.quest-photo {
+  width: 100%;
+  border: 3px solid #2b2b3a;
+  border-radius: 12px;
+  margin-bottom: 10px;
+  display: block;
+}
+.quest-photo-btn {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #4c1d95;
+  border-radius: 11px;
+  background: #2e1a45;
+  color: #ddd6fe;
+  font-family: 'Fredoka', system-ui, sans-serif;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+}

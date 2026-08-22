@@ -953,6 +953,9 @@ export interface GameConfig {
   ambushSec: number; // how long a trap stays armed
   ambushTake: number; // coins taken off whoever walks into it
   ambushBackfire: number; // coins you forfeit if they beat you instead
+  explorerSec: number; // how long you get to reach the place in the photo
+  explorerReward: number; // coins for getting there clean
+  explorerMinM: number; // never send someone somewhere they can already see
 }
 
 /** Config value with a fallback (older published games lack newer fields). */
@@ -987,6 +990,9 @@ export const cfg = {
   ambushSec: (c: Partial<GameConfig> | undefined) => c?.ambushSec ?? 600,
   ambushTake: (c: Partial<GameConfig> | undefined) => c?.ambushTake ?? 75,
   ambushBackfire: (c: Partial<GameConfig> | undefined) => c?.ambushBackfire ?? 25,
+  explorerSec: (c: Partial<GameConfig> | undefined) => c?.explorerSec ?? 900,
+  explorerReward: (c: Partial<GameConfig> | undefined) => c?.explorerReward ?? 50,
+  explorerMinM: (c: Partial<GameConfig> | undefined) => c?.explorerMinM ?? 250,
 };
 
 export const PARTY_CONFIG: GameConfig = {
@@ -1029,6 +1035,9 @@ export const PARTY_CONFIG: GameConfig = {
   ambushSec: 600,
   ambushTake: 75,
   ambushBackfire: 25,
+  explorerSec: 900,
+  explorerReward: 50,
+  explorerMinM: 250,
 };
 export const TEST_CONFIG: GameConfig = {
   starCost: 40,
@@ -1068,6 +1077,9 @@ export const TEST_CONFIG: GameConfig = {
   ambushSec: 600,
   ambushTake: 75,
   ambushBackfire: 25,
+  explorerSec: 900,
+  explorerReward: 50,
+  explorerMinM: 250,
 };
 
 export interface GameFull {

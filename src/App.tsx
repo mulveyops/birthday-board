@@ -2021,6 +2021,8 @@ export default function App({
   /** A quest offered by the space we just checked into, awaiting yes or no. */
   const [questOffer, setQuestOffer] = useState<{ spotId: string; name: string } | null>(null);
   const [questBusy, setQuestBusy] = useState(false);
+  /** Re-open the photo mid-hunt — you can't solve a picture you can't see. */
+  const [questPhoto, setQuestPhoto] = useState(false);
   const questLeft = myQuest ? Math.max(0, Math.floor((Date.parse(myQuest.expires_at) - nowTs) / 1000)) : 0;
   const questMark = myQuest?.target_team ? teams.find((t) => t.id === myQuest.target_team) : undefined;
   const questSpotName =
@@ -2038,12 +2040,44 @@ export default function App({
     return strHash01(`${membership.gameId}:${membership.teamId}:${spotId}`) * 100 < cfg.questChance(onlineConfig);
   }
 
+  /** Places we have a photograph of, keyed by the square they're taken at.
+   * Asked for once, so dropping a new photo in only needs a reload. */
+  const [explorerSpots, setExplorerSpots] = useState<{ id: string; what: string }[]>([]);
+  useEffect(() => {
+    let alive = true;
+    fetch('/art/explorer/manifest.json')
+      .then((r) => (r.ok ? r.json() : []))
+      .then((m) => alive && setExplorerSpots(Array.isArray(m) ? m : []))
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, []);
+
   /** Which job this space is offering — same hash, so it never re-rolls. */
   function questKindFor(spotId: string): QuestKind {
     if (!membership) return 'tag';
     const r = strHash01(`kind:${membership.gameId}:${membership.teamId}:${spotId}`);
-    return r < 0.4 ? 'tag' : r < 0.7 ? 'recon' : 'ambush';
+    // Explorer needs a photographed place far enough away to be a journey.
+    if (r < 0.25 && explorerTargetFrom(spotId)) return 'explorer';
+    return r < 0.5 ? 'tag' : r < 0.75 ? 'recon' : 'ambush';
   }
+
+  /** A photographed place you can't already see from here. */
+  function explorerTargetFrom(spotId: string): { id: string; what: string } | null {
+    const here = onlineBoard?.squares.find((sq) => sq.id === spotId);
+    if (!here || !explorerSpots.length) return null;
+    const minM = cfg.explorerMinM(onlineConfig);
+    const far = explorerSpots.filter((t) => {
+      const sq = onlineBoard?.squares.find((x) => x.id === t.id);
+      return sq && sq.id !== spotId && metersBetween(here, sq) >= minM;
+    });
+    if (!far.length) return null;
+    // Deterministic, so the offer doesn't change if you look at it twice.
+    const i = Math.floor(strHash01(`exp:${membership?.teamId}:${spotId}`) * far.length);
+    return far[Math.min(i, far.length - 1)];
+  }
+
 
   /** The next bars in the star rotation — Recon's payoff, and real intel:
    * a drop lands at the first bar with no star waiting and no claim running. */
@@ -2075,7 +2109,35 @@ export default function App({
         await doAcceptTag(spotId);
         return;
       }
+      if (kind === 'explorer') {
+        const t = explorerTargetFrom(spotId);
+        if (!t) {
+          setQuestOffer(null);
+          return;
+        }
+        const row = await acceptQuest({
+          gameId: membership.gameId,
+          teamId: membership.teamId,
+          kind: 'explorer',
+          targetSpot: t.id,
+          fromSpot: spotId,
+          reward: cfg.explorerReward(onlineConfig),
+          seconds: cfg.explorerSec(onlineConfig),
+        });
+        setQuestOffer(null);
+        if (!row) {
+          setGpsPopup({ emoji: '🧭', title: 'Already on a job', body: 'Finish the one you have first.' });
+          return;
+        }
+        setGpsPopup({
+          emoji: '🧭',
+          title: 'Find this place',
+          body: `Work out where the photo was taken and check in there — and nowhere else on the way. You have ${Math.round(cfg.explorerSec(onlineConfig) / 60)} minutes.`,
+        });
+        return;
+      }
       const secs = kind === 'recon' ? cfg.reconSec(onlineConfig) : cfg.ambushSec(onlineConfig);
+
       const row = await acceptQuest({
         gameId: membership.gameId,
         teamId: membership.teamId,
@@ -2188,7 +2250,35 @@ export default function App({
    * Called right after our own check-in lands. Reads the mark's position fresh —
    * a tag turns on seconds, and the subscribed copy can be stale.
    */
+  /**
+   * Explorer is decided by wherever you check in next. The right place wins it;
+   * anywhere else is "touching another space" and ends it. That's the whole
+   * cost of the job — you walk past everything you'd normally take.
+   */
+  async function checkExplorerOn(spotId: string) {
+    if (!membership || !myQuest || myQuest.kind !== 'explorer') return;
+    const won = myQuest.target_spot === spotId;
+    if (!(await closeQuest(myQuest.id, won ? 'done' : 'failed').catch(() => false))) return;
+    if (won) {
+      const prize = myQuest.reward || cfg.explorerReward(onlineConfig);
+      await adjustCoins(membership.teamId, prize).catch(() => {});
+      logEvent(
+        membership.gameId,
+        'battle',
+        `🧭 ${myTeam?.name ?? 'A team'} found the place in the photo — +${prize} 🪙`,
+      ).catch(() => {});
+      setGpsPopup({ emoji: '🧭', title: 'This is the place', body: `Nicely read. +${prize} 🪙.` });
+    } else {
+      setGpsPopup({
+        emoji: '🧭',
+        title: 'Off the trail',
+        body: 'You checked in somewhere else, so the job is off. The photo was somewhere else entirely.',
+      });
+    }
+  }
+
   async function checkTagOn(spotId: string) {
+
     if (!membership || !myQuest || myQuest.kind !== 'tag' || !myQuest.target_team) return;
     try {
       const pos = await getPosition(membership.gameId, myQuest.target_team);
@@ -2235,6 +2325,12 @@ export default function App({
             ? `Word is the next stars land at: ${bars.join(', then ')}.`
             : 'Every bar already has a star waiting — go take one.',
         });
+        return;
+      }
+      if (myQuest.kind === 'explorer') {
+        if (!(await closeQuest(myQuest.id, 'failed').catch(() => false))) return;
+        if (!alive) return;
+        setGpsPopup({ emoji: '🧭', title: 'Out of time', body: 'The trail went cold. Somebody else will find it.' });
         return;
       }
       if (myQuest.kind === 'ambush') {
@@ -2322,6 +2418,8 @@ export default function App({
     // Did we just walk in behind our mark? And does this space have work going?
     void checkTagOn(spotId);
     void springAmbushOn(spotId);
+    void checkExplorerOn(spotId);
+
     const sqOffer = onlineBoard.squares.find((s) => s.id === spotId);
     if (sqOffer && spaceOffersQuest(spotId)) setQuestOffer({ spotId, name: sqOffer.title || 'this space' });
     const sq = onlineBoard.squares.find((s) => s.id === spotId);
@@ -4916,7 +5014,19 @@ export default function App({
             </div>
           );
         })()}
+        {questPhoto && myQuest?.kind === 'explorer' && (
+          <div className="cam-light" onClick={() => setQuestPhoto(false)}>
+            <div className="cam-light__inner" onClick={(e) => e.stopPropagation()}>
+              <img src={`/art/explorer/${myQuest.target_spot}.jpg`} alt="Somewhere on the board" />
+              <div className="cam-light__meta">Where is this? Check in there — and nowhere else.</div>
+              <button className="btn btn--ghost" onClick={() => setQuestPhoto(false)}>
+                Close
+              </button>
+            </div>
+          </div>
+        )}
         {questOffer && (
+
           <div className="msg-scrim msg-scrim--cam" onClick={() => setQuestOffer(null)}>
             <div className="msg-panel quest-panel" onClick={(e) => e.stopPropagation()}>
               <div className="msg-head">
@@ -4939,7 +5049,25 @@ export default function App({
                       are never told they're being followed.
                     </p>
                   </>
+                ) : questKindFor(questOffer.spotId) === 'explorer' ? (
+                  <>
+                    <img
+                      className="quest-photo"
+                      src={`/art/explorer/${explorerTargetFrom(questOffer.spotId)?.id}.jpg`}
+                      alt="Somewhere on the board"
+                    />
+                    <p className="quest-brief">
+                      Somewhere on this board looks like that. Work out where, walk to it, and check in
+                      — <b>and nowhere else on the way</b>.
+                    </p>
+                    <p className="hint">
+                      <b>{cfg.explorerReward(onlineConfig)} 🪙</b> if you read it right, within{' '}
+                      {Math.round(cfg.explorerSec(onlineConfig) / 60)} minutes. Check in anywhere else and
+                      the job's off — you'll be walking past corners you'd normally take.
+                    </p>
+                  </>
                 ) : questKindFor(questOffer.spotId) === 'recon' ? (
+
                   <>
                     <p className="quest-brief">
                       Hold this spot for <b>{Math.round(cfg.reconSec(onlineConfig) / 60)} minutes</b>.
@@ -6649,14 +6777,23 @@ export default function App({
                   <span className="hud-more">▾</span>
                 </button>
               </div>
+              {myQuest && myQuest.kind === 'explorer' && (
+                <button className="quest-photo-btn" onClick={() => setQuestPhoto(true)}>
+                  🧭 Show me the photo again
+                </button>
+              )}
               {myQuest && (
+
                 <div className="quest-row">
                   <span className="quest-row__what">
                     {myQuest.kind === 'tag' ? (
                       <>
                         🎯 Hunting <b>{questMark?.emoji} {questMark?.name ?? 'someone'}</b>
                       </>
+                    ) : myQuest.kind === 'explorer' ? (
+                      <>🧭 Find the place in the photo</>
                     ) : myQuest.kind === 'recon' ? (
+
                       <>🔭 Holding <b>{questSpotName}</b> — stay put</>
                     ) : (
                       <>🪤 Trap armed at <b>{questSpotName}</b></>

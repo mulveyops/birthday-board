@@ -980,7 +980,9 @@ export const cfg = {
 };
 
 export const PARTY_CONFIG: GameConfig = {
-  starCost: 150,
+  // 100, not 150: a star is the win condition and it should be reachable from a
+  // good hour rather than a whole afternoon of saving.
+  starCost: 100,
   meterSec: 780,
   spawnCount: 12,
   spawnMinSec: 900,

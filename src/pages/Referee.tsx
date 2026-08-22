@@ -13,6 +13,12 @@ import {
   adjustCoins,
   adjustStars,
   logEvent,
+  dropStar,
+  listStarSpawns,
+  subscribeStarSpawns,
+  listStarClaims,
+  type StarSpawnRow,
+  type StarClaimRow,
   listPhotos,
   subscribePhotos,
   vetoPhoto,
@@ -62,6 +68,11 @@ export default function Referee() {
   // Drink checks pay on submit; the ref is the veto on a photo that clearly
   // isn't what it claimed. Same powers as the host console.
   const [photos, setPhotos] = useState<PhotoRow[]>([]);
+  // Stars already waiting, so a ref doesn't stack three on one bar without
+  // meaning to — a bar with one sitting on it doesn't need another.
+  const [spawns, setSpawns] = useState<StarSpawnRow[]>([]);
+  const [claims, setClaims] = useState<StarClaimRow[]>([]);
+  const [starBusy, setStarBusy] = useState('');
 
   async function enter() {
     setErr('');
@@ -98,10 +109,17 @@ export default function Referee() {
     const loadPhotos = () => listPhotos(sess.gameId).then((p) => alive && setPhotos(p)).catch(() => {});
     loadPhotos();
     const unsubPhotos = subscribePhotos(sess.gameId, loadPhotos);
+    const loadStars = () => {
+      listStarSpawns(sess.gameId).then((r) => alive && setSpawns(r)).catch(() => {});
+      listStarClaims(sess.gameId).then((r) => alive && setClaims(r)).catch(() => {});
+    };
+    loadStars();
+    const unsubStars = subscribeStarSpawns(sess.gameId, loadStars);
     return () => {
       alive = false;
       clearInterval(iv);
       unsubPhotos();
+      unsubStars();
     };
   }, [sess]);
 
@@ -122,6 +140,42 @@ export default function Referee() {
     setGiveStar((p.poi?.encounter ?? '') === 'boss');
     setDone('');
     setErr('');
+  }
+
+  /**
+   * Land a star on the bar you're sitting in. The organic drop lands one
+   * somewhere every twenty minutes; this is the one you fire because the room
+   * you're in has gone quiet and you'd like some company.
+   */
+  async function landStar(spotId: string, name: string) {
+    if (!sess || starBusy) return;
+    setStarBusy(spotId);
+    setErr('');
+    try {
+      const ok = await dropStar(sess.gameId, spotId, null);
+      if (!ok) {
+        setErr('That one did not take — try again.');
+        return;
+      }
+      await logEvent(
+        sess.gameId,
+        'star',
+        `⭐ A star just landed at ${name} — first team to buy a round claims it!`,
+      );
+      setDone(`⭐ Star landed at ${name} — go tell them it's here.`);
+      listStarSpawns(sess.gameId).then(setSpawns).catch(() => {});
+    } catch (e) {
+      setErr('Could not land it: ' + (e as Error).message);
+    } finally {
+      setStarBusy('');
+    }
+  }
+
+  /** Stars sitting unclaimed at a bar right now. */
+  function starsWaiting(spotId: string): number {
+    const landed = spawns.filter((s) => s.bar_spot_id === spotId).length;
+    const taken = claims.filter((c) => c.bar_spot_id === spotId && c.status !== 'lost').length;
+    return Math.max(0, landed - taken);
   }
 
   async function declare() {
@@ -236,9 +290,41 @@ export default function Referee() {
           <p className="hint" style={{ textAlign: 'center' }}>Loading the board…</p>
         ) : !poi ? (
           <div className="join-form">
+            {/* Refs pull people in. One lands somewhere on its own every twenty
+                minutes; this is the one you fire because the room you're in has
+                gone quiet and you'd like some company. */}
+            <div style={{ marginBottom: 12, borderBottom: '2px solid rgba(0,0,0,0.12)', paddingBottom: 10 }}>
+              <p className="hint" style={{ marginTop: 0 }}>
+                <b>⭐ Land a star</b> — drop one on the bar you're sitting in and watch them come to
+                you. Everyone gets told the moment it lands.
+              </p>
+              {pois
+                .filter((p) => p.type === 'bar')
+                .map((p) => {
+                  const waiting = starsWaiting(p.id);
+                  return (
+                    <button
+                      key={`star-${p.id}`}
+                      className="site-btn"
+                      style={{ textAlign: 'left', opacity: waiting ? 0.55 : 1 }}
+                      disabled={!!starBusy}
+                      onClick={() => void landStar(p.id, p.title || 'a bar')}
+                    >
+                      ⭐ {p.title || '(untitled)'}
+                      {waiting > 0 && (
+                        <span style={{ opacity: 0.75, fontSize: '0.8em' }}>
+                          {' '}
+                          · {waiting} already waiting
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+            </div>
             <p className="hint" style={{ marginTop: 0 }}>
               <b>Where are you standing?</b> Pick the spot you're refereeing.
             </p>
+
             {pois.map((p) => {
               const em = ENC_META[p.poi?.encounter ?? (p.type === 'bar' ? 'star-bar' : 'landmark')] ?? ENC_META.landmark;
               return (

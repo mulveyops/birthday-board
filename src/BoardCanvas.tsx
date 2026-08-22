@@ -1532,9 +1532,15 @@ export default function BoardCanvas({
           {/* With a landmass backdrop, the painting IS the ground — streets and
               spots sit directly on it, no flat fill covering its texture. */}
           {!backdropFit?.blob && (
-            <polygon points={ptsOf(groundRing)} fill={board.artUnderlay ? '#a9d476' : GRASS} />
+            <polygon points={ptsOf(groundRing)} fill={board.artUnderlay || board.paintedBoard ? '#a9d476' : GRASS} />
           )}
-          {board.artUnderlay && <SceneGround X={X} Y={Y} cull={cullRect} />}
+          {/* The painted board: one image, mounted full-frame. Its projection is
+              this same equirectangular frame, so it needs no placement — and it
+              already contains the buildings, so the sprite city stays off. */}
+          {board.paintedBoard && (
+            <image href="/art/board-blocks.webp" x={0} y={0} width={geo.W} height={geo.H} preserveAspectRatio="none" />
+          )}
+          {board.artUnderlay && !board.paintedBoard && <SceneGround X={X} Y={Y} cull={cullRect} />}
           {SHOW_BLOCK_TINTS &&
             board.scenery?.blocks.map((b, i) => {
               const lawn = BLOCK_LAWN[b.kind];
@@ -1658,7 +1664,7 @@ export default function BoardCanvas({
 
           </g>
 
-          {board.artUnderlay && <SceneStanding X={X} Y={Y} cull={cullRect} />}
+          {board.artUnderlay && !board.paintedBoard && <SceneStanding X={X} Y={Y} cull={cullRect} />}
         </g>
         </>
       ) : null,

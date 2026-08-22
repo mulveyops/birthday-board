@@ -2806,6 +2806,10 @@ export default function App({
     // toggle on the board itself — saved with the board, visible to players.
     setBoard((b) => ({ ...b, artUnderlay: !b.artUnderlay }));
   }
+  /** The hand-painted block board replaces the sprite city when it's on. */
+  function togglePaintedBoard() {
+    setBoard((b) => ({ ...b, paintedBoard: !b.paintedBoard }));
+  }
 
   // Weld dead-end stubs onto the junction they nearly touch, so a street
   // doesn't visibly break a few metres short of its corner.
@@ -3263,6 +3267,9 @@ export default function App({
               )}
               <button className="btn" onClick={addSurroundings}>
                 {board.artUnderlay ? '🎨 Remove surroundings' : '🎨 Add surroundings'}
+              </button>
+              <button className="btn" onClick={togglePaintedBoard}>
+                {board.paintedBoard ? '🖼️ Painted board: ON' : '🖼️ Painted board: off'}
               </button>
               <button className="btn" onClick={() => void closeGaps()} disabled={closingGaps}>
                 {closingGaps ? '🩹 Checking streets…' : '🩹 Close street gaps'}

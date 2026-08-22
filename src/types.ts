@@ -156,8 +156,13 @@ export interface Board {
   locked: boolean;
   /** Stylized surroundings baked from OSM (optional until loaded). */
   scenery?: Scenery;
-  /** Show the baked illustrated-city underlay (public/art/board-underlay.webp). */
+  /** Show the procedural sprite city (SceneGround/SceneStanding). */
   artUnderlay?: boolean;
+  /** Show the hand-painted block board (public/art/board-blocks.webp) instead
+   * of the sprite city. Painted block by block in the art pipeline and mounted
+   * full-frame: its projection is the same equirectangular frame BoardCanvas
+   * builds, so it needs no placement — see art-prototype/reference-render.mjs. */
+  paintedBoard?: boolean;
   /** Illustrated backdrop behind the board (public/art/backdrops/*.webp).
    * Replaces the procedural clouds/ribbon/compass — the art brings its own. */
   backdrop?: 'frame' | 'island' | 'cage';

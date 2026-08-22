@@ -1504,6 +1504,7 @@ export default function BoardCanvas({
     return board.squares.filter((sq) => (deg.get(sq.id) ?? 0) >= 3 || OFF_JUNCTION_OK.has(sq.type));
   }, [board.edges, board.squares, playActive]);
 
+
   /** Which squares would actually be spaces in play. The designer draws the
    * rest faded, so a space that won't survive the junction rule is visible as
    * a problem while you're authoring instead of a surprise once you publish. */
@@ -1526,6 +1527,76 @@ export default function BoardCanvas({
     const lat = Array.isArray(p) ? p[0] : p.lat;
     return (geo!.maxLat - lat) * geo!.ky;
   };
+
+  /**
+   * Where a bar's marker actually plants itself, as an offset from the square.
+   *
+   * The square is the building's OSM centroid, which is right for a dot and
+   * wrong for an elevation — drawn from there the base lands out in the road.
+   * So: shift to the south edge of the footprint (the art rises away from the
+   * viewer), then walk away from the nearest street until the base is clear of
+   * the carriageway.
+   *
+   * It walks rather than taking one step because the bars are on corners. One
+   * push off Brady drops Red Lion onto Pleasant; each pass re-measures against
+   * whatever street is nearest NOW, which is the only way a corner site ends up
+   * clear of both.
+   */
+  const barInset = useMemo(() => {
+    const out: Record<string, { dx: number; dy: number }> = {};
+    if (!geo) return out;
+    const bars = board.squares.filter((sq) => sq.type === 'bar' || sq.type === 'poi');
+    if (!bars.length) return out;
+    const segs: [number, number, number, number][] = [];
+    for (const e of board.edges) {
+      const line = edgeLine(e);
+      if (!line) continue;
+      for (let i = 1; i < line.length; i++) {
+        segs.push([X(line[i - 1]), Y(line[i - 1]), X(line[i]), Y(line[i])]);
+      }
+    }
+    /** Nearest point on any street centreline. */
+    const nearest = (px: number, py: number) => {
+      let best = Infinity;
+      let bx = px;
+      let by = py;
+      for (const [x1, y1, x2, y2] of segs) {
+        const vx = x2 - x1;
+        const vy = y2 - y1;
+        const l2 = vx * vx + vy * vy;
+        const t = l2 ? Math.max(0, Math.min(1, ((px - x1) * vx + (py - y1) * vy) / l2)) : 0;
+        const cx = x1 + t * vx;
+        const cy = y1 + t * vy;
+        const d2 = (px - cx) ** 2 + (py - cy) ** 2;
+        if (d2 < best) {
+          best = d2;
+          bx = cx;
+          by = cy;
+        }
+      }
+      return { d: Math.sqrt(best), x: bx, y: by };
+    };
+
+    const CLEAR = 22; // metres from the centreline: past the 13m kerb, onto the lot
+    const STEP = 7;
+    const MAX = 40; // never drift so far it's fronting the wrong block
+    for (const sq of bars) {
+      const ox = X(sq);
+      const oy = Y(sq);
+      let px = ox;
+      let py = oy + (sq.poi?.footM?.[1] ?? 0) / 2;
+      for (let pass = 0; pass < 8; pass++) {
+        const n = nearest(px, py);
+        if (n.d >= CLEAR || n.d < 0.5) break; // clear, or no direction to push
+        if (Math.hypot(px - ox, py - oy) > MAX) break;
+        px += ((px - n.x) / n.d) * STEP;
+        py += ((py - n.y) / n.d) * STEP;
+      }
+      out[sq.id] = { dx: px - ox, dy: py - oy };
+    }
+    return out;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [board.edges, board.squares, geo]);
   const ptsOf = (line: (LatLng | [number, number])[]) => line.map((p) => `${X(p).toFixed(1)},${Y(p).toFixed(1)}`).join(' ');
   // Clear a gap in the tree fill for each bespoke park scene so it isn't buried.
   const pfClear = parkFeatures.map((pf) => ({ x: X({ lat: pf.lat, lng: pf.lng }), y: Y({ lat: pf.lat, lng: pf.lng }), r: 24 * pf.sc }));
@@ -1936,14 +2007,14 @@ export default function BoardCanvas({
                 // markers scale with the map, so zooming in is what makes one
                 // legible. Per-bar override via markerM.
                 const m = sq.poi?.markerM ?? 70;
-                const x = X(sq);
-                // The square sits at the building's OSM centroid, but the art is
-                // an ELEVATION — it has to stand on the ground at the near side
-                // of the building and rise away from the viewer, or it reads as
-                // hovering over the street in front. Plant it on the SOUTH edge
-                // of the real footprint so it covers its own outline and
-                // occludes the block behind, the way a building would.
-                const y = Y(sq) + (sq.poi?.footM?.[1] ?? 0) / 2;
+                // The square sits at the building's OSM centroid, which is
+                // right for a dot and wrong for an elevation: drawn from there
+                // the marker's base ends up out over the street it fronts. Nudge
+                // it off the road into its own block, then plant it on the SOUTH
+                // edge of the footprint so it rises away from the viewer.
+                const nudge = barInset[sq.id];
+                const x = X(sq) + (nudge?.dx ?? 0);
+                const y = Y(sq) + (nudge?.dy ?? 0);
                 const ref = artKeyFor(sq);
                 const art = ref && poiArtOk[ref];
                 return (

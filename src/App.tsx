@@ -1579,6 +1579,13 @@ export default function App({
     return longestRun(mine, turfAdj);
   }, [territoryMap, turfAdj, membership]);
   // --- Player HUD: standings that rotate, a feed that ticks ----------------
+  //
+  // Both used to turn over every 4-5 seconds, which read as jarring: something
+  // is always moving at the edge of your eye while you're trying to look at the
+  // map. These are ambient — you glance at them — so they now hold long enough
+  // that a line is still there when you look back at it.
+  const STAND_ROTATE_MS = 15000;
+  const FEED_TICK_MS = 12000;
   // ~8 teams will never fit across a phone, so the strip shows ONE team at a
   // time and cycles every 5s; tapping opens the whole board. The activity feed
   // works the same way — one line, tap for the log. Both live in the dead space
@@ -1615,12 +1622,12 @@ export default function App({
   // Hold still while someone's reading the expanded view.
   useEffect(() => {
     if (standOpen || standings.length < 2) return;
-    const iv = setInterval(() => setRotIdx((i) => (i + 1) % standings.length), 5000);
+    const iv = setInterval(() => setRotIdx((i) => (i + 1) % standings.length), STAND_ROTATE_MS);
     return () => clearInterval(iv);
   }, [standOpen, standings.length]);
   useEffect(() => {
     if (feedOpen || feed.length < 2) return;
-    const iv = setInterval(() => setTickIdx((i) => (i + 1) % Math.min(feed.length, 8)), 4000);
+    const iv = setInterval(() => setTickIdx((i) => (i + 1) % Math.min(feed.length, 8)), FEED_TICK_MS);
     return () => clearInterval(iv);
   }, [feedOpen, feed.length]);
   // A new event jumps the line to the front — that's the whole point of a feed.
@@ -5542,7 +5549,10 @@ export default function App({
                     background: '#fdfaf2',
                     border: '2px solid #3f3b36',
                     borderRadius: 14,
-                    overflow: 'hidden',
+                    // A long trivia list used to run straight off the bottom of the screen with
+                    // no way to reach the answers. Cap the sheet and let it scroll.
+                    maxHeight: '86vh',
+                    overflow: 'auto',
                     boxShadow: '0 14px 44px rgba(0,0,0,0.38)',
                     animation: 'pop-in 0.24s cubic-bezier(0.2,0.85,0.35,1.2)',
                   }}
@@ -5799,7 +5809,10 @@ export default function App({
                     background: '#fdfaf2',
                     border: '2px solid #3f3b36',
                     borderRadius: 14,
-                    overflow: 'hidden',
+                    // A long trivia list used to run straight off the bottom of the screen with
+                    // no way to reach the answers. Cap the sheet and let it scroll.
+                    maxHeight: '86vh',
+                    overflow: 'auto',
                     boxShadow: '0 14px 44px rgba(0,0,0,0.38)',
                     animation: 'pop-in 0.24s cubic-bezier(0.2,0.85,0.35,1.2)',
                   }}
@@ -5874,7 +5887,10 @@ export default function App({
                     background: '#fdfaf2',
                     border: '2px solid #3f3b36',
                     borderRadius: 14,
-                    overflow: 'hidden',
+                    // A long trivia list used to run straight off the bottom of the screen with
+                    // no way to reach the answers. Cap the sheet and let it scroll.
+                    maxHeight: '86vh',
+                    overflow: 'auto',
                     boxShadow: '0 14px 44px rgba(0,0,0,0.38)',
                     animation: 'pop-in 0.24s cubic-bezier(0.2,0.85,0.35,1.2)',
                   }}
@@ -6079,7 +6095,10 @@ export default function App({
                     background: '#fdfaf2',
                     border: '2px solid #3f3b36',
                     borderRadius: 14,
-                    overflow: 'hidden',
+                    // A long trivia list used to run straight off the bottom of the screen with
+                    // no way to reach the answers. Cap the sheet and let it scroll.
+                    maxHeight: '86vh',
+                    overflow: 'auto',
                     boxShadow: '0 14px 44px rgba(0,0,0,0.38)',
                     animation: 'pop-in 0.24s cubic-bezier(0.2,0.85,0.35,1.2)',
                   }}
@@ -6160,6 +6179,41 @@ export default function App({
                       <button className="btn btn--go" style={{ width: '100%' }} disabled>
                         🔒 There's nothing here until last call
                       </button>
+                    ) : live && type === 'bar' ? (
+                      /* A bar does exactly two things, so it offers exactly two
+                         buttons and says why one of them is off. "Open the bar"
+                         told you nothing about what would happen next — and what
+                         happens next is either a star or a camp. */
+                      (() => {
+                        const starHere = (starAvailable[spotId] ?? 0) > 0;
+                        const rivalClaiming = !!claim && claim.status === 'claiming' && !claimMine;
+                        const locked = !!claim && claim.status === 'locked';
+                        const broke = (myTeam?.coins ?? 0) < onlineConfig.starCost;
+                        const why = rivalClaiming
+                          ? `${claimTeam?.name ?? 'A rival'} is claiming it — beat them to take it`
+                          : locked
+                            ? `Already won by ${claimTeam?.name ?? 'another team'}`
+                            : claimMine
+                              ? `Yours — ${claimSecs}s left on the meter`
+                              : !starHere
+                                ? 'No star here yet — watch the feed for one landing'
+                                : broke
+                                  ? `You need ${onlineConfig.starCost} 🪙 — you have ${myTeam?.coins ?? 0}`
+                                  : `Buys a round and starts your ${onlineConfig.meterSec}s claim`;
+                        return (
+                          <>
+                            <button
+                              className="btn btn--go"
+                              style={{ width: '100%' }}
+                              disabled={!!sheetGps?.checking || (!starHere && !rivalClaiming) || locked || claimMine || (broke && !rivalClaiming)}
+                              onClick={goHere}
+                            >
+                              {rivalClaiming ? `Contest the claim` : `Claim star (${onlineConfig.starCost} 🪙)`}
+                            </button>
+                            <p className="hint" style={{ margin: '6px 0 0', fontSize: '0.76rem' }}>{why}</p>
+                          </>
+                        );
+                      })()
                     ) : live ? (
                       <button className="btn btn--go" style={{ width: '100%' }} disabled={!!sheetGps?.checking} onClick={goHere}>
                         {actionLabel}
@@ -6284,7 +6338,10 @@ export default function App({
                     background: '#fdfaf2',
                     border: '2px solid #3f3b36',
                     borderRadius: 14,
-                    overflow: 'hidden',
+                    // A long trivia list used to run straight off the bottom of the screen with
+                    // no way to reach the answers. Cap the sheet and let it scroll.
+                    maxHeight: '86vh',
+                    overflow: 'auto',
                     boxShadow: '0 14px 44px rgba(0,0,0,0.38)',
                     animation: 'pop-in 0.24s cubic-bezier(0.2,0.85,0.35,1.2)',
                   }}
@@ -6686,7 +6743,7 @@ export default function App({
                 onClick={close}
               >
                 <div
-                  style={{ width: 340, maxWidth: '90%', background: '#fdfaf2', border: '2px solid #3f3b36', borderRadius: 14, overflow: 'hidden', boxShadow: '0 14px 44px rgba(0,0,0,0.38)', animation: 'pop-in 0.24s cubic-bezier(0.2,0.85,0.35,1.2)' }}
+                  style={{ width: 340, maxWidth: '90%', background: '#fdfaf2', border: '2px solid #3f3b36', borderRadius: 14, maxHeight: '86vh', overflow: 'auto', boxShadow: '0 14px 44px rgba(0,0,0,0.38)', animation: 'pop-in 0.24s cubic-bezier(0.2,0.85,0.35,1.2)' }}
                   onClick={(e) => e.stopPropagation()}
                 >
                   <div style={{ background: '#7c3aed', color: '#fff', padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -6762,7 +6819,7 @@ export default function App({
             return (
               <div style={{ position: 'absolute', inset: 0, background: 'rgba(20,16,12,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
                 <div
-                  style={{ width: 340, maxWidth: '90%', background: '#fdfaf2', border: '2px solid #3f3b36', borderRadius: 14, overflow: 'hidden', boxShadow: '0 14px 44px rgba(0,0,0,0.38)', animation: 'pop-in 0.24s cubic-bezier(0.2,0.85,0.35,1.2)' }}
+                  style={{ width: 340, maxWidth: '90%', background: '#fdfaf2', border: '2px solid #3f3b36', borderRadius: 14, maxHeight: '86vh', overflow: 'auto', boxShadow: '0 14px 44px rgba(0,0,0,0.38)', animation: 'pop-in 0.24s cubic-bezier(0.2,0.85,0.35,1.2)' }}
                 >
                   <div style={{ background: '#7c3aed', color: '#fff', padding: '14px 18px', fontWeight: 800 }}>🪤 Ambush proposal</div>
                   <div style={{ padding: '16px 18px' }}>
@@ -6792,7 +6849,7 @@ export default function App({
         {ambushedName && (
           <div style={{ position: 'absolute', inset: 0, background: 'rgba(20,16,12,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
             <div
-              style={{ width: 340, maxWidth: '90%', background: '#fdfaf2', border: '2px solid #3f3b36', borderRadius: 14, overflow: 'hidden', boxShadow: '0 14px 44px rgba(0,0,0,0.45)', animation: 'pop-in 0.24s cubic-bezier(0.2,0.85,0.35,1.2)' }}
+              style={{ width: 340, maxWidth: '90%', background: '#fdfaf2', border: '2px solid #3f3b36', borderRadius: 14, maxHeight: '86vh', overflow: 'auto', boxShadow: '0 14px 44px rgba(0,0,0,0.45)', animation: 'pop-in 0.24s cubic-bezier(0.2,0.85,0.35,1.2)' }}
             >
               <div style={{ background: '#b91c1c', color: '#fff', padding: '14px 18px', fontWeight: 800, fontSize: '1.15rem' }}>🪤 AMBUSHED!</div>
               <div style={{ padding: '16px 18px' }}>
@@ -6811,7 +6868,7 @@ export default function App({
         {appMode === 'online' && myShowdown && showdownOpen && (
           <div style={{ position: 'absolute', inset: 0, background: 'rgba(20,16,12,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }} onClick={() => setShowdownOpen(false)}>
             <div
-              style={{ width: 340, maxWidth: '90%', background: '#fdfaf2', border: '2px solid #3f3b36', borderRadius: 14, overflow: 'hidden', boxShadow: '0 14px 44px rgba(0,0,0,0.38)', animation: 'pop-in 0.24s cubic-bezier(0.2,0.85,0.35,1.2)' }}
+              style={{ width: 340, maxWidth: '90%', background: '#fdfaf2', border: '2px solid #3f3b36', borderRadius: 14, maxHeight: '86vh', overflow: 'auto', boxShadow: '0 14px 44px rgba(0,0,0,0.38)', animation: 'pop-in 0.24s cubic-bezier(0.2,0.85,0.35,1.2)' }}
               onClick={(e) => e.stopPropagation()}
             >
               <div style={{ background: '#7c3aed', color: '#fff', padding: '14px 18px', fontWeight: 800 }}>🪤 Showdown</div>
@@ -6859,7 +6916,10 @@ export default function App({
                 background: '#fdfaf2',
                 border: '2px solid #3f3b36',
                 borderRadius: 14,
-                overflow: 'hidden',
+                // A long trivia list used to run straight off the bottom of the screen with
+                // no way to reach the answers. Cap the sheet and let it scroll.
+                maxHeight: '86vh',
+                overflow: 'auto',
                 boxShadow: '0 14px 44px rgba(0,0,0,0.38)',
                 animation: 'pop-in 0.24s cubic-bezier(0.2,0.85,0.35,1.2)',
               }}
@@ -6913,7 +6973,10 @@ export default function App({
                 background: '#fdfaf2',
                 border: '2px solid #3f3b36',
                 borderRadius: 14,
-                overflow: 'hidden',
+                // A long trivia list used to run straight off the bottom of the screen with
+                // no way to reach the answers. Cap the sheet and let it scroll.
+                maxHeight: '86vh',
+                overflow: 'auto',
                 boxShadow: '0 14px 44px rgba(0,0,0,0.4)',
                 animation: 'pop-in 0.3s cubic-bezier(0.2,0.85,0.35,1.2)',
               }}

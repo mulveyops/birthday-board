@@ -1726,18 +1726,34 @@ body {
 .app--player {
   flex-direction: column;
 }
+/* This board is very nearly square, so on a portrait phone it fits the WIDTH
+   and letterboxes top and bottom — dead space the map can never use. Give the
+   map an explicit height, about what the board can actually fill at this width
+   (aspect ~0.92, so height is roughly width x 1.09 plus slack), and the menu
+   below takes everything left over. Bounded by 62vh as well, so a short phone
+   shrinks the board rather than burying the buttons off the bottom. */
 .app--player .map-wrap {
-  flex: 1 1 auto;
+  flex: 0 0 auto;
   min-height: 0;
+  height: min(116vw, 62vh);
+}
+@media (min-width: 701px) {
+  .app--player .map-wrap {
+    flex: 1 1 auto;
+    height: auto;
+  }
 }
 .player-bar {
-  flex: 0 0 auto;
+  /* flex:1 so the bar absorbs whatever the capped map did not use, and its
+     content spreads over that height instead of leaving empty navy below. */
+  flex: 1 1 auto;
+  justify-content: space-between;
   display: flex;
   /* Two rows now â the reclaimed letterbox space buys labelled buttons
      instead of a cramped row of bare emoji. */
   flex-direction: column;
   align-items: stretch;
-  gap: 8px;
+  gap: 10px;
   min-height: 132px;
   box-sizing: border-box;
   padding: 10px 14px calc(10px + env(safe-area-inset-bottom, 0px));
@@ -1789,7 +1805,7 @@ body {
   display: flex;
   gap: 14px;
   font-weight: 700;
-  font-size: 1.04rem;
+  font-size: 1.12rem;
   white-space: nowrap;
   overflow-x: auto;
 }
@@ -1821,12 +1837,12 @@ body {
   flex-direction: column;
   align-items: center;
   gap: 2px;
-  padding: 8px 4px;
-  font-size: 1.2rem;
+  padding: 13px 4px;
+  font-size: 1.34rem;
 }
 .player-bar__btn em {
   font-style: normal;
-  font-size: 0.66rem;
+  font-size: 0.73rem;
   font-weight: 700;
   letter-spacing: 0.3px;
   opacity: 0.9;
@@ -2221,20 +2237,20 @@ body {
 .hud-strip {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 .hud-row {
   display: flex;
   align-items: center;
   gap: 8px;
   width: 100%;
-  padding: 8px 10px;
+  padding: 12px 12px;
   border: 1px solid #334155;
-  border-radius: 11px;
+  border-radius: 12px;
   background: #1e293b;
   color: #e2e8f0;
   font-family: 'Fredoka', system-ui, sans-serif;
-  font-size: 0.88rem;
+  font-size: 0.97rem;
   font-weight: 700;
   text-align: left;
   cursor: pointer;
@@ -2283,7 +2299,7 @@ body {
 .hud-row--feed {
   background: #172033;
   font-weight: 400;
-  font-size: 0.8rem;
+  font-size: 0.88rem;
 }
 .hud-feed {
   flex: 1;

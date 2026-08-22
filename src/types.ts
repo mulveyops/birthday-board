@@ -58,6 +58,10 @@ export interface PoiProps {
   reward?: number;
   /** Bespoke art asset key (ChatGPT art pipeline), e.g. "hero_wolskis". */
   artRef?: string;
+  /** Real building footprint in metres [w, h]. On the painted board the place
+   * is already IN the art, so the game rings that footprint instead of
+   * dropping a sprite on top of it. */
+  footM?: [number, number];
 }
 
 export interface Square extends LatLng {

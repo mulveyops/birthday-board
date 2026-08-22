@@ -1607,7 +1607,8 @@ export default function BoardCanvas({
           {/* sidewalks — a pale curb strip flanking every street, so buildings
               read as set back on their lots instead of clipped by the track
               (baked into the art underlay when that's active) */}
-          {board.edges.map((edge) => {
+          {!board.paintedBoard &&
+            board.edges.map((edge) => {
             const line = edgeLine(edge);
             if (!line || !lineCull(line.map((p) => ({ x: X(p), y: Y(p) })), 40)) return null;
             return (
@@ -1750,6 +1751,58 @@ export default function BoardCanvas({
                     strokeLinejoin="round"
                     pointerEvents="none"
                   />
+                );
+              })}
+          {/* LANDMARK RINGS — on the painted board every real place is already
+              in the art, so the game outlines the building's true footprint in
+              gold instead of dropping a sprite on top of the painting of it. */}
+          {board.paintedBoard &&
+            board.squares
+              .filter((sq) => (sq.type === 'poi' || sq.type === 'bar') && sq.poi?.footM)
+              .map((sq) => {
+                const [fw, fh] = sq.poi!.footM!;
+                const x = X(sq);
+                const y = Y(sq);
+                const held = turf?.[sq.id];
+                const stroke = held ? held.color : '#f5c542';
+                return (
+                  <g key={`lm${sq.id}`} pointerEvents="none">
+                    <rect
+                      x={x - fw / 2}
+                      y={y - fh / 2}
+                      width={fw}
+                      height={fh}
+                      rx={Math.min(fw, fh) * 0.16}
+                      fill="none"
+                      stroke="#2b2b3a"
+                      strokeWidth={5.5}
+                      opacity={0.5}
+                    />
+                    <rect
+                      x={x - fw / 2}
+                      y={y - fh / 2}
+                      width={fw}
+                      height={fh}
+                      rx={Math.min(fw, fh) * 0.16}
+                      fill="none"
+                      stroke={stroke}
+                      strokeWidth={3}
+                    />
+                    <text
+                      x={x}
+                      y={y - fh / 2 - 7}
+                      fontSize={13}
+                      fontWeight={800}
+                      fontFamily="'Trebuchet MS', Verdana, sans-serif"
+                      textAnchor="middle"
+                      fill="#fffdf4"
+                      stroke="#2b2b3a"
+                      strokeWidth={3.5}
+                      style={{ paintOrder: 'stroke' }}
+                    >
+                      {sq.title}
+                    </text>
+                  </g>
                 );
               })}
           <g filter="url(#track-shadow)">

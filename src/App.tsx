@@ -9,6 +9,7 @@ import { metersBetween, simplify, snapToStreetsFollowing, routeAlongStreets } fr
 import { generateStreetBoard, buildScenery, buildStreetLabels, closeStreetGaps, shiftPathEnd } from './generate';
 import { isConfigured } from './supabase';
 import {
+  markPosition,
   publishGame,
   joinGame,
   savedMembership,
@@ -1506,7 +1507,13 @@ export default function App({
     const tickNo = Math.floor((nowTs - Date.parse(onlineStartedAt)) / ivMs);
     if (tickNo < 1 || starTickTried.current.has(tickNo)) return;
     starTickTried.current.add(tickNo);
-    const pool = onlineBoard.squares.filter((s) => s.type === 'bar').sort((a, b) => a.id.localeCompare(b.id));
+    // Nomad is out of the rotation until last call. It's shut, so a star
+    // landing there would be announced to everyone and claimable by nobody —
+    // a wasted drop and a wasted walk.
+    const pool = onlineBoard.squares
+      .filter((s) => s.type === 'bar')
+      .filter((s) => lastCallOpen || !(s.poi?.artRef === 'nomad' || /nomad/i.test(s.title ?? '')))
+      .sort((a, b) => a.id.localeCompare(b.id));
     if (!pool.length) return;
     // deterministic rotation start + skip bars already engaged, so every
     // client that could win the tick would land the star at the SAME bar
@@ -1531,7 +1538,7 @@ export default function App({
         /* net hiccup — another client's attempt covers the tick */
       }
     })();
-  }, [appMode, nowTs, membership, onlineBoard, onlineStatus, onlineStartedAt, onlineConfig, starAvailable]);
+  }, [appMode, nowTs, membership, onlineBoard, onlineStatus, onlineStartedAt, onlineConfig, starAvailable, lastCallOpen]);
 
   const myTeam = useMemo(() => teams.find((t) => t.id === membership?.teamId) ?? null, [teams, membership]);
   const onlineNodeType = useMemo(
@@ -2539,6 +2546,9 @@ export default function App({
         return;
       }
       if (type === 'bar') {
+        // Put us on the map here. A bar grants nothing for walking in, but the
+        // referee needs to see it and "I closed Wolski's" is decided by it.
+        markPosition(membership.gameId, membership.teamId, spotId, sq.lat, sq.lng).catch(() => {});
         setOnlineBarModal({ spotId, name: sq.title || 'Bar' });
         return;
       }

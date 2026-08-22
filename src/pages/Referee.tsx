@@ -13,6 +13,7 @@ import {
   listTeams,
   listPositions,
   listAllClaims,
+  listEvents,
   adjustCoins,
   adjustStars,
   transferCoins,
@@ -82,6 +83,8 @@ export default function Referee() {
   const [starBusy, setStarBusy] = useState('');
   const [showWhere, setShowWhere] = useState(false);
   const [endArmed, setEndArmed] = useState(false);
+  // Nomad is shut until this is true, so it must stay out of the star rotation.
+  const [lastCall, setLastCall] = useState(false);
   const [note, setNote] = useState('');
   const [awarded, setAwarded] = useState<Record<string, boolean>>({});
 
@@ -126,6 +129,9 @@ export default function Referee() {
       listAllClaims(gid).then((c) => alive && setAllClaims(c)).catch(() => {});
       listStarSpawns(gid).then((r) => alive && setSpawns(r)).catch(() => {});
       listStarClaims(gid).then((r) => alive && setClaims(r)).catch(() => {});
+      listEvents(gid)
+        .then((e) => alive && setLastCall(e.some((x) => /LAST CALL/i.test(x.payload?.text ?? ''))))
+        .catch(() => {});
     };
     load();
     const iv = setInterval(load, 10000);
@@ -214,6 +220,9 @@ export default function Referee() {
     const out: string[] = [];
     for (const p of [...bars].sort((a, b) => a.id.localeCompare(b.id))) {
       if (out.length >= n) break;
+      // Same rule the game itself uses: Nomad is shut until last call, so the
+      // rotation skips it and this prediction has to skip it too.
+      if (!lastCall && (p.poi?.artRef === 'nomad' || /nomad/i.test(p.title ?? ''))) continue;
       if (starsWaiting(p.id) === 0) out.push(p.title || 'a bar');
     }
     return out;

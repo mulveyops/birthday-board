@@ -1074,21 +1074,28 @@ export const TEST_CONFIG: GameConfig = {
   campMaxStep: 20,
   campBankCap: 100,
   campRaidPct: 50,
-  questChance: 25,
+  // Half the plain spaces hand out a job instead of a quarter. A two-person
+  // test taps a dozen corners, not a hundred, and at the party rate you could
+  // easily finish a run-through without ever seeing a side quest.
+  questChance: 50,
   chanceShare: 0,
   tagWindowSec: 120,
-  tagQuestSec: 900,
+  // Every side-quest clock cut to something you can sit through at a table.
+  // These were the last thing still running on party time in the test preset.
+  tagQuestSec: 120,
   tagSteal: 50,
   tagEvade: 25,
-  reconSec: 600,
+  reconSec: 60,
   reconSteal: 50,
-  ambushSec: 600,
+  ambushSec: 120,
   ambushTake: 75,
   ambushBackfire: 25,
-  duelTimeoutSec: 600,
-  explorerSec: 900,
+  duelTimeoutSec: 90,
+  explorerSec: 180,
   explorerReward: 50,
-  explorerMinM: 250,
+  // The board is only ~700m across, so the party's 250m floor leaves few
+  // legal targets; 120m still means "somewhere you can't see from here".
+  explorerMinM: 120,
 };
 
 export interface GameFull {
@@ -1297,6 +1304,29 @@ export async function checkInSpot(
     .from('positions')
     .upsert({ team_id: teamId, game_id: gameId, lat, lng, spot_id: spotId, updated_at: new Date().toISOString() });
   return newly;
+}
+
+/**
+ * "We're standing here" with nothing else attached — no coins, no claim.
+ *
+ * Bars are the case this exists for. A bar isn't a corner: you can walk back
+ * into one all night, so it has no cleared gate and check-in never fired for
+ * it, which meant the game had no record of anyone ever being at a bar. Two
+ * things depend on that record — the referee's "where everyone is", and the
+ * "I closed Wolski's" award, which is *only* a race because you can keep
+ * showing up. So opening a bar writes the position and stops there.
+ */
+export async function markPosition(
+  gameId: string,
+  teamId: string,
+  spotId: string,
+  lat: number,
+  lng: number,
+): Promise<void> {
+  assertConfigured();
+  await supabase
+    .from('positions')
+    .upsert({ team_id: teamId, game_id: gameId, lat, lng, spot_id: spotId, updated_at: new Date().toISOString() });
 }
 
 export async function listPositions(gameId: string): Promise<Position[]> {

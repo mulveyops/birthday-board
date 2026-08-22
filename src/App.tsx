@@ -3849,7 +3849,7 @@ export default function App({
                     </div>
                   </div>
                 )}
-                <p className="hint">📍 Drag the spot on the map to fine-tune where it sits — mid-block is fine for a bar or point of interest.</p>
+                <p className="hint">📍 Drag the spot on the map to fine-tune where it sits — mid-block is fine for a bar.</p>
                 <button className="btn btn--danger" onClick={() => removeSquare(selected.id)}>Delete space</button>
               </section>
             )}

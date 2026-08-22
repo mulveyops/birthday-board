@@ -10,7 +10,7 @@ import {
   useMapEvents,
 } from 'react-leaflet';
 import L from 'leaflet';
-import type { Board, LatLng } from './types';
+import type { Board, LatLng, Square } from './types';
 import { SQUARE_TYPES } from './squareTypes';
 import { SceneGround, SceneStanding, loadScene } from './SceneLayer';
 import PanZoom, { type CullRect } from './PanZoom';
@@ -132,6 +132,30 @@ const NODE_FILL = '#fffdf6';
  * waypoints you navigate by, and Bowser is a threat you're meant to see
  * coming — everything else is a blank disc until you're standing on it. */
 const ICON_TYPES = new Set(['start', 'finish', 'bowser']);
+
+/**
+ * Which marker art a bar gets. An explicit artRef wins, but a bar is matched on
+ * its NAME otherwise — the same eight bars exist on several saved boards and
+ * only some of those rows ever carried the key, so keying off the name means
+ * the art turns up wherever the bar does instead of only on the one board that
+ * happens to be annotated.
+ */
+const ART_BY_NAME: Record<string, string> = {
+  wolskis: 'wolskis',
+  finks: 'finks',
+  redlion: 'redlion',
+  eaglepark: 'eaglepark',
+  hihat: 'hihat',
+  hosed: 'hosed',
+  ynot: 'ynot',
+  pleasant: 'house',
+};
+function artKeyFor(sq: Square): string | undefined {
+  if (sq.poi?.artRef) return sq.poi.artRef;
+  const n = (sq.title ?? '').toLowerCase().replace(/[^a-z]/g, '');
+  for (const frag of Object.keys(ART_BY_NAME)) if (n.includes(frag)) return ART_BY_NAME[frag];
+  return undefined;
+}
 // Placed on purpose and allowed to sit mid-block: landmarks are real
 // buildings, and start/finish/Bowser are authored one-offs. Everything else
 // - the generated coin/chance/challenge spaces - has to be at a junction.
@@ -1141,7 +1165,7 @@ export default function BoardCanvas({
   // a list in sync. A landmark shows its emoji badge until its file answers.
   const [poiArtOk, setPoiArtOk] = useState<Record<string, boolean>>({});
   useEffect(() => {
-    const refs = [...new Set(board.squares.map((s) => s.poi?.artRef).filter(Boolean) as string[])];
+    const refs = [...new Set(board.squares.map((s) => artKeyFor(s)).filter(Boolean) as string[])];
     let alive = true;
     for (const ref of refs) {
       const im = new Image();
@@ -1901,22 +1925,24 @@ export default function BoardCanvas({
               Sized in METRES, so markers scale with the map. */}
           {board.paintedBoard &&
             board.squares
-              .filter((sq) => (sq.type === 'poi' || sq.type === 'bar') && sq.poi?.footM)
+              .filter((sq) => sq.type === 'bar' || sq.type === 'poi')
               .filter((sq) => inCull(X(sq), Y(sq), 200))
               .sort((a, b) => Y(a) - Y(b)) // nearer markers overlap farther ones
               .map((sq) => {
-                const p = sq.poi!;
-                const m = p.markerM ?? 62;
+                // A bar placed by hand in the editor has no poi block at all,
+                // so nothing here may assume one exists.
+                const m = sq.poi?.markerM ?? 62;
                 const x = X(sq);
                 const y = Y(sq);
-                const art = p.artRef && poiArtOk[p.artRef];
+                const ref = artKeyFor(sq);
+                const art = ref && poiArtOk[ref];
                 return (
                   <g key={`lm${sq.id}`} pointerEvents="none">
                     <ellipse cx={x} cy={y + 2} rx={m * 0.34} ry={m * 0.12} fill="#2b2b3a" opacity={0.28} />
                     {art ? (
                       <image
-                        href={`/art/poi/${p.artRef}.png`}
-                        xlinkHref={`/art/poi/${p.artRef}.png`}
+                        href={`/art/poi/${ref}.png`}
+                        xlinkHref={`/art/poi/${ref}.png`}
                         x={x - m / 2}
                         y={y - m * 0.92}
                         width={m}

@@ -18,7 +18,7 @@ export const SQUARE_TYPES: Record<SquareType, SquareTypeMeta> = {
     label: 'Bar',
     emoji: '🍺',
     color: '#f97316',
-    hint: 'Convergence hub — stars spawn here and battles happen.',
+    hint: 'A real place on the map — stars land here, you can camp here, and it draws as its own building.',
   },
   challenge: {
     label: 'Challenge',
@@ -77,4 +77,6 @@ export const PLACE_ORDER: SquareType[] = ['blank', 'start', 'finish'];
  * A square already carrying a retired type keeps it listed (see the editor) so
  * it can be seen and converted rather than silently stranded.
  */
-export const TYPE_ORDER: SquareType[] = ['blank', 'bar', 'poi', 'bowser', 'start', 'finish'];
+// Every named place on this board is a bar, so 'poi' is retired from the
+// vocabulary — it survives in the type union only so older boards still load.
+export const TYPE_ORDER: SquareType[] = ['blank', 'bar', 'bowser', 'start', 'finish'];

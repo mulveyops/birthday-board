@@ -1136,6 +1136,15 @@ export default function BoardCanvas({
     return { minLat, maxLat, minLng, maxLng, kx, ky, W: (maxLng - minLng) * kx, H: (maxLat - minLat) * ky };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [board.boundary, board.backdrop, board.phase]);
+  /** The painted board, mounted full-frame. It lives OUTSIDE
+   * the bake on purpose: the rasterizer serializes the SVG, and an external
+   * image href is not guaranteed to come back with it — and the bake is
+   * skipped entirely while it's on anyway. Declared up here because the
+   * ground layer renders it, and that memo runs before this line otherwise. */
+  const paintedLayer =
+    geo && board.paintedBoard ? (
+      <image href="/art/board-blocks.webp" x={0} y={0} width={geo.W} height={geo.H} preserveAspectRatio="none" />
+    ) : null;
 
   // Bars and POIs become storefront art snapped to face the nearest street,
   // standing 17m off the centerline (clear of the 26m-wide track) on their
@@ -1453,6 +1462,10 @@ export default function BoardCanvas({
   // static groups, rasterize, cache. Any failure just leaves the vector path.
   useEffect(() => {
     if (!flat || !playActive || !geo || cullRect) return;
+    // The painted board is already one flat bitmap of the whole city, which
+    // is exactly what baking produces — and there are no sprites left to make
+    // it worth doing. Skip it entirely rather than bake a picture of a picture.
+    if (board.paintedBoard) return;
     const key = bakeKey({ v: 1, board });
     if (bake) {
       if (bake.key !== key) setBake(null); // board edited — rebake next pass
@@ -1538,6 +1551,11 @@ export default function BoardCanvas({
               preserveAspectRatio="none"
             />
           )}
+
+          {/* THE PAINTED BOARD — over the backdrop art, under the streets and
+              spots the app draws live. Order matters: as the first child of
+              the SVG it sat beneath the backdrop image and was invisible. */}
+          {paintedLayer}
 
           {/* GROUND PLANE — one continuous surface so nothing floats. Grass
               base, then paved tints on non-residential blocks, then greens/water.
@@ -1724,14 +1742,6 @@ export default function BoardCanvas({
             );
           })}
       </>
-    ) : null;
-  /** The painted board, mounted full-frame under everything. It lives OUTSIDE
-   * the bake on purpose: the rasterizer serializes the SVG, and an external
-   * image href is not guaranteed to come back with it. One image costs nothing
-   * to keep live, and it's the one layer that must never go missing. */
-  const paintedLayer =
-    geo && board.paintedBoard ? (
-      <image href="/art/board-blocks.webp" x={0} y={0} width={geo.W} height={geo.H} preserveAspectRatio="none" />
     ) : null;
   const sceneNodes =
     placingSquares && geo ? (
@@ -2200,7 +2210,6 @@ export default function BoardCanvas({
       >
         {({ scale, wasDrag }) => (
           <svg ref={playSvgRef} width={geo.W} height={geo.H} viewBox={`0 0 ${geo.W.toFixed(1)} ${geo.H.toFixed(1)}`}>
-            {paintedLayer}
             {sceneSvg}
             {/* LANDMARK NAMES — the places are already painted into the board,
                 so the game only names them. Drawn here rather than in the scene
@@ -2393,7 +2402,6 @@ export default function BoardCanvas({
           ]}
           attributes={{ viewBox: `0 0 ${geo.W.toFixed(1)} ${geo.H.toFixed(1)}` }}
         >
-          {paintedLayer}
           {sceneSvg}
         </SVGOverlay>
       )}

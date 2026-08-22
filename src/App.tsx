@@ -107,7 +107,14 @@ import {
   type EventRow,
   type GameConfig,
 } from './net';
-import { territoryIds, territoryAdjacency, longestRun, computeRuns } from './territory';
+import {
+  territoryIds,
+  territoryAdjacency,
+  territoryLinks,
+  longestRun,
+  computeRuns,
+  computeRunPaths,
+} from './territory';
 import { navigate } from './Root';
 
 const PHASES: { key: Phase; label: string }[] = [
@@ -1455,7 +1462,14 @@ export default function App({
   // time and cycles every 5s; tapping opens the whole board. The activity feed
   // works the same way — one line, tap for the log. Both live in the dead space
   // above the board, which the letterboxed map wasn't using anyway.
-  const allRuns = useMemo(() => computeRuns(territoryMap, turfAdj), [territoryMap, turfAdj]);
+  // Every team's winning chain, kept as the PATH so the map can draw it and
+  // the HUD can count it from the same answer.
+  const runPaths = useMemo(() => computeRunPaths(territoryMap, turfAdj), [territoryMap, turfAdj]);
+  const allRuns = useMemo(() => {
+    const out: Record<string, number> = {};
+    for (const [team, path] of Object.entries(runPaths)) out[team] = path.length;
+    return out;
+  }, [runPaths]);
   const standings = useMemo(() => [...teams].sort((a, b) => b.stars - a.stars || b.coins - a.coins), [teams]);
   const [standOpen, setStandOpen] = useState(false);
   const [feedOpen, setFeedOpen] = useState(false);
@@ -1487,6 +1501,25 @@ export default function App({
     }
     return out;
   }, [territoryRows, teams, membership]);
+  /** The chain made physical: every street segment along a team's longest run,
+   * so the board shows the snake instead of just a 🔗 number. A lone corner
+   * isn't a chain, so runs of one draw nothing. */
+  const turfLinks = useMemo(
+    () => (onlineBoard ? territoryLinks(onlineBoard) : new Map<string, { to: string; edges: string[] }[]>()),
+    [onlineBoard],
+  );
+  const runEdges = useMemo(() => {
+    const out: Record<string, { color: string; mine: boolean }> = {};
+    for (const [teamId, path] of Object.entries(runPaths)) {
+      if (path.length < 2) continue;
+      const style = { color: teamColorOf(teams, teamId), mine: teamId === membership?.teamId };
+      for (let i = 1; i < path.length; i++) {
+        const link = (turfLinks.get(path[i - 1]) ?? []).find((l) => l.to === path[i]);
+        for (const id of link?.edges ?? []) out[id] = style;
+      }
+    }
+    return out;
+  }, [runPaths, turfLinks, teams, membership]);
   const tokens = useMemo(
     () =>
       positions.map((p) => {
@@ -4491,6 +4524,7 @@ export default function App({
           tokens={appMode === 'online' ? tokens : undefined}
           flat={variant === 'player' && !classicMap}
           turf={appMode === 'online' ? turfPaint : undefined}
+          runEdges={appMode === 'online' ? runEdges : undefined}
         />
         {((phase === 'area' && mode === 'boundary') || (phase === 'squares' && mode === 'add')) && (
           <div className="add-banner">

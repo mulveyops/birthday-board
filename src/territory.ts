@@ -42,51 +42,88 @@ export function territoryIds(board: Board): Set<string> {
  * sever the run; it's just not paintable itself).
  */
 export function territoryAdjacency(board: Board): Map<string, string[]> {
-  const turf = territoryIds(board);
-  const nbr = new Map<string, Set<string>>();
-  for (const e of board.edges) {
-    if (!nbr.has(e.from)) nbr.set(e.from, new Set());
-    if (!nbr.has(e.to)) nbr.set(e.to, new Set());
-    nbr.get(e.from)!.add(e.to);
-    nbr.get(e.to)!.add(e.from);
-  }
   const adj = new Map<string, string[]>();
+  for (const [id, links] of territoryLinks(board)) adj.set(id, links.map((l) => l.to));
+  return adj;
+}
+
+/** One hop between adjacent corners, plus the board edges the street runs
+ * along â so a run can be DRAWN on the map, not just counted. */
+export interface TurfLink {
+  to: string;
+  /** Edge ids from this corner to `to`, in order. */
+  edges: string[];
+}
+
+/** Adjacency with the connecting streets attached. Same BFS as above, but it
+ * remembers how it got there. */
+export function territoryLinks(board: Board): Map<string, TurfLink[]> {
+  const turf = territoryIds(board);
+  const nbr = new Map<string, { node: string; edge: string }[]>();
+  const push = (a: string, b: string, edge: string) => {
+    if (!nbr.has(a)) nbr.set(a, []);
+    nbr.get(a)!.push({ node: b, edge });
+  };
+  for (const e of board.edges) {
+    push(e.from, e.to, e.id);
+    push(e.to, e.from, e.id);
+  }
+  const out = new Map<string, TurfLink[]>();
   for (const id of turf) {
     // BFS out of this corner through non-turf nodes; stop at the first turf
-    // corner reached along each branch.
-    const found = new Set<string>();
+    // corner reached along each branch. `via` walks back to rebuild the street.
+    const found = new Map<string, string[]>();
+    const via = new Map<string, { from: string; edge: string }>();
     const seen = new Set<string>([id]);
-    const queue: string[] = [...(nbr.get(id) ?? [])];
-    for (const q of queue) seen.add(q);
+    const queue: string[] = [];
+    for (const step of nbr.get(id) ?? []) {
+      if (seen.has(step.node)) continue;
+      seen.add(step.node);
+      via.set(step.node, { from: id, edge: step.edge });
+      queue.push(step.node);
+    }
     while (queue.length) {
       const cur = queue.shift()!;
       if (turf.has(cur)) {
-        found.add(cur);
+        // Walk the breadcrumbs home to collect the streets in between.
+        const chain: string[] = [];
+        for (let at = cur; at !== id; ) {
+          const step = via.get(at)!;
+          chain.unshift(step.edge);
+          at = step.from;
+        }
+        if (!found.has(cur)) found.set(cur, chain);
         continue; // don't pass through a claimable corner
       }
-      for (const nx of nbr.get(cur) ?? []) {
-        if (!seen.has(nx)) {
-          seen.add(nx);
-          queue.push(nx);
+      for (const step of nbr.get(cur) ?? []) {
+        if (!seen.has(step.node)) {
+          seen.add(step.node);
+          via.set(step.node, { from: cur, edge: step.edge });
+          queue.push(step.node);
         }
       }
     }
-    adj.set(id, [...found]);
+    out.set(id, [...found].map(([to, edges]) => ({ to, edges })));
   }
-  return adj;
+  return out;
 }
 
 /** Longest simple path (in corners) within one team's owned subgraph. Exact
  * DFS on small components; randomized greedy walks as a fallback on big ones
  * so a huge late-game empire can't hang a phone. */
 export function longestRun(owned: Set<string>, adj: Map<string, string[]>): number {
-  if (owned.size === 0) return 0;
+  return longestRunPath(owned, adj).length;
+}
+
+/** The winning run itself, in order â what the map draws. */
+export function longestRunPath(owned: Set<string>, adj: Map<string, string[]>): string[] {
+  if (owned.size === 0) return [];
   const ownedAdj = new Map<string, string[]>();
   for (const id of owned) ownedAdj.set(id, (adj.get(id) ?? []).filter((n) => owned.has(n)));
 
   // Split into connected components.
   const seen = new Set<string>();
-  let best = 0;
+  let best: string[] = [];
   for (const start of owned) {
     if (seen.has(start)) continue;
     const comp: string[] = [];
@@ -102,59 +139,73 @@ export function longestRun(owned: Set<string>, adj: Map<string, string[]>): numb
         }
       }
     }
-    best = Math.max(best, comp.length <= 18 ? exactLongestPath(comp, ownedAdj) : approxLongestPath(comp, ownedAdj));
+    const path = comp.length <= 18 ? exactLongestPath(comp, ownedAdj) : approxLongestPath(comp, ownedAdj);
+    if (path.length > best.length) best = path;
   }
   return best;
 }
 
-/** Exhaustive DFS longest path — fine up to ~18 nodes (grid corners branch little). */
-function exactLongestPath(comp: string[], adj: Map<string, string[]>): number {
-  let best = 1;
-  const onPath = new Set<string>();
-  const dfs = (node: string, len: number) => {
-    best = Math.max(best, len);
-    onPath.add(node);
+/** Exhaustive DFS longest path â fine up to ~18 nodes (grid corners branch little). */
+function exactLongestPath(comp: string[], adj: Map<string, string[]>): string[] {
+  let best: string[] = [];
+  const onPath: string[] = [];
+  const inPath = new Set<string>();
+  const dfs = (node: string) => {
+    onPath.push(node);
+    inPath.add(node);
+    if (onPath.length > best.length) best = [...onPath];
     for (const n of adj.get(node) ?? []) {
-      if (!onPath.has(n)) dfs(n, len + 1);
+      if (!inPath.has(n)) dfs(n);
     }
-    onPath.delete(node);
+    onPath.pop();
+    inPath.delete(node);
   };
-  for (const s of comp) dfs(s, 1);
+  for (const s of comp) dfs(s);
   return best;
 }
 
-/** Randomized greedy walks — a solid lower bound for oversized components. */
-function approxLongestPath(comp: string[], adj: Map<string, string[]>): number {
-  let best = 1;
+/** Randomized greedy walks â a solid lower bound for oversized components. */
+function approxLongestPath(comp: string[], adj: Map<string, string[]>): string[] {
+  let best: string[] = [];
   const tries = Math.min(400, comp.length * 12);
   for (let t = 0; t < tries; t++) {
     const onPath = new Set<string>();
     let cur = comp[Math.floor(Math.random() * comp.length)];
     onPath.add(cur);
-    let len = 1;
+    const path = [cur];
     for (;;) {
       const options = (adj.get(cur) ?? []).filter((n) => !onPath.has(n));
       if (!options.length) break;
       cur = options[Math.floor(Math.random() * options.length)];
       onPath.add(cur);
-      len++;
+      path.push(cur);
     }
-    best = Math.max(best, len);
+    if (path.length > best.length) best = path;
   }
   return best;
 }
 
-/** Every team's longest run, from the shared spot→owner map. */
+/** Every team's longest run, from the shared spotâowner map. */
 export function computeRuns(
   ownership: Record<string, string>,
   adj: Map<string, string[]>,
 ): Record<string, number> {
+  const out: Record<string, number> = {};
+  for (const [team, path] of Object.entries(computeRunPaths(ownership, adj))) out[team] = path.length;
+  return out;
+}
+
+/** Every team's winning run as an ordered corner list. */
+export function computeRunPaths(
+  ownership: Record<string, string>,
+  adj: Map<string, string[]>,
+): Record<string, string[]> {
   const byTeam = new Map<string, Set<string>>();
   for (const [spot, team] of Object.entries(ownership)) {
     if (!byTeam.has(team)) byTeam.set(team, new Set());
     byTeam.get(team)!.add(spot);
   }
-  const out: Record<string, number> = {};
-  for (const [team, owned] of byTeam) out[team] = longestRun(owned, adj);
+  const out: Record<string, string[]> = {};
+  for (const [team, owned] of byTeam) out[team] = longestRunPath(owned, adj);
   return out;
 }

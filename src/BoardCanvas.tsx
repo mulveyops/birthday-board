@@ -970,6 +970,9 @@ interface Props {
   /** Turf: spot_id → owning team's paint (corner discs tinted per team;
    * reinforced corners get a 🧱 badge). */
   turf?: Record<string, { color: string; mine: boolean; reinforced?: boolean }>;
+  /** Street segments along each team's longest run, keyed by edge id — the
+   * chain drawn on the road itself. */
+  runEdges?: Record<string, { color: string; mine: boolean }>;
   /** Player engine: render the board in the flat PanZoom viewport (no Leaflet). */
   flat?: boolean;
 }
@@ -1046,6 +1049,7 @@ export default function BoardCanvas({
   starDrops,
   tokens,
   turf,
+  runEdges,
   flat = false,
 }: Props) {
   const clearedSet = useMemo(() => new Set(cleared ?? []), [cleared]);
@@ -1715,6 +1719,33 @@ export default function BoardCanvas({
               In play mode a cleared node grays out; the active one glows.
               These are GAME PIECES, so they render ABOVE the scene art —
               a start flag must never hide behind a building sprite. */}
+          {/* CHAINS — a team's longest run of corners, painted along the streets
+              that link them. This layer is LIVE (the road under it is a baked
+              bitmap), because turf changes hands all afternoon. Your own chain
+              draws last and wider, so a rival's crossing it can't hide it.
+              Breaking a run is a real move; this is what makes it visible. */}
+          {runEdges &&
+            board.edges
+              .filter((edge) => runEdges[edge.id])
+              .sort((a, b) => Number(runEdges[a.id].mine) - Number(runEdges[b.id].mine))
+              .map((edge) => {
+                const line = edgeLine(edge);
+                if (!line || !lineCull(line.map((p) => ({ x: X(p), y: Y(p) })), 40)) return null;
+                const paint = runEdges[edge.id];
+                return (
+                  <polyline
+                    key={`run${edge.id}`}
+                    points={ptsOf(line)}
+                    fill="none"
+                    stroke={paint.color}
+                    strokeWidth={paint.mine ? FILL_M * 0.6 : FILL_M * 0.38}
+                    strokeOpacity={paint.mine ? 0.9 : 0.58}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    pointerEvents="none"
+                  />
+                );
+              })}
           <g filter="url(#track-shadow)">
           {intersections.map((sq) => {
             if (sq.type === 'bar') return null; // bars render as custom SVG POIs below

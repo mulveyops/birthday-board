@@ -1241,6 +1241,24 @@ export async function joinGame(code: string, teamName: string, emoji: string, co
   return m;
 }
 
+/**
+ * Take a team out of a game completely.
+ *
+ * Everything a team owns is declared ON DELETE CASCADE — its claimed spaces,
+ * its painted corners, its position, camps, quests, duels and answered trivia
+ * all go with it, so the map and the standings are consistent the moment this
+ * returns. Photos are the deliberate exception: they are ON DELETE SET NULL,
+ * because a picture of the party is worth keeping even when the team that
+ * posted it is gone.
+ *
+ * There is no undo. Phones still holding that membership will find themselves
+ * unable to act and can simply join again.
+ */
+export async function removeTeam(teamId: string): Promise<void> {
+  assertConfigured();
+  const { error } = await supabase.from('teams').delete().eq('id', teamId);
+  if (error) throw error;
+}
 export async function listTeams(gameId: string): Promise<TeamRow[]> {
   assertConfigured();
   // `reinforcements` arrives with reinforce.sql; fall back for a pre-upgrade DB.

@@ -2971,3 +2971,12 @@ body {
   outline: 3px solid #2563eb;
   outline-offset: 3px;
 }
+
+/* Arming "Remove" turns it red, so the confirm can't be mistaken for the
+   ±coins buttons sitting right beside it. */
+.ref-drop {
+  background: #dc2626;
+  border-color: #991b1b;
+  color: #fff;
+  font-weight: 800;
+}

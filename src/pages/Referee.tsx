@@ -27,6 +27,7 @@ import {
   listDuels,
   subscribeDuels,
   overrideDuel,
+  removeTeam,
   listPhotos,
   subscribePhotos,
   vetoPhoto,
@@ -83,6 +84,7 @@ export default function Referee() {
   const [starBusy, setStarBusy] = useState('');
   const [showWhere, setShowWhere] = useState(false);
   const [endArmed, setEndArmed] = useState(false);
+  const [dropArmed, setDropArmed] = useState<string | null>(null);
   // Nomad is shut until this is true, so it must stay out of the star rotation.
   const [lastCall, setLastCall] = useState(false);
   const [note, setNote] = useState('');
@@ -269,6 +271,26 @@ export default function Referee() {
       setDone(`Called for ${teamName(winner)}.`);
     } catch (e) {
       setErr('Could not overrule: ' + (e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  /** Take a team out for good. Everything they own cascades away with them. */
+  async function drop(t: TeamRow) {
+    if (!sess || busy) return;
+    setBusy(true);
+    setErr('');
+    try {
+      await removeTeam(t.id);
+      setDropArmed(null);
+      setTeams((rows) => rows.filter((r) => r.id !== t.id));
+      listTeams(sess.gameId).then(setTeams).catch(() => {});
+      listAllClaims(sess.gameId).then(setAllClaims).catch(() => {});
+      listPositions(sess.gameId).then(setPositions).catch(() => {});
+      setDone(`${t.name} removed from the game.`);
+    } catch (e) {
+      setErr('Could not remove them: ' + (e as Error).message);
     } finally {
       setBusy(false);
     }
@@ -662,9 +684,29 @@ export default function Referee() {
                 <button className="site-btn" disabled={busy} onClick={() => void nudge(t.id, 0, -1)}>−⭐</button>
                 <button className="site-btn" disabled={busy} onClick={() => void nudge(t.id, 25, 0)}>+25</button>
                 <button className="site-btn" disabled={busy} onClick={() => void nudge(t.id, -25, 0)}>−25</button>
+                {/* Two taps, never one. Removing a team takes its corners off
+                    the map and its coins out of the standings, and there is no
+                    undo — a mis-tap next to "+25" would be a bad afternoon. */}
+                {dropArmed === t.id ? (
+                  <>
+                    <button className="site-btn ref-drop" disabled={busy} onClick={() => void drop(t)}>
+                      Remove {t.name}?
+                    </button>
+                    <button className="site-btn" disabled={busy} onClick={() => setDropArmed(null)}>
+                      Keep
+                    </button>
+                  </>
+                ) : (
+                  <button className="site-btn" disabled={busy} onClick={() => setDropArmed(t.id)}>
+                    Remove
+                  </button>
+                )}
               </span>
             </div>
           ))}
+          <p className="hint" style={{ marginBottom: 0 }}>
+            Removing a team deletes its corners, coins and stars for good. Photos it posted stay in the album.
+          </p>
         </section>
 
         {/* ---- the ceremony ------------------------------------------------ */}

@@ -756,6 +756,138 @@ export async function uploadTriviaPhoto(file: File): Promise<string> {
   return supabase.storage.from('trivia-photos').getPublicUrl(path).data.publicUrl;
 }
 
+// ---------------------------------------------------------------------------
+// Party Cam: the shared photo album, and the drink check that pays for it.
+// A photo with drinks > 0 is a claim ("here's my team holding 3 drinks") and
+// pays on submit — no queue, no waiting. A host or ref vetoes a bogus one and
+// the coins come straight back off. See supabase/photos.sql.
+// ---------------------------------------------------------------------------
+
+export interface PhotoRow {
+  id: string;
+  game_id: string;
+  team_id: string | null;
+  team_name: string;
+  team_emoji: string;
+  url: string;
+  caption: string;
+  drinks: number;
+  coins: number;
+  vetoed: boolean;
+  created_at: string;
+}
+
+/** Keepsake quality: big enough to see who's who, small enough for bar wifi. */
+export async function uploadPartyPhoto(gameId: string, file: File): Promise<string> {
+  assertConfigured();
+  const blob = await resizeImage(file, 1600, 0.85);
+  const path = `${gameId}/${crypto.randomUUID()}.jpg`;
+  const { error } = await supabase.storage.from('party-photos').upload(path, blob, { contentType: 'image/jpeg' });
+  if (error) throw error;
+  return supabase.storage.from('party-photos').getPublicUrl(path).data.publicUrl;
+}
+
+/**
+ * Post a photo, paying the drink bounty immediately when one is claimed.
+ * The coins are paid FIRST: if the award fails we'd rather drop the post than
+ * leave a row claiming coins that never landed. Returns the coins paid.
+ */
+export async function submitPhoto(args: {
+  gameId: string;
+  teamId: string;
+  teamName: string;
+  teamEmoji: string;
+  url: string;
+  caption: string;
+  drinks: number;
+  perDrink: number;
+}): Promise<number> {
+  assertConfigured();
+  const drinks = Math.max(0, Math.round(args.drinks));
+  const coins = drinks * Math.max(0, Math.round(args.perDrink));
+  if (coins > 0) await adjustCoins(args.teamId, coins);
+  const { error } = await supabase.from('photos').insert({
+    game_id: args.gameId,
+    team_id: args.teamId,
+    team_name: args.teamName,
+    team_emoji: args.teamEmoji,
+    url: args.url,
+    caption: args.caption,
+    drinks,
+    coins,
+  });
+  if (error) {
+    // Paid but not recorded: hand the coins back. Otherwise the team is up N
+    // coins with nothing in the album for anyone to veto.
+    if (coins > 0) await adjustCoins(args.teamId, -coins).catch(() => {});
+    throw error;
+  }
+  return coins;
+}
+
+export async function listPhotos(gameId: string): Promise<PhotoRow[]> {
+  assertConfigured();
+  const { data, error } = await supabase
+    .from('photos')
+    .select('*')
+    .eq('game_id', gameId)
+    .order('created_at', { ascending: false })
+    .limit(400);
+  if (error) throw error;
+  return (data ?? []) as PhotoRow[];
+}
+
+export function subscribePhotos(gameId: string, onChange: () => void) {
+  const ch = supabase
+    .channel(`photos:${gameId}`)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'photos', filter: `game_id=eq.${gameId}` }, onChange)
+    .subscribe();
+  return () => {
+    supabase.removeChannel(ch);
+  };
+}
+
+/**
+ * Veto a drink check: guarded flip (only an un-vetoed row flips) so two admin
+ * phones can't refund the same photo twice. Returns false if it was already
+ * vetoed. The picture stays in the gallery — only the coins go away.
+ */
+export async function vetoPhoto(photo: PhotoRow): Promise<boolean> {
+  assertConfigured();
+  const { data, error } = await supabase
+    .from('photos')
+    .update({ vetoed: true })
+    .eq('id', photo.id)
+    .eq('vetoed', false)
+    .select('id');
+  if (error) throw error;
+  if (!data || data.length === 0) return false;
+  if (photo.coins > 0 && photo.team_id) await adjustCoins(photo.team_id, -photo.coins);
+  return true;
+}
+
+/** Undo a veto (fat fingers happen on a phone) — pays the coins back. */
+export async function unvetoPhoto(photo: PhotoRow): Promise<boolean> {
+  assertConfigured();
+  const { data, error } = await supabase
+    .from('photos')
+    .update({ vetoed: false })
+    .eq('id', photo.id)
+    .eq('vetoed', true)
+    .select('id');
+  if (error) throw error;
+  if (!data || data.length === 0) return false;
+  if (photo.coins > 0 && photo.team_id) await adjustCoins(photo.team_id, photo.coins);
+  return true;
+}
+
+/** Pull a photo out of the album entirely (the file itself stays in storage). */
+export async function deletePhoto(id: string): Promise<void> {
+  assertConfigured();
+  const { error } = await supabase.from('photos').delete().eq('id', id);
+  if (error) throw error;
+}
+
 export async function deleteRsvp(id: string): Promise<void> {
   assertConfigured();
   const { error } = await supabase.from('rsvps').delete().eq('id', id);
@@ -803,6 +935,7 @@ export interface GameConfig {
   defendRadiusM: number; // defender's fresh check-in within this → home-turf defense
   gpsRequired: boolean; // check-ins demand physical presence (HOST setting, not the player's)
   starIntervalSec: number; // a star lands at a bar this often (0 = admin drops only)
+  drinkCoins: number; // coins per drink on a photo-verified drink check
 }
 
 /** Config value with a fallback (older published games lack newer fields). */
@@ -819,6 +952,7 @@ export const cfg = {
   // Default TRUE: an older published game must fail toward "you have to be there".
   gpsRequired: (c: Partial<GameConfig> | undefined) => c?.gpsRequired ?? true,
   starIntervalSec: (c: Partial<GameConfig> | undefined) => c?.starIntervalSec ?? 1200,
+  drinkCoins: (c: Partial<GameConfig> | undefined) => c?.drinkCoins ?? 5,
 };
 
 export const PARTY_CONFIG: GameConfig = {
@@ -841,6 +975,7 @@ export const PARTY_CONFIG: GameConfig = {
   defendRadiusM: 75,
   gpsRequired: true,
   starIntervalSec: 1200,
+  drinkCoins: 5,
 };
 export const TEST_CONFIG: GameConfig = {
   starCost: 40,
@@ -862,6 +997,7 @@ export const TEST_CONFIG: GameConfig = {
   defendRadiusM: 75,
   gpsRequired: false,
   starIntervalSec: 90,
+  drinkCoins: 5,
 };
 
 export interface GameFull {

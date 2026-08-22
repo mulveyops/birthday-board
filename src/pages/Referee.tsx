@@ -13,6 +13,12 @@ import {
   adjustCoins,
   adjustStars,
   logEvent,
+  listPhotos,
+  subscribePhotos,
+  vetoPhoto,
+  unvetoPhoto,
+  deletePhoto,
+  type PhotoRow,
   type TeamRow,
 } from '../net';
 import type { Board, Square } from '../types';
@@ -53,6 +59,9 @@ export default function Referee() {
   const [amount, setAmount] = useState(25);
   const [giveStar, setGiveStar] = useState(false);
   const [done, setDone] = useState('');
+  // Drink checks pay on submit; the ref is the veto on a photo that clearly
+  // isn't what it claimed. Same powers as the host console.
+  const [photos, setPhotos] = useState<PhotoRow[]>([]);
 
   async function enter() {
     setErr('');
@@ -86,9 +95,13 @@ export default function Referee() {
     const load = () => listTeams(sess.gameId).then((t) => alive && setTeams(t)).catch(() => {});
     load();
     const iv = setInterval(load, 15000);
+    const loadPhotos = () => listPhotos(sess.gameId).then((p) => alive && setPhotos(p)).catch(() => {});
+    loadPhotos();
+    const unsubPhotos = subscribePhotos(sess.gameId, loadPhotos);
     return () => {
       alive = false;
       clearInterval(iv);
+      unsubPhotos();
     };
   }, [sess]);
 
@@ -134,6 +147,26 @@ export default function Referee() {
       setErr('Failed to send: ' + (e as Error).message);
     } finally {
       setBusy(false);
+    }
+  }
+
+  /** Veto (or un-veto) a drink check — the RPC does the coin math both ways. */
+  async function refVeto(p: PhotoRow) {
+    setErr('');
+    try {
+      await (p.vetoed ? unvetoPhoto(p) : vetoPhoto(p));
+    } catch (e) {
+      setErr('Veto failed: ' + (e as Error).message);
+    }
+  }
+  async function refDelete(p: PhotoRow) {
+    if (!confirm('Delete this photo from the album?')) return;
+    setErr('');
+    try {
+      await deletePhoto(p.id);
+      setPhotos((rows) => rows.filter((r) => r.id !== p.id));
+    } catch (e) {
+      setErr('Delete failed: ' + (e as Error).message);
     }
   }
 
@@ -276,6 +309,46 @@ export default function Referee() {
               This pays the prize and announces the result in every player's feed. Wrong tap? Declare a correction or
               grab Steven/Abby.
             </p>
+          </div>
+        )}
+
+        {!poi && (
+          <div style={{ marginTop: 12, borderTop: '2px solid rgba(0,0,0,0.12)', paddingTop: 10 }}>
+            <p className="hint" style={{ marginTop: 0 }}>
+              <b>📸 Drink checks</b> — teams get paid the second they post. Veto a photo that isn't what it claimed and
+              the coins come straight back off. Any drink counts.
+            </p>
+            <div className="cam-review">
+              {photos.length === 0 && <p className="hint">Nothing posted yet.</p>}
+              {photos.map((p) => (
+                <div key={p.id} className={`cam-review__row${p.vetoed ? ' is-vetoed' : ''}`}>
+                  <a href={p.url} target="_blank" rel="noreferrer">
+                    <img src={p.url} alt={p.caption || 'party photo'} loading="lazy" />
+                  </a>
+                  <div className="cam-review__body">
+                    <b>
+                      {p.team_emoji} {p.team_name}
+                    </b>
+                    <span className="hint">
+                      {p.drinks > 0
+                        ? `🍻 ${p.drinks} · ${p.vetoed ? `−${p.coins} taken back` : `+${p.coins} 🪙`}`
+                        : '📸 just a photo'}
+                      {p.caption ? ` · ${p.caption}` : ''}
+                    </span>
+                  </div>
+                  <div className="cam-review__acts">
+                    {p.drinks > 0 && (
+                      <button className="site-btn" onClick={() => void refVeto(p)}>
+                        {p.vetoed ? '↩ Undo' : '🚫 Veto'}
+                      </button>
+                    )}
+                    <button className="site-btn" onClick={() => void refDelete(p)} aria-label="Delete">
+                      🗑
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>

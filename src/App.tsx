@@ -76,6 +76,14 @@ import {
   type RaidLockRow,
   type TerritoryRow,
   uploadTriviaPhoto,
+  uploadPartyPhoto,
+  submitPhoto,
+  listPhotos,
+  subscribePhotos,
+  vetoPhoto,
+  unvetoPhoto,
+  deletePhoto,
+  type PhotoRow,
   listContent,
   subscribeContent,
   listLayouts,
@@ -780,17 +788,21 @@ export default function App({
         })
         .catch(() => {});
     const loadMsgs = () => listMessages(gid).then((m) => alive && setMessages(m)).catch(() => {});
+    const loadPhotos = () => listPhotos(gid).then((p) => alive && setPhotos(p)).catch(() => {});
     loadEv();
     loadGame();
     loadMsgs();
+    loadPhotos();
     const u1 = subscribeEvents(gid, loadEv);
     const u2 = subscribeGame(gid, loadGame);
     const u3 = subscribeMessages(gid, loadMsgs);
+    const uPh = subscribePhotos(gid, loadPhotos);
     return () => {
       alive = false;
       u1();
       u2();
       u3();
+      uPh();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [variant, appMode, hostGame?.id]);
@@ -1174,6 +1186,99 @@ export default function App({
       alert('Send failed: ' + (e as Error).message);
     }
   }
+  // --- Party Cam: the shared album, and the drink check that pays -----------
+  // Every picture anyone takes lands in one place, live, for everyone to see
+  // (and to keep afterwards). A photo tagged with drinks is a claim and pays
+  // the moment it's posted — submission alone is enough. A host or ref vetoes
+  // a bogus one afterwards and the coins come straight back off.
+  const [photos, setPhotos] = useState<PhotoRow[]>([]);
+  const [camOpen, setCamOpen] = useState(false);
+  const [camTab, setCamTab] = useState<'gallery' | 'post'>('gallery');
+  const [camFile, setCamFile] = useState<File | null>(null);
+  const [camPreview, setCamPreview] = useState('');
+  const [camCaption, setCamCaption] = useState('');
+  const [camDrinks, setCamDrinks] = useState(0);
+  const [camBusy, setCamBusy] = useState(false);
+  const [camNote, setCamNote] = useState('');
+  const [lightbox, setLightbox] = useState<PhotoRow | null>(null);
+  const drinkCoins = cfg.drinkCoins(onlineConfig);
+  /** Swap the staged photo, keeping the object URL from leaking. */
+  function pickCamFile(f: File | null) {
+    setCamPreview((old) => {
+      if (old) URL.revokeObjectURL(old);
+      return f ? URL.createObjectURL(f) : '';
+    });
+    setCamFile(f);
+  }
+  function openCam(tab: 'gallery' | 'post') {
+    setCamTab(tab);
+    setCamNote('');
+    setCamOpen(true);
+  }
+  function closeCam() {
+    setCamOpen(false);
+    pickCamFile(null);
+    setCamCaption('');
+    setCamDrinks(0);
+    setCamNote('');
+  }
+  async function postPhoto() {
+    if (!membership || !camFile || camBusy) return;
+    const me = teams.find((t) => t.id === membership.teamId);
+    setCamBusy(true);
+    setCamNote('Uploading…');
+    try {
+      const url = await uploadPartyPhoto(membership.gameId, camFile);
+      const paid = await submitPhoto({
+        gameId: membership.gameId,
+        teamId: membership.teamId,
+        teamName: me?.name ?? 'a team',
+        teamEmoji: me?.emoji ?? '🎲',
+        url,
+        caption: camCaption.trim(),
+        drinks: camDrinks,
+        perDrink: drinkCoins,
+      });
+      // The feed is how the rest of the party finds out — fire and forget.
+      logEvent(
+        membership.gameId,
+        'photo',
+        paid > 0
+          ? `🍻 ${me?.name ?? 'A team'} put away ${camDrinks} — +${paid} 🪙`
+          : `📸 ${me?.name ?? 'A team'} posted a photo`,
+      ).catch(() => {});
+      pickCamFile(null);
+      setCamCaption('');
+      setCamDrinks(0);
+      setCamTab('gallery');
+      setCamNote(paid > 0 ? `🍻 Cheers — +${paid} coins!` : '📸 Posted!');
+    } catch (e) {
+      setCamNote('Failed: ' + (e as Error).message);
+    } finally {
+      setCamBusy(false);
+    }
+  }
+  /** Host/ref controls, shared by the console and the lightbox. */
+  async function doVetoPhoto(p: PhotoRow) {
+    try {
+      const ok = p.vetoed ? await unvetoPhoto(p) : await vetoPhoto(p);
+      if (!ok) return; // someone else got there first
+    } catch (e) {
+      alert('Veto failed: ' + (e as Error).message);
+    }
+  }
+  async function doDeletePhoto(p: PhotoRow) {
+    if (!confirm('Delete this photo from the album?')) return;
+    try {
+      await deletePhoto(p.id);
+      // Drop it locally too: the realtime DELETE gets us there anyway, but the
+      // phone that tapped the button shouldn't wait on a round trip.
+      setPhotos((rows) => rows.filter((r) => r.id !== p.id));
+      setLightbox(null);
+    } catch (e) {
+      alert('Delete failed: ' + (e as Error).message);
+    }
+  }
   const [onlineBarModal, setOnlineBarModal] = useState<{ spotId: string; name: string } | null>(null);
   // The dealt questions ride in the modal state (pinned or drawn from the bank).
   const [onlineQuizModal, setOnlineQuizModal] = useState<{ spotId: string; name: string; questions: TriviaQuestion[] } | null>(null);
@@ -1387,6 +1492,7 @@ export default function App({
     const loadStarSpawns = () => listStarSpawns(gid).then((s) => alive && setStarSpawnRows(s)).catch(() => {});
     const loadEvents = () => listEvents(gid).then((e) => alive && setEvents(e)).catch(() => {});
     const loadMsgs = () => listMessages(gid).then((m) => alive && setMessages(m)).catch(() => {});
+    const loadPhotos = () => listPhotos(gid).then((p) => alive && setPhotos(p)).catch(() => {});
     const loadAmbushes = () => listAmbushes(gid).then((a) => alive && setAmbushes(a)).catch(() => {});
     const loadTurf = () =>
       listTerritory(gid)
@@ -1409,6 +1515,7 @@ export default function App({
     loadStarSpawns();
     loadEvents();
     loadMsgs();
+    loadPhotos();
     loadAmbushes();
     loadTurf();
     loadRaids();
@@ -1421,6 +1528,7 @@ export default function App({
     const u5 = subscribeEvents(gid, loadEvents);
     const u6 = subscribeGame(gid, loadGame);
     const u8 = subscribeMessages(gid, loadMsgs);
+    const uPh = subscribePhotos(gid, loadPhotos);
     const u9 = subscribeAmbushes(gid, loadAmbushes);
     const u10 = subscribeTerritory(gid, loadTurf);
     const u11 = subscribeRaidLocks(gid, loadRaids);
@@ -1429,6 +1537,7 @@ export default function App({
       u1();
       u2();
       u3();
+      uPh();
       u4();
       u5();
       u6();
@@ -3748,6 +3857,40 @@ export default function App({
                   <button className="btn" onClick={doDropStar} disabled={netBusy}>
                     ⭐ Land a star at a bar now
                   </button>
+                  <p className="hint" style={{ marginTop: 8 }}>
+                    📸 Party Cam — {cfg.drinkCoins(hostConfig)} 🪙 a drink, paid on post. Veto anything bogus.
+                  </p>
+                  <div className="cam-review">
+                    {photos.length === 0 && <div className="hint">No photos yet.</div>}
+                    {photos.map((p) => (
+                      <div key={p.id} className={`cam-review__row${p.vetoed ? ' is-vetoed' : ''}`}>
+                        <a href={p.url} target="_blank" rel="noreferrer">
+                          <img src={p.url} alt={p.caption || 'party photo'} loading="lazy" />
+                        </a>
+                        <div className="cam-review__body">
+                          <b>
+                            {p.team_emoji} {p.team_name}
+                          </b>
+                          <span className="hint">
+                            {p.drinks > 0
+                              ? `🍻 ${p.drinks} · ${p.vetoed ? `−${p.coins} taken back` : `+${p.coins} 🪙`}`
+                              : '📸 just a photo'}
+                            {p.caption ? ` · ${p.caption}` : ''}
+                          </span>
+                        </div>
+                        <div className="cam-review__acts">
+                          {p.drinks > 0 && (
+                            <button className="btn btn--ghost" onClick={() => void doVetoPhoto(p)}>
+                              {p.vetoed ? '↩ Undo' : '🚫 Veto'}
+                            </button>
+                          )}
+                          <button className="btn btn--danger" onClick={() => void doDeletePhoto(p)} aria-label="Delete">
+                            🗑
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </>
               )}
               {hostStatus === 'ended' && <p className="hint">Game ended — final standings below.</p>}
@@ -3854,6 +3997,7 @@ export default function App({
               {cfgField('Failed-steal lockout (sec)', 'stealLockSec')}
               {cfgField('🧱 fail forfeit (🪙)', 'reinforceForfeit')}
               {cfgField('Home-turf radius (m)', 'defendRadiusM')}
+              {cfgField('Coins per drink (🍻)', 'drinkCoins')}
               {(hostStatus === 'live' || hostStatus === 'paused') && (
                 <button className="btn" onClick={doApplyConfig} disabled={netBusy}>
                   ⚙️ Apply settings now
@@ -3960,6 +4104,15 @@ export default function App({
             💬{msgUnread > 0 && <span className="msg-badge">{msgUnread}</span>}
           </button>
         )}
+        {appMode === 'online' && membership && (
+          <button
+            className="cam-fab"
+            onClick={() => (camOpen ? closeCam() : openCam('gallery'))}
+            aria-label="Party Cam — the photo album and drink checks"
+          >
+            📸{photos.length > 0 && <span className="cam-count">{photos.length}</span>}
+          </button>
+        )}
         {gpsPopup && (
           <div className="wag-scrim wag-scrim--top" onClick={() => setGpsPopup(null)}>
             <div className="wag-pop">
@@ -3975,6 +4128,107 @@ export default function App({
           <button className="showdown-banner" onClick={() => setShowdownOpen(true)}>
             🪤 Ambush showdown — tap to report the result
           </button>
+        )}
+        {appMode === 'online' && membership && camOpen && (
+          <div className="msg-scrim msg-scrim--cam" onClick={closeCam}>
+            <div className="msg-panel" onClick={(e) => e.stopPropagation()}>
+              <div className="msg-head">
+                <span className="msg-head__pad" />
+                <span>📸 Party Cam</span>
+                <button onClick={closeCam} aria-label="Close">
+                  ✕
+                </button>
+              </div>
+              <div className="cam-tabs">
+                <button className={camTab === 'gallery' ? 'is-on' : ''} onClick={() => setCamTab('gallery')}>
+                  🖼️ Album
+                </button>
+                <button className={camTab === 'post' ? 'is-on' : ''} onClick={() => setCamTab('post')}>
+                  ＋ Post
+                </button>
+              </div>
+              {camNote && <p className="cam-note">{camNote}</p>}
+              {camTab === 'gallery' ? (
+                photos.length === 0 ? (
+                  <p className="msg-empty">No pictures yet — tap ＋ Post and start the album.</p>
+                ) : (
+                  <div className="cam-grid">
+                    {photos.map((p) => (
+                      <button key={p.id} className="cam-cell" onClick={() => setLightbox(p)}>
+                        <img src={p.url} alt={p.caption || 'party photo'} loading="lazy" />
+                        <span className="cam-who">{p.team_emoji}</span>
+                        {p.drinks > 0 && !p.vetoed && <span className="cam-tag">🍻{p.drinks}</span>}
+                      </button>
+                    ))}
+                  </div>
+                )
+              ) : (
+                <div className="cam-post">
+                  <label className="cam-drop">
+                    {camPreview ? (
+                      <img src={camPreview} alt="Your photo" />
+                    ) : (
+                      <span>📷 Tap to take a photo — or pick one from your roll</span>
+                    )}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => pickCamFile(e.target.files?.[0] ?? null)}
+                    />
+                  </label>
+                  <input
+                    className="cam-caption"
+                    value={camCaption}
+                    onChange={(e) => setCamCaption(e.target.value)}
+                    placeholder="Say something…"
+                    maxLength={140}
+                  />
+                  <div className="cam-drinks">
+                    <span>🍻 Drinks in this shot</span>
+                    <div className="cam-step">
+                      <button onClick={() => setCamDrinks((n) => Math.max(0, n - 1))} aria-label="One fewer">
+                        −
+                      </button>
+                      <b>{camDrinks}</b>
+                      <button onClick={() => setCamDrinks((n) => Math.min(20, n + 1))} aria-label="One more">
+                        ＋
+                      </button>
+                    </div>
+                  </div>
+                  <p className="hint">
+                    {camDrinks > 0
+                      ? `Pays ${camDrinks * drinkCoins} 🪙 the moment you post — any drink counts. Get them in the shot with you: a host can veto a photo that isn't what it claims.`
+                      : 'Leave it at 0 for a plain photo. Holding drinks? Count them and get paid.'}
+                  </p>
+                  <button className="btn btn--go" disabled={!camFile || camBusy} onClick={() => void postPhoto()}>
+                    {camBusy ? '…' : camDrinks > 0 ? `🍻 Post & claim ${camDrinks * drinkCoins} 🪙` : '📸 Post photo'}
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+        {lightbox && (
+          <div className="cam-light" onClick={() => setLightbox(null)}>
+            <div className="cam-light__inner" onClick={(e) => e.stopPropagation()}>
+              <img src={lightbox.url} alt={lightbox.caption || 'party photo'} />
+              <div className="cam-light__meta">
+                <b>
+                  {lightbox.team_emoji} {lightbox.team_name}
+                </b>
+                {lightbox.drinks > 0 &&
+                  (lightbox.vetoed ? (
+                    <span className="cam-vetoed"> · 🚫 vetoed</span>
+                  ) : (
+                    <span> · 🍻 {lightbox.drinks} · +{lightbox.coins} 🪙</span>
+                  ))}
+                {lightbox.caption && <p>{lightbox.caption}</p>}
+              </div>
+              <button className="btn btn--ghost" onClick={() => setLightbox(null)}>
+                Close
+              </button>
+            </div>
+          </div>
         )}
         {appMode === 'online' && membership && msgOpen && (
           <div className="msg-scrim" onClick={() => setMsgOpen(false)}>
@@ -5472,7 +5726,13 @@ export default function App({
                       <span>⭐ {t.stars} · 🪙 {t.coins}</span>
                     </div>
                   ))}
-                <button className="btn btn--ghost" style={{ width: '100%', marginTop: 10 }} onClick={() => setAppMode('design')}>
+                {/* The album is the keepsake — and the end of the game is when
+                    people actually want to scroll it. This overlay sits above
+                    the 📸 FAB, so it needs its own way in. */}
+                <button className="btn" style={{ width: '100%', marginTop: 10 }} onClick={() => openCam('gallery')}>
+                  📸 Look back at the album
+                </button>
+                <button className="btn btn--ghost" style={{ width: '100%', marginTop: 6 }} onClick={() => setAppMode('design')}>
                   Exit
                 </button>
               </div>

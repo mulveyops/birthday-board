@@ -146,7 +146,9 @@ const PHASES: { key: Phase; label: string }[] = [
 const phaseIndex = (p: Phase) => PHASES.findIndex((s) => s.key === p);
 
 // --- Play-mode model -------------------------------------------------------
-type SpotType = 'coin' | 'challenge' | 'chance' | 'bar' | 'bowser';
+// 'quest' is a resolved outcome, not something you can author onto a square:
+// it's what a plain space turns out to be when the pool rolls that way.
+type SpotType = 'coin' | 'challenge' | 'chance' | 'bar' | 'bowser' | 'quest';
 // Sim-speed timers: seconds here stand in for the real-world minutes (§ tunable).
 const SPAWN_MIN_MS = 15000;
 const SPAWN_MAX_MS = 25000;
@@ -202,12 +204,20 @@ function deriveSpots(board: Board): Square[] {
   return board.squares.filter((s) => (deg.get(s.id) ?? 0) >= 3 || OFF_JUNCTION_OK.has(s.type));
 }
 /** Explicit type wins; blank intersections get a deterministic coin/chance mix. */
-function deriveNodeType(spots: Square[]): Record<string, SpotType> {
+function deriveNodeType(spots: Square[], chanceShare = 25, questShare = 20): Record<string, SpotType> {
   const SPOT: string[] = ['coin', 'challenge', 'chance', 'bar', 'bowser'];
   const m: Record<string, SpotType> = {};
+  // One pool, one roll. A plain space is coins, a card, or a job — the quest
+  // isn't a separate lottery layered on top of the other two any more.
+  // Hashed from the id, so a space always answers the same way and backing out
+  // to re-roll gets you nowhere.
   for (const sq of spots) {
-    if (SPOT.includes(sq.type)) m[sq.id] = sq.type as SpotType;
-    else m[sq.id] = strHash01(sq.id) < 0.35 ? 'chance' : 'coin';
+    if (SPOT.includes(sq.type)) {
+      m[sq.id] = sq.type as SpotType;
+      continue;
+    }
+    const r = strHash01(sq.id) * 100;
+    m[sq.id] = r < questShare ? 'quest' : r < questShare + chanceShare ? 'chance' : 'coin';
   }
   return m;
 }
@@ -257,9 +267,9 @@ const DEFAULT_CHANCE_DECK: ChanceCard[] = [
   { id: 'd-rob3', text: '🦹 Heist time! Rob a rival team.', effect: 'rob', amount: 0 },
   { id: 'd-rob4', text: '🦹 Smash and grab! Rob a rival team.', effect: 'rob', amount: 0 },
   { id: 'd-rob5', text: '🦹 The perfect crime! Rob a rival team.', effect: 'rob', amount: 0 },
-  { id: 'd-claim1', text: '🧱 Sandbags! Fortify your turf.', effect: 'claim', amount: 0 },
-  { id: 'd-claim2', text: '🧱 Brick delivery! Fortify your turf.', effect: 'claim', amount: 0 },
-  { id: 'd-claim3', text: '🧱 Construction crew! Fortify your turf.', effect: 'claim', amount: 0 },
+  { id: 'd-claim1', text: '🎺 A brass band follows you down Brady. Tips!', effect: 'gain', amount: 20 },
+  { id: 'd-claim2', text: '🌭 You win a hot dog eating contest nobody entered.', effect: 'gain', amount: 25 },
+  { id: 'd-claim3', text: '🎩 You find a twenty in a coat you swear is yours.', effect: 'gain', amount: 20 },
   { id: 'd-gain1', text: '🍀 Found coins on the sidewalk!', effect: 'gain', amount: 20 },
   { id: 'd-gain2', text: '🍀 Bar dice champion!', effect: 'gain', amount: 30 },
   { id: 'd-gain3', text: '🎰 Jackpot!', effect: 'gain', amount: 40 },
@@ -632,7 +642,8 @@ export default function App({
   }
 
   const spots = useMemo(() => deriveSpots(board), [board.edges, board.squares]);
-  const nodeType = useMemo(() => deriveNodeType(spots), [spots]);
+  // Offline practice has no quests — there's nobody to hunt and no clock.
+  const nodeType = useMemo(() => deriveNodeType(spots, 25, 0), [spots]);
 
   const spotsRef = useRef(spots);
   spotsRef.current = spots;
@@ -1336,8 +1347,11 @@ export default function App({
     () => Object.fromEntries(territoryRows.map((r) => [r.spot_id, r.team_id])),
     [territoryRows],
   );
+  // 🧱 is retired — a corner is just a corner now, and one fewer rule to
+  // explain while standing on a pavement. The column stays in the database so
+  // older games still load; nothing reads it to make a decision any more.
   const reinforcedSet = useMemo(
-    () => new Set(territoryRows.filter((r) => r.reinforced).map((r) => r.spot_id)),
+    () => new Set<string>([]),
     [territoryRows],
   );
   // Failed-steal cooldowns (attacker→defender pairs, whole game — filtered to us).
@@ -1477,7 +1491,13 @@ export default function App({
   }, [appMode, nowTs, membership, onlineBoard, onlineStatus, onlineStartedAt, onlineConfig, starAvailable]);
 
   const myTeam = useMemo(() => teams.find((t) => t.id === membership?.teamId) ?? null, [teams, membership]);
-  const onlineNodeType = useMemo(() => (onlineBoard ? deriveNodeType(deriveSpots(onlineBoard)) : {}), [onlineBoard]);
+  const onlineNodeType = useMemo(
+    () =>
+      onlineBoard
+        ? deriveNodeType(deriveSpots(onlineBoard), cfg.chanceShare(onlineConfig), cfg.questChance(onlineConfig))
+        : {},
+    [onlineBoard, onlineConfig],
+  );
   // Turf graph: which corners are claimable + which are "consecutive" (runs can turn).
   const turfIds = useMemo(() => (onlineBoard ? territoryIds(onlineBoard) : new Set<string>()), [onlineBoard]);
   const turfAdj = useMemo(
@@ -1544,7 +1564,9 @@ export default function App({
       out[r.spot_id] = {
         color: teamColorOf(teams, r.team_id),
         mine: r.team_id === membership?.teamId,
-        reinforced: !!r.reinforced,
+        // Retired: old rows may still carry the flag, but no corner wears the
+        // badge any more.
+        reinforced: false,
       };
     }
     return out;
@@ -2023,6 +2045,10 @@ export default function App({
   const [questBusy, setQuestBusy] = useState(false);
   /** Re-open the photo mid-hunt — you can't solve a picture you can't see. */
   const [questPhoto, setQuestPhoto] = useState(false);
+  /** The trapper names the game — they're the one lying in wait, so they get to
+   * pick the ground. Stored on the quest because the VICTIM's phone is what
+   * builds the duel when it springs. */
+  const [ambushPick, setAmbushPick] = useState<string>(ROUND_TYPES[0]);
   const questLeft = myQuest ? Math.max(0, Math.floor((Date.parse(myQuest.expires_at) - nowTs) / 1000)) : 0;
   const questMark = myQuest?.target_team ? teams.find((t) => t.id === myQuest.target_team) : undefined;
   const questSpotName =
@@ -2144,6 +2170,7 @@ export default function App({
         kind,
         targetSpot: spotId,
         fromSpot: spotId,
+        choice: kind === 'ambush' ? ambushPick : null,
         reward: kind === 'recon' ? 0 : cfg.ambushTake(onlineConfig),
         seconds: secs,
       });
@@ -2200,7 +2227,7 @@ export default function App({
         challenger: trap.team_id,
         opponent: membership.teamId,
         kind: 'quest',
-        prompt: pickRound(),
+        prompt: trap.choice || pickRound(),
         stake: cfg.ambushTake(onlineConfig),
         spotId,
       });
@@ -2420,8 +2447,6 @@ export default function App({
     void springAmbushOn(spotId);
     void checkExplorerOn(spotId);
 
-    const sqOffer = onlineBoard.squares.find((s) => s.id === spotId);
-    if (sqOffer && spaceOffersQuest(spotId)) setQuestOffer({ spotId, name: sqOffer.title || 'this space' });
     const sq = onlineBoard.squares.find((s) => s.id === spotId);
     if (!sq) return;
     const type = onlineNodeType[spotId] ?? 'coin';
@@ -2442,6 +2467,16 @@ export default function App({
       if (turfOwner && turfIds.has(spotId)) {
         if (turfOwner !== membership.teamId) openSteal(spotId, sq, turfOwner);
         else setMyCornerModal({ spotId, name: sq.title || 'Your corner' });
+        return;
+      }
+      // The pool said this one's a job. Same gate as the other outcomes: a
+      // space you've already cleared doesn't pay out twice, and you can only
+      // carry one job, so a second offer just becomes a plain check-in.
+      if (type === 'quest' && !onlineCleared.includes(spotId) && !myQuest && teams.length > 1) {
+        setQuestOffer({ spotId, name: sq.title || 'this space' });
+        setOnlineCleared((c) => [...c, spotId]);
+        checkInSpot(membership.gameId, membership.teamId, spotId, sq.lat, sq.lng, 0).catch(() => {});
+        paintTurf(spotId);
         return;
       }
       if (type === 'chance') {
@@ -2531,7 +2566,8 @@ export default function App({
       spotId,
       name: sq.title || 'this corner',
       defenderId,
-      questions: dealStealQuestions(reinforced || defenderNear ? 2 : 1),
+      // Two questions only when the defender is genuinely standing there.
+      questions: dealStealQuestions(defenderNear ? 2 : 1),
       reinforced,
       defenderNear,
     });
@@ -3559,12 +3595,6 @@ export default function App({
                   {cfg.territoryTickSec(onlineConfig) >= 120
                     ? `${Math.round(cfg.territoryTickSec(onlineConfig) / 60)} min`
                     : `${cfg.territoryTickSec(onlineConfig)}s`}
-                </>
-              )}
-              {(myTeam?.reinforcements ?? 0) > 0 && (
-                <>
-                  {' '}· 🧱 <b>{myTeam?.reinforcements}</b> charge{(myTeam?.reinforcements ?? 0) > 1 ? 's' : ''} — check in
-                  at a corner you own to fortify it
                 </>
               )}
             </p>
@@ -5089,6 +5119,21 @@ export default function App({
                       backfires for <b>{cfg.ambushBackfire(onlineConfig)} 🪙</b>. Nobody comes, nothing
                       happens.
                     </p>
+                    <p className="hint" style={{ marginBottom: 4 }}>
+                      <b>You pick the game</b> — you're the one lying in wait.
+                    </p>
+                    <div className="ambush-picks">
+                      {ROUND_TYPES.map((t) => (
+                        <button
+                          key={t}
+                          className={`ambush-pick${ambushPick === t ? ' is-on' : ''}`}
+                          onClick={() => setAmbushPick(t)}
+                        >
+                          {t}
+                        </button>
+                      ))}
+                    </div>
+
                   </>
                 )}
                 <p className="hint">
@@ -5298,7 +5343,9 @@ export default function App({
 
         {modal &&
           (() => {
-            const meta = SQUARE_TYPES[modal.type];
+            // 'quest' only ever comes out of the online pool; offline can't
+            // land on one, and the palette has no entry for it.
+            const meta = SQUARE_TYPES[modal.type === 'quest' ? 'coin' : modal.type];
             return (
               <div
                 style={{
@@ -5603,17 +5650,9 @@ export default function App({
                     ) : (
                       <>
                         <p className="hint" style={{ marginTop: 0 }}>
-                          Your paint holds this corner in your run. Fortify it with a 🧱 charge
-                          {charges > 0 ? ` (you have ${charges})` : ' — win one from a chance card'}.
+                          Your paint holds this corner in your run. Anyone can take it off you by
+                          answering a question here — keep an eye on it.
                         </p>
-                        <button
-                          className="btn btn--go"
-                          style={{ width: '100%' }}
-                          disabled={cornerBusy || charges < 1}
-                          onClick={() => void doReinforce()}
-                        >
-                          {cornerBusy ? '…' : charges < 1 ? 'No 🧱 charges yet' : '🧱 Reinforce this corner'}
-                        </button>
                       </>
                     )}
                     <button

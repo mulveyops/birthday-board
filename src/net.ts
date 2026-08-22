@@ -931,7 +931,7 @@ export interface GameConfig {
   ambushReward: number; // coins each ambusher steals from the victim on a win
   territoryTickSec: number; // turf income interval; each tick pays longest-run coins
   stealLockSec: number; // failed steal → can't hit that team again for this long
-  reinforceForfeit: number; // coins a failed attacker forfeits at a 🧱 corner
+  reinforceForfeit: number; // retired with 🧱; kept so older games still load
   defendRadiusM: number; // defender's fresh check-in within this → home-turf defense
   gpsRequired: boolean; // check-ins demand physical presence (HOST setting, not the player's)
   starIntervalSec: number; // a star lands at a bar this often (0 = admin drops only)
@@ -943,7 +943,8 @@ export interface GameConfig {
   campMaxStep: number; // ...until an interval is worth this much
   campBankCap: number; // the bank stops growing here, so a quiet corner can't win it
   campRaidPct: number; // share of the bank a successful raider takes
-  questChance: number; // 0-100: how often a plain space offers a side quest
+  questChance: number; // 0-100 share of a plain space's outcomes that are a side quest
+  chanceShare: number; // 0-100 share that draws a chance card; the rest is coins
   tagWindowSec: number; // how close behind your mark you have to check in
   tagQuestSec: number; // how long a hunt stays open before they've evaded you
   tagSteal: number; // coins taken off the mark when you land it
@@ -980,7 +981,8 @@ export const cfg = {
   campMaxStep: (c: Partial<GameConfig> | undefined) => c?.campMaxStep ?? 20,
   campBankCap: (c: Partial<GameConfig> | undefined) => c?.campBankCap ?? 100,
   campRaidPct: (c: Partial<GameConfig> | undefined) => c?.campRaidPct ?? 50,
-  questChance: (c: Partial<GameConfig> | undefined) => c?.questChance ?? 18,
+  questChance: (c: Partial<GameConfig> | undefined) => c?.questChance ?? 20,
+  chanceShare: (c: Partial<GameConfig> | undefined) => c?.chanceShare ?? 25,
   tagWindowSec: (c: Partial<GameConfig> | undefined) => c?.tagWindowSec ?? 120,
   tagQuestSec: (c: Partial<GameConfig> | undefined) => c?.tagQuestSec ?? 900,
   tagSteal: (c: Partial<GameConfig> | undefined) => c?.tagSteal ?? 50,
@@ -1025,7 +1027,8 @@ export const PARTY_CONFIG: GameConfig = {
   campMaxStep: 20,
   campBankCap: 100,
   campRaidPct: 50,
-  questChance: 18,
+  questChance: 20,
+  chanceShare: 25,
   tagWindowSec: 120,
   tagQuestSec: 900,
   tagSteal: 50,
@@ -1067,7 +1070,8 @@ export const TEST_CONFIG: GameConfig = {
   campMaxStep: 20,
   campBankCap: 100,
   campRaidPct: 50,
-  questChance: 18,
+  questChance: 20,
+  chanceShare: 25,
   tagWindowSec: 120,
   tagQuestSec: 900,
   tagSteal: 50,
@@ -1878,6 +1882,8 @@ export interface QuestRow {
   target_team: string | null;
   target_spot: string | null;
   from_spot: string | null;
+  /** Ambush only: the game the trapper picked, read by the victim's phone. */
+  choice: string | null;
   status: 'active' | 'done' | 'failed';
   reward: number;
   expires_at: string;
@@ -1893,6 +1899,7 @@ export async function acceptQuest(args: {
   targetTeam?: string | null;
   targetSpot?: string | null;
   fromSpot?: string | null;
+  choice?: string | null;
   reward: number;
   seconds: number;
 }): Promise<QuestRow | null> {
@@ -1906,6 +1913,7 @@ export async function acceptQuest(args: {
       target_team: args.targetTeam ?? null,
       target_spot: args.targetSpot ?? null,
       from_spot: args.fromSpot ?? null,
+      choice: args.choice ?? null,
       reward: args.reward,
       expires_at: new Date(Date.now() + args.seconds * 1000).toISOString(),
     })

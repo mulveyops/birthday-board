@@ -948,6 +948,11 @@ export interface GameConfig {
   tagQuestSec: number; // how long a hunt stays open before they've evaded you
   tagSteal: number; // coins taken off the mark when you land it
   tagEvade: number; // coins the mark collects for never being caught
+  reconSec: number; // how long you must hold a spot for the intel
+  reconSteal: number; // coins a challenger takes if they beat you at it
+  ambushSec: number; // how long a trap stays armed
+  ambushTake: number; // coins taken off whoever walks into it
+  ambushBackfire: number; // coins you forfeit if they beat you instead
 }
 
 /** Config value with a fallback (older published games lack newer fields). */
@@ -977,6 +982,11 @@ export const cfg = {
   tagQuestSec: (c: Partial<GameConfig> | undefined) => c?.tagQuestSec ?? 900,
   tagSteal: (c: Partial<GameConfig> | undefined) => c?.tagSteal ?? 50,
   tagEvade: (c: Partial<GameConfig> | undefined) => c?.tagEvade ?? 25,
+  reconSec: (c: Partial<GameConfig> | undefined) => c?.reconSec ?? 600,
+  reconSteal: (c: Partial<GameConfig> | undefined) => c?.reconSteal ?? 50,
+  ambushSec: (c: Partial<GameConfig> | undefined) => c?.ambushSec ?? 600,
+  ambushTake: (c: Partial<GameConfig> | undefined) => c?.ambushTake ?? 75,
+  ambushBackfire: (c: Partial<GameConfig> | undefined) => c?.ambushBackfire ?? 25,
 };
 
 export const PARTY_CONFIG: GameConfig = {
@@ -1014,6 +1024,11 @@ export const PARTY_CONFIG: GameConfig = {
   tagQuestSec: 900,
   tagSteal: 50,
   tagEvade: 25,
+  reconSec: 600,
+  reconSteal: 50,
+  ambushSec: 600,
+  ambushTake: 75,
+  ambushBackfire: 25,
 };
 export const TEST_CONFIG: GameConfig = {
   starCost: 40,
@@ -1048,6 +1063,11 @@ export const TEST_CONFIG: GameConfig = {
   tagQuestSec: 900,
   tagSteal: 50,
   tagEvade: 25,
+  reconSec: 600,
+  reconSteal: 50,
+  ambushSec: 600,
+  ambushTake: 75,
+  ambushBackfire: 25,
 };
 
 export interface GameFull {

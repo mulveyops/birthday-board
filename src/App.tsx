@@ -84,6 +84,7 @@ import {
   closeQuest,
   getPosition,
   type QuestRow,
+  type QuestKind,
   listDuels,
   subscribeDuels,
   resolveDuel,
@@ -1873,6 +1874,10 @@ export default function App({
     ? campIncrement(campLapsed ? 0 : myCamp.ticks, cfg.campStep(onlineConfig), cfg.campMaxStep(onlineConfig))
     : 0;
   const [campBusy, setCampBusy] = useState(false);
+  /** At the ceiling there is nothing left to earn by staying — the only move
+   * is to carry it out, and the bar should say so rather than keep offering
+   * a payout it can't make. */
+  const campFull = !!myCamp && myCamp.banked >= cfg.campBankCap(onlineConfig);
 
   async function doStartCamp(spotId: string, name: string) {
     if (!membership || campBusy) return;
@@ -1911,10 +1916,17 @@ export default function App({
       })
         .then((row) => {
           if (!row) return; // another phone on this team got the same interval
+          const cap = cfg.campBankCap(onlineConfig);
           setGpsPopup(
             campLapsed
               ? { emoji: '⏳', title: 'Streak reset', body: 'You missed an interval — the bank is safe, the run starts over.' }
-              : { emoji: '🏕️', title: `+${campNext} banked`, body: `🪙${row.banked} waiting. Check in elsewhere to carry it out.` },
+              : row.banked >= cap
+                ? {
+                    emoji: '🏦',
+                    title: `Bank full — 🪙${cap}`,
+                    body: "That's as much as a camp will hold. Sitting here earns nothing now — check in somewhere else to carry it out before someone takes half.",
+                  }
+                : { emoji: '🏕️', title: `+${campNext} banked`, body: `🪙${row.banked} waiting. Check in elsewhere to carry it out.` },
           );
         })
         .catch((e) => alert('Ping failed: ' + (e as Error).message))
@@ -2011,6 +2023,8 @@ export default function App({
   const [questBusy, setQuestBusy] = useState(false);
   const questLeft = myQuest ? Math.max(0, Math.floor((Date.parse(myQuest.expires_at) - nowTs) / 1000)) : 0;
   const questMark = myQuest?.target_team ? teams.find((t) => t.id === myQuest.target_team) : undefined;
+  const questSpotName =
+    onlineBoard?.squares.find((sq) => sq.id === myQuest?.target_spot)?.title || 'this space';
 
   /**
    * Does this space offer a quest? Hashed from game+team+spot so it's the same
@@ -2022,6 +2036,120 @@ export default function App({
     if (teams.length < 2) return false; // nobody to hunt
     if (quests.some((q) => q.team_id === membership.teamId && q.from_spot === spotId)) return false;
     return strHash01(`${membership.gameId}:${membership.teamId}:${spotId}`) * 100 < cfg.questChance(onlineConfig);
+  }
+
+  /** Which job this space is offering — same hash, so it never re-rolls. */
+  function questKindFor(spotId: string): QuestKind {
+    if (!membership) return 'tag';
+    const r = strHash01(`kind:${membership.gameId}:${membership.teamId}:${spotId}`);
+    return r < 0.4 ? 'tag' : r < 0.7 ? 'recon' : 'ambush';
+  }
+
+  /** The next bars in the star rotation — Recon's payoff, and real intel:
+   * a drop lands at the first bar with no star waiting and no claim running. */
+  function nextStarBars(n: number): string[] {
+    const pool = (onlineBoard?.squares ?? [])
+      .filter((sq) => sq.type === 'bar')
+      .sort((a, b) => a.id.localeCompare(b.id));
+    const out: string[] = [];
+    const taken = new Set<string>();
+    for (const sq of pool) {
+      if (out.length >= n) break;
+      const busy =
+        (starAvailable[sq.id] ?? 0) > 0 ||
+        starClaimRows.some((c) => c.bar_spot_id === sq.id && c.status === 'claiming') ||
+        taken.has(sq.id);
+      if (!busy) {
+        out.push(sq.title || 'a bar');
+        taken.add(sq.id);
+      }
+    }
+    return out;
+  }
+
+  async function doAcceptQuest(kind: QuestKind, spotId: string, spotName: string) {
+    if (!membership || questBusy) return;
+    setQuestBusy(true);
+    try {
+      if (kind === 'tag') {
+        await doAcceptTag(spotId);
+        return;
+      }
+      const secs = kind === 'recon' ? cfg.reconSec(onlineConfig) : cfg.ambushSec(onlineConfig);
+      const row = await acceptQuest({
+        gameId: membership.gameId,
+        teamId: membership.teamId,
+        kind,
+        targetSpot: spotId,
+        fromSpot: spotId,
+        reward: kind === 'recon' ? 0 : cfg.ambushTake(onlineConfig),
+        seconds: secs,
+      });
+      setQuestOffer(null);
+      if (!row) {
+        setGpsPopup({ emoji: '🎯', title: 'Already on a job', body: 'Finish the one you have first.' });
+        return;
+      }
+      const mins = Math.round(secs / 60);
+      setGpsPopup(
+        kind === 'recon'
+          ? {
+              emoji: '🔭',
+              title: `Holding ${spotName}`,
+              body: `Stay put ${mins} min. Anyone who turns up can challenge you — beat them, or last it out, and you'll know where the next stars land.`,
+            }
+          : {
+              emoji: '🪤',
+              title: `Trap set at ${spotName}`,
+              body: `Armed for ${mins} min. The next team to check in here walks into it — win and you take ${cfg.ambushTake(onlineConfig)} 🪙.`,
+            },
+      );
+      logEvent(
+        membership.gameId,
+        'battle',
+        kind === 'recon'
+          ? `🔭 ${myTeam?.name ?? 'A team'} is holding ${spotName} — go challenge them`
+          : `🪤 Something's set up somewhere. Watch your step.`,
+      ).catch(() => {});
+    } catch (e) {
+      alert('Could not accept: ' + (e as Error).message);
+    } finally {
+      setQuestBusy(false);
+    }
+  }
+
+  /** Someone else's job running at the spot we just walked into. */
+  const questHere = (spotId: string) =>
+    quests.find(
+      (q) => q.status === 'active' && q.target_spot === spotId && q.team_id !== membership?.teamId,
+    ) ?? null;
+
+  /** Walk into an armed trap and it springs on you — no button to decline. */
+  async function springAmbushOn(spotId: string) {
+    if (!membership) return;
+    const trap = quests.find(
+      (q) => q.status === 'active' && q.kind === 'ambush' && q.target_spot === spotId && q.team_id !== membership.teamId,
+    );
+    if (!trap) return;
+    const sq = onlineBoard?.squares.find((x) => x.id === spotId);
+    try {
+      await startDuel({
+        gameId: membership.gameId,
+        challenger: trap.team_id,
+        opponent: membership.teamId,
+        kind: 'quest',
+        prompt: pickRound(),
+        stake: cfg.ambushTake(onlineConfig),
+        spotId,
+      });
+      logEvent(
+        membership.gameId,
+        'battle',
+        `🪤 ${teams.find((t) => t.id === trap.team_id)?.name ?? 'A team'} sprang a trap on ${myTeam?.name ?? 'a team'} at ${sq?.title || 'a space'}!`,
+      ).catch(() => {});
+    } catch {
+      /* already running */
+    }
   }
 
   async function doAcceptTag(spotId: string) {
@@ -2095,9 +2223,30 @@ export default function App({
     if (!membership || !myQuest || questLeft > 0) return;
     let alive = true;
     (async () => {
+      // Recon that runs its full length is a WIN — nobody came for you.
+      if (myQuest.kind === 'recon') {
+        if (!(await closeQuest(myQuest.id, 'done').catch(() => false))) return;
+        if (!alive) return;
+        const bars = nextStarBars(2);
+        setGpsPopup({
+          emoji: '🔭',
+          title: 'Nobody came',
+          body: bars.length
+            ? `Word is the next stars land at: ${bars.join(', then ')}.`
+            : 'Every bar already has a star waiting — go take one.',
+        });
+        return;
+      }
+      if (myQuest.kind === 'ambush') {
+        if (!(await closeQuest(myQuest.id, 'failed').catch(() => false))) return;
+        if (!alive) return;
+        setGpsPopup({ emoji: '🪤', title: 'Trap went cold', body: 'Nobody walked into it. Try somewhere busier.' });
+        return;
+      }
       if (!(await closeQuest(myQuest.id, 'failed').catch(() => false))) return;
       if (!alive) return;
       const evade = cfg.tagEvade(onlineConfig);
+
       if (myQuest.target_team && evade > 0) {
         await adjustCoins(myQuest.target_team, evade).catch(() => {});
         const markName = teams.find((t) => t.id === myQuest.target_team)?.name ?? 'a team';
@@ -2117,7 +2266,37 @@ export default function App({
       const mine = await resolveDuel(duel.id, winner);
       if (!mine) return; // the other phone reported first — their payout stands
       const wName = teams.find((t) => t.id === winner)?.name ?? 'A team';
-      if (duel.kind === 'camp' && winner === duel.challenger) {
+      if (duel.kind === 'quest') {
+        const q = quests.find((x) => x.status === 'active' && x.target_spot === duel.spot_id);
+        const wq = teams.find((t) => t.id === winner)?.name ?? 'A team';
+        if (q && (await closeQuest(q.id, winner === q.team_id ? 'done' : 'failed'))) {
+          if (q.kind === 'ambush') {
+            // The trapper wins and takes the purse; lose and it backfires.
+            const from = winner === q.team_id ? duel.opponent : q.team_id;
+            const to = winner === q.team_id ? q.team_id : duel.opponent;
+            const amt = winner === q.team_id ? duel.stake : cfg.ambushBackfire(onlineConfig);
+            // transfer_coins moves only what the loser actually has, so report
+            // what MOVED rather than what was asked for.
+            const moved = amt > 0 ? await transferCoins(from, to, amt) : 0;
+            logEvent(duel.game_id, 'battle', `🪤 ${wq} came out of the trap ${moved} 🪙 up`).catch(() => {});
+          } else if (winner !== q.team_id) {
+            // Recon broken up: the challenger lifts coins off the watcher.
+            const took = await transferCoins(q.team_id, winner, cfg.reconSteal(onlineConfig));
+            logEvent(duel.game_id, 'battle', `🔭 ${wq} broke up a recon — ${took} 🪙`).catch(() => {});
+          } else {
+            logEvent(duel.game_id, 'battle', `🔭 ${wq} held their ground`).catch(() => {});
+            if (q.team_id === membership?.teamId) {
+              const bars = nextStarBars(2);
+              setGpsPopup({
+                emoji: '🔭',
+                title: 'You held it',
+                body: bars.length ? `Next stars land at: ${bars.join(', then ')}.` : 'Every bar has a star waiting.',
+              });
+            }
+          }
+        }
+      } else if (duel.kind === 'camp' && winner === duel.challenger) {
+
         const camp = camps.find((c) => c.team_id === duel.opponent && c.status === 'active');
         if (camp && (await raidCamp(camp, duel.stake))) {
           await adjustCoins(duel.challenger, duel.stake);
@@ -2142,6 +2321,7 @@ export default function App({
     void collectMyCamp(spotId);
     // Did we just walk in behind our mark? And does this space have work going?
     void checkTagOn(spotId);
+    void springAmbushOn(spotId);
     const sqOffer = onlineBoard.squares.find((s) => s.id === spotId);
     if (sqOffer && spaceOffersQuest(spotId)) setQuestOffer({ spotId, name: sqOffer.title || 'this space' });
     const sq = onlineBoard.squares.find((s) => s.id === spotId);
@@ -4745,17 +4925,44 @@ export default function App({
                 <span className="msg-head__pad" />
               </div>
               <div className="quest-body">
-                <div className="quest-kind">TAG</div>
-                <p className="quest-brief">
-                  Someone here has a job for you. You'll be given a rival to hunt — find them on the
-                  map, shadow them, and check in where they check in within{' '}
-                  <b>{Math.round(cfg.tagWindowSec(onlineConfig) / 60)} minutes</b> of them.
-                </p>
-                <p className="hint">
-                  Land it and you lift <b>{cfg.tagSteal(onlineConfig)} 🪙</b> off them. Let the clock run
-                  out and they pocket <b>{cfg.tagEvade(onlineConfig)} 🪙</b> for losing you. They are not
-                  told they're being followed.
-                </p>
+                <div className="quest-kind">{questKindFor(questOffer.spotId).toUpperCase()}</div>
+                {questKindFor(questOffer.spotId) === 'tag' ? (
+                  <>
+                    <p className="quest-brief">
+                      You'll be given a rival to hunt — find them on the map, shadow them, and check in
+                      where they check in within{' '}
+                      <b>{Math.round(cfg.tagWindowSec(onlineConfig) / 60)} minutes</b> of them.
+                    </p>
+                    <p className="hint">
+                      Land it and you lift <b>{cfg.tagSteal(onlineConfig)} 🪙</b> off them. Let the clock
+                      run out and they pocket <b>{cfg.tagEvade(onlineConfig)} 🪙</b> for losing you. They
+                      are never told they're being followed.
+                    </p>
+                  </>
+                ) : questKindFor(questOffer.spotId) === 'recon' ? (
+                  <>
+                    <p className="quest-brief">
+                      Hold this spot for <b>{Math.round(cfg.reconSec(onlineConfig) / 60)} minutes</b>.
+                      Everyone will know you're here, and anyone who turns up can challenge you.
+                    </p>
+                    <p className="hint">
+                      Beat them, or last it out unchallenged, and you'll learn where the next two stars
+                      land. Lose and they take <b>{cfg.reconSteal(onlineConfig)} 🪙</b> off you.
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <p className="quest-brief">
+                      Set a trap here and wait <b>{Math.round(cfg.ambushSec(onlineConfig) / 60)} minutes</b>.
+                      The next team to check in walks straight into it — no warning, no way out.
+                    </p>
+                    <p className="hint">
+                      Win the scrap and you take <b>{cfg.ambushTake(onlineConfig)} 🪙</b>. Lose and it
+                      backfires for <b>{cfg.ambushBackfire(onlineConfig)} 🪙</b>. Nobody comes, nothing
+                      happens.
+                    </p>
+                  </>
+                )}
                 <p className="hint">
                   You keep playing as normal — you just can't take another job until this one's done.
                 </p>
@@ -4763,9 +4970,9 @@ export default function App({
                   className="btn btn--go"
                   style={{ width: '100%' }}
                   disabled={questBusy}
-                  onClick={() => void doAcceptTag(questOffer.spotId)}
+                  onClick={() => void doAcceptQuest(questKindFor(questOffer.spotId), questOffer.spotId, questOffer.name)}
                 >
-                  🎯 Take the job
+                  Take the job
                 </button>
                 <button
                   className="btn btn--ghost"
@@ -5613,6 +5820,42 @@ export default function App({
                     {/* Camping: the slow game. Sit still, coins pile up faster
                         the longer you stay, and you carry them out by checking
                         in somewhere else. Anyone who finds you can take half. */}
+                    {/* Someone is holding this spot for a recon job. You can let
+                        them have it, or take them on — beat them and you lift
+                        coins, and they lose the intel they were waiting for. */}
+                    {live && (() => {
+                      const q = questHere(spotId);
+                      if (!q || q.kind !== 'recon') return null;
+                      const holder = teams.find((t) => t.id === q.team_id);
+                      return (
+                        <div className="camp-call">
+                          <b>
+                            🔭 {holder?.emoji} {holder?.name} is holding this spot
+                          </b>
+                          <span className="hint">
+                            Challenge them and the winner takes {cfg.reconSteal(onlineConfig)} 🪙
+                          </span>
+                          <button
+                            className="btn btn--danger"
+                            style={{ width: '100%' }}
+                            disabled={questBusy || !membership}
+                            onClick={() =>
+                              void startDuel({
+                                gameId: membership!.gameId,
+                                challenger: membership!.teamId,
+                                opponent: q.team_id,
+                                kind: 'quest',
+                                prompt: pickRound(),
+                                stake: cfg.reconSteal(onlineConfig),
+                                spotId,
+                              }).then(() => setSpotSheet(null))
+                            }
+                          >
+                            ⚔️ Challenge the watch
+                          </button>
+                        </div>
+                      );
+                    })()}
                     {live && (type === 'bar' || type === 'poi') && (() => {
                       const here = campBySpot[spotId];
                       if (here && here.team_id !== membership.teamId) {
@@ -6406,10 +6649,18 @@ export default function App({
                   <span className="hud-more">▾</span>
                 </button>
               </div>
-              {myQuest && myQuest.kind === 'tag' && (
+              {myQuest && (
                 <div className="quest-row">
                   <span className="quest-row__what">
-                    🎯 Hunting <b>{questMark?.emoji} {questMark?.name ?? 'someone'}</b>
+                    {myQuest.kind === 'tag' ? (
+                      <>
+                        🎯 Hunting <b>{questMark?.emoji} {questMark?.name ?? 'someone'}</b>
+                      </>
+                    ) : myQuest.kind === 'recon' ? (
+                      <>🔭 Holding <b>{questSpotName}</b> — stay put</>
+                    ) : (
+                      <>🪤 Trap armed at <b>{questSpotName}</b></>
+                    )}
                   </span>
                   <span className="quest-row__clock">
                     {Math.floor(questLeft / 60)}:{String(questLeft % 60).padStart(2, '0')}
@@ -6420,16 +6671,19 @@ export default function App({
                 <div className={`camp-row${campDue === 0 ? ' is-due' : ''}`}>
                   <span className="camp-row__what">
                     🏕️ <b>🪙{myCamp.banked}</b> banked
-                    {campLapsed && <em className="camp-row__lapsed">streak lost</em>}
+                    {campFull && <em className="camp-row__full">FULL</em>}
+                    {campLapsed && !campFull && <em className="camp-row__lapsed">streak lost</em>}
                   </span>
                   <button
                     className="camp-row__btn"
-                    disabled={campBusy || campDue > 0}
+                    disabled={campBusy || campDue > 0 || campFull}
                     onClick={doPingCamp}
                   >
-                    {campDue > 0
-                      ? `${Math.floor(campDue / 60)}:${String(campDue % 60).padStart(2, '0')}`
-                      : `Still here +${campNext}`}
+                    {campFull
+                      ? 'Go cash out'
+                      : campDue > 0
+                        ? `${Math.floor(campDue / 60)}:${String(campDue % 60).padStart(2, '0')}`
+                        : `Still here +${campNext}`}
                   </button>
                 </div>
               )}

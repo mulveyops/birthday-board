@@ -2566,8 +2566,10 @@ export default function App({
       spotId,
       name: sq.title || 'this corner',
       defenderId,
-      // Two questions only when the defender is genuinely standing there.
-      questions: dealStealQuestions(defenderNear ? 2 : 1),
+      // Always two, both right. Fifteen of the fifty questions are
+      // Abby-or-Steven two-handers, so a single question makes roughly a third
+      // of steals a coin flip — and a corner shouldn't change hands on a guess.
+      questions: dealStealQuestions(2),
       reinforced,
       defenderNear,
     });
@@ -5760,11 +5762,6 @@ export default function App({
                           flip it. Miss, and you're locked out of hitting them for{' '}
                           {Math.ceil(cfg.stealLockSec(onlineConfig) / 60)} min.
                         </p>
-                        {stealModal.reinforced && (
-                          <p className="hint" style={{ background: '#3b2a1d', color: '#fcd9a8', borderRadius: 8, padding: '7px 10px' }}>
-                            🧱 <b>Reinforced!</b> Miss and you also forfeit {cfg.reinforceForfeit(onlineConfig)} 🪙 to {defName}.
-                          </p>
-                        )}
                         {stealModal.defenderNear && (
                           <p className="hint" style={{ background: '#3b1d1d', color: '#fecaca', borderRadius: 8, padding: '7px 10px' }}>
                             ⚔️ <b>{defName} is right there</b> — home-turf defense makes this play harder.

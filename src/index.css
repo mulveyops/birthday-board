@@ -2350,3 +2350,105 @@ body {
   font-size: 0.74rem;
   padding-top: 1px;
 }
+
+/* --- Camping & duels ------------------------------------------------------ */
+/* The camp row sits in the bar with the rest of the HUD. It turns warm when a
+   payout is claimable, so a glance tells you whether to tap. */
+.camp-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border: 1px solid #4a3a1a;
+  border-radius: 11px;
+  background: #2a2010;
+  color: #fcd34d;
+  font-family: 'Fredoka', system-ui, sans-serif;
+  font-size: 0.84rem;
+}
+.camp-row.is-due {
+  border-color: #f59e0b;
+  background: #3a2a10;
+}
+.camp-row__what {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.camp-row__lapsed {
+  font-style: normal;
+  font-size: 0.68rem;
+  font-weight: 800;
+  background: #7f1d1d;
+  color: #fecaca;
+  border-radius: 999px;
+  padding: 1px 7px;
+  margin-left: 6px;
+}
+.camp-row__btn {
+  flex: none;
+  border: 1px solid #b45309;
+  background: #b45309;
+  color: #fff7ed;
+  border-radius: 9px;
+  padding: 7px 11px;
+  font-family: 'Fredoka', system-ui, sans-serif;
+  font-size: 0.78rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+.camp-row__btn:disabled {
+  background: #33281a;
+  border-color: #4a3a1a;
+  color: #a89268;
+  cursor: default;
+}
+/* Someone else's camp, surfaced on the spot sheet. */
+.camp-call {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 8px 0;
+  padding: 9px 11px;
+  border: 2px solid #b45309;
+  border-radius: 12px;
+  background: #fff4e2;
+}
+.camp-call .hint {
+  margin: 0 0 4px;
+}
+.duel-panel {
+  max-width: 380px;
+}
+.duel-body {
+  padding: 12px 14px 16px;
+}
+.duel-vs {
+  margin: 0 0 8px;
+  text-align: center;
+  font-family: 'Fredoka', system-ui, sans-serif;
+  font-weight: 800;
+}
+.duel-vs em {
+  font-style: normal;
+  opacity: 0.55;
+  margin: 0 6px;
+}
+/* The prompt is the whole point of the modal — give it the weight. */
+.duel-prompt {
+  padding: 14px 12px;
+  border: 3px dashed #b45309;
+  border-radius: 12px;
+  background: #fff4e2;
+  text-align: center;
+  font-family: 'Luckiest Guy', 'Fredoka', cursive;
+  font-size: 1.35rem;
+  letter-spacing: 0.5px;
+}
+.duel-stake {
+  text-align: center;
+  font-weight: 700;
+  margin: 8px 0;
+}

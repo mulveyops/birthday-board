@@ -77,6 +77,20 @@ import {
   type TerritoryRow,
   uploadTriviaPhoto,
   uploadPartyPhoto,
+  startDuel,
+  listDuels,
+  subscribeDuels,
+  resolveDuel,
+  cancelDuel,
+  startCamp,
+  pingCamp,
+  collectCamp,
+  raidCamp,
+  listCamps,
+  subscribeCamps,
+  campIncrement,
+  type DuelRow,
+  type CampRow,
   submitPhoto,
   listPhotos,
   subscribePhotos,
@@ -1199,6 +1213,8 @@ export default function App({
   // the moment it's posted — submission alone is enough. A host or ref vetoes
   // a bogus one afterwards and the coins come straight back off.
   const [photos, setPhotos] = useState<PhotoRow[]>([]);
+  const [duels, setDuels] = useState<DuelRow[]>([]);
+  const [camps, setCamps] = useState<CampRow[]>([]);
   const [camOpen, setCamOpen] = useState(false);
   const [camTab, setCamTab] = useState<'gallery' | 'post'>('gallery');
   const [camFile, setCamFile] = useState<File | null>(null);
@@ -1552,6 +1568,8 @@ export default function App({
     const loadEvents = () => listEvents(gid).then((e) => alive && setEvents(e)).catch(() => {});
     const loadMsgs = () => listMessages(gid).then((m) => alive && setMessages(m)).catch(() => {});
     const loadPhotos = () => listPhotos(gid).then((p) => alive && setPhotos(p)).catch(() => {});
+    const loadDuels = () => listDuels(gid).then((d) => alive && setDuels(d)).catch(() => {});
+    const loadCamps = () => listCamps(gid).then((c) => alive && setCamps(c)).catch(() => {});
     const loadAmbushes = () => listAmbushes(gid).then((a) => alive && setAmbushes(a)).catch(() => {});
     const loadTurf = () =>
       listTerritory(gid)
@@ -1575,6 +1593,8 @@ export default function App({
     loadEvents();
     loadMsgs();
     loadPhotos();
+    loadDuels();
+    loadCamps();
     loadAmbushes();
     loadTurf();
     loadRaids();
@@ -1588,6 +1608,8 @@ export default function App({
     const u6 = subscribeGame(gid, loadGame);
     const u8 = subscribeMessages(gid, loadMsgs);
     const uPh = subscribePhotos(gid, loadPhotos);
+    const uDu = subscribeDuels(gid, loadDuels);
+    const uCa = subscribeCamps(gid, loadCamps);
     const u9 = subscribeAmbushes(gid, loadAmbushes);
     const u10 = subscribeTerritory(gid, loadTurf);
     const u11 = subscribeRaidLocks(gid, loadRaids);
@@ -1597,6 +1619,8 @@ export default function App({
       u2();
       u3();
       uPh();
+      uDu();
+      uCa();
       u4();
       u5();
       u6();
@@ -1781,8 +1805,176 @@ export default function App({
   }
   /** The play itself — everything that used to happen on tap. Runs only after
    * the sheet's action button passes the proximity gate. */
+  // --- Camping & duels -----------------------------------------------------
+  // Park at a spot and coins pile up, each interval worth more than the last,
+  // but they sit in a BANK that only pays when you leave and check in somewhere
+  // else. You must tap "still here" every interval (GPS-gated) or the
+  // escalation resets. Anyone who finds you can challenge for half the bank —
+  // and that challenge is a DUEL: one prompt, both phones, tap who won.
+  const myCamp = useMemo(
+    () => camps.find((c) => c.team_id === membership?.teamId && c.status === 'active') ?? null,
+    [camps, membership],
+  );
+  /** Spot → whoever is camped there, for the spot sheet and the map. */
+  const campBySpot = useMemo(() => {
+    const out: Record<string, CampRow> = {};
+    for (const c of camps) if (c.status === 'active') out[c.spot_id] = c;
+    return out;
+  }, [camps]);
+  const campTick = cfg.campTickSec(onlineConfig) * 1000;
+  /** Seconds until this camp's next payout is claimable (0 = tap it now). */
+  const campDue = myCamp ? Math.max(0, Math.ceil((Date.parse(myCamp.last_ping) + campTick - nowTs) / 1000)) : 0;
+  /** Missed the window by a whole interval → the streak is gone, bank isn't. */
+  const campLapsed = !!myCamp && nowTs - Date.parse(myCamp.last_ping) > campTick * 2;
+  const campNext = myCamp
+    ? campIncrement(campLapsed ? 0 : myCamp.ticks, cfg.campStep(onlineConfig), cfg.campMaxStep(onlineConfig))
+    : 0;
+  const [campBusy, setCampBusy] = useState(false);
+
+  async function doStartCamp(spotId: string, name: string) {
+    if (!membership || campBusy) return;
+    setCampBusy(true);
+    try {
+      const row = await startCamp(membership.gameId, membership.teamId, spotId);
+      if (!row) {
+        setGpsPopup({ emoji: '🏕️', title: 'Already camped', body: "Your team is set up somewhere else — collect that first." });
+        return;
+      }
+      setSpotSheet(null);
+      setGpsPopup({
+        emoji: '🏕️',
+        title: `Camped at ${name}`,
+        body: `Tap "still here" every ${Math.round(cfg.campTickSec(onlineConfig) / 60) || 1} min to keep earning. Check in somewhere else to bank it.`,
+      });
+    } catch (e) {
+      alert('Could not camp: ' + (e as Error).message);
+    } finally {
+      setCampBusy(false);
+    }
+  }
+
+  /** "Still here" — proximity-gated, so you can't hold a corner from the couch. */
+  function doPingCamp() {
+    if (!membership || !myCamp || campBusy || campDue > 0) return;
+    const sq = onlineBoard?.squares.find((s) => s.id === myCamp.spot_id);
+    if (!sq) return;
+    withProximity(sq, () => {
+      setCampBusy(true);
+      pingCamp(myCamp, {
+        step: cfg.campStep(onlineConfig),
+        maxStep: cfg.campMaxStep(onlineConfig),
+        cap: cfg.campBankCap(onlineConfig),
+        lapsed: campLapsed,
+      })
+        .then((row) => {
+          if (!row) return; // another phone on this team got the same interval
+          setGpsPopup(
+            campLapsed
+              ? { emoji: '⏳', title: 'Streak reset', body: 'You missed an interval — the bank is safe, the run starts over.' }
+              : { emoji: '🏕️', title: `+${campNext} banked`, body: `🪙${row.banked} waiting. Check in elsewhere to carry it out.` },
+          );
+        })
+        .catch((e) => alert('Ping failed: ' + (e as Error).message))
+        .finally(() => setCampBusy(false));
+    });
+  }
+
+  /** Leaving pays out — called from the check-in path at any OTHER spot. */
+  async function collectMyCamp(atSpotId: string) {
+    if (!membership || !myCamp || myCamp.spot_id === atSpotId) return;
+    try {
+      const coins = await collectCamp(myCamp.id);
+      if (coins <= 0) return;
+      await adjustCoins(membership.teamId, coins);
+      logEvent(membership.gameId, 'camp', `🏕️ ${myTeam?.name ?? 'A team'} cashed out ${coins} 🪙 from camp`).catch(() => {});
+      setGpsPopup({ emoji: '💰', title: `Banked ${coins} 🪙`, body: 'Carried it out clean.' });
+    } catch {
+      /* the bank survives — they can try again at the next spot */
+    }
+  }
+
+  /** Found someone sitting on a pile. Half of it is on the table. */
+  async function doRaidCamp(camp: CampRow, name: string) {
+    if (!membership || campBusy) return;
+    const stake = Math.floor((camp.banked * cfg.campRaidPct(onlineConfig)) / 100);
+    if (stake <= 0) {
+      setGpsPopup({ emoji: '🪹', title: 'Nothing to take', body: "They haven't banked anything yet." });
+      return;
+    }
+    setCampBusy(true);
+    try {
+      const duel = await startDuel({
+        gameId: membership.gameId,
+        challenger: membership.teamId,
+        opponent: camp.team_id,
+        kind: 'camp',
+        prompt: pickRound(),
+        stake,
+        spotId: camp.spot_id,
+      });
+      if (!duel) {
+        setGpsPopup({ emoji: '⚔️', title: 'Already on', body: 'A challenge with this team is already running.' });
+        return;
+      }
+      setSpotSheet(null);
+      sendMessage(
+        membership.gameId,
+        null,
+        camp.team_id,
+        `⚔️ ${myTeam?.name ?? 'A team'} found your camp at ${name} — ${stake} 🪙 on the line!`,
+      ).catch(() => {});
+    } catch (e) {
+      alert('Challenge failed: ' + (e as Error).message);
+    } finally {
+      setCampBusy(false);
+    }
+  }
+
+  /** The open duel this team is part of — drives the banner and the modal. */
+  const myDuel = useMemo(
+    () =>
+      duels.find(
+        (d) => d.status === 'open' && (d.challenger === membership?.teamId || d.opponent === membership?.teamId),
+      ) ?? null,
+    [duels, membership],
+  );
+  const [duelOpen, setDuelOpen] = useState(false);
+  const [duelBusy, setDuelBusy] = useState(false);
+  useEffect(() => {
+    if (myDuel) setDuelOpen(true);
+  }, [myDuel?.id]);
+
+  /** Either phone can call it; the guard decides who actually pays out. */
+  async function doResolveDuel(duel: DuelRow, winner: string) {
+    if (duelBusy) return;
+    setDuelBusy(true);
+    try {
+      const mine = await resolveDuel(duel.id, winner);
+      if (!mine) return; // the other phone reported first — their payout stands
+      const wName = teams.find((t) => t.id === winner)?.name ?? 'A team';
+      if (duel.kind === 'camp' && winner === duel.challenger) {
+        const camp = camps.find((c) => c.team_id === duel.opponent && c.status === 'active');
+        if (camp && (await raidCamp(camp, duel.stake))) {
+          await adjustCoins(duel.challenger, duel.stake);
+        }
+        logEvent(duel.game_id, 'camp', `⚔️ ${wName} raided a camp for ${duel.stake} 🪙!`).catch(() => {});
+      } else if (duel.kind === 'camp') {
+        logEvent(duel.game_id, 'camp', `🛡️ ${wName} defended their camp!`).catch(() => {});
+      } else {
+        logEvent(duel.game_id, 'battle', `⚔️ ${wName} won the challenge!`).catch(() => {});
+      }
+    } catch (e) {
+      alert('Could not report: ' + (e as Error).message);
+    } finally {
+      setDuelBusy(false);
+      setDuelOpen(false);
+    }
+  }
   function runSpotAction(spotId: string) {
     if (!membership || !onlineBoard || onlineStatus !== 'live') return;
+    // Checking in ANYWHERE else is what carries a camp's bank out. Self-guards
+    // on the camp's own spot, so pinging where you sit doesn't cash you out.
+    void collectMyCamp(spotId);
     const sq = onlineBoard.squares.find((s) => s.id === spotId);
     if (!sq) return;
     const type = onlineNodeType[spotId] ?? 'coin';
@@ -4328,6 +4520,59 @@ export default function App({
             </div>
           </div>
         )}
+        {myDuel && !duelOpen && (
+          <button className="showdown-banner" onClick={() => setDuelOpen(true)}>
+            ⚔️ Challenge running — tap to report who won
+          </button>
+        )}
+        {myDuel && duelOpen && (() => {
+          const ch = teams.find((t) => t.id === myDuel.challenger);
+          const op = teams.find((t) => t.id === myDuel.opponent);
+          const iStarted = myDuel.challenger === membership?.teamId;
+          return (
+            <div className="msg-scrim msg-scrim--cam">
+              <div className="msg-panel duel-panel">
+                <div className="msg-head">
+                  <span className="msg-head__pad" />
+                  <span>⚔️ Challenge</span>
+                  <span className="msg-head__pad" />
+                </div>
+                <div className="duel-body">
+                  <p className="duel-vs">
+                    {ch?.emoji} {ch?.name} <em>vs</em> {op?.emoji} {op?.name}
+                  </p>
+                  <div className="duel-prompt">{myDuel.prompt}</div>
+                  {myDuel.stake > 0 && (
+                    <p className="hint duel-stake">
+                      {myDuel.stake} 🪙 on the line{myDuel.kind === 'camp' ? ' from the camp' : ''}.
+                    </p>
+                  )}
+                  <p className="hint">
+                    Play it right there, then either phone taps the winner. Both of you see the same thing.
+                  </p>
+                  <button className="btn btn--go" style={{ width: '100%' }} disabled={duelBusy} onClick={() => void doResolveDuel(myDuel, myDuel.challenger)}>
+                    {ch?.emoji} {ch?.name} won
+                  </button>
+                  <button className="btn btn--go" style={{ width: '100%', marginTop: 8 }} disabled={duelBusy} onClick={() => void doResolveDuel(myDuel, myDuel.opponent)}>
+                    {op?.emoji} {op?.name} won
+                  </button>
+                  <button className="btn btn--ghost" style={{ width: '100%', marginTop: 8 }} onClick={() => setDuelOpen(false)}>
+                    Not yet — hide this
+                  </button>
+                  {iStarted && (
+                    <button
+                      className="btn btn--ghost"
+                      style={{ width: '100%', marginTop: 6 }}
+                      onClick={() => { void cancelDuel(myDuel.id); setDuelOpen(false); }}
+                    >
+                      Call it off
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        })()}
         {lightbox && (
           <div className="cam-light" onClick={() => setLightbox(null)}>
             <div className="cam-light__inner" onClick={(e) => e.stopPropagation()}>
@@ -5159,6 +5404,46 @@ export default function App({
                         📍 Checks your GPS — you need to be within {onlineConfig.radiusM}m.
                       </p>
                     )}
+                    {/* Camping: the slow game. Sit still, coins pile up faster
+                        the longer you stay, and you carry them out by checking
+                        in somewhere else. Anyone who finds you can take half. */}
+                    {live && (type === 'bar' || type === 'poi') && (() => {
+                      const here = campBySpot[spotId];
+                      if (here && here.team_id !== membership.teamId) {
+                        const camper = teams.find((t) => t.id === here.team_id);
+                        const stake = Math.floor((here.banked * cfg.campRaidPct(onlineConfig)) / 100);
+                        return (
+                          <div className="camp-call">
+                            <b>
+                              🏕️ {camper?.emoji} {camper?.name} is camped here
+                            </b>
+                            <span className="hint">
+                              🪙{here.banked} banked · challenge them for {stake}
+                            </span>
+                            <button
+                              className="btn btn--danger"
+                              style={{ width: '100%' }}
+                              disabled={campBusy || stake <= 0}
+                              onClick={() => void doRaidCamp(here, sq.title || 'this spot')}
+                            >
+                              ⚔️ Challenge for {stake} 🪙
+                            </button>
+                          </div>
+                        );
+                      }
+                      if (here) return <p className="hint">🏕️ Your camp is here — 🪙{here.banked} banked.</p>;
+                      if (myCamp) return null; // one camp at a time
+                      return (
+                        <button
+                          className="btn"
+                          style={{ width: '100%', marginTop: 6 }}
+                          disabled={campBusy}
+                          onClick={() => void doStartCamp(spotId, sq.title || 'this spot')}
+                        >
+                          🏕️ Camp here
+                        </button>
+                      );
+                    })()}
                     <button className="btn btn--ghost" style={{ width: '100%', marginTop: 8 }} onClick={() => setSpotSheet(null)}>
                       Close
                     </button>
@@ -5915,6 +6200,23 @@ export default function App({
                   <span className="hud-more">▾</span>
                 </button>
               </div>
+              {myCamp && (
+                <div className={`camp-row${campDue === 0 ? ' is-due' : ''}`}>
+                  <span className="camp-row__what">
+                    🏕️ <b>🪙{myCamp.banked}</b> banked
+                    {campLapsed && <em className="camp-row__lapsed">streak lost</em>}
+                  </span>
+                  <button
+                    className="camp-row__btn"
+                    disabled={campBusy || campDue > 0}
+                    onClick={doPingCamp}
+                  >
+                    {campDue > 0
+                      ? `${Math.floor(campDue / 60)}:${String(campDue % 60).padStart(2, '0')}`
+                      : `Still here +${campNext}`}
+                  </button>
+                </div>
+              )}
               <div className="player-bar__info">
                 <div className="player-bar__team">
                   <span className="player-bar__emoji">{myTeam?.emoji ?? '🎲'}</span>
@@ -5927,7 +6229,11 @@ export default function App({
                   <span>⭐ {myTeam?.stars ?? 0}</span>
                   <span>
                     🔗 {myRun}
-                    {myRun > 0 && <em className="player-bar__rate">+{myRun}/{tickLabel}</em>}
+                    {myRun > 0 && (
+                      <em className="player-bar__rate">
+                        +{myRun * cfg.chainMultiplier(onlineConfig)}/{tickLabel}
+                      </em>
+                    )}
                   </span>
                   {(myTeam?.reinforcements ?? 0) > 0 && <span>🧱 {myTeam?.reinforcements}</span>}
                 </div>

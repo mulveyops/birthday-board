@@ -938,6 +938,11 @@ export interface GameConfig {
   drinkCoins: number; // coins per drink on a photo-verified drink check
   chainMultiplier: number; // turf income = longest chain x this, per tick
   stealBounty: number; // coins a successful turf steal takes off the loser
+  campTickSec: number; // how often a camper must ping "still here"
+  campStep: number; // first interval pays this, and each one pays this much more
+  campMaxStep: number; // ...until an interval is worth this much
+  campBankCap: number; // the bank stops growing here, so a quiet corner can't win it
+  campRaidPct: number; // share of the bank a successful raider takes
 }
 
 /** Config value with a fallback (older published games lack newer fields). */
@@ -957,6 +962,11 @@ export const cfg = {
   drinkCoins: (c: Partial<GameConfig> | undefined) => c?.drinkCoins ?? 5,
   chainMultiplier: (c: Partial<GameConfig> | undefined) => c?.chainMultiplier ?? 2,
   stealBounty: (c: Partial<GameConfig> | undefined) => c?.stealBounty ?? 10,
+  campTickSec: (c: Partial<GameConfig> | undefined) => c?.campTickSec ?? 300,
+  campStep: (c: Partial<GameConfig> | undefined) => c?.campStep ?? 5,
+  campMaxStep: (c: Partial<GameConfig> | undefined) => c?.campMaxStep ?? 20,
+  campBankCap: (c: Partial<GameConfig> | undefined) => c?.campBankCap ?? 100,
+  campRaidPct: (c: Partial<GameConfig> | undefined) => c?.campRaidPct ?? 50,
 };
 
 export const PARTY_CONFIG: GameConfig = {
@@ -982,6 +992,11 @@ export const PARTY_CONFIG: GameConfig = {
   drinkCoins: 5,
   chainMultiplier: 2,
   stealBounty: 10,
+  campTickSec: 300,
+  campStep: 5,
+  campMaxStep: 20,
+  campBankCap: 100,
+  campRaidPct: 50,
 };
 export const TEST_CONFIG: GameConfig = {
   starCost: 40,
@@ -1006,6 +1021,11 @@ export const TEST_CONFIG: GameConfig = {
   drinkCoins: 5,
   chainMultiplier: 2,
   stealBounty: 10,
+  campTickSec: 20,
+  campStep: 5,
+  campMaxStep: 20,
+  campBankCap: 100,
+  campRaidPct: 50,
 };
 
 export interface GameFull {
@@ -1564,4 +1584,221 @@ export async function claimSpawnDb(
       .upsert({ team_id: teamId, game_id: gameId, lat, lng, spot_id: null, updated_at: new Date().toISOString() });
   }
   return won;
+}
+
+// ---------------------------------------------------------------------------
+// Duels: any head-to-head real life decides. Both phones show the same prompt
+// and the same two buttons; the first tap resolves it, guarded, so a race
+// can't pay out twice. See supabase/duels_camps.sql.
+// ---------------------------------------------------------------------------
+
+export type DuelKind = 'camp' | 'quest' | 'battle';
+
+export interface DuelRow {
+  id: string;
+  game_id: string;
+  challenger: string;
+  opponent: string;
+  kind: DuelKind;
+  prompt: string;
+  stake: number;
+  spot_id: string | null;
+  status: 'open' | 'done' | 'cancelled';
+  winner: string | null;
+  created_at: string;
+  resolved_at: string | null;
+}
+
+/** Throw down. Returns null if a duel between these two is already open here. */
+export async function startDuel(args: {
+  gameId: string;
+  challenger: string;
+  opponent: string;
+  kind: DuelKind;
+  prompt: string;
+  stake: number;
+  spotId?: string | null;
+}): Promise<DuelRow | null> {
+  assertConfigured();
+  const { data, error } = await supabase
+    .from('duels')
+    .insert({
+      game_id: args.gameId,
+      challenger: args.challenger,
+      opponent: args.opponent,
+      kind: args.kind,
+      prompt: args.prompt,
+      stake: args.stake,
+      spot_id: args.spotId ?? null,
+    })
+    .select('*')
+    .single();
+  if (error) {
+    if (error.code === '23505') return null; // one's already running
+    throw error;
+  }
+  return data as DuelRow;
+}
+
+export async function listDuels(gameId: string): Promise<DuelRow[]> {
+  assertConfigured();
+  const { data, error } = await supabase
+    .from('duels')
+    .select('*')
+    .eq('game_id', gameId)
+    .order('created_at', { ascending: false })
+    .limit(100);
+  if (error) throw error;
+  return (data ?? []) as DuelRow[];
+}
+
+export function subscribeDuels(gameId: string, onChange: () => void) {
+  const ch = supabase
+    .channel(`duels:${gameId}`)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'duels', filter: `game_id=eq.${gameId}` }, onChange)
+    .subscribe();
+  return () => {
+    supabase.removeChannel(ch);
+  };
+}
+
+/**
+ * Call it: guarded so only the first phone to report wins the race and the
+ * caller knows whether IT is the one that should pay out.
+ */
+export async function resolveDuel(id: string, winner: string): Promise<boolean> {
+  assertConfigured();
+  const { data, error } = await supabase
+    .from('duels')
+    .update({ status: 'done', winner, resolved_at: new Date().toISOString() })
+    .eq('id', id)
+    .eq('status', 'open')
+    .select('id');
+  if (error) throw error;
+  return !!data && data.length > 0;
+}
+
+export async function cancelDuel(id: string): Promise<void> {
+  assertConfigured();
+  await supabase.from('duels').update({ status: 'cancelled' }).eq('id', id).eq('status', 'open');
+}
+
+// ---------------------------------------------------------------------------
+// Camps: sit still and coins pile up, faster the longer you stay — but they
+// only pay out when you leave and check in somewhere else, and anyone who
+// finds you can challenge for half. Timestamp-driven like everything else
+// here: the camper's own phone pings, and the ping IS the accrual.
+// ---------------------------------------------------------------------------
+
+export interface CampRow {
+  id: string;
+  game_id: string;
+  team_id: string;
+  spot_id: string;
+  started_at: string;
+  last_ping: string;
+  ticks: number;
+  banked: number;
+  status: 'active' | 'collected' | 'raided' | 'lapsed';
+}
+
+/** What the next interval pays: grows by `step` each time, up to `maxStep`. */
+export function campIncrement(ticks: number, step: number, maxStep: number): number {
+  return Math.min(step * (ticks + 1), maxStep);
+}
+
+/** Pitch up. Returns null if this team is already camped somewhere. */
+export async function startCamp(gameId: string, teamId: string, spotId: string): Promise<CampRow | null> {
+  assertConfigured();
+  const { data, error } = await supabase
+    .from('camps')
+    .insert({ game_id: gameId, team_id: teamId, spot_id: spotId })
+    .select('*')
+    .single();
+  if (error) {
+    if (error.code === '23505') return null; // already camping
+    throw error;
+  }
+  return data as CampRow;
+}
+
+/**
+ * "Still here." Guarded on the tick count we think we're on, so two phones
+ * sharing a team can't double-bank the same interval. `ticks` resets to 0 when
+ * a ping is missed — the bank survives, but the escalation starts over.
+ */
+export async function pingCamp(
+  camp: CampRow,
+  opts: { step: number; maxStep: number; cap: number; lapsed: boolean },
+): Promise<CampRow | null> {
+  assertConfigured();
+  // A lapse rewinds the streak to zero, but the ping still pays what a fresh
+  // camp's first interval pays — losing the escalation is the penalty, and a
+  // ping that visibly banks nothing just reads as broken.
+  const ticks = opts.lapsed ? 0 : camp.ticks;
+  const gain = campIncrement(ticks, opts.step, opts.maxStep);
+  const { data, error } = await supabase
+    .from('camps')
+    .update({
+      ticks: ticks + 1,
+      banked: Math.min(camp.banked + gain, opts.cap),
+      last_ping: new Date().toISOString(),
+    })
+    .eq('id', camp.id)
+    .eq('status', 'active')
+    .eq('ticks', camp.ticks)
+    .select('*');
+  if (error) throw error;
+  return data && data.length ? (data[0] as CampRow) : null;
+}
+
+/** Break camp and carry the coins out. Returns what to pay, or 0 if beaten. */
+export async function collectCamp(campId: string): Promise<number> {
+  assertConfigured();
+  const { data, error } = await supabase
+    .from('camps')
+    .update({ status: 'collected' })
+    .eq('id', campId)
+    .eq('status', 'active')
+    .select('banked');
+  if (error) throw error;
+  return data && data.length ? (data[0] as { banked: number }).banked : 0;
+}
+
+/**
+ * A raid took `amount` off the bank. Guarded on the balance we saw, so the
+ * raider can't take half twice. The escalation resets — that's the real sting.
+ */
+export async function raidCamp(camp: CampRow, amount: number): Promise<boolean> {
+  assertConfigured();
+  const { data, error } = await supabase
+    .from('camps')
+    .update({ banked: Math.max(0, camp.banked - amount), ticks: 0 })
+    .eq('id', camp.id)
+    .eq('status', 'active')
+    .eq('banked', camp.banked)
+    .select('id');
+  if (error) throw error;
+  return !!data && data.length > 0;
+}
+
+export async function listCamps(gameId: string): Promise<CampRow[]> {
+  assertConfigured();
+  const { data, error } = await supabase
+    .from('camps')
+    .select('*')
+    .eq('game_id', gameId)
+    .eq('status', 'active');
+  if (error) throw error;
+  return (data ?? []) as CampRow[];
+}
+
+export function subscribeCamps(gameId: string, onChange: () => void) {
+  const ch = supabase
+    .channel(`camps:${gameId}`)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'camps', filter: `game_id=eq.${gameId}` }, onChange)
+    .subscribe();
+  return () => {
+    supabase.removeChannel(ch);
+  };
 }

@@ -2041,20 +2041,37 @@ export default function BoardCanvas({
                         depends on rivals spotting it from across the map. */}
                     {glow && (
                       <>
-                        <ellipse cx={x} cy={y} rx={m * 0.62} ry={m * 0.26} fill={glow} opacity={0.3}>
-                          <animate attributeName="rx" values={`${m * 0.5};${m * 0.78};${m * 0.5}`} dur="1.9s" repeatCount="indefinite" />
-                          <animate attributeName="opacity" values="0.42;0.12;0.42" dur="1.9s" repeatCount="indefinite" />
+                        {/* A pool of the team's colour for the building to stand
+                            in, so a camp reads as a lit-up place rather than a
+                            ring drawn on the pavement. */}
+                        <ellipse cx={x} cy={y - m * 0.3} rx={m * 1.15} ry={m * 0.72} fill={glow} opacity={0.22} />
+                        {/* Two radar pings half a cycle apart, so something is
+                            always travelling outward. They run well past the
+                            building on purpose: the point is to be seen from the
+                            far side of the board. */}
+                        {[0, 1].map((k) => (
+                          <ellipse
+                            key={k}
+                            cx={x}
+                            cy={y}
+                            rx={m * 0.5}
+                            ry={m * 0.21}
+                            fill="none"
+                            stroke={glow}
+                            strokeWidth={m * 0.07}
+                            opacity={0}
+                          >
+                            <animate attributeName="rx" values={`${m * 0.45};${m * 1.75}`} dur="2.4s" begin={`${k * 1.2}s`} repeatCount="indefinite" />
+                            <animate attributeName="ry" values={`${m * 0.19};${m * 0.74}`} dur="2.4s" begin={`${k * 1.2}s`} repeatCount="indefinite" />
+                            <animate attributeName="opacity" values="0.9;0" dur="2.4s" begin={`${k * 1.2}s`} repeatCount="indefinite" />
+                            <animate attributeName="stroke-width" values={`${m * 0.09};${m * 0.02}`} dur="2.4s" begin={`${k * 1.2}s`} repeatCount="indefinite" />
+                          </ellipse>
+                        ))}
+                        {/* The bright core, breathing. */}
+                        <ellipse cx={x} cy={y} rx={m * 0.52} ry={m * 0.22} fill={glow} opacity={0.9}>
+                          <animate attributeName="opacity" values="0.95;0.6;0.95" dur="1.6s" repeatCount="indefinite" />
                         </ellipse>
-                        <ellipse cx={x} cy={y} rx={m * 0.38} ry={m * 0.15} fill={glow} opacity={0.75} />
-                        <ellipse
-                          cx={x}
-                          cy={y}
-                          rx={m * 0.38}
-                          ry={m * 0.15}
-                          fill="none"
-                          stroke={glow}
-                          strokeWidth={m * 0.05}
-                        />
+                        <ellipse cx={x} cy={y} rx={m * 0.52} ry={m * 0.22} fill="none" stroke="#fff" strokeWidth={m * 0.035} opacity={0.85} />
                       </>
                     )}
                     <ellipse cx={x} cy={y + 2} rx={m * 0.34} ry={m * 0.12} fill="#2b2b3a" opacity={0.28} />

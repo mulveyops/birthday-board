@@ -30,6 +30,10 @@ import {
   removeTeam,
   seedSpawns,
   getGameFull,
+  listTerritory,
+  listCamps,
+  type CampRow,
+  type TerritoryRow,
   listPhotos,
   subscribePhotos,
   vetoPhoto,
@@ -43,6 +47,7 @@ import {
   type DuelRow,
 } from '../net';
 import type { Board, Square } from '../types';
+import BoardCanvas from '../BoardCanvas';
 
 const REF_PASSWORD = 'iclosedwolskis';
 
@@ -85,6 +90,8 @@ export default function Referee() {
   const [claims, setClaims] = useState<StarClaimRow[]>([]);
   const [starBusy, setStarBusy] = useState('');
   const [showWhere, setShowWhere] = useState(false);
+  const [territory, setTerritory] = useState<TerritoryRow[]>([]);
+  const [camps, setCamps] = useState<CampRow[]>([]);
   const [endArmed, setEndArmed] = useState(false);
   const [dropArmed, setDropArmed] = useState<string | null>(null);
   /** lobby | live | paused | ended — drives the Start button below. */
@@ -136,6 +143,8 @@ export default function Referee() {
       listStarSpawns(gid).then((r) => alive && setSpawns(r)).catch(() => {});
       listStarClaims(gid).then((r) => alive && setClaims(r)).catch(() => {});
       getGameFull(gid).then((g) => alive && setStatus(g.status)).catch(() => {});
+      listTerritory(gid).then((r) => alive && setTerritory(r)).catch(() => {});
+      listCamps(gid).then((r) => alive && setCamps(r)).catch(() => {});
       listEvents(gid)
         .then((e) => alive && setLastCall(e.some((x) => /LAST CALL/i.test(x.payload?.text ?? ''))))
         .catch(() => {});
@@ -172,6 +181,42 @@ export default function Referee() {
   const teamColor = (t: TeamRow, i: number) =>
     t.color || TEAM_COLORS[teams.findIndex((x) => x.id === t.id) % TEAM_COLORS.length] || TEAM_COLORS[i % TEAM_COLORS.length];
   const teamEmoji = (id: string | null | undefined) => teams.find((t) => t.id === id)?.emoji ?? '🎲';
+
+  /** Every team on its last check-in. No token is marked `me`: a referee is
+   *  not playing, so none of them is theirs to highlight. */
+  const mapTokens = useMemo(
+    () =>
+      positions
+        .filter((p) => Number.isFinite(p.lat) && Number.isFinite(p.lng))
+        .map((p) => ({
+          teamId: p.team_id,
+          lat: p.lat,
+          lng: p.lng,
+          emoji: teamEmoji(p.team_id),
+          name: teamName(p.team_id),
+        })),
+    [positions, teams],
+  );
+  /** Painted corners in their owners colours — the whole point of looking. */
+  const mapTurf = useMemo(() => {
+    const out: Record<string, { color: string; mine: boolean }> = {};
+    for (const r of territory) {
+      const i = teams.findIndex((t) => t.id === r.team_id);
+      const t = i >= 0 ? teams[i] : null;
+      out[r.spot_id] = { color: t ? teamColor(t, i) : TEAM_COLORS[0], mine: false };
+    }
+    return out;
+  }, [territory, teams]);
+  /** Bars somebody is parked at, so a ref can go and find them. */
+  const mapCamps = useMemo(() => {
+    const out: Record<string, string> = {};
+    for (const c of camps) {
+      if (c.status !== 'active') continue;
+      const i = teams.findIndex((t) => t.id === c.team_id);
+      if (i >= 0) out[c.spot_id] = teamColor(teams[i], i);
+    }
+    return out;
+  }, [camps, teams]);
   const spotName = (id: string | null | undefined) =>
     board?.squares.find((s) => s.id === id)?.title || 'somewhere';
 
@@ -667,27 +712,61 @@ export default function Referee() {
               {showWhere ? 'hide' : 'show'}
             </button>
           </h2>
-          {showWhere &&
-            (positions.length === 0 ? (
-              <p className="hint">Nobody has checked in yet.</p>
-            ) : (
-              <div className="ref-where">
-                {[...positions]
-                  .sort((a, b) => Date.parse(b.updated_at ?? '') - Date.parse(a.updated_at ?? ''))
-                  .map((p) => (
-                    <div key={p.team_id} className="ref-where__row">
-                      <span className="ref-where__team">
-                        {teamEmoji(p.team_id)} {teamName(p.team_id)}
-                      </span>
-                      <span className="ref-where__spot">{whereIs(p.spot_id) ?? 'somewhere'}</span>
-                      <span className="ref-where__age">{ago(p.updated_at, now)}</span>
-                    </div>
-                  ))}
-                <p className="hint" style={{ margin: '6px 0 0' }}>
-                  That's each team's last check-in, not a live position — a team sitting still goes stale.
-                </p>
+          {showWhere && board && (
+            <>
+              {/* The actual board, read-only. A list of place names tells you a
+                  team is 'outside Wolski's'; it does not tell you they are the
+                  only ones east of Humboldt, or that four teams are stacked on
+                  one corner. Spatial questions want a map. */}
+              <div className="ref-map">
+                <BoardCanvas
+                  board={board}
+                  flat
+                  mode="select"
+                  selectedId={null}
+                  selectedVertex={null}
+                  selectedEdgeId={null}
+                  recage={0}
+                  /* Read-only: it pans and zooms, and nothing else. A referee
+                     dragging a square around the live board would be a disaster,
+                     so every editing hook is deliberately inert. */
+                  onMapClick={() => {}}
+                  onSelectSquare={() => {}}
+                  onMoveSquare={() => {}}
+                  onSelectVertex={() => {}}
+                  onMoveVertex={() => {}}
+                  onDeleteVertex={() => {}}
+                  onSelectEdge={() => {}}
+                  playActive={false}
+                  tokens={mapTokens}
+                  turf={mapTurf}
+                  campGlow={mapCamps}
+                  starDrops={bars.filter((b) => starsWaiting(b.id) > 0).map((b) => b.id)}
+                />
               </div>
-            ))}
+              <p className="hint" style={{ margin: '6px 0 0' }}>
+                Each team sits on its last check-in, painted in its own colour — not a live position, so a
+                team sitting still goes stale. Stars show where one is waiting.
+              </p>
+              {positions.length === 0 && <p className="hint">Nobody has checked in yet, so the board is empty.</p>}
+              <details className="ref-where-list">
+                <summary>Read it as a list instead</summary>
+                <div className="ref-where">
+                  {[...positions]
+                    .sort((a, b) => Date.parse(b.updated_at ?? '') - Date.parse(a.updated_at ?? ''))
+                    .map((p) => (
+                      <div key={p.team_id} className="ref-where__row">
+                        <span className="ref-where__team">
+                          {teamEmoji(p.team_id)} {teamName(p.team_id)}
+                        </span>
+                        <span className="ref-where__spot">{whereIs(p.spot_id) ?? 'somewhere'}</span>
+                        <span className="ref-where__age">{ago(p.updated_at, now)}</span>
+                      </div>
+                    ))}
+                </div>
+              </details>
+            </>
+          )}
         </section>
 
         {/* ---- drink checks ------------------------------------------------ */}

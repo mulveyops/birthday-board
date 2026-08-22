@@ -191,7 +191,13 @@ if (mode === 'use') {
 }
 
 // --- composite every filed block --------------------------------------------
-const filed = known();
+// Once a block is being painted in halves, its old whole-block attempt is
+// superseded — keep the versions on disk, but don't paint it underneath.
+const all = known();
+const filed = all.filter((nn) => !(/^\d\d$/.test(nn) && (all.includes(nn + 'a') || all.includes(nn + 'b'))));
+for (const nn of all) {
+  if (!filed.includes(nn)) console.log(`  block ${nn}: superseded by its halves, not composited`);
+}
 if (!filed.length) {
   console.log('nothing filed in art-prototype/blocks/ yet');
   process.exit(0);
@@ -428,7 +434,51 @@ for (const nn of filed) {
   const clipped = await sharp(bled).composite([{ input: mask, blend: 'dest-in' }]).png().toBuffer();
   layers.push({ input: clipped, left: place.x, top: place.y });
 }
-const painted = await sharp(`${OUT}/reference.png`).composite(layers).png().toBuffer();
+let painted = await sharp(`${OUT}/reference.png`).composite(layers).png().toBuffer();
+
+// Two halves of a block abut exactly, and even when neither paves the cut the
+// change of hand still reads as a line. Soften a narrow band across the join
+// by averaging along the seam — enough to break the edge, too narrow to smear
+// anything that matters.
+for (const nn of filed) {
+  if (!/[ab]$/.test(nn) || nn.endsWith('b')) continue;
+  const other = nn.slice(0, -1) + 'b';
+  if (!filed.includes(other)) continue;
+  const A = JSON.parse(readFileSync(KIT(nn).place, 'utf8'));
+  const B = JSON.parse(readFileSync(KIT(other).place, 'utf8'));
+  const vertical = Math.abs(A.y + A.h - B.y) <= 1; // stacked → horizontal seam
+  const BAND = 5;
+  const meta = await sharp(painted).metadata();
+  const raw = await sharp(painted).ensureAlpha().raw().toBuffer();
+  const W2 = meta.width;
+  if (vertical) {
+    const seam = A.y + A.h;
+    const x0 = Math.max(A.x, B.x), x1 = Math.min(A.x + A.w, B.x + B.w);
+    for (let x = x0; x < x1; x++) {
+      for (let d = -BAND; d <= BAND; d++) {
+        const y = seam + d;
+        const w = 1 - Math.abs(d) / (BAND + 1);
+        const i = (y * W2 + x) * 4;
+        const up = ((y - BAND - 1) * W2 + x) * 4, dn = ((y + BAND + 1) * W2 + x) * 4;
+        for (let c = 0; c < 3; c++) raw[i + c] = Math.round(raw[i + c] * (1 - w * 0.55) + ((raw[up + c] + raw[dn + c]) / 2) * w * 0.55);
+      }
+    }
+  } else {
+    const seam = A.x + A.w;
+    const y0 = Math.max(A.y, B.y), y1 = Math.min(A.y + A.h, B.y + B.h);
+    for (let y = y0; y < y1; y++) {
+      for (let d = -BAND; d <= BAND; d++) {
+        const x = seam + d;
+        const w = 1 - Math.abs(d) / (BAND + 1);
+        const i = (y * W2 + x) * 4;
+        const lf = (y * W2 + x - BAND - 1) * 4, rt = (y * W2 + x + BAND + 1) * 4;
+        for (let c = 0; c < 3; c++) raw[i + c] = Math.round(raw[i + c] * (1 - w * 0.55) + ((raw[lf + c] + raw[rt + c]) / 2) * w * 0.55);
+      }
+    }
+  }
+  painted = await sharp(raw, { raw: { width: meta.width, height: meta.height, channels: 4 } }).png().toBuffer();
+  console.log(`  blocks ${nn}/${other}: softened the seam between the halves`);
+}
 writeFileSync(`${OUT}/board-painted.png`, painted);
 console.log(`composited ${layers.length} block(s) → ${OUT}/board-painted.png`);
 

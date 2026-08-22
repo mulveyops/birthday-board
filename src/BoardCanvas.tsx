@@ -132,6 +132,11 @@ const NODE_FILL = '#fffdf6';
  * waypoints you navigate by, and Bowser is a threat you're meant to see
  * coming — everything else is a blank disc until you're standing on it. */
 const ICON_TYPES = new Set(['start', 'finish', 'bowser']);
+// Placed on purpose and allowed to sit mid-block: landmarks are real
+// buildings, and start/finish/Bowser are authored one-offs. Everything else
+// - the generated coin/chance/challenge spaces - has to be at a junction.
+const OFF_JUNCTION_OK = new Set(['poi', 'bar', 'start', 'finish', 'bowser']);
+
 
 // ---- Stylized art sprites (drawn in world meters, outlined flat style) ----
 
@@ -1428,7 +1433,7 @@ export default function BoardCanvas({
     }
     // Crossings only, same rule as deriveSpots in App: three or more street
     // ends meeting. Two is a bend partway down a street, not a junction.
-    return board.squares.filter((sq) => (deg.get(sq.id) ?? 0) >= 3 || sq.type !== 'blank');
+    return board.squares.filter((sq) => (deg.get(sq.id) ?? 0) >= 3 || OFF_JUNCTION_OK.has(sq.type));
   }, [board.edges, board.squares]);
 
   const X = (p: LatLng | [number, number]) => {

@@ -1277,6 +1277,10 @@ export interface SpawnRow {
   claimed_by: string | null;
 }
 
+// Placed on purpose and allowed to sit mid-block: landmarks are real
+// buildings, and start/finish/Bowser are authored one-offs. Everything else
+// - the generated coin/chance/challenge spaces - has to be at a junction.
+const OFF_JUNCTION_OK = new Set(['poi', 'bar', 'start', 'finish', 'bowser']);
 function boardSpots(board: Board) {
   const deg = new Map<string, number>();
   for (const e of board.edges) {
@@ -1284,7 +1288,7 @@ function boardSpots(board: Board) {
     deg.set(e.to, (deg.get(e.to) ?? 0) + 1);
   }
   // Same rule as deriveSpots/intersections: crossings only.
-  return board.squares.filter((s) => (deg.get(s.id) ?? 0) >= 3 || s.type !== 'blank');
+  return board.squares.filter((s) => (deg.get(s.id) ?? 0) >= 3 || OFF_JUNCTION_OK.has(s.type));
 }
 
 /**

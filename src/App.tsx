@@ -1020,7 +1020,7 @@ export default function App({
     setFixSpot('');
     if (hostGame) {
       myClaims(hostGame.id, teamId)
-        .then(setFixClaims)
+        .then((c) => setFixClaims(Object.keys(c)))
         .catch(() => setFixClaims([]));
     }
   }
@@ -1130,7 +1130,10 @@ export default function App({
   const [onlineStatus, setOnlineStatus] = useState<'lobby' | 'live' | 'paused' | 'ended'>('live');
   // Latest host announcement + which one the player has dismissed.
   const [dismissedAnnounceId, setDismissedAnnounceId] = useState<string | null>(null);
-  const [onlineCleared, setOnlineCleared] = useState<string[]>([]);
+  // When we last cleared each spot. A spot goes cold again after the game's
+  // claim cooldown, so this is a clock rather than a list of what's done.
+  const [claimTimes, setClaimTimes] = useState<Record<string, number>>({});
+  const markCleared = (id: string) => setClaimTimes((t) => ({ ...t, [id]: Date.now() }));
   const [positions, setPositions] = useState<Position[]>([]);
   const [allSpawns, setAllSpawns] = useState<SpawnRow[]>([]);
   const [starClaimRows, setStarClaimRows] = useState<StarClaimRow[]>([]);
@@ -1410,6 +1413,7 @@ export default function App({
   } | null>(null);
   const [stealPicks, setStealPicks] = useState<Record<number, number>>({});
   const [stealResult, setStealResult] = useState<'won' | 'lost' | 'gone' | null>(null);
+  const [stealTook, setStealTook] = useState(0); // what the bounty actually moved
   const [stealBusy, setStealBusy] = useState(false);
   /** Questions we've already been asked this game — refreshed after each play. */
   const [seenQs, setSeenQs] = useState<string[]>([]);
@@ -1456,6 +1460,21 @@ export default function App({
     round: string;
   } | null>(null);
   const [nowTs, setNowTs] = useState(() => Date.now());
+  /**
+   * Spots that are spent for us *right now*. A spot used to be worth one visit
+   * per team for the whole game; it now goes cold after the cooldown and is
+   * worth walking back to — so "cleared" is a question about the clock, not a
+   * line drawn through a name. A cooldown of 0 restores the old once-ever rule,
+   * which is what games published before this shipped will get.
+   */
+  const claimCooldown = cfg.claimCooldownSec(onlineConfig);
+  const onlineCleared = useMemo(() => {
+    const out: string[] = [];
+    for (const [id, at] of Object.entries(claimTimes)) {
+      if (claimCooldown <= 0 || nowTs - at < claimCooldown * 1000) out.push(id);
+    }
+    return out;
+  }, [claimTimes, claimCooldown, nowTs]);
 
   const lockTried = useRef<Set<string>>(new Set());
 
@@ -1664,7 +1683,7 @@ export default function App({
     getBoard(gid)
       .then((b) => alive && setOnlineBoard(b))
       .catch((e) => alert('Load failed: ' + (e as Error).message));
-    const loadClaims = () => myClaims(gid, tid).then((c) => alive && setOnlineCleared(c)).catch(() => {});
+    const loadClaims = () => myClaims(gid, tid).then((c) => alive && setClaimTimes(c)).catch(() => {});
     const loadPos = () => listPositions(gid).then((p) => alive && setPositions(p)).catch(() => {});
     const loadSpawns = () => listSpawns(gid).then((s) => alive && setAllSpawns(s)).catch(() => {});
     const loadStars = () => listStarClaims(gid).then((s) => alive && setStarClaimRows(s)).catch(() => {});
@@ -2565,8 +2584,8 @@ export default function App({
       // carry one job, so a second offer just becomes a plain check-in.
       if (type === 'quest' && !onlineCleared.includes(spotId) && !myQuest && teams.length > 1) {
         setQuestOffer({ spotId, name: sq.title || 'this space' });
-        setOnlineCleared((c) => [...c, spotId]);
-        checkInSpot(membership.gameId, membership.teamId, spotId, sq.lat, sq.lng, 0).catch(() => {});
+        markCleared(spotId);
+        checkInSpot(membership.gameId, membership.teamId, spotId, sq.lat, sq.lng, 0, claimCooldown).catch(() => {});
         paintTurf(spotId);
         return;
       }
@@ -2605,8 +2624,8 @@ export default function App({
         setOnlineBowserModal({ spotId, name: sq.title || 'Bowser' });
         return;
       }
-      setOnlineCleared((c) => [...c, spotId]); // optimistic; subscription confirms coins/pos
-      checkInSpot(membership.gameId, membership.teamId, spotId, sq.lat, sq.lng, onlineConfig.coinReward).catch((e) =>
+      markCleared(spotId); // optimistic; subscription confirms coins/pos
+      checkInSpot(membership.gameId, membership.teamId, spotId, sq.lat, sq.lng, onlineConfig.coinReward, claimCooldown).catch((e) =>
         alert('Check-in failed: ' + (e as Error).message),
       );
       paintTurf(spotId);
@@ -2660,6 +2679,7 @@ export default function App({
     setStealResult(null);
     setStealBusy(false);
     setStealForfeited(0);
+    setStealTook(0);
     setStealModal({
       spotId,
       name: sq.title || 'this corner',
@@ -2690,12 +2710,17 @@ export default function App({
           setStealResult('won');
           // A flat bounty off the loser — zero-sum, so bouncing a corner back and
           // forth can't farm the bank. The real damage is still the cut chain.
+          //
+          // Report what MOVED, not what was asked for: transfer_coins hands over
+          // least(amount, what they've got), so a broke defender pays less than
+          // the sticker price and the winner should be told the truth about it.
           const bounty = cfg.stealBounty(onlineConfig);
-          if (bounty > 0) transferCoins(defenderId, membership.teamId, bounty).catch(() => {});
+          const took = bounty > 0 ? await transferCoins(defenderId, membership.teamId, bounty).catch(() => 0) : 0;
+          setStealTook(took);
           const sq = onlineBoard?.squares.find((s) => s.id === spotId);
-          if (sq) checkInSpot(membership.gameId, membership.teamId, spotId, sq.lat, sq.lng, 0).catch(() => {});
-          logEvent(membership.gameId, 'battle', `🏴 ${myTeam?.name ?? 'A team'} stole ${name} from ${defName} — +${bounty} 🪙`).catch(() => {});
-          sendMessage(membership.gameId, null, defenderId, `🏴 ${myTeam?.name ?? 'A team'} took your corner at ${name} and ${bounty} 🪙 — your run may be cut!`).catch(() => {});
+          if (sq) checkInSpot(membership.gameId, membership.teamId, spotId, sq.lat, sq.lng, 0, claimCooldown).catch(() => {});
+          logEvent(membership.gameId, 'battle', `🏴 ${myTeam?.name ?? 'A team'} stole ${name} from ${defName}${took > 0 ? ` — +${took} 🪙` : ''}`).catch(() => {});
+          sendMessage(membership.gameId, null, defenderId, `🏴 ${myTeam?.name ?? 'A team'} took your corner at ${name}${took > 0 ? ` and ${took} 🪙` : ''} — your run may be cut!`).catch(() => {});
         } else {
           setStealResult('gone'); // ownership changed under us — map will refresh
         }
@@ -2828,8 +2853,8 @@ export default function App({
   // Record the chance spot as cleared (once per team) without a coin reward.
   function markChanceCleared(sq: Square) {
     if (!membership) return;
-    setOnlineCleared((c) => (c.includes(sq.id) ? c : [...c, sq.id]));
-    checkInSpot(membership.gameId, membership.teamId, sq.id, sq.lat, sq.lng, 0).catch(() => {});
+    markCleared(sq.id);
+    checkInSpot(membership.gameId, membership.teamId, sq.id, sq.lat, sq.lng, 0, claimCooldown).catch(() => {});
     paintTurf(sq.id);
   }
   // Clearing a claimable corner paints it your color (extends/starts a run).
@@ -2928,8 +2953,8 @@ export default function App({
     const base = sq.reward > 0 ? sq.reward : onlineConfig.coinReward;
     const award = qs.length ? Math.round((base * correct) / qs.length) : base;
     logTriviaAnswers(membership.gameId, membership.teamId, 'spot', sq.id, qs, quizPick).catch(() => {});
-    setOnlineCleared((c) => (c.includes(sq.id) ? c : [...c, sq.id]));
-    checkInSpot(membership.gameId, membership.teamId, sq.id, sq.lat, sq.lng, award).catch((e) =>
+    markCleared(sq.id);
+    checkInSpot(membership.gameId, membership.teamId, sq.id, sq.lat, sq.lng, award, claimCooldown).catch((e) =>
       alert('Check-in failed: ' + (e as Error).message),
     );
     paintTurf(sq.id);
@@ -2953,8 +2978,8 @@ export default function App({
     }
     try {
       if (loss > 0) await adjustCoins(membership.teamId, -loss);
-      setOnlineCleared((c) => (c.includes(sq.id) ? c : [...c, sq.id]));
-      checkInSpot(membership.gameId, membership.teamId, sq.id, sq.lat, sq.lng, 0).catch(() => {});
+      markCleared(sq.id);
+      checkInSpot(membership.gameId, membership.teamId, sq.id, sq.lat, sq.lng, 0, claimCooldown).catch(() => {});
       await logEvent(membership.gameId, 'battle', `👹 ${myTeam?.name ?? 'A team'} faced Bowser and lost ${loss} 🪙`);
       setBowserLoss(loss);
       setQuizDone(true);
@@ -5872,6 +5897,11 @@ export default function App({
                         <p className="chance-card-text" style={{ fontSize: '1.15rem', fontWeight: 800, textAlign: 'center', margin: '8px 0 14px' }}>
                           🏴 Corner stolen! It's painted your color — {defName}'s run just took the hit.
                         </p>
+                        {stealTook > 0 && (
+                          <p className="chance-card-text" style={{ fontSize: '1.35rem', fontWeight: 900, textAlign: 'center', margin: '0 0 14px', color: '#b45309' }}>
+                            +{stealTook} 🪙 off {defName}
+                          </p>
+                        )}
                         <button className="btn btn--go" style={{ width: '100%' }} onClick={() => setStealModal(null)}>
                           Nice
                         </button>

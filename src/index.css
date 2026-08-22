@@ -2484,8 +2484,17 @@ body {
 .quest-panel {
   max-width: 380px;
 }
+/* The panel is a flex column with a hard max-height and overflow:hidden, so
+   the body has to be the part that scrolls — otherwise a quest with a tall
+   photo simply loses its bottom half, buttons included, with no way to reach
+   it. min-height:0 is what actually lets a flex child shrink enough to scroll. */
 .quest-body {
   padding: 12px 14px 16px;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
 }
 .quest-kind {
   margin-bottom: 8px;
@@ -2515,8 +2524,13 @@ body {
   margin-left: 6px;
   letter-spacing: 0.5px;
 }
+/* Street View grabs come out any shape, and a portrait one used to fill the
+   whole panel on its own. Capped so the brief and both buttons stay on screen
+   — this is a clue you study, not a photo you frame. */
 .quest-photo {
   width: 100%;
+  max-height: 34vh;
+  object-fit: cover;
   border: 3px solid #2b2b3a;
   border-radius: 12px;
   margin-bottom: 10px;

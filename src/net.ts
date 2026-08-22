@@ -958,6 +958,7 @@ export interface GameConfig {
   duelTimeoutSec: number; // an unanswered duel gives up rather than haunting two phones
   explorerSec: number; // how long you get to reach the place in the photo
   explorerReward: number; // coins for getting there clean
+  claimCooldownSec: number; // how long before a spot you cleared pays again (0 = once, ever)
   explorerMinM: number; // never send someone somewhere they can already see
 }
 
@@ -998,6 +999,8 @@ export const cfg = {
   explorerSec: (c: Partial<GameConfig> | undefined) => c?.explorerSec ?? 900,
   explorerReward: (c: Partial<GameConfig> | undefined) => c?.explorerReward ?? 50,
   explorerMinM: (c: Partial<GameConfig> | undefined) => c?.explorerMinM ?? 250,
+  // Older published games predate the cooldown and must keep their once-ever rule.
+  claimCooldownSec: (c: Partial<GameConfig> | undefined) => c?.claimCooldownSec ?? 0,
 };
 
 export const PARTY_CONFIG: GameConfig = {
@@ -1045,6 +1048,9 @@ export const PARTY_CONFIG: GameConfig = {
   explorerSec: 900,
   explorerReward: 50,
   explorerMinM: 250,
+  // Thirty minutes. Long enough that nobody stands on one corner farming it,
+  // short enough that a corner taken off you is worth the walk back for.
+  claimCooldownSec: 1800,
 };
 export const TEST_CONFIG: GameConfig = {
   starCost: 40,
@@ -1096,6 +1102,7 @@ export const TEST_CONFIG: GameConfig = {
   // The board is only ~700m across, so the party's 250m floor leaves few
   // legal targets; 120m still means "somewhere you can't see from here".
   explorerMinM: 120,
+  claimCooldownSec: 60,
 };
 
 export interface GameFull {
@@ -1269,21 +1276,36 @@ export interface Position {
 }
 
 /** Spot ids this team has already cleared (grays out for them). */
-export async function myClaims(gameId: string, teamId: string): Promise<string[]> {
+/** When this team last took each spot, in epoch ms. A spot goes cold again
+ *  after claimCooldownSec, so this is a clock, not a checklist. */
+export async function myClaims(gameId: string, teamId: string): Promise<Record<string, number>> {
   assertConfigured();
   const { data, error } = await supabase
     .from('spot_claims')
-    .select('spot_id')
+    .select('spot_id, created_at')
     .eq('game_id', gameId)
     .eq('team_id', teamId);
   if (error) throw error;
-  return (data ?? []).map((r) => (r as { spot_id: string }).spot_id);
+  const out: Record<string, number> = {};
+  for (const r of (data ?? []) as { spot_id: string; created_at: string }[]) {
+    out[r.spot_id] = Date.parse(r.created_at);
+  }
+  return out;
 }
 
 /**
- * Check in at a spot: record the (per-team-unique) claim, award coins if it's
- * newly cleared, and update this team's live position. One phone per team, so the
- * read-modify-write on coins is safe without an RPC.
+ * Check in at a spot: record the claim, pay if it counted, and update this
+ * team's live position.
+ *
+ * A spot used to be worth exactly one visit per team for the whole game. It
+ * now goes cold after `cooldownSec` and pays again — so a corner a rival took
+ * off you is worth walking back for, and the last-team-standing awards stay a
+ * real race instead of being settled by whoever got there first at 2pm.
+ *
+ * The row is unique per (game, spot, team), so a repeat visit REUSES it and
+ * moves its timestamp forward. That update is guarded on the row still being
+ * older than the cutoff, which is what stops two phones on one team — or two
+ * fast taps — from paying twice for the same visit.
  */
 export async function checkInSpot(
   gameId: string,
@@ -1292,18 +1314,31 @@ export async function checkInSpot(
   lat: number,
   lng: number,
   reward: number,
+  cooldownSec = 0,
 ): Promise<boolean> {
   assertConfigured();
   const { error } = await supabase.from('spot_claims').insert({ game_id: gameId, spot_id: spotId, team_id: teamId });
-  const newly = !error;
-  if (error && error.code !== '23505') throw error; // 23505 = already claimed by this team
-  if (newly && reward) {
+  if (error && error.code !== '23505') throw error; // 23505 = this team has been here before
+  let counted = !error;
+  if (!counted && cooldownSec > 0) {
+    const cutoff = new Date(Date.now() - cooldownSec * 1000).toISOString();
+    const { data } = await supabase
+      .from('spot_claims')
+      .update({ created_at: new Date().toISOString() })
+      .eq('game_id', gameId)
+      .eq('spot_id', spotId)
+      .eq('team_id', teamId)
+      .lt('created_at', cutoff) // ...only if it really has gone cold
+      .select('id');
+    counted = !!data?.length;
+  }
+  if (counted && reward) {
     await adjustCoins(teamId, reward); // atomic — safe when several phones share a team
   }
   await supabase
     .from('positions')
     .upsert({ team_id: teamId, game_id: gameId, lat, lng, spot_id: spotId, updated_at: new Date().toISOString() });
-  return newly;
+  return counted;
 }
 
 /**

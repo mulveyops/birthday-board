@@ -1931,9 +1931,20 @@ export default function BoardCanvas({
               .map((sq) => {
                 // A bar placed by hand in the editor has no poi block at all,
                 // so nothing here may assume one exists.
-                const m = sq.poi?.markerM ?? 62;
+                // 150m on an 800m board: absurd as architecture, correct as a
+                // game piece. At 62 a marker came out 33 CSS pixels wide and its
+                // painted sign was unreadable, which is the whole reason these
+                // are hand-drawn buildings rather than dots. Per-bar override
+                // via markerM if one ever needs to be reined in.
+                const m = sq.poi?.markerM ?? 150;
                 const x = X(sq);
-                const y = Y(sq);
+                // The square sits at the building's OSM centroid, but the art is
+                // an ELEVATION — it has to stand on the ground at the near side
+                // of the building and rise away from the viewer, or it reads as
+                // hovering over the street in front. Plant it on the SOUTH edge
+                // of the real footprint so it covers its own outline and
+                // occludes the block behind, the way a building would.
+                const y = Y(sq) + (sq.poi?.footM?.[1] ?? 0) / 2;
                 const ref = artKeyFor(sq);
                 const art = ref && poiArtOk[ref];
                 return (

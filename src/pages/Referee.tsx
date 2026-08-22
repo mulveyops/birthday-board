@@ -28,6 +28,8 @@ import {
   subscribeDuels,
   overrideDuel,
   removeTeam,
+  seedSpawns,
+  getGameFull,
   listPhotos,
   subscribePhotos,
   vetoPhoto,
@@ -85,6 +87,8 @@ export default function Referee() {
   const [showWhere, setShowWhere] = useState(false);
   const [endArmed, setEndArmed] = useState(false);
   const [dropArmed, setDropArmed] = useState<string | null>(null);
+  /** lobby | live | paused | ended — drives the Start button below. */
+  const [status, setStatus] = useState<string>("");
   // Nomad is shut until this is true, so it must stay out of the star rotation.
   const [lastCall, setLastCall] = useState(false);
   const [note, setNote] = useState('');
@@ -131,6 +135,7 @@ export default function Referee() {
       listAllClaims(gid).then((c) => alive && setAllClaims(c)).catch(() => {});
       listStarSpawns(gid).then((r) => alive && setSpawns(r)).catch(() => {});
       listStarClaims(gid).then((r) => alive && setClaims(r)).catch(() => {});
+      getGameFull(gid).then((g) => alive && setStatus(g.status)).catch(() => {});
       listEvents(gid)
         .then((e) => alive && setLastCall(e.some((x) => /LAST CALL/i.test(x.payload?.text ?? ''))))
         .catch(() => {});
@@ -271,6 +276,39 @@ export default function Referee() {
       setDone(`Called for ${teamName(winner)}.`);
     } catch (e) {
       setErr('Could not overrule: ' + (e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  /**
+   * Go. Sets the game live and stamps started_at, which every clock in the
+   * game counts from — the star rotation above all. Also seeds the surprise
+   * drops, because they're scheduled ahead of time rather than rolled live,
+   * and a game started without them simply never has any.
+   */
+  async function startGame() {
+    if (!sess || busy || !board) return;
+    setBusy(true);
+    setErr('');
+    try {
+      const g = await getGameFull(sess.gameId);
+      await seedSpawns(
+        sess.gameId,
+        board,
+        g.config.spawnCount,
+        g.config.spawnMinSec,
+        g.config.spawnMaxSec,
+        g.config.spawnTtlSec,
+      ).catch(() => {
+        /* drops are a bonus; never let them stop the party starting */
+      });
+      await updateGameStatus(sess.gameId, 'live');
+      await logEvent(sess.gameId, 'announce', "The game is ON — go claim something.").catch(() => {});
+      setStatus('live');
+      setDone('Game started.');
+    } catch (e) {
+      setErr('Could not start it: ' + (e as Error).message);
     } finally {
       setBusy(false);
     }
@@ -510,6 +548,25 @@ export default function Referee() {
 
         {err && <p className="ref-flash ref-flash--bad">{err}</p>}
         {done && <p className="ref-flash">{done}</p>}
+
+        {/* ---- start ------------------------------------------------------
+            Joining does NOT start a game — teams can sign up, pick a colour and
+            stand around, but every check-in is refused until somebody says go.
+            That's deliberate: the star clock runs from this moment, so it has
+            to be a decision. It used to live only in the board builder, which
+            is the last place you want to be standing in a bar. */}
+        {status === 'lobby' && (
+          <section className="ref-block ref-block--start">
+            <h2 className="ref-h">Not started yet</h2>
+            <p className="hint" style={{ marginTop: 0 }}>
+              {teams.length} team{teams.length === 1 ? '' : 's'} joined. Nobody can check in anywhere until you
+              start. The first star lands 20 minutes after you do.
+            </p>
+            <button className="ref-start" disabled={busy} onClick={() => void startGame()}>
+              ▶ Start the game
+            </button>
+          </section>
+        )}
 
         {/* ---- duels ------------------------------------------------------ */}
         <section className="ref-block">

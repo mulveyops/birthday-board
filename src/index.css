@@ -2980,3 +2980,26 @@ body {
   color: #fff;
   font-weight: 800;
 }
+
+/* Start: the one button on this page that is unambiguously good news, so it
+   gets the green and the size. Sits at the top until it has been pressed,
+   then disappears for the rest of the night. */
+.ref-block--start {
+  border-color: #15803d;
+  background: #f0fdf4;
+}
+.ref-start {
+  width: 100%;
+  padding: 16px;
+  border: 2px solid #14532d;
+  border-radius: 12px;
+  background: #16a34a;
+  color: #fff;
+  font-size: 1.15rem;
+  font-weight: 900;
+  cursor: pointer;
+}
+.ref-start:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
